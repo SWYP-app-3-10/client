@@ -5,7 +5,6 @@ import {
   StyleSheet,
   Modal,
   TouchableOpacity,
-  SafeAreaView,
 } from 'react-native';
 import {scaleWidth} from '../styles/global';
 

@@ -13,7 +13,7 @@ interface RootNavigatorProps {
 }
 
 const RootNavigator: React.FC<RootNavigatorProps> = ({
-  isAuthenticated,
+  isAuthenticated: _isAuthenticated,
   isOnboardingCompleted,
 }) => {
   return (
