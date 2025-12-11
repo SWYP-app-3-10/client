@@ -49,15 +49,17 @@ const FeatureIntroduction01Screen = () => {
           <View style={styles.dot} />
         </View>
 
-        {/* 소셜 로그인 버튼 */}
-        <TouchableOpacity style={styles.socialButton} onPress={handleNext}>
-          <Text style={styles.buttonText}>구글 로 시작하기</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.socialButton} onPress={handleNext}>
-          <Text style={styles.buttonText}>카카오로 시작하기</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.button} onPress={handleNext}>
-          <Text style={styles.buttonText}>Naver로 시작하기</Text>
+        <TouchableOpacity
+          style={{
+            width: '100%',
+            height: scaleWidth(56),
+            borderRadius: scaleWidth(12),
+            justifyContent: 'center',
+            alignItems: 'center',
+            backgroundColor: 'orange',
+          }}
+          onPress={() => navigation.navigate(RouteNames.INTERESTS)}>
+          <Text>일단 다음</Text>
         </TouchableOpacity>
       </View>
     </SafeAreaView>

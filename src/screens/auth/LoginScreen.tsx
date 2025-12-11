@@ -92,6 +92,18 @@ const LoginScreen = () => {
 
         {/* 소셜 로그인 버튼들 */}
         <View style={styles.buttonContainer}>
+          <TouchableOpacity
+            style={{
+              width: '100%',
+              height: scaleWidth(56),
+              borderRadius: scaleWidth(12),
+              justifyContent: 'center',
+              alignItems: 'center',
+              backgroundColor: 'orange',
+            }}
+            onPress={() => navigation.navigate(RouteNames.FEATURE_INTRO_01)}>
+            <Text>일단 다음</Text>
+          </TouchableOpacity>
           {/* 구글 로그인 버튼 */}
           <TouchableOpacity
             style={[styles.socialButton, styles.googleButton]}
