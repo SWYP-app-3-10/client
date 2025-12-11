@@ -6,8 +6,12 @@ export const RouteNames = {
   LOGIN: 'login' as const,
 
   // 온보딩
-  DIFFICULTY_SETTING: 'difficulty-setting' as const,
+  SOCIAL_LOGIN: 'social-login' as const,
+  FEATURE_INTRO_01: 'feature-intro-01' as const,
+  FEATURE_INTRO_02: 'feature-intro-02' as const,
+  FEATURE_INTRO_03: 'feature-intro-03' as const,
   INTERESTS: 'interests' as const,
+  DIFFICULTY_SETTING: 'difficulty-setting' as const,
 
   // 메인 탭
   MAIN_TAB: 'main-tab' as const,
