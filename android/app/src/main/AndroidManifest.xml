@@ -19,6 +19,8 @@
         <intent-filter>
             <action android:name="android.intent.action.MAIN" />
             <category android:name="android.intent.category.LAUNCHER" />
+            <data android:host="oath"
+            android:scheme="kakao{fa3fd7470a555b1c308efae73f4d4ce0}"/>
         </intent-filter>
       </activity>
     </application>

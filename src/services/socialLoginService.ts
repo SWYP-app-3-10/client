@@ -28,6 +28,7 @@ export const initializeGoogleSignIn = () => {
   try {
     GoogleSignin.configure({
       webClientId: GOOGLE_CONFIG.webClientId,
+      iosClientId: GOOGLE_CONFIG.iosClientId,
       offlineAccess: true,
     });
   } catch (error) {
