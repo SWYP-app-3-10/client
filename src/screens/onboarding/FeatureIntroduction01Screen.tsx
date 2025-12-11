@@ -18,6 +18,21 @@ const FeatureIntroduction01Screen = () => {
 
   return (
     <SafeAreaView style={styles.container}>
+      <TouchableOpacity
+        style={{
+          position: 'absolute',
+          top: 50,
+          left: 20,
+          padding: 10,
+          backgroundColor: '#ddd',
+          borderRadius: 8,
+          zIndex: 1,
+        }}
+        onPress={() => {
+          navigation.goBack();
+        }}>
+        <Text>뒤로가기</Text>
+      </TouchableOpacity>
       <View style={styles.content}>
         {/* 이미지 placeholder */}
         <View style={styles.imagePlaceholder}>

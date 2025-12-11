@@ -103,7 +103,7 @@ const LoginScreen = () => {
               borderRadius: scaleWidth(12),
               justifyContent: 'center',
               alignItems: 'center',
-              backgroundColor: 'Grey',
+              backgroundColor: 'grey',
             }}
             onPress={() => navigation.navigate(RouteNames.REWARD)}>
             <Text>광고 예시</Text>
