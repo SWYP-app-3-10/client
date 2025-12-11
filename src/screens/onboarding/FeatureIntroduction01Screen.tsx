@@ -11,6 +11,8 @@ import {NativeStackNavigationProp} from '@react-navigation/native-stack';
 import {RouteNames} from '../../../routes';
 import {scaleWidth} from '../../styles/global';
 import {OnboardingStackParamList} from '../../navigation/types';
+import FeatureCarousel from '../../components/FeatureCarousel';
+
 type NavigationProp = NativeStackNavigationProp<OnboardingStackParamList>;
 
 const FeatureIntroduction01Screen = () => {
@@ -34,22 +36,7 @@ const FeatureIntroduction01Screen = () => {
         <Text>뒤로가기</Text>
       </TouchableOpacity>
       <View style={styles.content}>
-        {/* 이미지 placeholder */}
-        <View style={styles.imagePlaceholder}>
-          <Text style={styles.placeholderText}>카드 기능 이미지</Text>
-        </View>
-
-        {/* 텍스트 placeholder */}
-        <View style={styles.textPlaceholder}>
-          <Text style={styles.placeholderText}>카드 기능 설명</Text>
-        </View>
-
-        {/* 페이지네이션 인디케이터 */}
-        <View style={styles.pagination}>
-          <View style={[styles.dot, styles.activeDot]} />
-          <View style={styles.dot} />
-          <View style={styles.dot} />
-        </View>
+        <FeatureCarousel />
 
         <TouchableOpacity
           style={{
