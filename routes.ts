@@ -21,4 +21,7 @@ export const RouteNames = {
   CHARACTER: 'character' as const,
   SEARCH: 'search' as const,
   MY_PAGE: 'my-page' as const,
+
+  // 광고
+  REWARD: 'reward' as const,
 };

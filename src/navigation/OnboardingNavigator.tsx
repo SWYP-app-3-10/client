@@ -6,6 +6,7 @@ import FeatureIntroduction01Screen from '../screens/onboarding/FeatureIntroducti
 
 import InterestsScreen from '../screens/onboarding/InterestsScreen';
 import DifficultySettingScreen from '../screens/onboarding/DifficultySettingScreen';
+import REWARDScreen from '../screens/REWARDScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -24,6 +25,7 @@ const OnboardingNavigator = () => {
         name={RouteNames.DIFFICULTY_SETTING}
         component={DifficultySettingScreen}
       />
+      <Stack.Screen name={RouteNames.REWARD} component={REWARDScreen} />
     </Stack.Navigator>
   );
 };

@@ -10,7 +10,9 @@ export type RootStackParamList = {
 // Onboarding Stack Param List
 export type OnboardingStackParamList = {
   [RouteNames.DIFFICULTY_SETTING]: undefined;
+  [RouteNames.FEATURE_INTRO_01]: undefined;
   [RouteNames.INTERESTS]: undefined;
+  [RouteNames.REWARD]: undefined;
 };
 
 // Main Stack Param List

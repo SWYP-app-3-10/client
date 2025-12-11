@@ -19,15 +19,7 @@ import {
   initializeNaverLogin,
   SocialLoginProvider,
 } from '../../services/socialLoginService';
-
-type OnboardingStackParamList = {
-  [RouteNames.SOCIAL_LOGIN]: undefined;
-  [RouteNames.FEATURE_INTRO_01]: undefined;
-  [RouteNames.FEATURE_INTRO_02]: undefined;
-  [RouteNames.FEATURE_INTRO_03]: undefined;
-  [RouteNames.INTERESTS]: undefined;
-  [RouteNames.DIFFICULTY_SETTING]: undefined;
-};
+import {OnboardingStackParamList} from '../../navigation/types';
 
 type NavigationProp = NativeStackNavigationProp<OnboardingStackParamList>;
 
@@ -103,6 +95,18 @@ const LoginScreen = () => {
             }}
             onPress={() => navigation.navigate(RouteNames.FEATURE_INTRO_01)}>
             <Text>일단 다음</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={{
+              width: '100%',
+              height: scaleWidth(56),
+              borderRadius: scaleWidth(12),
+              justifyContent: 'center',
+              alignItems: 'center',
+              backgroundColor: 'Grey',
+            }}
+            onPress={() => navigation.navigate(RouteNames.REWARD)}>
+            <Text>광고 예시</Text>
           </TouchableOpacity>
           {/* 구글 로그인 버튼 */}
           <TouchableOpacity

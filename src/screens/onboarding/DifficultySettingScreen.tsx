@@ -9,17 +9,8 @@ import {
 } from 'react-native';
 import {useNavigation} from '@react-navigation/native';
 import {NativeStackNavigationProp} from '@react-navigation/native-stack';
-import {RouteNames} from '../../../routes';
 import {scaleWidth} from '../../styles/global';
-
-type OnboardingStackParamList = {
-  [RouteNames.SOCIAL_LOGIN]: undefined;
-  [RouteNames.FEATURE_INTRO_01]: undefined;
-  [RouteNames.FEATURE_INTRO_02]: undefined;
-  [RouteNames.FEATURE_INTRO_03]: undefined;
-  [RouteNames.INTERESTS]: undefined;
-  [RouteNames.DIFFICULTY_SETTING]: undefined;
-};
+import {OnboardingStackParamList} from '../../navigation/types';
 
 type NavigationProp = NativeStackNavigationProp<OnboardingStackParamList>;
 
