@@ -1,97 +1,69 @@
-This is a new [**React Native**](https://reactnative.dev) project, bootstrapped using [`@react-native-community/cli`](https://github.com/react-native-community/cli).
+# 뇌세포
 
-# Getting Started
+뇌세포 모바일 애플리케이션 클라이언트 레포지토리입니다.
 
-> **Note**: Make sure you have completed the [Set Up Your Environment](https://reactnative.dev/docs/set-up-your-environment) guide before proceeding.
+## 기술 스택
 
-## Step 1: Start Metro
+- **React Native** 0.73.6
+- **TypeScript** 5.0.4
+- **React Navigation** 6.x
+  - `@react-navigation/native`
+  - `@react-navigation/native-stack`
+- **Node.js** >= 18
 
-First, you will need to run **Metro**, the JavaScript build tool for React Native.
+## 프로젝트 구조
 
-To start the Metro dev server, run the following command from the root of your React Native project:
-
-```sh
-# Using npm
-npm start
-
-# OR using Yarn
-yarn start
+```
+src/
+├── navigation/           # 네비게이션 설정
+│   ├── RootNavigator.tsx
+│   ├── MainStackNavigator.tsx
+│   ├── MissionStackNavigator.tsx
+│   ├── CharacterStackNavigator.tsx
+│   ├── SearchStackNavigator.tsx
+│   ├── MyPageStackNavigator.tsx
+│   ├── OnboardingNavigator.tsx
+│   └── types.ts          # 네비게이션 타입 정의
+├── screens/             # 화면 컴포넌트
+│   ├── auth/            # 인증 관련 화면
+│   ├── onboarding/      # 온보딩 화면
+│   └── main/            # 메인 화면
+├── components/          # 공통 컴포넌트
+└── utils/               # 유틸리티 함수
 ```
 
-## Step 2: Build and run your app
+## 네비게이션 구조
 
-With Metro running, open a new terminal window/pane from the root of your React Native project, and use one of the following commands to build and run your Android or iOS app:
-
-### Android
-
-```sh
-# Using npm
-npm run android
-
-# OR using Yarn
-yarn android
+```
+스플래시
+  ↓
+로그인 (소셜 로그인)
+  ↓
+온보딩
+  ├─ 난이도 설정
+  └─ 관심분야 설정
+  ↓
+메인 스택
+  ├─ 미션 스택
+  ├─ 캐릭터 스택
+  ├─ 검색 스택
+  └─ 마이페이지 스택
 ```
 
-### iOS
+## 개발
 
-For iOS, remember to install CocoaPods dependencies (this only needs to be run on first clone or after updating native deps).
+### 코드 스타일
 
-The first time you create a new project, run the Ruby bundler to install CocoaPods itself:
+커밋 전에 반드시 린트를 실행하여 코드 스타일을 확인하세요.
 
-```sh
-bundle install
+```
+# 린트 실행 (코드 스타일 검사)
+npm run lint
+
+# 자동 수정 가능한 문제 자동 수정
+npm run lint -- --fix
 ```
 
-Then, and every time you update your native dependencies, run:
+### 라우트 관리
 
-```sh
-bundle exec pod install
-```
-
-For more information, please visit [CocoaPods Getting Started guide](https://guides.cocoapods.org/using/getting-started.html).
-
-```sh
-# Using npm
-npm run ios
-
-# OR using Yarn
-yarn ios
-```
-
-If everything is set up correctly, you should see your new app running in the Android Emulator, iOS Simulator, or your connected device.
-
-This is one way to run your app — you can also build it directly from Android Studio or Xcode.
-
-## Step 3: Modify your app
-
-Now that you have successfully run the app, let's make changes!
-
-Open `App.tsx` in your text editor of choice and make some changes. When you save, your app will automatically update and reflect these changes — this is powered by [Fast Refresh](https://reactnative.dev/docs/fast-refresh).
-
-When you want to forcefully reload, for example to reset the state of your app, you can perform a full reload:
-
-- **Android**: Press the <kbd>R</kbd> key twice or select **"Reload"** from the **Dev Menu**, accessed via <kbd>Ctrl</kbd> + <kbd>M</kbd> (Windows/Linux) or <kbd>Cmd ⌘</kbd> + <kbd>M</kbd> (macOS).
-- **iOS**: Press <kbd>R</kbd> in iOS Simulator.
-
-## Congratulations! :tada:
-
-You've successfully run and modified your React Native App. :partying_face:
-
-### Now what?
-
-- If you want to add this new React Native code to an existing application, check out the [Integration guide](https://reactnative.dev/docs/integration-with-existing-apps).
-- If you're curious to learn more about React Native, check out the [docs](https://reactnative.dev/docs/getting-started).
-
-# Troubleshooting
-
-If you're having issues getting the above steps to work, see the [Troubleshooting](https://reactnative.dev/docs/troubleshooting) page.
-
-# Learn More
-
-To learn more about React Native, take a look at the following resources:
-
-- [React Native Website](https://reactnative.dev) - learn more about React Native.
-- [Getting Started](https://reactnative.dev/docs/environment-setup) - an **overview** of React Native and how setup your environment.
-- [Learn the Basics](https://reactnative.dev/docs/getting-started) - a **guided tour** of the React Native **basics**.
-- [Blog](https://reactnative.dev/blog) - read the latest official React Native **Blog** posts.
-- [`@facebook/react-native`](https://github.com/facebook/react-native) - the Open Source; GitHub **repository** for React Native.
+라우트 이름은 `routes.ts`에서 관리하며, 네비게이션 파라미터 타입은 `src/navigation/types.ts`에서 정의합니다.

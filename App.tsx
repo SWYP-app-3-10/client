@@ -1,45 +1,37 @@
-/**
- * Sample React Native App
- * https://github.com/facebook/react-native
- *
- * @format
- */
+import React, { useState, useEffect } from 'react';
+import SplashScreen from './src/screens/SplashScreen';
+import RootNavigator from './src/navigation/RootNavigator';
+import { OnboardingProvider } from './src/context/OnboardingContext';
 
-import { NewAppScreen } from '@react-native/new-app-screen';
-import { StatusBar, StyleSheet, useColorScheme, View } from 'react-native';
-import {
-  SafeAreaProvider,
-  useSafeAreaInsets,
-} from 'react-native-safe-area-context';
+const App = () => {
+  const [isAuthenticated] = useState(false);
+  const [isOnboardingCompleted, setIsOnboardingCompleted] = useState(false);
+  const [isSplashLoading, setIsSplashLoading] = useState(true);
 
-function App() {
-  const isDarkMode = useColorScheme() === 'dark';
+  const handleCompleteOnboarding = () => {
+    console.log('온보딩 완료! 메인 화면으로 전환합니다.');
+    setIsOnboardingCompleted(true);
+  };
+  useEffect(() => {
+    // 스플래시 화면에서 인증 상태 및 온보딩 완료 여부 확인
+    // TODO: AsyncStorage 또는 서버에서 상태 확인
 
-  return (
-    <SafeAreaProvider>
-      <StatusBar barStyle={isDarkMode ? 'light-content' : 'dark-content'} />
-      <AppContent />
-    </SafeAreaProvider>
-  );
-}
+    setTimeout(() => setIsSplashLoading(false), 2000); // 임시
+  }, []);
 
-function AppContent() {
-  const safeAreaInsets = useSafeAreaInsets();
+  // 스플래시 로딩 중
+  if (isSplashLoading) {
+    return <SplashScreen />;
+  }
 
   return (
-    <View style={styles.container}>
-      <NewAppScreen
-        templateFileName="App.tsx"
-        safeAreaInsets={safeAreaInsets}
+    <OnboardingProvider completeOnboarding={handleCompleteOnboarding}>
+      <RootNavigator
+        isAuthenticated={isAuthenticated}
+        isOnboardingCompleted={isOnboardingCompleted}
       />
-    </View>
+    </OnboardingProvider>
   );
-}
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-});
+};
 
 export default App;
