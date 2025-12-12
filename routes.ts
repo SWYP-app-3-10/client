@@ -6,6 +6,8 @@ export const RouteNames = {
   LOGIN: 'login' as const,
 
   // 온보딩
+
+  ONBOARDING: 'onboarding' as const,
   SOCIAL_LOGIN: 'social-login' as const,
   FEATURE_INTRO_01: 'feature-intro-01' as const,
   FEATURE_INTRO_02: 'feature-intro-02' as const,
@@ -15,6 +17,10 @@ export const RouteNames = {
 
   // 메인 탭
   MAIN_TAB: 'main-tab' as const,
+  MISSION_TAB: 'mission-tab' as const,
+  CHARACTER_TAB: 'character-tab' as const,
+  SEARCH_TAB: 'search-tab' as const,
+  MY_PAGE_TAB: 'my-page-tab' as const,
 
   // 메인 탭 내부 스크린들
   MISSION: 'mission' as const,

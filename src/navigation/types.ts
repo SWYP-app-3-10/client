@@ -1,13 +1,7 @@
+import {NavigatorScreenParams} from '@react-navigation/native';
 import {RouteNames} from '../../routes';
 
 // Root Stack Param List
-export type RootStackParamList = {
-  [RouteNames.LOGIN]: undefined;
-  Onboarding: undefined;
-  [RouteNames.MAIN_TAB]: undefined;
-};
-
-// Onboarding Stack Param List
 export type OnboardingStackParamList = {
   [RouteNames.DIFFICULTY_SETTING]: undefined;
   [RouteNames.FEATURE_INTRO_01]: undefined;
@@ -15,6 +9,12 @@ export type OnboardingStackParamList = {
   [RouteNames.REWARD]: undefined;
 };
 
+// 2. 부모: 루트 스택 (온보딩 스택을 포함)
+export type RootStackParamList = {
+  [RouteNames.LOGIN]: undefined;
+  Onboarding: NavigatorScreenParams<OnboardingStackParamList>;
+  Maintab: NavigatorScreenParams<MainStackParamList>;
+};
 // Main Stack Param List
 export type MainStackParamList = {
   [RouteNames.MISSION]: undefined;

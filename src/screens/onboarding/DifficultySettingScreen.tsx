@@ -7,13 +7,24 @@ import {
   SafeAreaView,
   ScrollView,
 } from 'react-native';
-import {useNavigation} from '@react-navigation/native';
+import {CompositeNavigationProp, useNavigation} from '@react-navigation/native';
 import {NativeStackNavigationProp} from '@react-navigation/native-stack';
 import {scaleWidth} from '../../styles/global';
-import {OnboardingStackParamList} from '../../navigation/types';
+import {
+  OnboardingStackParamList,
+  RootStackParamList,
+} from '../../navigation/types';
+import {RouteNames} from '../../../routes';
+import {useOnboarding} from '../../context/OnboardingContext';
 
-type NavigationProp = NativeStackNavigationProp<OnboardingStackParamList>;
-
+type InterestsScreenProps = CompositeNavigationProp<
+  NativeStackNavigationProp<
+    OnboardingStackParamList,
+    typeof RouteNames.INTERESTS
+  >,
+  // 부모 내비게이터 (Root) -> 이걸 붙여야 MAIN_TAB으로 이동 가능
+  NativeStackNavigationProp<RootStackParamList>
+>;
 type Difficulty = 'beginner' | 'intermediate' | 'advanced';
 
 const DIFFICULTY_INFO = {
@@ -38,13 +49,13 @@ const DIFFICULTY_INFO = {
 };
 
 const DifficultySettingScreen = () => {
-  const navigation = useNavigation<NavigationProp>();
+  const navigation = useNavigation<InterestsScreenProps>();
   const [selectedDifficulty, setSelectedDifficulty] =
     useState<Difficulty>('beginner');
-
+  const {completeOnboarding} = useOnboarding();
   const handleNext = () => {
     // TODO: 온보딩 완료 처리 및 메인 화면으로 이동
-    // navigation.navigate(RouteNames.MAIN_TAB);
+    completeOnboarding();
   };
 
   const selectedInfo = DIFFICULTY_INFO[selectedDifficulty];

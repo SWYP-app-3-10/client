@@ -26,7 +26,7 @@ const REWARDScreen = () => {
   const navigation = useNavigation<NavigationProp>();
   const [coins, setCoins] = useState(0);
 
-  // 🛡️ 상태 관리 변수들
+  //  상태 관리 변수들
   const [isAdShowing, setIsAdShowing] = useState(false); // 내가 버튼을 눌렀는가?
   const [hasEarnedReward, setHasEarnedReward] = useState(false); // 보상 자격을 얻었는가?
 
@@ -46,8 +46,7 @@ const REWARDScreen = () => {
   // 2. [변경] 보상 감지 리스너 (여기선 알림 안 띄움! 기록만 함)
   useEffect(() => {
     if (reward) {
-      console.log('✅ 구글: "얘 광고 다 봤음. 보상 줘도 됨."');
-      setHasEarnedReward(true); // 성공표 챙기기
+      setHasEarnedReward(true);
     }
   }, [reward]);
 
@@ -59,11 +58,11 @@ const REWARDScreen = () => {
       // 버튼을 눌러서 광고를 본 경우에만 정산 진행
       if (isAdShowing) {
         if (hasEarnedReward) {
-          // 🎉 성공: 보상 자격(hasEarnedReward)이 있을 때
+          // 성공: 보상 자격(hasEarnedReward)이 있을 때
           setCoins(current => current + 2);
           Alert.alert('축하합니다!', '2코인이 지급되었습니다! 🪙');
         } else {
-          // 😭 실패: 광고는 봤는데 보상 자격이 없을 때 (중간에 닫음)
+          // 실패: 광고는 봤는데 보상 자격이 없을 때 (중간에 닫음)
           Alert.alert(
             '아쉬워요',
             '광고를 끝까지 보셔야 코인을 받을 수 있어요.',
