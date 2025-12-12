@@ -10,11 +10,18 @@
   - `@react-navigation/native`
   - `@react-navigation/native-stack`
 - **Node.js** >= 18
+- **State Management (Server)**
+  - `@tanstack/react-query` v5
+- **Networking**
+  - `axios`
 
 ## 프로젝트 구조
 
 ```
 src/
+├── api/                  # Axios 인스턴스 및 API 호출 함수
+├── hooks/
+│   └── queries/          # React Query 커스텀 훅 (useQuery, useMutation)
 ├── navigation/           # 네비게이션 설정
 │   ├── RootNavigator.tsx
 │   ├── MainStackNavigator.tsx
@@ -52,6 +59,24 @@ src/
 
 ## 개발
 
+## 시작하기
+
+### 설치
+
+```bash
+# 패키지 설치
+npm install
+
+# iOS 의존성 설치 (Mac 전용)
+cd ios && pod install && cd ..
+
+# iOS 실행
+npm run ios
+
+# Android 실행
+npm run android
+```
+
 ### 코드 스타일
 
 커밋 전에 반드시 린트를 실행하여 코드 스타일을 확인하세요.
@@ -67,3 +92,15 @@ npm run lint -- --fix
 ### 라우트 관리
 
 라우트 이름은 `routes.ts`에서 관리하며, 네비게이션 파라미터 타입은 `src/navigation/types.ts`에서 정의합니다.
+
+## API 및 네트워크
+
+### 서버 설정
+
+- API 기본 설정은 `src/api/client.ts`에서 관리합니다.
+
+### 데이터 페칭 (Data Fetching)
+
+- **Axios**: 단순 데이터 요청(`src/api`)
+- **TanStack Query**: 서버 상태 관리 및 캐싱(`src/hooks/queries`)
+- 컴포넌트에서는 `useQuery` 훅을 사용하여 데이터를 불러옵니다.
