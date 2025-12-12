@@ -2,11 +2,13 @@ import React, { useState, useEffect } from 'react';
 import SplashScreen from './src/screens/SplashScreen';
 import RootNavigator from './src/navigation/RootNavigator';
 import { OnboardingProvider } from './src/context/OnboardingContext';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
 const App = () => {
   const [isAuthenticated] = useState(false);
   const [isOnboardingCompleted, setIsOnboardingCompleted] = useState(false);
   const [isSplashLoading, setIsSplashLoading] = useState(true);
+  const queryClient = new QueryClient();
 
   const handleCompleteOnboarding = () => {
     console.log('온보딩 완료! 메인 화면으로 전환합니다.');
@@ -26,10 +28,12 @@ const App = () => {
 
   return (
     <OnboardingProvider completeOnboarding={handleCompleteOnboarding}>
-      <RootNavigator
-        isAuthenticated={isAuthenticated}
-        isOnboardingCompleted={isOnboardingCompleted}
-      />
+      <QueryClientProvider client={queryClient}>
+        <RootNavigator
+          isAuthenticated={isAuthenticated}
+          isOnboardingCompleted={isOnboardingCompleted}
+        />
+      </QueryClientProvider>
     </OnboardingProvider>
   );
 };
