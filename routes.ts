@@ -26,6 +26,12 @@ export const RouteNames = {
   SEARCH: 'search' as const,
   MY_PAGE: 'my-page' as const,
 
+  // 캐릭터
+  CHARACTER_LEVEL: 'character-level' as const,
+  CHARACTER_LEVEL_DETAIL: 'character-level-detail' as const,
+  CHARACTER_POINT_HISTORY: 'character-point-history' as const,
+  CHARACTER_NOTIFICATION: 'character-notification' as const,
+
   // 광고
   REWARD: 'reward' as const,
 };
