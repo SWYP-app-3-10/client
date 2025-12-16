@@ -1,10 +1,17 @@
 import React from 'react';
 import {Text, View, TouchableOpacity, StyleSheet} from 'react-native';
 import {useNavigation} from '@react-navigation/native';
+import type {NativeStackNavigationProp} from '@react-navigation/native-stack';
 import {RouteNames} from '../../../routes';
+import type {CharacterStackParamList} from '../../navigation/types';
+
+type Nav = NativeStackNavigationProp<
+  CharacterStackParamList,
+  typeof RouteNames.CHARACTER
+>;
 
 const CharacterScreen = () => {
-  const navigation = useNavigation();
+  const navigation = useNavigation<Nav>();
 
   return (
     <View style={styles.container}>
@@ -14,16 +21,14 @@ const CharacterScreen = () => {
       <View style={styles.buttonArea}>
         <TouchableOpacity
           style={styles.button}
-          onPress={() =>
-            navigation.navigate(RouteNames.CHARACTER_LEVEL as never)
-          }>
+          onPress={() => navigation.navigate(RouteNames.CHARACTER_LEVEL)}>
           <Text style={styles.buttonText}>레벨 기준 확인</Text>
         </TouchableOpacity>
 
         <TouchableOpacity
           style={styles.button}
           onPress={() =>
-            navigation.navigate(RouteNames.CHARACTER_LEVEL_DETAIL as never)
+            navigation.navigate(RouteNames.CHARACTER_LEVEL_DETAIL)
           }>
           <Text style={styles.buttonText}>레벨 기준 상세</Text>
         </TouchableOpacity>
@@ -31,7 +36,7 @@ const CharacterScreen = () => {
         <TouchableOpacity
           style={styles.button}
           onPress={() =>
-            navigation.navigate(RouteNames.CHARACTER_POINT_HISTORY as never)
+            navigation.navigate(RouteNames.CHARACTER_POINT_HISTORY)
           }>
           <Text style={styles.buttonText}>포인트/경험치 내역</Text>
         </TouchableOpacity>
@@ -39,7 +44,7 @@ const CharacterScreen = () => {
         <TouchableOpacity
           style={styles.button}
           onPress={() =>
-            navigation.navigate(RouteNames.CHARACTER_NOTIFICATION as never)
+            navigation.navigate(RouteNames.CHARACTER_NOTIFICATION)
           }>
           <Text style={styles.buttonText}>알림</Text>
         </TouchableOpacity>

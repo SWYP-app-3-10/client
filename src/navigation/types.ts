@@ -18,7 +18,8 @@ export type RootStackParamList = {
 // Main Stack Param List
 export type MainStackParamList = {
   [RouteNames.MISSION]: undefined;
-  [RouteNames.CHARACTER]: undefined;
+  //[RouteNames.CHARACTER]: undefined;
+  [RouteNames.CHARACTER]: NavigatorScreenParams<CharacterStackParamList>; // 캐릭터 스택
   [RouteNames.SEARCH]: undefined;
   [RouteNames.MY_PAGE]: undefined;
 };
@@ -35,6 +36,10 @@ export type CharacterStackParamList = {
   [RouteNames.CHARACTER]: undefined;
   // 서브 화면들 추가 예정
   // 예시: 'character-detail': {characterId: string};
+  [RouteNames.CHARACTER_LEVEL]: undefined;
+  [RouteNames.CHARACTER_LEVEL_DETAIL]: undefined;
+  [RouteNames.CHARACTER_POINT_HISTORY]: undefined;
+  [RouteNames.CHARACTER_NOTIFICATION]: undefined;
 };
 
 // Search Stack Param List

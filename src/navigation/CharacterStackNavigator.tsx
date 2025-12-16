@@ -6,8 +6,9 @@ import LevelCriteriaScreen from '../screens/main/character/level/LevelCriteriaSc
 import LevelCriteriaDetailScreen from '../screens/main/character/level/LevelCriteriaDetailScreen';
 import PointHistoryScreen from '../screens/main/character/history/PointHistoryScreen';
 import NotificationScreen from '../screens/main/character/notification/NotificationScreen';
+import type {CharacterStackParamList} from './types';
 
-const Stack = createNativeStackNavigator();
+const Stack = createNativeStackNavigator<CharacterStackParamList>();
 
 const CharacterStackNavigator = () => {
   return (
