@@ -22,3 +22,50 @@ export const scaleWidth = (size: number): number => {
 
 // 현재 디바이스 크기 (필요시 사용)
 export const getScreenSize = () => getScreenDimensions();
+
+// (Border Radius)
+export const BORDER_RADIUS: Record<number, number> = {
+  16: scaleWidth(16),
+  20: scaleWidth(20),
+};
+
+// 컬러 팔레트
+export const COLORS = {
+  red: '#E74C3C',
+  // 그레이 색상
+  white: '#FFFFFF',
+  gray100: '#F6F7F9',
+  gray200: '#E8E9EF',
+  gray300: '#D9DCE5',
+  gray400: '#CACED9',
+  gray500: '#BCC1CF',
+  gray600: '#ADB3C5',
+  gray700: '#9EA5BB',
+  gray800: '#767C91',
+  black: '#19181E',
+  // 메인
+  puple: {main: '#6F44F5', 3: '#F6F4FE'},
+
+  // 프라이머리 색상
+  primary300: '#E5F8EF',
+  primary400: '#C5F9DE',
+  primary500: '#8EF3BF',
+  primary600: '#64CD97',
+};
+
+// 타이포그래피 스타일 export
+export {
+  Heading_24EB_Round,
+  Heading_20EB_Round,
+  Heading_18B,
+  Heading_18EB_Round,
+  Heading_18SB,
+  Heading_16B,
+  Body_18M,
+  Body_16SB,
+  Body_16M,
+  Body_16R,
+  Caption_14R,
+  Caption_12SB,
+  Caption_12M,
+} from './typography';

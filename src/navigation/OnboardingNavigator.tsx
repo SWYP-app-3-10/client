@@ -14,7 +14,7 @@ const OnboardingNavigator = () => {
   return (
     <Stack.Navigator
       screenOptions={{headerShown: false}}
-      initialRouteName={RouteNames.SOCIAL_LOGIN}>
+      initialRouteName={RouteNames.COMPONENT_SHOWCASE}>
       <Stack.Screen name={RouteNames.SOCIAL_LOGIN} component={LoginScreen} />
       <Stack.Screen
         name={RouteNames.FEATURE_INTRO_01}

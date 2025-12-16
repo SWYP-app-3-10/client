@@ -28,4 +28,7 @@ export const RouteNames = {
 
   // 광고
   REWARD: 'reward' as const,
+
+  // 컴포넌트 쇼케이스
+  COMPONENT_SHOWCASE: 'component-showcase' as const,
 };

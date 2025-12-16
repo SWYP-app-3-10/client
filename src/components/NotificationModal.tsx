@@ -1,60 +1,131 @@
-import React from 'react';
+import React, {ReactNode} from 'react';
 import {
   View,
   Text,
   StyleSheet,
   Modal,
-  TouchableOpacity,
+  Image,
+  ImageSourcePropType,
+  TouchableWithoutFeedback,
 } from 'react-native';
-import {scaleWidth} from '../styles/global';
+import {BORDER_RADIUS, COLORS, scaleWidth} from '../styles/global';
+import Button, {ButtonVariant} from './Button';
 
-interface NotificationModalProps {
+export interface ModalButton {
+  title: string;
+  onPress: () => void;
+  variant?: ButtonVariant;
+}
+
+export interface NotificationModalProps {
   visible: boolean;
-  onAccept: () => void;
-  onDecline: () => void;
+  title: string;
+  description?: string;
+  image?: ImageSourcePropType | ReactNode;
+  imageSize?: {width: number; height: number};
+
+  // 단일 버튼 또는 이중 버튼
+  primaryButton: ModalButton;
+  secondaryButton?: ModalButton;
+  children?: ReactNode;
+  onClose?: () => void;
 }
 
 const NotificationModal: React.FC<NotificationModalProps> = ({
   visible,
-  onAccept,
-  onDecline,
+  title,
+  description,
+  image,
+  imageSize = {width: scaleWidth(80), height: scaleWidth(80)},
+  children,
+  primaryButton,
+  secondaryButton,
+  onClose,
 }) => {
+  const handleClose = () => {
+    onClose?.();
+  };
+
+  const handleOverlayPress = () => {
+    // 배경 탭 시 모달 닫기
+    handleClose();
+  };
+
+  const renderImage = () => {
+    if (!image) {
+      return null;
+    }
+
+    // ReactNode인 경우 (SVG 컴포넌트 등)
+    if (React.isValidElement(image)) {
+      return <View style={styles.imageWrapper}>{image}</View>;
+    }
+
+    // ImageSourcePropType인 경우
+    if (typeof image === 'object' && ('uri' in image || 'source' in image)) {
+      return (
+        <Image
+          source={image as ImageSourcePropType}
+          style={[styles.image, imageSize]}
+          resizeMode="contain"
+        />
+      );
+    }
+
+    return <View style={imageSize}>{image as ReactNode}</View>;
+  };
+
   return (
     <Modal
       visible={visible}
       transparent={true}
       animationType="fade"
-      onRequestClose={onDecline}>
-      <View style={styles.overlay}>
-        <View style={styles.modalContainer}>
-          {/* 이미지 placeholder */}
-          <View style={styles.imagePlaceholder}>
-            <Text style={styles.placeholderText}>알림 아이콘</Text>
-          </View>
+      onRequestClose={handleClose}>
+      <TouchableWithoutFeedback onPress={handleOverlayPress}>
+        <View style={styles.overlay}>
+          <TouchableWithoutFeedback onPress={() => {}}>
+            <View style={styles.modalContainer}>
+              {/* 이미지 */}
+              {renderImage()}
 
-          {/* 제목 */}
-          <Text style={styles.title}>알림을 받으시겠어요?</Text>
+              {/* 제목 */}
+              <Text style={styles.title}>{title}</Text>
 
-          {/* 설명 텍스트 */}
-          <Text style={styles.description}>
-            알림을 켜두면 하루 두 번 운루틴을 잊지 않고 평길 수 있어요!
-          </Text>
+              {/* 설명 텍스트 */}
+              {description && (
+                <Text style={styles.description}>{description}</Text>
+              )}
 
-          {/* 버튼 컨테이너 */}
-          <View style={styles.buttonContainer}>
-            <TouchableOpacity
-              style={[styles.button, styles.declineButton]}
-              onPress={onDecline}>
-              <Text style={styles.declineButtonText}>괜찮아요</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={[styles.button, styles.acceptButton]}
-              onPress={onAccept}>
-              <Text style={styles.acceptButtonText}>알림 받을래요</Text>
-            </TouchableOpacity>
-          </View>
+              {/* 컨텐츠 */}
+              {children && (
+                <View style={styles.childrenContainer}>{children}</View>
+              )}
+
+              {/* 버튼 컨테이너 */}
+              <View
+                style={[
+                  styles.buttonContainer,
+                  !secondaryButton && styles.singleButtonContainer,
+                ]}>
+                {secondaryButton && (
+                  <Button
+                    title={secondaryButton.title}
+                    onPress={secondaryButton.onPress}
+                    variant={secondaryButton.variant || 'primary'}
+                    style={styles.button}
+                  />
+                )}
+                <Button
+                  title={primaryButton.title}
+                  onPress={primaryButton.onPress}
+                  variant={primaryButton.variant || 'primary'}
+                  style={secondaryButton ? styles.button : styles.singleButton}
+                />
+              </View>
+            </View>
+          </TouchableWithoutFeedback>
         </View>
-      </View>
+      </TouchableWithoutFeedback>
     </Modal>
   );
 };
@@ -68,67 +139,64 @@ const styles = StyleSheet.create({
     paddingHorizontal: scaleWidth(20),
   },
   modalContainer: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: scaleWidth(16),
-    padding: scaleWidth(24),
+    backgroundColor: COLORS.white,
+    borderRadius: BORDER_RADIUS[20],
+    paddingHorizontal: scaleWidth(24),
+    paddingTop: scaleWidth(40),
+    paddingBottom: scaleWidth(24),
     width: '100%',
-    maxWidth: scaleWidth(400),
     alignItems: 'center',
   },
   imagePlaceholder: {
-    width: scaleWidth(80),
-    height: scaleWidth(80),
-    backgroundColor: '#F5F5F5',
-    borderRadius: scaleWidth(8),
+    backgroundColor: COLORS.gray100,
+    borderRadius: BORDER_RADIUS[16],
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: scaleWidth(20),
   },
-  placeholderText: {
-    color: '#999999',
-    fontSize: scaleWidth(12),
+  image: {
+    marginBottom: scaleWidth(20),
   },
+  imageWrapper: {
+    marginBottom: scaleWidth(20),
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+
   title: {
     fontSize: scaleWidth(20),
     fontWeight: '600',
-    color: '#000000',
+    color: COLORS.black,
     marginBottom: scaleWidth(12),
     textAlign: 'center',
   },
   description: {
     fontSize: scaleWidth(14),
-    color: '#666666',
+    color: COLORS.gray600,
     textAlign: 'center',
     lineHeight: scaleWidth(20),
-    marginBottom: scaleWidth(24),
+    marginBottom: scaleWidth(16),
   },
+
   buttonContainer: {
     flexDirection: 'row',
     width: '100%',
     gap: scaleWidth(12),
+    marginTop: scaleWidth(8),
+  },
+  singleButtonContainer: {
+    flexDirection: 'column',
   },
   button: {
     flex: 1,
     height: scaleWidth(48),
-    borderRadius: scaleWidth(12),
-    justifyContent: 'center',
-    alignItems: 'center',
   },
-  declineButton: {
-    backgroundColor: '#E0E0E0',
+  singleButton: {
+    width: '100%',
+    height: scaleWidth(48),
   },
-  acceptButton: {
-    backgroundColor: '#9B59B6',
-  },
-  declineButtonText: {
-    color: '#666666',
-    fontSize: scaleWidth(16),
-    fontWeight: '600',
-  },
-  acceptButtonText: {
-    color: '#FFFFFF',
-    fontSize: scaleWidth(16),
-    fontWeight: '600',
+  childrenContainer: {
+    marginBottom: scaleWidth(16),
   },
 });
 
