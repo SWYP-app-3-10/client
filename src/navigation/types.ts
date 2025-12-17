@@ -34,10 +34,7 @@ export type MissionStackParamList = {
 // Character Stack Param List
 export type CharacterStackParamList = {
   [RouteNames.CHARACTER]: undefined;
-  // 서브 화면들 추가 예정
-  // 예시: 'character-detail': {characterId: string};
-  [RouteNames.CHARACTER_LEVEL]: undefined;
-  [RouteNames.CHARACTER_LEVEL_DETAIL]: undefined;
+  [RouteNames.CHARACTER_CRITERIA]: undefined; // 기준 확인하기 (탭 2개 있는 화면)
   [RouteNames.CHARACTER_POINT_HISTORY]: undefined;
   [RouteNames.CHARACTER_NOTIFICATION]: undefined;
 };

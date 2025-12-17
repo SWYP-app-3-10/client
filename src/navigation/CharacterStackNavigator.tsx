@@ -2,8 +2,7 @@ import React from 'react';
 import {createNativeStackNavigator} from '@react-navigation/native-stack';
 import {RouteNames} from '../../routes';
 import CharacterScreen from '../screens/main/CharacterScreen';
-import LevelCriteriaScreen from '../screens/main/character/level/LevelCriteriaScreen';
-import LevelCriteriaDetailScreen from '../screens/main/character/level/LevelCriteriaDetailScreen';
+import CriteriaCheckScreen from '../screens/main/character/criteria/CriteriaCheckScreen';
 import PointHistoryScreen from '../screens/main/character/history/PointHistoryScreen';
 import NotificationScreen from '../screens/main/character/notification/NotificationScreen';
 import type {CharacterStackParamList} from './types';
@@ -17,12 +16,8 @@ const CharacterStackNavigator = () => {
       {/* 서브 화면들은 여기에 추가 */}
 
       <Stack.Screen
-        name={RouteNames.CHARACTER_LEVEL}
-        component={LevelCriteriaScreen}
-      />
-      <Stack.Screen
-        name={RouteNames.CHARACTER_LEVEL_DETAIL}
-        component={LevelCriteriaDetailScreen}
+        name={RouteNames.CHARACTER_CRITERIA}
+        component={CriteriaCheckScreen}
       />
       <Stack.Screen
         name={RouteNames.CHARACTER_POINT_HISTORY}

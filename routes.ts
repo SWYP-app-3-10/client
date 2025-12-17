@@ -6,7 +6,6 @@ export const RouteNames = {
   LOGIN: 'login' as const,
 
   // 온보딩
-
   ONBOARDING: 'onboarding' as const,
   SOCIAL_LOGIN: 'social-login' as const,
   FEATURE_INTRO_01: 'feature-intro-01' as const,
@@ -27,8 +26,8 @@ export const RouteNames = {
   MY_PAGE: 'my-page' as const,
 
   // 캐릭터
+  CHARACTER_CRITERIA: 'character-criteria' as const,
   CHARACTER_LEVEL: 'character-level' as const,
-  CHARACTER_LEVEL_DETAIL: 'character-level-detail' as const,
   CHARACTER_POINT_HISTORY: 'character-point-history' as const,
   CHARACTER_NOTIFICATION: 'character-notification' as const,
 

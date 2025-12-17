@@ -21,16 +21,8 @@ const CharacterScreen = () => {
       <View style={styles.buttonArea}>
         <TouchableOpacity
           style={styles.button}
-          onPress={() => navigation.navigate(RouteNames.CHARACTER_LEVEL)}>
+          onPress={() => navigation.navigate(RouteNames.CHARACTER_CRITERIA)}>
           <Text style={styles.buttonText}>레벨 기준 확인</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          style={styles.button}
-          onPress={() =>
-            navigation.navigate(RouteNames.CHARACTER_LEVEL_DETAIL)
-          }>
-          <Text style={styles.buttonText}>레벨 기준 상세</Text>
         </TouchableOpacity>
 
         <TouchableOpacity
