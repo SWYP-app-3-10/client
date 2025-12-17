@@ -6,12 +6,20 @@ import {
   Pressable,
   FlatList,
   StyleSheet,
+  Platform,
+  StatusBar,
 } from 'react-native';
 import {useNavigation} from '@react-navigation/native';
 import {
   notificationMock,
   NotificationItem,
 } from '../notification/notification_mockData';
+
+/**
+ * Android에서 상태바 영역 때문에 헤더 터치가 안 먹는 이슈
+ * -> StatusBar 높이만큼 헤더를 아래로 내려주는 inset 값
+ */
+const TOP_INSET = Platform.OS === 'android' ? StatusBar.currentHeight ?? 0 : 0;
 
 /**
  * 알림 화면 (더미 데이터 기반)
@@ -21,6 +29,11 @@ const NotificationScreen = () => {
 
   // 더미 데이터로 초기화 (백엔드 연동 전)
   const [list, setList] = useState<NotificationItem[]>(notificationMock);
+
+  // 뒤로가기
+  const onPressBack = () => {
+    navigation.popToTop?.();
+  };
 
   /**
    * 알림 클릭 시 읽음 처리
@@ -49,7 +62,7 @@ const NotificationScreen = () => {
         {/* 서브타이틀(추천 문구) */}
         <Text style={styles.subtitle}>{item.subtitle}</Text>
 
-        {/* 날짜*/}
+        {/* 날짜 (더미 데이터 문자열 그대로) */}
         <Text style={styles.date}>{item.createdAt}</Text>
       </Pressable>
     );
@@ -59,15 +72,15 @@ const NotificationScreen = () => {
     <SafeAreaView style={styles.container}>
       {/* ===== 헤더 ===== */}
       <View style={styles.header}>
-        {/* 상단 뒤로가기 버튼*/}
-        <Pressable onPress={() => navigation.goBack()} style={styles.backBtn}>
+        {/* ✅ 상단 뒤로가기 버튼 (터치 영역 확장 hitSlop) */}
+        <Pressable onPress={onPressBack} hitSlop={12} style={styles.backBtn}>
           <Text style={styles.backIcon}>←</Text>
         </Pressable>
 
         {/* 타이틀 */}
         <Text style={styles.headerTitle}>알림</Text>
 
-        {/* 오른쪽 여백*/}
+        {/* 오른쪽 여백 */}
         <View style={{width: 44}} />
       </View>
 
@@ -103,13 +116,17 @@ const styles = StyleSheet.create({
   },
 
   /**
-   * 헤더 영역
+   * ✅ 헤더 영역
+   * - Android에서 상태바 높이만큼 paddingTop을 줘서
+   *   뒤로가기 버튼이 상태바 영역에 걸리지 않게 함(터치 이슈 해결)
    */
   header: {
-    height: 56,
+    paddingTop: TOP_INSET,
+    height: 56 + TOP_INSET,
     flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: 16,
+    backgroundColor: '#fff',
   },
 
   /**
