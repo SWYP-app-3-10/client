@@ -12,10 +12,11 @@ import {RouteNames} from '../../../routes';
 import {scaleWidth} from '../../styles/global';
 import {OnboardingStackParamList} from '../../navigation/types';
 import FeatureCarousel, {CAROUSEL_DATA} from '../../components/FeatureCarousel';
+import LottieView from 'lottie-react-native';
 
 type NavigationProp = NativeStackNavigationProp<OnboardingStackParamList>;
 
-const FeatureIntroduction01Screen = () => {
+const IntroSearch = () => {
   const navigation = useNavigation<NavigationProp>();
 
   return (
@@ -35,22 +36,42 @@ const FeatureIntroduction01Screen = () => {
         }}>
         <Text>뒤로가기</Text>
       </TouchableOpacity>
-      <View style={styles.content}>
-        <FeatureCarousel data={CAROUSEL_DATA} />
-
-        <TouchableOpacity
-          style={{
-            width: '100%',
-            height: scaleWidth(56),
-            borderRadius: scaleWidth(12),
-            justifyContent: 'center',
-            alignItems: 'center',
-            backgroundColor: 'orange',
-          }}
-          onPress={() => navigation.navigate(RouteNames.INTERESTS)}>
-          <Text>일단 다음</Text>
-        </TouchableOpacity>
+      <View style={{flex: 1}}>
+        <View style={{position: 'relative'}}>
+          <LottieView
+            source={require('../../assets/lottie/Cutebeardancing.json')} // 다운받은 json 파일 경로
+            style={{width: '100%', height: 500, borderWidth: 1}}
+            autoPlay // 자동 재생
+            loop // 무한 반복
+          />
+          <View
+            style={{
+              borderWidth: 1,
+              borderColor: 'red',
+              width: '100%',
+              height: 45,
+              zIndex: 1,
+              position: 'absolute',
+              backgroundColor: 'white',
+              bottom: 100,
+              justifyContent: 'center',
+            }}>
+            <Text>애니메이션 위에 컴포넌트!</Text>
+          </View>
+        </View>
       </View>
+      <TouchableOpacity
+        style={{
+          width: '100%',
+          height: scaleWidth(56),
+          borderRadius: scaleWidth(12),
+          justifyContent: 'center',
+          alignItems: 'center',
+          backgroundColor: 'orange',
+        }}
+        onPress={() => navigation.navigate(RouteNames.INTERESTS)}>
+        <Text>일단 다음</Text>
+      </TouchableOpacity>
     </SafeAreaView>
   );
 };
@@ -126,4 +147,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default FeatureIntroduction01Screen;
+export default IntroSearch;

@@ -7,6 +7,9 @@ import FeatureIntroduction01Screen from '../screens/onboarding/FeatureIntroducti
 import InterestsScreen from '../screens/onboarding/InterestsScreen';
 import DifficultySettingScreen from '../screens/onboarding/DifficultySettingScreen';
 import REWARDScreen from '../screens/REWARDScreen';
+import IntroCardList from '../screens/onboarding/IntroCardList';
+import IntroFuction from '../screens/onboarding/IntroFuction';
+import IntroSearch from '../screens/onboarding/IntroSearch';
 
 const Stack = createNativeStackNavigator();
 
@@ -15,6 +18,12 @@ const OnboardingNavigator = () => {
     <Stack.Navigator
       screenOptions={{headerShown: false}}
       initialRouteName={RouteNames.COMPONENT_SHOWCASE}>
+      <Stack.Screen
+        name={RouteNames.INTRO_CARDLIST}
+        component={IntroCardList}
+      />
+      <Stack.Screen name={RouteNames.INTRO_FUNCTION} component={IntroFuction} />
+      <Stack.Screen name={RouteNames.INTRO_SEARCH} component={IntroSearch} />
       <Stack.Screen name={RouteNames.SOCIAL_LOGIN} component={LoginScreen} />
       <Stack.Screen
         name={RouteNames.FEATURE_INTRO_01}

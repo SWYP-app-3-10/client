@@ -132,6 +132,12 @@ PODS:
   - libwebp/sharpyuv (1.5.0)
   - libwebp/webp (1.5.0):
     - libwebp/sharpyuv
+  - lottie-ios (4.5.0)
+  - lottie-react-native (7.3.4):
+    - glog
+    - lottie-ios (= 4.5.0)
+    - RCT-Folly (= 2022.05.16.00)
+    - React-Core
   - naveridlogin-sdk-ios (4.2.3)
   - OpenSSL-Universal (1.1.1100)
   - PromisesObjC (2.4.0)
@@ -1238,6 +1244,7 @@ DEPENDENCIES:
   - hermes-engine (from `../node_modules/react-native/sdks/hermes-engine/hermes-engine.podspec`)
   - "kakao-login (from `../node_modules/@react-native-seoul/kakao-login`)"
   - libevent (~> 2.1.12)
+  - lottie-react-native (from `../node_modules/lottie-react-native`)
   - OpenSSL-Universal (= 1.1.1100)
   - RCT-Folly (from `../node_modules/react-native/third-party-podspecs/RCT-Folly.podspec`)
   - RCT-Folly/Fabric (from `../node_modules/react-native/third-party-podspecs/RCT-Folly.podspec`)
@@ -1318,6 +1325,7 @@ SPEC REPOS:
     - KakaoSDKUser
     - libevent
     - libwebp
+    - lottie-ios
     - naveridlogin-sdk-ios
     - OpenSSL-Universal
     - PromisesObjC
@@ -1341,6 +1349,8 @@ EXTERNAL SOURCES:
     :tag: hermes-2024-02-20-RNv0.73.5-18f99ace4213052c5e7cdbcd39ee9766cd5df7e4
   kakao-login:
     :path: "../node_modules/@react-native-seoul/kakao-login"
+  lottie-react-native:
+    :path: "../node_modules/lottie-react-native"
   RCT-Folly:
     :podspec: "../node_modules/react-native/third-party-podspecs/RCT-Folly.podspec"
   RCTRequired:
@@ -1472,6 +1482,8 @@ SPEC CHECKSUMS:
   KakaoSDKUser: 043bcd7e91454ebf3bf64f150c430e6f65f0a08d
   libevent: 4049cae6c81cdb3654a443be001fb9bdceff7913
   libwebp: 02b23773aedb6ff1fd38cec7a77b81414c6842a8
+  lottie-ios: a881093fab623c467d3bce374367755c272bdd59
+  lottie-react-native: bc3cfc12f4581891d99b72daffc834dbf1900579
   naveridlogin-sdk-ios: d9d46d02119d303023d7000cd5963864d5bb89e5
   OpenSSL-Universal: ebc357f1e6bc71fa463ccb2fe676756aff50e88c
   PromisesObjC: f5707f49cb48b9636751c5b2e7d227e43fba9f47
@@ -1526,7 +1538,7 @@ SPEC CHECKSUMS:
   SDWebImage: a7f831e1a65eb5e285e3fb046a23fcfbf08e696d
   SDWebImageWebPCoder: 908b83b6adda48effe7667cd2b7f78c897e5111d
   SocketRocket: f32cd54efbe0f095c4d7594881e52619cfe80b17
-  Yoga: d17d2cc8105eed528474683b42e2ea310e1daf61
+  Yoga: 805bf71192903b20fc14babe48080582fee65a80
 
 PODFILE CHECKSUM: e71b9f6d90120b3e35a01fe60cc4b611d9587620
 

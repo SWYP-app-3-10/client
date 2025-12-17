@@ -7,6 +7,9 @@ export type OnboardingStackParamList = {
   [RouteNames.FEATURE_INTRO_01]: undefined;
   [RouteNames.INTERESTS]: undefined;
   [RouteNames.REWARD]: undefined;
+  [RouteNames.INTRO_CARDLIST]: undefined;
+  [RouteNames.INTRO_FUNCTION]: undefined;
+  [RouteNames.INTRO_SEARCH]: undefined;
 };
 
 // 2. 부모: 루트 스택 (온보딩 스택을 포함)

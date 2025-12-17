@@ -9,48 +9,62 @@ import {
 import {useNavigation} from '@react-navigation/native';
 import {NativeStackNavigationProp} from '@react-navigation/native-stack';
 import {RouteNames} from '../../../routes';
-import {scaleWidth} from '../../styles/global';
+import {
+  BORDER_RADIUS,
+  COLORS,
+  Heading_18EB_Round,
+  Heading_24EB_Round,
+  scaleWidth,
+} from '../../styles/global';
 import {OnboardingStackParamList} from '../../navigation/types';
 import FeatureCarousel, {CAROUSEL_DATA} from '../../components/FeatureCarousel';
+import LottieView from 'lottie-react-native';
 
 type NavigationProp = NativeStackNavigationProp<OnboardingStackParamList>;
 
-const FeatureIntroduction01Screen = () => {
+const IntroCardList = () => {
   const navigation = useNavigation<NavigationProp>();
-
+  const CAROUSEL_DATA = [
+    {
+      id: '1',
+      color: '#E0E0E0',
+      imgUrl: <></>,
+    },
+  ];
   return (
     <SafeAreaView style={styles.container}>
       <TouchableOpacity
         style={{
-          position: 'absolute',
-          top: 50,
-          left: 20,
           padding: 10,
           backgroundColor: '#ddd',
           borderRadius: 8,
-          zIndex: 1,
+          width: scaleWidth(50),
+          height: scaleWidth(30),
         }}
         onPress={() => {
           navigation.goBack();
         }}>
         <Text>뒤로가기</Text>
       </TouchableOpacity>
+      <Text style={[Heading_24EB_Round, {color: COLORS.black}]}>
+        관심 있는 분야의 글을 맞춤으로 추천받아요
+      </Text>
+
       <View style={styles.content}>
         <FeatureCarousel data={CAROUSEL_DATA} />
-
-        <TouchableOpacity
-          style={{
-            width: '100%',
-            height: scaleWidth(56),
-            borderRadius: scaleWidth(12),
-            justifyContent: 'center',
-            alignItems: 'center',
-            backgroundColor: 'orange',
-          }}
-          onPress={() => navigation.navigate(RouteNames.INTERESTS)}>
-          <Text>일단 다음</Text>
-        </TouchableOpacity>
       </View>
+      <TouchableOpacity
+        style={{
+          height: scaleWidth(56),
+          borderRadius: BORDER_RADIUS[16],
+          justifyContent: 'center',
+          alignItems: 'center',
+          backgroundColor: COLORS.puple.main,
+          marginHorizontal: scaleWidth(20),
+        }}
+        onPress={() => navigation.navigate(RouteNames.INTRO_FUNCTION)}>
+        <Text style={[Heading_18EB_Round, {color: COLORS.white}]}>다음</Text>
+      </TouchableOpacity>
     </SafeAreaView>
   );
 };
@@ -126,4 +140,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default FeatureIntroduction01Screen;
+export default IntroCardList;

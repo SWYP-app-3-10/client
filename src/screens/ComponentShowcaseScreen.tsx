@@ -4,6 +4,7 @@ import {COLORS, scaleWidth} from '../styles/global';
 import {Button, Input} from '../components';
 import NotificationModal from '../components/NotificationModal';
 import {YoutubeIcon} from '../icons';
+import LottieView from 'lottie-react-native';
 
 const ComponentShowcaseScreen = () => {
   const [inputValue, setInputValue] = useState('');
@@ -27,7 +28,18 @@ const ComponentShowcaseScreen = () => {
         {/* Button Section */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Button 컴포넌트</Text>
-
+          <LottieView
+            source={require('../assets/lottie/Cutebeardancing.json')} // 다운받은 json 파일 경로
+            style={{width: scaleWidth(100), height: scaleWidth(100)}}
+            autoPlay // 자동 재생
+            loop // 무한 반복
+          />
+          <LottieView
+            source={require('../assets/lottie/PolarBear.json')} // 다운받은 json 파일 경로
+            style={{width: scaleWidth(100), height: scaleWidth(100)}}
+            autoPlay // 자동 재생
+            loop // 무한 반복
+          />
           {/* Variants */}
           <View style={styles.subSection}>
             <Text style={styles.subSectionTitle}>Variants</Text>

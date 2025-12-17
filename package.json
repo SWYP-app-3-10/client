@@ -17,6 +17,7 @@
     "@react-navigation/native": "^6.1.16",
     "@react-navigation/native-stack": "^6.9.25",
     "@react-navigation/stack": "^6.3.28",
+    "lottie-react-native": "^7.3.4",
     "react": "18.2.0",
     "react-native": "0.73.6",
     "react-native-fast-image": "^8.6.3",

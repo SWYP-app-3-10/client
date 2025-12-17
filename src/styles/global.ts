@@ -47,10 +47,10 @@ export const COLORS = {
   puple: {main: '#6F44F5', 3: '#F6F4FE'},
 
   // 프라이머리 색상
-  primary300: '#E5F8EF',
-  primary400: '#C5F9DE',
-  primary500: '#8EF3BF',
-  primary600: '#64CD97',
+  // primary300: '#E5F8EF',
+  // primary400: '#C5F9DE',
+  // primary500: '#8EF3BF',
+  // primary600: '#64CD97',
 };
 
 // 타이포그래피 스타일 export

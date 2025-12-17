@@ -8,6 +8,9 @@ export const RouteNames = {
   // 온보딩
 
   ONBOARDING: 'onboarding' as const,
+  INTRO_CARDLIST: 'intro-cardlist' as const,
+  INTRO_FUNCTION: 'intro-function' as const,
+  INTRO_SEARCH: 'intro-search' as const,
   SOCIAL_LOGIN: 'social-login' as const,
   FEATURE_INTRO_01: 'feature-intro-01' as const,
   INTERESTS: 'interests' as const,
