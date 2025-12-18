@@ -1,25 +1,12 @@
 import React, {useState} from 'react';
-import {
-  SafeAreaView,
-  View,
-  Text,
-  Pressable,
-  FlatList,
-  StyleSheet,
-  Platform,
-  StatusBar,
-} from 'react-native';
+import {View, Text, Pressable, FlatList, StyleSheet} from 'react-native';
 import {useNavigation} from '@react-navigation/native';
+import {SafeAreaView} from 'react-native-safe-area-context';
+
 import {
   notificationMock,
   NotificationItem,
 } from '../notification/notification_mockData';
-
-/**
- * Android에서 상태바 영역 때문에 헤더 터치가 안 먹는 이슈
- * -> StatusBar 높이만큼 헤더를 아래로 내려주는 inset 값
- */
-const TOP_INSET = Platform.OS === 'android' ? StatusBar.currentHeight ?? 0 : 0;
 
 /**
  * 알림 화면 (더미 데이터 기반)
@@ -32,7 +19,10 @@ const NotificationScreen = () => {
 
   // 뒤로가기
   const onPressBack = () => {
-    navigation.popToTop?.();
+    // 일반적으로는 goBack이 UX에 맞고,
+    // 스택이 없을 때를 대비해 popToTop fallback
+    if (navigation.canGoBack?.()) navigation.goBack();
+    else navigation.popToTop?.();
   };
 
   /**
@@ -54,44 +44,37 @@ const NotificationScreen = () => {
       <Pressable
         onPress={() => onPressItem(item.id)}
         style={[styles.row, isUnread && styles.rowUnread]}>
-        {/* 제목 */}
         <Text style={[styles.title, isUnread && styles.titleUnread]}>
           {item.title}
         </Text>
 
-        {/* 서브타이틀(추천 문구) */}
         <Text style={styles.subtitle}>{item.subtitle}</Text>
-
-        {/* 날짜 (더미 데이터 문자열 그대로) */}
         <Text style={styles.date}>{item.createdAt}</Text>
       </Pressable>
     );
   };
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={styles.container} edges={['top', 'left', 'right']}>
       {/* ===== 헤더 ===== */}
       <View style={styles.header}>
-        {/* ✅ 상단 뒤로가기 버튼 (터치 영역 확장 hitSlop) */}
-        <Pressable onPress={onPressBack} hitSlop={12} style={styles.backBtn}>
+        <Pressable
+          onPress={onPressBack}
+          hitSlop={{top: 12, bottom: 12, left: 12, right: 12}}
+          style={styles.backBtn}>
           <Text style={styles.backIcon}>←</Text>
         </Pressable>
 
-        {/* 타이틀 */}
         <Text style={styles.headerTitle}>알림</Text>
-
-        {/* 오른쪽 여백 */}
-        <View style={{width: 44}} />
+        <View style={styles.headerRightSpace} />
       </View>
 
-      {/* ===== 알림 리스트(RecyclerView 역할) ===== */}
+      {/* ===== 알림 리스트 ===== */}
       <FlatList
         data={list}
         keyExtractor={item => item.id}
         renderItem={renderItem}
-        // 풀 폭 디자인
         contentContainerStyle={styles.listContent}
-        // 하단 안내 문구
         ListFooterComponent={
           <View style={styles.footer}>
             <Text style={styles.footerText}>
@@ -107,33 +90,19 @@ const NotificationScreen = () => {
 export default NotificationScreen;
 
 const styles = StyleSheet.create({
-  /**
-   * 전체 화면 배경
-   */
   container: {
     flex: 1,
     backgroundColor: '#fff',
   },
 
-  /**
-   * ✅ 헤더 영역
-   * - Android에서 상태바 높이만큼 paddingTop을 줘서
-   *   뒤로가기 버튼이 상태바 영역에 걸리지 않게 함(터치 이슈 해결)
-   */
+  // ✅ 헤더 스타일 누락되어 있어서 추가
   header: {
-    paddingTop: TOP_INSET,
-    height: 56 + TOP_INSET,
+    height: 56,
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 16,
-    backgroundColor: '#fff',
+    paddingHorizontal: 12,
   },
 
-  /**
-   * 뒤로가기 버튼
-   * - 터치 영역 44x44 (모바일 권장 사이즈)
-   * - 아이콘 크기 26
-   */
   backBtn: {
     width: 44,
     height: 44,
@@ -145,9 +114,6 @@ const styles = StyleSheet.create({
     color: '#111',
   },
 
-  /**
-   * 헤더 타이틀
-   */
   headerTitle: {
     flex: 1,
     textAlign: 'center',
@@ -156,33 +122,24 @@ const styles = StyleSheet.create({
     color: '#111',
   },
 
-  /**
-   * 리스트 컨테이너
-   */
+  headerRightSpace: {
+    width: 44,
+  },
+
   listContent: {
     paddingTop: 8,
     paddingBottom: 16,
   },
 
-  /**
-   * 풀 폭 row
-   */
   row: {
     paddingHorizontal: 20,
     paddingVertical: 25,
     backgroundColor: '#fff',
   },
-
-  /**
-   * 안 읽은 알림 하이라이트(연보라)
-   */
   rowUnread: {
     backgroundColor: '#F4F1FF',
   },
 
-  /**
-   * 텍스트 스타일
-   */
   title: {
     fontSize: 15,
     fontWeight: '700',
@@ -198,18 +155,12 @@ const styles = StyleSheet.create({
     color: '#98A2B3',
   },
 
-  /**
-   * 날짜
-   */
   date: {
     marginTop: 13,
     fontSize: 12,
     color: '#B3B8C4',
   },
 
-  /**
-   * 하단 안내 문구
-   */
   footer: {
     paddingVertical: 22,
     alignItems: 'center',

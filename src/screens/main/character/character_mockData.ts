@@ -21,7 +21,7 @@ export type LevelDetail = {
 export type PointHistoryItem = {
   id: string;
   title: string;     // 내역 제목
-  createdAt: string; // "방금", "어제" 같은 표기 (예시)
+  createdAt: string;
   xpDelta: number;   // +/-
   ptDelta: number;   // +/-
 };
@@ -91,10 +91,11 @@ export const levelDetailMap: Record<number, LevelDetail> = {
 
 /** 포인트/경험치 내역 */
 export const pointHistoryMock: PointHistoryItem[] = [
-  {id: 'h1', title: '기사 읽기(10초 이상)', createdAt: '방금', xpDelta: +40, ptDelta: 0},
-  {id: 'h2', title: '미션 완료', createdAt: '10분 전', xpDelta: +30, ptDelta: +10},
-  {id: 'h3', title: '광고 시청', createdAt: '어제', xpDelta: +10, ptDelta: +3},
-  {id: 'h4', title: '포인트 사용(보상 구매)', createdAt: '3일 전', xpDelta: 0, ptDelta: -20},
+  {id: 'h1', title: '미션을 달성해서 경험치와 포인트를 받았어요!', createdAt: '2025년 12월 08일', xpDelta: 40, ptDelta: +40},
+  {id: 'h2', title: '글을 읽어서 경험치를 받았어요!', createdAt: '2025년 12월 07일', xpDelta: 0, ptDelta: +30},
+  {id: 'h3', title: '미션을 달성해서 경험치와 포인트를 받았어요!', createdAt: '2025년 12월 06일', xpDelta: +20, ptDelta: 0},
+  {id: 'h4', title: '포인트 차감 케이스 테스트', createdAt: '2025년 12월 05일', xpDelta: 0, ptDelta: -20},
+  {id: 'h5', title: '미션을 달성해서 경험치와 포인트를 받았어요!', createdAt: '2025년 12월 04일', xpDelta: +40, ptDelta: +40},
 ];
 
 /** 알림 리스트 */

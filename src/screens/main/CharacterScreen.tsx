@@ -4,6 +4,7 @@ import {useNavigation} from '@react-navigation/native';
 import type {NativeStackNavigationProp} from '@react-navigation/native-stack';
 import {RouteNames} from '../../../routes';
 import type {CharacterStackParamList} from '../../navigation/types';
+import {SafeAreaView} from 'react-native-safe-area-context'; // Safe Area 추가
 
 type Nav = NativeStackNavigationProp<
   CharacterStackParamList,
@@ -14,7 +15,7 @@ const CharacterScreen = () => {
   const navigation = useNavigation<Nav>();
 
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={styles.container}>
       <Text>CharacterScreen</Text>
       <Text>캐릭터 페이지</Text>
 
@@ -41,7 +42,7 @@ const CharacterScreen = () => {
           <Text style={styles.buttonText}>알림</Text>
         </TouchableOpacity>
       </View>
-    </View>
+    </SafeAreaView>
   );
 };
 

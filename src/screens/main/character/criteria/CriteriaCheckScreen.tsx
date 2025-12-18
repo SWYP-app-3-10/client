@@ -1,5 +1,6 @@
 import React, {useState} from 'react';
-import {SafeAreaView, View, Text, Pressable, StyleSheet} from 'react-native';
+import {View, Text, Pressable, StyleSheet} from 'react-native';
+import {SafeAreaView} from 'react-native-safe-area-context'; // Safe Area 추가
 import {useNavigation} from '@react-navigation/native';
 
 import LevelCriteriaScreen from './level/LevelCriteriaScreen';
