@@ -17,6 +17,7 @@ export type RootStackParamList = {
   Onboarding: NavigatorScreenParams<OnboardingStackParamList>;
   Maintab: NavigatorScreenParams<MainStackParamList>;
 };
+
 // Main Stack Param List
 export type MainStackParamList = {
   [RouteNames.MISSION]: undefined;
