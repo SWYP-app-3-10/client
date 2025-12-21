@@ -6,11 +6,7 @@ export const RouteNames = {
   LOGIN: 'login' as const,
 
   // 온보딩
-
   ONBOARDING: 'onboarding' as const,
-  INTRO_CARDLIST: 'intro-cardlist' as const,
-  INTRO_FUNCTION: 'intro-function' as const,
-  INTRO_SEARCH: 'intro-search' as const,
   SOCIAL_LOGIN: 'social-login' as const,
   FEATURE_INTRO_01: 'feature-intro-01' as const,
   INTERESTS: 'interests' as const,
@@ -29,9 +25,14 @@ export const RouteNames = {
   SEARCH: 'search' as const,
   MY_PAGE: 'my-page' as const,
 
+  // 검색 서브 화면
+  SEARCH_INPUT: 'search-input' as const,
+
+  // 캐릭터
+  CHARACTER_CRITERIA: 'character-criteria' as const,
+  CHARACTER_POINT_HISTORY: 'character-point-history' as const,
+  CHARACTER_NOTIFICATION: 'character-notification' as const,
+
   // 광고
   REWARD: 'reward' as const,
-
-  // 컴포넌트 쇼케이스
-  COMPONENT_SHOWCASE: 'component-showcase' as const,
 };
