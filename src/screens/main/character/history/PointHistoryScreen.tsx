@@ -78,7 +78,7 @@ const PointHistoryScreen = () => {
 
       {/* ===== 내역 리스트 ===== */}
       <FlatList
-        data={earnedList} // ✅ 적립 내역만
+        data={earnedList}
         keyExtractor={item => item.id}
         renderItem={renderItem}
         contentContainerStyle={styles.listContent}

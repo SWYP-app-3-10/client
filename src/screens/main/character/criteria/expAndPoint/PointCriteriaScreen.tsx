@@ -3,7 +3,7 @@ import {ScrollView, View, Text, StyleSheet} from 'react-native';
 
 const rows = [
   {label: '미션 달성 시', xp: '40 XP', p: '40 P'},
-  {label: '글 읽었을 시', xp: '', p: '5 P'},
+  {label: '글 읽었을 시', xp: '5 xp', p: ''},
   {label: '퀴즈 정답 시', xp: '20 XP', p: '30 P'},
   {label: '퀴즈 오답 시', xp: '10 XP', p: '10 P'},
   {label: '데일리 출석 시', xp: '5 XP', p: '10 P'},
