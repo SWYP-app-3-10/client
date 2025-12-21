@@ -25,11 +25,9 @@ export const RouteNames = {
   SEARCH: 'search' as const,
   MY_PAGE: 'my-page' as const,
 
-  // 검색 서브 화면
-  SEARCH_INPUT: 'search-input' as const,
-
   // 캐릭터
   CHARACTER_CRITERIA: 'character-criteria' as const,
+  CHARACTER_LEVEL: 'character-level' as const,
   CHARACTER_POINT_HISTORY: 'character-point-history' as const,
   CHARACTER_NOTIFICATION: 'character-notification' as const,
 

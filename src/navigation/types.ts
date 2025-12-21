@@ -1,8 +1,6 @@
 import {NavigatorScreenParams} from '@react-navigation/native';
 import {RouteNames} from '../../routes';
 
-import type {NewsCategory} from '../screens/main/search/search_mockData'; // 뉴스 카테고리
-
 // Root Stack Param List
 export type OnboardingStackParamList = {
   [RouteNames.DIFFICULTY_SETTING]: undefined;
@@ -20,8 +18,9 @@ export type RootStackParamList = {
 // Main Stack Param List
 export type MainStackParamList = {
   [RouteNames.MISSION]: undefined;
+  //[RouteNames.CHARACTER]: undefined;
   [RouteNames.CHARACTER]: NavigatorScreenParams<CharacterStackParamList>; // 캐릭터 스택
-  [RouteNames.SEARCH]: NavigatorScreenParams<SearchStackParamList>; // 검색 스택
+  [RouteNames.SEARCH]: undefined;
   [RouteNames.MY_PAGE]: undefined;
 };
 
@@ -42,25 +41,9 @@ export type CharacterStackParamList = {
 
 // Search Stack Param List
 export type SearchStackParamList = {
-  /*
-   * SearchScreen이 탐색/검색결과를 모두 담당
-   * SearchInputScreen은 검색어 입력만 담당
-   */
-
-  /**
-   * RouteNames.SEARCH('search') = SearchScreen
-   * - keyword가 있으면 검색 결과 필터링 상태
-   * - 없으면 전체 탐색 상태
-   */
-  [RouteNames.SEARCH]:
-    | {
-        keyword?: string;
-        initialCategory?: NewsCategory;
-      }
-    | undefined;
-
-  // 검색 입력 화면(SearchInputScreen)
-  [RouteNames.SEARCH_INPUT]: undefined;
+  [RouteNames.SEARCH]: undefined;
+  // 서브 화면들 추가 예정
+  // 예시: 'post-detail': {postId: string};
 };
 
 // MyPage Stack Param List
