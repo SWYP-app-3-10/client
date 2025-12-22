@@ -15,6 +15,7 @@ import Spacer from '../../components/Spacer';
 import ProgressBar from '../../components/ProgressBar';
 import { Button } from '../../components';
 import { BORDER_RADIUS } from '../../styles/global';
+import { useOnboardingStore } from '../../store/onboardingStore';
 import {
   CheckIcon,
   FirstIcon,
@@ -95,6 +96,9 @@ const InterestTag: React.FC<InterestTagProps> = ({
 
 const InterestsScreen = () => {
   const navigation = useNavigation<NavigationProp>();
+  const setOnboardingStep = useOnboardingStore(
+    state => state.setOnboardingStep,
+  );
   // 선택 순서를 저장: Map<id, 순서(1, 2, ...)>
   const [selectedInterests, setSelectedInterests] = useState<
     Map<string, number>
@@ -131,9 +135,10 @@ const InterestsScreen = () => {
     [selectedInterests],
   );
 
-  const handleNext = useCallback(() => {
+  const handleNext = useCallback(async () => {
+    await setOnboardingStep('difficulty');
     navigation.navigate(RouteNames.DIFFICULTY_SETTING);
-  }, [navigation]);
+  }, [navigation, setOnboardingStep]);
 
   const isNextButtonActive = useMemo(
     () => selectedInterests.size >= 2,

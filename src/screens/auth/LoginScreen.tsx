@@ -30,6 +30,7 @@ import {
 } from '../../services/authStorageService';
 import { Tooltip_RecentIcon } from '../../icons';
 import { useShowModal } from '../../store/modalStore';
+import { useOnboardingStore } from '../../store/onboardingStore';
 
 type NavigationProp = NativeStackNavigationProp<OnboardingStackParamList>;
 
@@ -38,6 +39,9 @@ const LoginScreen = () => {
   const [loading, setLoading] = useState<SocialLoginProvider | null>(null);
   const [recentLogin, setRecentLogin] = useState<RecentLoginInfo | null>(null);
   const showModal = useShowModal();
+  const setOnboardingStep = useOnboardingStore(
+    state => state.setOnboardingStep,
+  );
   useEffect(() => {
     // 소셜 로그인 초기화 (네이티브 모듈이 준비된 후)
     // 네이티브 모듈이 없을 경우를 대비해 안전하게 초기화
@@ -85,18 +89,40 @@ const LoginScreen = () => {
 
         // TODO: 서버에 사용자 정보 전송 및 인증 처리
         // 예: await api.login(result);
-        if (true) {
-          //기기 알람 꺼져있을 경우
+        const shouldShowNotificationModal = true; // TODO: 실제 알림 권한 상태 확인
+        if (shouldShowNotificationModal) {
+          // 기기 알람 꺼져있을 경우
           showModal({
+            image: <></>,
             title: '알림을 받으시겠어요?',
-            description: `알림을 켜두면, 하루 두 번 문해력 루틴을 \n
-잊지 않고 챙길 수 있어요!`,
-            primaryButton: { title: '확인', onPress: () => {} },
-            secondaryButton: { title: '취소', onPress: () => {} },
+            description: `알림을 켜두면, 하루 두 번 문해력 루틴을 \n잊지 않고 챙길 수 있어요!`,
+            primaryButton: {
+              title: '알림 받을래요',
+              onPress: async () => {
+                // TODO: 알림 권한 요청
+                await setOnboardingStep('interests');
+                navigation.navigate(RouteNames.INTERESTS);
+              },
+            },
+            secondaryButton: {
+              title: '괜찮아요',
+              variant: 'outline',
+              textStyle: { color: COLORS.gray700 },
+              style: {
+                borderColor: COLORS.gray300,
+                height: scaleWidth(48),
+              },
+              onPress: async () => {
+                await setOnboardingStep('interests');
+                navigation.navigate(RouteNames.INTERESTS);
+              },
+            },
           });
+        } else {
+          // 모달을 표시하지 않을 때는 바로 관심사 선택 화면으로 이동
+          await setOnboardingStep('interests');
+          navigation.navigate(RouteNames.INTERESTS);
         }
-        // 로그인 성공 시 온보딩으로 이동
-        navigation.navigate(RouteNames.INTERESTS);
       } else {
         Alert.alert('로그인 실패', result.error || '로그인에 실패했습니다.');
       }
@@ -236,7 +262,10 @@ const LoginScreen = () => {
           {/* 카카오 로그인 버튼 */}
           <View style={styles.buttonWrapper}>
             {recentLogin && recentLogin.provider === 'kakao' && (
-              <Tooltip_RecentIcon />
+              <View style={styles.tooltipContainer}>
+                <View style={styles.tooltipBackground} />
+                <Tooltip_RecentIcon />
+              </View>
             )}
             <Button
               variant="primary"
@@ -257,7 +286,10 @@ const LoginScreen = () => {
           {/* 네이버 로그인 버튼 */}
           <View style={styles.buttonWrapper}>
             {recentLogin && recentLogin.provider === 'naver' && (
-              <Tooltip_RecentIcon />
+              <View style={styles.tooltipContainer}>
+                <View style={styles.tooltipBackground} />
+                <Tooltip_RecentIcon />
+              </View>
             )}
             <Button
               variant="primary"

@@ -42,9 +42,9 @@ const DifficultySettingScreen = () => {
   const [selectedDifficulty, setSelectedDifficulty] =
     useState<Difficulty>('beginner');
   const completeOnboarding = useCompleteOnboarding();
-  const handleNext = () => {
-    // TODO: 온보딩 완료 처리 및 메인 화면으로 이동
-    completeOnboarding();
+  const handleNext = async () => {
+    // 온보딩 완료 처리 및 메인 화면으로 이동
+    await completeOnboarding();
   };
 
   const selectedInfo = DIFFICULTY_INFO[selectedDifficulty];
