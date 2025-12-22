@@ -1,10 +1,10 @@
-import React, {useState, useEffect} from 'react';
-import {QueryClientProvider} from '@tanstack/react-query';
+import React, { useState, useEffect } from 'react';
+import { QueryClientProvider } from '@tanstack/react-query';
 import SplashScreen from './src/screens/SplashScreen';
 import RootNavigator from './src/navigation/RootNavigator';
-import {queryClient} from './src/config/queryClient';
-import {checkAuthStatus} from './src/services/authService';
-import {useOnboardingStore} from './src/store/onboardingStore';
+import { queryClient } from './src/config/queryClient';
+import { checkAuthStatus } from './src/services/authService';
+import { useOnboardingStore } from './src/store/onboardingStore';
 
 const App = () => {
   const [isSplashLoading, setIsSplashLoading] = useState(true);

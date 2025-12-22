@@ -50,5 +50,60 @@
 	</array>
 	<key>UIViewControllerBasedStatusBarAppearance</key>
 	<false/>
+  <key>CFBundleURLTypes</key>
+   <array>
+       <dict>
+           <key>CFBundleTypeRole</key>
+           <string>Editor</string>
+           <key>CFBundleURLSchemes</key>
+           <array>
+               <string>com.googleusercontent.apps.128211740396-dr4ahqvtm6egh8j3t7agj7q9uldl9k7r</string>
+           </array>
+       </dict>
+       
+       <dict>
+           <key>CFBundleTypeRole</key>
+           <string>Editor</string>
+           <key>CFBundleURLSchemes</key>
+           <array>
+               <string>kakaofa3fd7470a555b1c308efae73f4d4ce0</string>
+           </array>
+       </dict>
+
+       <dict>
+           <key>CFBundleTypeRole</key>
+           <string>Editor</string>
+           <key>CFBundleURLSchemes</key>
+           <array>
+               <string>braincellnaver</string>
+           </array>
+       </dict>
+   </array>
+
+   <key>LSApplicationQueriesSchemes</key>
+   <array>
+       <string>kakaokompassauth</string>
+       <string>storykompassauth</string>
+       <string>kakaolink</string>
+       <string>naversearchapp</string>
+       <string>naversearchthirdlogin</string>
+   </array>
+
+   <key>KAKAO_APP_KEY</key>
+   <string>fa3fd7470a555b1c308efae73f4d4ce0</string>
+   <key>GADApplicationIdentifier</key>
+   <string>ca-app-pub-3940256099942544~1458002511</string>
+       
+       <key>NSUserTrackingUsageDescription</key>
+       <string>개인 맞춤형 광고를 제공하기 위해 사용자의 데이터가 사용됩니다.</string>
+
+   <key>UIAppFonts</key>
+   <array>
+       <string>Pretendard-Regular.ttf</string>
+       <string>Pretendard-Medium.ttf</string>
+       <string>Pretendard-Bold.ttf</string>
+       <string>Pretendard-ExtraBold.ttf</string>
+       <string>Pretendard-SemiBold.ttf</string>
+   </array>
 </dict>
 </plist>
