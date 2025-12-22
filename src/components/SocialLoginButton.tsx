@@ -8,7 +8,12 @@ import {
 } from 'react-native';
 import { AppleButton } from '@invertase/react-native-apple-authentication';
 import Button from './Button';
-import { COLORS, scaleWidth, BORDER_RADIUS } from '../styles/global';
+import {
+  COLORS,
+  scaleWidth,
+  BORDER_RADIUS,
+  Heading_18EB_Round,
+} from '../styles/global';
 import { Tooltip_RecentIcon } from '../icons';
 import { SocialLoginProvider } from '../services/socialLoginService';
 import { RecentLoginInfo } from '../services/authStorageService';
@@ -41,7 +46,7 @@ const SocialLoginButton: React.FC<SocialLoginButtonProps> = ({
               style={styles.appleButton}
               onPress={onPress}
             />
-            {Platform.OS === 'ios' && (
+            {/* {Platform.OS === 'ios' && (
               <Button
                 variant="outline"
                 style={styles.outlineButton}
@@ -56,7 +61,7 @@ const SocialLoginButton: React.FC<SocialLoginButtonProps> = ({
                   </Text>
                 )}
               </Button>
-            )}
+            )} */}
           </>
         );
       case 'google':
@@ -164,9 +169,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#2DB400',
   },
   socialButtonText: {
-    color: COLORS.black,
-    fontSize: scaleWidth(16),
-    fontWeight: '600',
+    ...Heading_18EB_Round,
   },
   kakaoButtonText: {
     color: '#000000',
