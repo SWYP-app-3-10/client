@@ -3,7 +3,12 @@
  * 서버 API 연동 시 이 파일을 수정하여 실제 인증 로직 구현
  */
 
-import {getRecentLogin, RecentLoginInfo} from './authStorageService';
+import {
+  getRecentLogin,
+  RecentLoginInfo,
+  clearRecentLogin,
+} from './authStorageService';
+import { signOutSocial, SocialLoginProvider } from './socialLoginService';
 
 export interface AuthStatus {
   isAuthenticated: boolean;
@@ -23,7 +28,7 @@ export const checkAuthStatus = async (): Promise<AuthStatus> => {
     const recentLogin = await getRecentLogin();
 
     if (!recentLogin) {
-      return {isAuthenticated: false};
+      return { isAuthenticated: false };
     }
 
     // TODO: 서버 API로 토큰 검증
@@ -44,7 +49,7 @@ export const checkAuthStatus = async (): Promise<AuthStatus> => {
     };
   } catch (error) {
     console.error('인증 상태 확인 중 오류:', error);
-    return {isAuthenticated: false};
+    return { isAuthenticated: false };
   }
 };
 
@@ -53,7 +58,7 @@ export const checkAuthStatus = async (): Promise<AuthStatus> => {
  * @param token 인증 토큰
  * @returns Promise<boolean> 토큰 유효성
  */
-export const validateToken = async (token: string): Promise<boolean> => {
+export const validateToken = async (_token: string): Promise<boolean> => {
   // TODO: 실제 서버 API 호출
   // 예시:
   // try {
@@ -78,7 +83,7 @@ export const validateToken = async (token: string): Promise<boolean> => {
  * 인증 토큰 저장 (나중에 구현)
  * @param token 인증 토큰
  */
-export const saveAuthToken = async (token: string): Promise<void> => {
+export const saveAuthToken = async (_token: string): Promise<void> => {
   // TODO: AsyncStorage에 토큰 저장
   // await AsyncStorage.setItem('@auth_token', token);
 };
@@ -91,4 +96,41 @@ export const getAuthToken = async (): Promise<string | null> => {
   // TODO: AsyncStorage에서 토큰 가져오기
   // return await AsyncStorage.getItem('@auth_token');
   return null;
+};
+
+/**
+ * 로그아웃 - 모든 로그인 정보 및 온보딩 상태 초기화
+ * @param provider 소셜 로그인 제공자 (선택사항)
+ */
+export const logout = async (provider?: SocialLoginProvider): Promise<void> => {
+  try {
+    // 1. 소셜 로그인 로그아웃
+    if (provider) {
+      await signOutSocial(provider);
+    }
+
+    // 2. 로컬 로그인 정보 삭제
+    await clearRecentLogin();
+
+    console.log('로그아웃 완료');
+  } catch (error) {
+    console.error('로그아웃 중 오류:', error);
+  }
+};
+
+/**
+ * 모든 인증 및 온보딩 정보 초기화 (개발/테스트용)
+ */
+export const clearAllAuthData = async (): Promise<void> => {
+  try {
+    // 최근 로그인 정보 삭제
+    await clearRecentLogin();
+
+    // 온보딩 상태 초기화는 onboardingStore.resetOnboarding()에서 처리
+    // 이 함수는 authService에서만 처리하므로 여기서는 로그인 정보만 삭제
+
+    console.log('모든 인증 정보 초기화 완료');
+  } catch (error) {
+    console.error('인증 정보 초기화 중 오류:', error);
+  }
 };

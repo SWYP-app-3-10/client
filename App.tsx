@@ -5,6 +5,20 @@ import SplashScreen from './src/screens/SplashScreen';
 import RootNavigator from './src/navigation/RootNavigator';
 import { queryClient } from './src/config/queryClient';
 import { useOnboardingStore } from './src/store/onboardingStore';
+import { clearAllAuthData } from './src/services/authService';
+
+// 개발용: 로그인 정보 초기화 함수
+// React Native 디버거 콘솔에서 호출: clearLogin()
+if (__DEV__) {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  (globalThis as any).clearLogin = async () => {
+    const { resetOnboarding } = useOnboardingStore.getState();
+    await clearAllAuthData();
+    await resetOnboarding();
+    console.log('✅ 로그인 및 온보딩 정보가 모두 초기화되었습니다.');
+    console.log('앱을 재시작하세요.');
+  };
+}
 
 const App = () => {
   const [isSplashLoading, setIsSplashLoading] = useState(true);
