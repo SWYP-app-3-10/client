@@ -1,11 +1,13 @@
-import {GoogleSignin} from '@react-native-google-signin/google-signin';
+import { GoogleSignin } from '@react-native-google-signin/google-signin';
 import {
   login as kakaoLogin,
   getProfile as getKakaoProfile,
   logout as kakaoLogout,
 } from '@react-native-seoul/kakao-login';
-import NaverLogin, {GetProfileResponse} from '@react-native-seoul/naver-login';
-import {GOOGLE_CONFIG, NAVER_CONFIG} from '../config/socialLoginConfig';
+import NaverLogin, {
+  GetProfileResponse,
+} from '@react-native-seoul/naver-login';
+import { GOOGLE_CONFIG, NAVER_CONFIG } from '../config/socialLoginConfig';
 import appleAuth from '@invertase/react-native-apple-authentication';
 
 // 소셜 로그인 타입

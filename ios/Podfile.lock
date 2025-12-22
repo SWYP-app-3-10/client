@@ -75,11 +75,9 @@ PODS:
   - libwebp/sharpyuv (1.5.0)
   - libwebp/webp (1.5.0):
     - libwebp/sharpyuv
-  - lottie-ios (4.5.0)
-  - lottie-react-native (7.3.4):
-    - glog
-    - lottie-ios (= 4.5.0)
-    - RCT-Folly (= 2022.05.16.00)
+  - lottie-ios (4.3.4)
+  - lottie-react-native (6.4.1):
+    - lottie-ios (~> 4.3.3)
     - React-Core
   - naveridlogin-sdk-ios (4.2.3)
   - PromisesObjC (2.4.0)
@@ -1137,7 +1135,7 @@ PODS:
     - GoogleUserMessagingPlatform (= 2.5.0)
     - RCT-Folly (= 2022.05.16.00)
     - React-Core
-  - RNGoogleSignin (16.0.0):
+  - RNGoogleSignin (16.1.0):
     - GoogleSignIn (~> 9.0)
     - React-Core
   - RNNaverLogin (4.2.3):
@@ -1145,11 +1143,10 @@ PODS:
     - naveridlogin-sdk-ios (= 4.2.3)
     - RCT-Folly (= 2022.05.16.00)
     - React-Core
-  - RNScreens (3.37.0):
+  - RNScreens (3.29.0):
     - glog
     - RCT-Folly (= 2022.05.16.00)
     - React-Core
-    - React-RCTImage
   - RNSVG (14.2.0):
     - React-Core
   - SDWebImage (5.11.1):
@@ -1393,8 +1390,8 @@ SPEC CHECKSUMS:
   KakaoSDKUser: 043bcd7e91454ebf3bf64f150c430e6f65f0a08d
   libevent: 4049cae6c81cdb3654a443be001fb9bdceff7913
   libwebp: 02b23773aedb6ff1fd38cec7a77b81414c6842a8
-  lottie-ios: a881093fab623c467d3bce374367755c272bdd59
-  lottie-react-native: bc3cfc12f4581891d99b72daffc834dbf1900579
+  lottie-ios: 3d98679b41fa6fd6aff2352b3953dbd3df8a397e
+  lottie-react-native: 75da908905bb0cac63e4a19f2abe6ac005516411
   naveridlogin-sdk-ios: d9d46d02119d303023d7000cd5963864d5bb89e5
   PromisesObjC: f5707f49cb48b9636751c5b2e7d227e43fba9f47
   RCT-Folly: cd21f1661364f975ae76b3308167ad66b09f53f5
@@ -1443,9 +1440,9 @@ SPEC CHECKSUMS:
   RNCAsyncStorage: b44e8a4e798c3e1f56bffccd0f591f674fb9198f
   RNFastImage: 462a183c4b0b6b26fdfd639e1ed6ba37536c3b87
   RNGoogleMobileAds: ae3933771936e7c882c6d9087a3d1869abb1d95f
-  RNGoogleSignin: 2792145770d2bbd5656bf91c5c83db4cadb5ebe0
+  RNGoogleSignin: 902803f2d3424b25872a441829f77a66057c5656
   RNNaverLogin: b52905c1a393e029d2a404d908abaa6abbe85cb6
-  RNScreens: 3ce54903891fd6281865ad3e7cfe4c2bb438c70c
+  RNScreens: 59f615aa0782077560c8eea46c2daec3a716dba9
   RNSVG: 043f603fc70d48d289bc3f2ceedbb05ce2636f5c
   SDWebImage: a7f831e1a65eb5e285e3fb046a23fcfbf08e696d
   SDWebImageWebPCoder: 908b83b6adda48effe7667cd2b7f78c897e5111d
