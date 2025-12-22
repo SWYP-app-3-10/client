@@ -1,6 +1,12 @@
 import React from 'react';
 import {ScrollView, View, Text, StyleSheet} from 'react-native';
 
+/**
+ * 경험치/포인트 획득 기준 목록
+ * - label: 조건 설명
+ * - xp: 지급 경험치(표시용 문자열)
+ * - p: 지급 포인트(표시용 문자열)
+ */
 const rows = [
   {label: '미션 달성 시', xp: '40 XP', p: '40 P'},
   {label: '글 읽었을 시', xp: '5 xp', p: ''},
@@ -11,12 +17,21 @@ const rows = [
   {label: '광고 보았을 시', xp: '', p: '60 P'},
 ];
 
+/**
+ * PointCriteriaScreen
+ *
+ * - 포인트/경험치 개념 설명 + 획득 기준 안내 화면
+ * - 상단: 포인트/경험치 정의 카드
+ * - 하단: 조건별 보상 리스트(배지 형태)
+ */
 const PointCriteriaScreen = () => {
   return (
     <ScrollView contentContainerStyle={styles.wrap}>
+      {/* 섹션 1: 개념 설명 */}
       <Text style={styles.h1}>포인트 & 경험치란?</Text>
 
       <View style={styles.card}>
+        {/* 포인트 설명 */}
         <View style={styles.cardRow}>
           <View style={styles.icon} />
           <View style={{flex: 1}}>
@@ -30,6 +45,7 @@ const PointCriteriaScreen = () => {
 
         <View style={styles.divider} />
 
+        {/* 경험치 설명 */}
         <View style={styles.cardRow}>
           <View style={styles.icon} />
           <View style={{flex: 1}}>
@@ -41,6 +57,7 @@ const PointCriteriaScreen = () => {
         </View>
       </View>
 
+      {/* 섹션 2: 획득 기준 목록 */}
       <Text style={[styles.h1, {marginTop: 18}]}>
         경험치와 포인트는 이렇게 모을 수 있어요!
       </Text>
@@ -48,8 +65,10 @@ const PointCriteriaScreen = () => {
       <View style={styles.list}>
         {rows.map(r => (
           <View key={r.label} style={styles.row}>
+            {/* 조건 라벨 */}
             <Text style={styles.rowLabel}>{r.label}</Text>
 
+            {/* 보상 배지 (값이 있는 경우에만 노출) */}
             <View style={styles.badges}>
               {!!r.xp && (
                 <View style={[styles.badge, styles.badgeXp]}>

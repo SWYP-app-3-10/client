@@ -3,7 +3,10 @@ import {StyleSheet, View} from 'react-native';
 import Shimmer from './Shimmer';
 
 /**
- * ✅ 뉴스 카드 스켈레톤 1개
+ * SearchResultSkeleton
+ *
+ * - 뉴스 카드 로딩 스켈레톤 1개
+ * - 실제 SearchResultItem 레이아웃과 유사한 형태
  */
 export default function SearchResultSkeleton() {
   return (

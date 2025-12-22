@@ -6,10 +6,10 @@ import {
   TextInput,
   TouchableOpacity,
 } from 'react-native';
-import {SafeAreaView} from 'react-native-safe-area-context'; // Safe Area 추가
+import {SafeAreaView} from 'react-native-safe-area-context';
 import {NativeStackScreenProps} from '@react-navigation/native-stack';
 
-import {RouteNames} from '../../../../routes'; // ✅ 추가
+import {RouteNames} from '../../../../routes';
 import type {SearchStackParamList} from '../../../navigation/types';
 
 import {
@@ -24,15 +24,23 @@ type Props = NativeStackScreenProps<
 >;
 
 /**
- * ✅ 검색 입력 화면
- * - 최근 검색어: AsyncStorage 저장/삭제
- * - 다음: SearchScreen(RouteNames.SEARCH)으로 keyword 전달 → SearchScreen이 필터링 결과 표시
+ * SearchInputScreen
+ *
+ * - 검색어 입력 화면
+ * - 최근 검색어를 AsyncStorage에 저장 / 삭제
+ * - 검색 실행 시 SearchScreen으로 keyword 전달
  */
 export default function SearchInputScreen({navigation}: Props) {
+  /** 현재 입력 중인 검색어 */
   const [text, setText] = useState('');
+
+  /** 저장된 최근 검색어 목록 */
   const [recents, setRecents] = useState<string[]>([]);
 
-  // ✅ 진입 시 최근 검색어 로드
+  /**
+   * 화면 진입 시
+   * - AsyncStorage에 저장된 최근 검색어 로드
+   */
   useEffect(() => {
     (async () => {
       const list = await loadRecents();
@@ -40,36 +48,45 @@ export default function SearchInputScreen({navigation}: Props) {
     })();
   }, []);
 
-  // ✅ 검색 실행(엔터/다음 버튼/최근검색어 클릭)
+  /**
+   * 검색 실행
+   * - 엔터 키
+   * - 하단 "다음" 버튼
+   * - 최근 검색어 클릭
+   */
   const submit = async (kw?: string) => {
     const keyword = (kw ?? text).trim();
     if (!keyword) return;
 
-    // ✅ 최근 검색어 저장
+    // 최근 검색어 저장 (중복 제거 + 최신순)
     const next = await addRecent(keyword);
     setRecents(next);
 
-    // ✅ SearchScreen으로 keyword 전달 (필터링 상태로 전환)
+    // 검색 결과 화면으로 이동
     navigation.navigate(RouteNames.SEARCH, {keyword});
   };
 
-  // ✅ 최근 검색어 삭제
-  const onRemove = async (k: string) => {
-    const next = await removeRecent(k);
+  /**
+   * 최근 검색어 삭제
+   */
+  const onRemove = async (word: string) => {
+    const next = await removeRecent(word);
     setRecents(next);
   };
 
   return (
     <SafeAreaView style={styles.safe}>
       <View style={styles.container}>
-        {/* 상단: 뒤로 + 검색바 */}
+        {/* 상단 영역 */}
         <View style={styles.topRow}>
+          {/* 뒤로가기 */}
           <TouchableOpacity
             onPress={() => navigation.goBack()}
             style={styles.backBtn}>
             <Text style={styles.backText}>‹</Text>
           </TouchableOpacity>
 
+          {/* 검색 입력창 */}
           <View style={styles.inputWrap}>
             <TextInput
               value={text}
@@ -83,6 +100,7 @@ export default function SearchInputScreen({navigation}: Props) {
           </View>
         </View>
 
+        {/* 최근 검색어 */}
         <Text style={styles.sectionTitle}>최근 검색어</Text>
 
         <View style={styles.chipWrap}>
@@ -91,10 +109,12 @@ export default function SearchInputScreen({navigation}: Props) {
           ) : (
             recents.map(word => (
               <View key={word} style={styles.chip}>
+                {/* 검색어 클릭 → 바로 검색 */}
                 <TouchableOpacity onPress={() => submit(word)}>
                   <Text style={styles.chipText}>{word}</Text>
                 </TouchableOpacity>
 
+                {/* 검색어 삭제 */}
                 <TouchableOpacity
                   onPress={() => onRemove(word)}
                   style={styles.chipX}>
@@ -114,12 +134,6 @@ export default function SearchInputScreen({navigation}: Props) {
             <Text style={styles.nextText}>다음</Text>
           </TouchableOpacity>
         </View>
-
-        {/* ---------------------------------------------------------
-          🔥 [백엔드 연동 포인트]
-          - 추천 검색어 API가 생기면 여기서 가져와서 칩 렌더링
-          - 검색어 자동완성 API 연결 가능
-        --------------------------------------------------------- */}
       </View>
     </SafeAreaView>
   );

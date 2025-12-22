@@ -9,33 +9,40 @@ import {
 } from '../notification/notification_mockData';
 
 /**
- * 알림 화면 (더미 데이터 기반)
+ * NotificationScreen
+ *
+ * - 알림 목록 화면 (더미 데이터 기반)
+ * - 알림 클릭 시 해당 항목을 읽음 처리(isRead = true)
+ * - 읽지 않은 알림은 배경색으로 강조 표시
  */
 const NotificationScreen = () => {
+  /** 뒤로가기용 내비게이션 */
   const navigation = useNavigation<any>();
 
-  // 더미 데이터로 초기화 (백엔드 연동 전)
+  /** 알림 목록 상태 (추후 API 연동 시 서버 데이터로 교체) */
   const [list, setList] = useState<NotificationItem[]>(notificationMock);
 
-  // 뒤로가기
+  /**
+   * 뒤로가기 처리
+   * - 일반적으로는 goBack()
+   * - 스택이 없을 수 있는 상황을 대비해 popToTop()을 fallback으로 사용
+   */
   const onPressBack = () => {
-    // 일반적으로는 goBack이 UX에 맞고,
-    // 스택이 없을 때를 대비해 popToTop fallback
     if (navigation.canGoBack?.()) navigation.goBack();
     else navigation.popToTop?.();
   };
 
   /**
    * 알림 클릭 시 읽음 처리
-   * - 해당 id의 isRead 값을 true로 변경
+   * - 클릭된 알림의 id와 일치하는 항목만 isRead를 true로 변경
    */
   const onPressItem = (id: string) => {
     setList(prev => prev.map(n => (n.id === id ? {...n, isRead: true} : n)));
   };
 
   /**
-   * FlatList의 각 아이템 렌더링
-   * - 안 읽은 알림(!isRead)만 연보라 배경으로 하이라이트
+   * FlatList 아이템 렌더링
+   * - 읽지 않은 알림(!isRead)만 배경색으로 하이라이트
    */
   const renderItem = ({item}: {item: NotificationItem}) => {
     const isUnread = !item.isRead;
@@ -56,7 +63,7 @@ const NotificationScreen = () => {
 
   return (
     <SafeAreaView style={styles.container} edges={['top', 'left', 'right']}>
-      {/* ===== 헤더 ===== */}
+      {/* 헤더 */}
       <View style={styles.header}>
         <Pressable
           onPress={onPressBack}
@@ -66,10 +73,12 @@ const NotificationScreen = () => {
         </Pressable>
 
         <Text style={styles.headerTitle}>알림</Text>
+
+        {/* 타이틀 중앙 정렬용 더미 영역 */}
         <View style={styles.headerRightSpace} />
       </View>
 
-      {/* ===== 알림 리스트 ===== */}
+      {/* 알림 리스트 */}
       <FlatList
         data={list}
         keyExtractor={item => item.id}
@@ -95,14 +104,13 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
   },
 
-  // ✅ 헤더 스타일 누락되어 있어서 추가
+  /* 헤더 */
   header: {
     height: 56,
     flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: 12,
   },
-
   backBtn: {
     width: 44,
     height: 44,
@@ -113,7 +121,6 @@ const styles = StyleSheet.create({
     fontSize: 26,
     color: '#111',
   },
-
   headerTitle: {
     flex: 1,
     textAlign: 'center',
@@ -121,16 +128,17 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     color: '#111',
   },
-
   headerRightSpace: {
     width: 44,
   },
 
+  /* 리스트 */
   listContent: {
     paddingTop: 8,
     paddingBottom: 16,
   },
 
+  /* 아이템 */
   row: {
     paddingHorizontal: 20,
     paddingVertical: 25,
@@ -161,6 +169,7 @@ const styles = StyleSheet.create({
     color: '#B3B8C4',
   },
 
+  /* 푸터 안내 문구 */
   footer: {
     paddingVertical: 22,
     alignItems: 'center',

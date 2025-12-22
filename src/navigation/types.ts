@@ -43,16 +43,7 @@ export type CharacterStackParamList = {
 
 // Search Stack Param List
 export type SearchStackParamList = {
-  /*
-   * SearchScreen이 탐색/검색결과를 모두 담당
-   * SearchInputScreen은 검색어 입력만 담당
-   */
-
-  /**
-   * RouteNames.SEARCH('search') = SearchScreen
-   * - keyword가 있으면 검색 결과 필터링 상태
-   * - 없으면 전체 탐색 상태
-   */
+  // 탐색/검색 결과 화면
   [RouteNames.SEARCH]:
     | {
         keyword?: string;
@@ -60,8 +51,7 @@ export type SearchStackParamList = {
       }
     | undefined;
 
-  // 검색 입력 화면(SearchInputScreen)
-  [RouteNames.SEARCH_INPUT]: undefined;
+  [RouteNames.SEARCH_INPUT]: undefined; // 검색어 입력 화면
 };
 
 // MyPage Stack Param List
