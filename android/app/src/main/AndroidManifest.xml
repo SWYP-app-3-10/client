@@ -8,6 +8,8 @@
     android:icon="@mipmap/ic_launcher"
     android:roundIcon="@mipmap/ic_launcher_round"
     android:allowBackup="false"
+    android:usesCleartextTraffic="true"
+    android:networkSecurityConfig="@xml/network_security_config"
     android:theme="@style/AppTheme">
     <activity
       android:name=".MainActivity"
@@ -16,11 +18,16 @@
       android:launchMode="singleTask"
       android:windowSoftInputMode="adjustResize"
       android:exported="true">
-      <intent-filter>
+        <intent-filter>
           <action android:name="android.intent.action.MAIN" />
           <category android:name="android.intent.category.LAUNCHER" />
+      </intent-filter>
+      <intent-filter>
+          <action android:name="android.intent.action.VIEW" />
+          <category android:name="android.intent.category.DEFAULT" />
+          <category android:name="android.intent.category.BROWSABLE" />
           <data android:host="oath"
-          android:scheme="kakao{fa3fd7470a555b1c308efae73f4d4ce0}"/>
+                android:scheme="kakao{fa3fd7470a555b1c308efae73f4d4ce0}"/>
       </intent-filter>
     </activity>
   </application>
