@@ -9,7 +9,12 @@ import NaverLogin, {
 } from '@react-native-seoul/naver-login';
 import { GOOGLE_CONFIG, NAVER_CONFIG } from '../config/socialLoginConfig';
 import appleAuth from '@invertase/react-native-apple-authentication';
-
+import {
+  getAuth,
+  GoogleAuthProvider,
+  signInWithCredential,
+  signOut,
+} from '@react-native-firebase/auth';
 // 소셜 로그인 타입
 export type SocialLoginProvider = 'google' | 'kakao' | 'naver' | 'apple';
 
@@ -31,7 +36,6 @@ export const initializeGoogleSignIn = () => {
   try {
     GoogleSignin.configure({
       webClientId: GOOGLE_CONFIG.webClientId,
-      iosClientId: GOOGLE_CONFIG.iosClientId,
       offlineAccess: true,
     });
   } catch (error) {
@@ -42,21 +46,35 @@ export const initializeGoogleSignIn = () => {
 // 구글 로그인
 export const signInWithGoogle = async (): Promise<SocialLoginResult> => {
   try {
-    await GoogleSignin.hasPlayServices();
-    const userInfo = await GoogleSignin.signIn();
+    const signInResult = await GoogleSignin.signIn();
+    const signInData = (signInResult as any).data;
+    const idToken = signInData?.idToken;
+
+    if (!idToken) {
+      throw new Error('Google ID Token이 없습니다.');
+    }
+
+    const authInstance = getAuth();
+    const googleCredential = GoogleAuthProvider.credential(idToken);
+    const userCredential = await signInWithCredential(
+      authInstance,
+      googleCredential,
+    );
+    const firebaseUser = userCredential.user;
 
     return {
       success: true,
       provider: 'google',
-      accessToken: userInfo.data?.idToken || undefined,
+      accessToken: idToken,
       userInfo: {
-        id: userInfo.data?.user.id || '',
-        email: userInfo.data?.user.email || undefined,
-        name: userInfo.data?.user.name || undefined,
-        profileImage: userInfo.data?.user.photo || undefined,
+        id: firebaseUser.uid,
+        email: firebaseUser.email || undefined,
+        name: firebaseUser.displayName || undefined,
+        profileImage: firebaseUser.photoURL || undefined,
       },
     };
   } catch (error: any) {
+    console.error('구글 로그인 에러:', error);
     return {
       success: false,
       provider: 'google',
@@ -69,18 +87,10 @@ export const signInWithGoogle = async (): Promise<SocialLoginResult> => {
 export const signOutGoogle = async (): Promise<void> => {
   try {
     await GoogleSignin.signOut();
+    const authInstance = getAuth();
+    await signOut(authInstance);
   } catch (error) {
     console.error('구글 로그아웃 실패:', error);
-  }
-};
-
-// 카카오 로그인 초기화
-export const initializeKakaoLogin = () => {
-  try {
-    // 카카오 SDK는 자동으로 초기화됩니다
-    // 필요시 추가 설정을 여기에 추가
-  } catch (error) {
-    console.warn('카카오 로그인 초기화 실패:', error);
   }
 };
 
@@ -89,8 +99,6 @@ export const signInWithKakao = async (): Promise<SocialLoginResult> => {
   try {
     const token = await kakaoLogin();
     const profile = await getKakaoProfile();
-
-    // 카카오 프로필 타입에 따라 데이터 접근 방식 조정
     const profileData = profile as any;
 
     return {
@@ -129,8 +137,6 @@ export const signOutKakao = async (): Promise<void> => {
 };
 
 // 네이버 로그인 초기화
-// 주의: 네이버 SDK는 네이티브 앱에서 consumerSecret이 필요하지만,
-// 실제 사용자 정보 검증은 백엔드에서 해야 합니다.
 export const initializeNaverLogin = () => {
   try {
     if (NaverLogin && typeof NaverLogin.initialize === 'function') {
@@ -233,20 +239,16 @@ export const signOutSocial = async (
 // 애플 로그인
 export const signInWithApple = async (): Promise<SocialLoginResult> => {
   try {
-    // performs login request
     const appleAuthRequestResponse = await appleAuth.performRequest({
       requestedOperation: appleAuth.Operation.LOGIN,
       requestedScopes: [appleAuth.Scope.EMAIL, appleAuth.Scope.FULL_NAME],
     });
 
-    // get current authentication state for user
     const credentialState = await appleAuth.getCredentialStateForUser(
       appleAuthRequestResponse.user,
     );
 
-    // use credentialState response to ensure the user is authenticated
     if (credentialState === appleAuth.State.AUTHORIZED) {
-      // user is authenticated
       const token = appleAuthRequestResponse.identityToken;
       return {
         success: true,
@@ -256,7 +258,7 @@ export const signInWithApple = async (): Promise<SocialLoginResult> => {
           id: appleAuthRequestResponse.user || '',
           email: appleAuthRequestResponse.email || undefined,
           name: appleAuthRequestResponse.fullName?.givenName || undefined,
-          profileImage: appleAuthRequestResponse.identityToken || undefined,
+          profileImage: undefined, // 애플은 프로필 이미지를 제공하지 않음
         },
       };
     } else {
@@ -267,7 +269,7 @@ export const signInWithApple = async (): Promise<SocialLoginResult> => {
       };
     }
   } catch (err: any) {
-    console.log('애플 로그인' + err);
+    console.error('애플 로그인 에러:', err);
     return {
       success: false,
       provider: 'apple',

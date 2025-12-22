@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>CLIENT_ID</key>
+	<string>1081679299790-po4as4ci605ich7podbelqhq5bop8iai.apps.googleusercontent.com</string>
+	<key>REVERSED_CLIENT_ID</key>
+	<string>com.googleusercontent.apps.1081679299790-po4as4ci605ich7podbelqhq5bop8iai</string>
+	<key>ANDROID_CLIENT_ID</key>
+	<string>1081679299790-5psm92vu72hbpdcndsq9dplvc0e4b3d1.apps.googleusercontent.com</string>
+	<key>API_KEY</key>
+	<string>AIzaSyBW0P43--sWylkopx3bXhY3JDZVd6CWc2c</string>
+	<key>GCM_SENDER_ID</key>
+	<string>1081679299790</string>
+	<key>PLIST_VERSION</key>
+	<string>1</string>
+	<key>BUNDLE_ID</key>
+	<string>com.neurous.app</string>
+	<key>PROJECT_ID</key>
+	<string>neurous-b290f</string>
+	<key>STORAGE_BUCKET</key>
+	<string>neurous-b290f.firebasestorage.app</string>
+	<key>IS_ADS_ENABLED</key>
+	<false></false>
+	<key>IS_ANALYTICS_ENABLED</key>
+	<false></false>
+	<key>IS_APPINVITE_ENABLED</key>
+	<true></true>
+	<key>IS_GCM_ENABLED</key>
+	<true></true>
+	<key>IS_SIGNIN_ENABLED</key>
+	<true></true>
+	<key>GOOGLE_APP_ID</key>
+	<string>1:1081679299790:ios:454610318b56c75388fc9f</string>
+</dict>
+</plist>

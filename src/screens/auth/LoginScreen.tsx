@@ -16,7 +16,6 @@ import { BORDER_RADIUS, COLORS, scaleWidth } from '../../styles/global';
 import {
   signInWithSocial,
   initializeGoogleSignIn,
-  initializeKakaoLogin,
   initializeNaverLogin,
   SocialLoginProvider,
 } from '../../services/socialLoginService';
@@ -54,7 +53,6 @@ const LoginScreen = () => {
     const initSocialLogin = async () => {
       try {
         initializeGoogleSignIn();
-        initializeKakaoLogin();
         initializeNaverLogin();
       } catch (error) {
         console.warn('소셜 로그인 초기화 중 오류:', error);
@@ -113,7 +111,7 @@ const LoginScreen = () => {
         // TODO: 서버에 사용자 정보 전송 및 인증 처리
         // 예: await api.login(result);
         const shouldShowNotificationModal = await checkNotificationPermission();
-        console.log('shouldShowNotificationModal', shouldShowNotificationModal);
+
         if (shouldShowNotificationModal) {
           // 기기 알람 꺼져있을 경우
           showModal({
@@ -201,7 +199,7 @@ const LoginScreen = () => {
                     navigation.navigate(RouteNames.INTERESTS);
                   }
                 } catch (error) {
-                  console.error('알림 권한 요청 중 오류:', error);
+                  console.warn('알림 권한 요청 중 오류:', error);
                   await setOnboardingStep('interests');
                   navigation.navigate(RouteNames.INTERESTS);
                 }
