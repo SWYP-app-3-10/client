@@ -1,15 +1,20 @@
 import React from 'react';
-import {createNativeStackNavigator} from '@react-navigation/native-stack';
-import {RouteNames} from '../../routes';
-import SearchScreen from '../screens/main/SearchScreen';
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import { RouteNames } from '../../routes';
+import SearchScreen from '../screens/search/SearchScreen';
+import SearchInputScreen from '../screens/search/SearchInputScreen';
+import { SearchStackParamList } from './types';
 
-const Stack = createNativeStackNavigator();
+const Stack = createNativeStackNavigator<SearchStackParamList>();
 
 const SearchStackNavigator = () => {
   return (
-    <Stack.Navigator screenOptions={{headerShown: false}}>
+    <Stack.Navigator screenOptions={{ headerShown: false }}>
       <Stack.Screen name={RouteNames.SEARCH} component={SearchScreen} />
-      {/* 서브 화면들은 여기에 추가 */}
+      <Stack.Screen
+        name={RouteNames.SEARCH_INPUT}
+        component={SearchInputScreen}
+      />
     </Stack.Navigator>
   );
 };

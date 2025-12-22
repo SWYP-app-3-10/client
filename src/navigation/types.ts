@@ -1,5 +1,6 @@
-import {NavigatorScreenParams} from '@react-navigation/native';
-import {RouteNames} from '../../routes';
+import { NavigatorScreenParams } from '@react-navigation/native';
+import { RouteNames } from '../../routes';
+import { NewsCategory } from '../screens/search/search_mockData';
 
 // Root Stack Param List
 export type OnboardingStackParamList = {
@@ -20,8 +21,8 @@ export type RootStackParamList = {
 // Main Stack Param List
 export type MainStackParamList = {
   [RouteNames.MISSION]: undefined;
-  [RouteNames.CHARACTER]: undefined;
-  [RouteNames.SEARCH]: undefined;
+  [RouteNames.CHARACTER]: NavigatorScreenParams<CharacterStackParamList>; // 캐릭터 스택
+  [RouteNames.SEARCH]: NavigatorScreenParams<SearchStackParamList>; // 검색 스택
   [RouteNames.MY_PAGE]: undefined;
 };
 
@@ -35,15 +36,20 @@ export type MissionStackParamList = {
 // Character Stack Param List
 export type CharacterStackParamList = {
   [RouteNames.CHARACTER]: undefined;
-  // 서브 화면들 추가 예정
-  // 예시: 'character-detail': {characterId: string};
+  [RouteNames.CHARACTER_CRITERIA]: undefined; // 기준 확인하기 (탭 2개 있는 화면)
+  [RouteNames.CHARACTER_POINT_HISTORY]: undefined;
+  [RouteNames.CHARACTER_NOTIFICATION]: undefined;
 };
 
 // Search Stack Param List
 export type SearchStackParamList = {
-  [RouteNames.SEARCH]: undefined;
-  // 서브 화면들 추가 예정
-  // 예시: 'post-detail': {postId: string};
+  [RouteNames.SEARCH]:
+    | {
+        keyword?: string;
+        initialCategory?: NewsCategory;
+      }
+    | undefined;
+  [RouteNames.SEARCH_INPUT]: undefined; // 검색어 입력 화면
 };
 
 // MyPage Stack Param List

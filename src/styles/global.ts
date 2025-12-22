@@ -1,4 +1,4 @@
-import {Dimensions, PixelRatio} from 'react-native';
+import { Dimensions, PixelRatio } from 'react-native';
 
 // 기준 디자인 크기 (디자인 시안 기준)
 export const DESIGN_WIDTH = 393;
@@ -9,7 +9,7 @@ const getScreenDimensions = () => Dimensions.get('window');
 
 // 디바이스 크기 비율 계산 (가로 기준)
 const getScaleWidth = () => {
-  const {width} = getScreenDimensions();
+  const { width } = getScreenDimensions();
   return width / DESIGN_WIDTH;
 };
 
@@ -27,6 +27,7 @@ export const getScreenSize = () => getScreenDimensions();
 export const BORDER_RADIUS: Record<number, number> = {
   16: scaleWidth(16),
   20: scaleWidth(20),
+  // ?
   30: scaleWidth(30),
   10: scaleWidth(10),
   12: scaleWidth(12),
@@ -47,7 +48,7 @@ export const COLORS = {
   gray800: '#767C91',
   black: '#19181E',
   // 메인
-  puple: {main: '#6F44F5', 3: '#F6F4FE'},
+  puple: { main: '#6F44F5', 3: '#F6F4FE' },
 
   // 프라이머리 색상
   // primary300: '#E5F8EF',
