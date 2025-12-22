@@ -6,6 +6,7 @@ import {
   ActivityIndicator,
   Alert,
   Platform,
+  Linking,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
@@ -31,6 +32,11 @@ import {
 import { Tooltip_RecentIcon } from '../../icons';
 import { useShowModal } from '../../store/modalStore';
 import { useOnboardingStore } from '../../store/onboardingStore';
+import {
+  checkNotifications,
+  requestNotifications,
+  RESULTS,
+} from 'react-native-permissions';
 
 type NavigationProp = NativeStackNavigationProp<OnboardingStackParamList>;
 
@@ -72,6 +78,24 @@ const LoginScreen = () => {
     return () => clearTimeout(timer);
   }, []);
 
+  // 알림 권한 확인 함수
+  // 권한이 허용되지 않은 경우 모달 표시
+  const checkNotificationPermission = async (): Promise<boolean> => {
+    try {
+      const { status } = await checkNotifications();
+
+      // GRANTED가 아닌 모든 경우에 모달 표시
+      // UNAVAILABLE: 아직 권한 요청하지 않음 (초기 상태)
+      // DENIED: 권한 거부됨
+      // BLOCKED: 권한 차단됨 (설정에서 변경 필요)
+      return status !== RESULTS.GRANTED;
+    } catch (error) {
+      console.error('알림 권한 확인 중 오류:', error);
+      // 에러 발생 시 모달 표시 (안전한 기본값)
+      return true;
+    }
+  };
+
   const handleSocialLogin = async (provider: SocialLoginProvider) => {
     try {
       setLoading(provider);
@@ -86,10 +110,10 @@ const LoginScreen = () => {
           profileImage: result.userInfo.profileImage,
           loginTime: Date.now(),
         });
-
         // TODO: 서버에 사용자 정보 전송 및 인증 처리
         // 예: await api.login(result);
-        const shouldShowNotificationModal = true; // TODO: 실제 알림 권한 상태 확인
+        const shouldShowNotificationModal = await checkNotificationPermission();
+        console.log('shouldShowNotificationModal', shouldShowNotificationModal);
         if (shouldShowNotificationModal) {
           // 기기 알람 꺼져있을 경우
           showModal({
@@ -99,9 +123,88 @@ const LoginScreen = () => {
             primaryButton: {
               title: '알림 받을래요',
               onPress: async () => {
-                // TODO: 알림 권한 요청
-                await setOnboardingStep('interests');
-                navigation.navigate(RouteNames.INTERESTS);
+                // 알림 권한 요청
+                try {
+                  const { status } = await requestNotifications([
+                    'alert',
+                    'badge',
+                    'sound',
+                  ]);
+
+                  if (status === RESULTS.GRANTED) {
+                    // 권한은 허용되었지만, 기기 알림 설정이 꺼져있는지 확인
+                    // 권한 요청 후 다시 확인하여 실제 알림 설정 상태를 가져옴
+                    const { settings } = await checkNotifications();
+
+                    // iOS: alert 또는 notificationCenter가 켜져있어야 알림이 활성화됨
+                    // Android: 권한만 확인 (API 33+)
+                    const isNotificationEnabled =
+                      Platform.OS === 'ios'
+                        ? settings?.alert === true ||
+                          settings?.notificationCenter === true
+                        : true; // Android는 권한만 확인
+
+                    if (Platform.OS === 'ios' && !isNotificationEnabled) {
+                      // 기기 알림이 꺼져있는 경우 설정 화면으로 이동
+                      Alert.alert(
+                        '알림 설정 필요',
+                        '기기 알림이 꺼져있어요.\n설정에서 알림을 켜주세요.',
+                        [
+                          {
+                            text: '취소',
+                            style: 'cancel',
+                            onPress: async () => {
+                              await setOnboardingStep('interests');
+                              navigation.navigate(RouteNames.INTERESTS);
+                            },
+                          },
+                          {
+                            text: '설정으로 이동',
+                            onPress: async () => {
+                              await Linking.openSettings();
+                            },
+                          },
+                        ],
+                      );
+                      return;
+                    }
+
+                    console.log('알림 권한이 허용되었습니다.');
+                    await setOnboardingStep('interests');
+                    navigation.navigate(RouteNames.INTERESTS);
+                  } else if (status === RESULTS.BLOCKED) {
+                    // 권한이 차단된 경우 설정 화면으로 이동
+                    Alert.alert(
+                      '알림 권한 필요',
+                      '알림을 받으려면 설정에서 알림 권한을 허용해주세요.',
+                      [
+                        {
+                          text: '취소',
+                          style: 'cancel',
+                          onPress: async () => {
+                            await setOnboardingStep('interests');
+                            navigation.navigate(RouteNames.INTERESTS);
+                          },
+                        },
+                        {
+                          text: '설정으로 이동',
+                          onPress: async () => {
+                            await Linking.openSettings();
+                          },
+                        },
+                      ],
+                    );
+                  } else {
+                    // DENIED: 사용자가 거부했지만 다시 요청 가능
+                    console.log('알림 권한이 거부되었습니다.');
+                    await setOnboardingStep('interests');
+                    navigation.navigate(RouteNames.INTERESTS);
+                  }
+                } catch (error) {
+                  console.error('알림 권한 요청 중 오류:', error);
+                  await setOnboardingStep('interests');
+                  navigation.navigate(RouteNames.INTERESTS);
+                }
               },
             },
             secondaryButton: {

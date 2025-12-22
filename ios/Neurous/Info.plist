@@ -96,6 +96,9 @@
        
        <key>NSUserTrackingUsageDescription</key>
        <string>개인 맞춤형 광고를 제공하기 위해 사용자의 데이터가 사용됩니다.</string>
+       
+       <key>NSUserNotificationsUsageDescription</key>
+       <string>하루 두 번 문해력 루틴을 잊지 않고 챙길 수 있도록 알림을 보내드립니다.</string>
 
    <key>UIAppFonts</key>
    <array>

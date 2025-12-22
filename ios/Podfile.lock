@@ -1143,6 +1143,8 @@ PODS:
     - naveridlogin-sdk-ios (= 4.2.3)
     - RCT-Folly (= 2022.05.16.00)
     - React-Core
+  - RNPermissions (5.4.4):
+    - React-Core
   - RNScreens (3.29.0):
     - glog
     - RCT-Folly (= 2022.05.16.00)
@@ -1218,6 +1220,7 @@ DEPENDENCIES:
   - RNGoogleMobileAds (from `../node_modules/react-native-google-mobile-ads`)
   - "RNGoogleSignin (from `../node_modules/@react-native-google-signin/google-signin`)"
   - "RNNaverLogin (from `../node_modules/@react-native-seoul/naver-login`)"
+  - RNPermissions (from `../node_modules/react-native-permissions`)
   - RNScreens (from `../node_modules/react-native-screens`)
   - RNSVG (from `../node_modules/react-native-svg`)
   - Yoga (from `../node_modules/react-native/ReactCommon/yoga`)
@@ -1360,6 +1363,8 @@ EXTERNAL SOURCES:
     :path: "../node_modules/@react-native-google-signin/google-signin"
   RNNaverLogin:
     :path: "../node_modules/@react-native-seoul/naver-login"
+  RNPermissions:
+    :path: "../node_modules/react-native-permissions"
   RNScreens:
     :path: "../node_modules/react-native-screens"
   RNSVG:
@@ -1442,6 +1447,7 @@ SPEC CHECKSUMS:
   RNGoogleMobileAds: ae3933771936e7c882c6d9087a3d1869abb1d95f
   RNGoogleSignin: 902803f2d3424b25872a441829f77a66057c5656
   RNNaverLogin: b52905c1a393e029d2a404d908abaa6abbe85cb6
+  RNPermissions: 15f0316617e4a61c6f9b64174081837e674075ee
   RNScreens: 59f615aa0782077560c8eea46c2daec3a716dba9
   RNSVG: 043f603fc70d48d289bc3f2ceedbb05ce2636f5c
   SDWebImage: a7f831e1a65eb5e285e3fb046a23fcfbf08e696d
