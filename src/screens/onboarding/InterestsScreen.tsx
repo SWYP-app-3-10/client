@@ -1,184 +1,194 @@
-import React, {useState} from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  TouchableOpacity,
-  SafeAreaView,
-  ScrollView,
-} from 'react-native';
+import React, {useState, useCallback, useMemo} from 'react';
+import {View, Text, StyleSheet, SafeAreaView, ScrollView} from 'react-native';
 import {useNavigation} from '@react-navigation/native';
 import {NativeStackNavigationProp} from '@react-navigation/native-stack';
 import {RouteNames} from '../../../routes';
-import {scaleWidth} from '../../styles/global';
+import {
+  Body_16M,
+  COLORS,
+  Heading_24EB_Round,
+  scaleWidth,
+} from '../../styles/global';
 import {OnboardingStackParamList} from '../../navigation/types';
+import Spacer from '../../components/Spacer';
+import ProgressBar from '../../components/ProgressBar';
+import {Button} from '../../components';
+import {BORDER_RADIUS} from '../../styles/global';
+import {
+  CheckIcon,
+  FirstIcon,
+  SecondIcon,
+  ThirdIcon,
+} from '../../icons/commonIcons/commonIcons';
+import {Body_15M, Body_18M, Heading_18SB} from '../../styles/typography';
 
 type NavigationProp = NativeStackNavigationProp<OnboardingStackParamList>;
 
 interface Interest {
   id: string;
   name: string;
-  priority: 1 | 2 | 3;
 }
 
 const INTERESTS: Interest[] = [
-  {id: 'politics', name: '정치', priority: 1},
-  {id: 'economy', name: '경제', priority: 1},
-  {id: 'lifestyle', name: '생활/문화', priority: 2},
-  {id: 'it', name: 'IT/과학', priority: 2},
-  {id: 'society', name: '사회', priority: 3},
-  {id: 'world', name: '세계', priority: 3},
+  {id: 'politics', name: '정치'},
+  {id: 'economy', name: '경제'},
+  {id: 'society', name: '사회'},
+  {id: 'lifestyle', name: '생활/문화'},
+  {id: 'it', name: 'IT/과학'},
+  {id: 'world', name: '세계'},
 ];
+
+const FIRST_ROW_INTERESTS = INTERESTS.slice(0, 3);
+const SECOND_ROW_INTERESTS = INTERESTS.slice(3, 6);
+
+interface InterestTagProps {
+  interest: Interest;
+  priority: number | null;
+  isSelected: boolean;
+  onPress: (id: string) => void;
+  isFirstRow?: boolean;
+}
+
+const InterestTag: React.FC<InterestTagProps> = ({
+  interest,
+  priority,
+  isSelected,
+  onPress,
+  isFirstRow = false,
+}) => {
+  const renderPriorityIcon = () => {
+    if (priority === null) {
+      return null;
+    }
+    if (priority === 1) {
+      return <FirstIcon />;
+    }
+    if (priority === 2) {
+      return <SecondIcon />;
+    }
+    return <ThirdIcon />;
+  };
+
+  return (
+    <View
+      style={isFirstRow ? styles.tagContainerFirstRow : styles.tagContainer}>
+      {isSelected && <View style={styles.tagSpacer} />}
+      {priority !== null && (
+        <View style={styles.priorityBadge}>{renderPriorityIcon()}</View>
+      )}
+      <Button
+        variant="ghost"
+        textStyle={styles.tagText}
+        style={[styles.tag, isSelected && styles.tagSelected]}
+        onPress={() => onPress(interest.id)}>
+        <Text style={[styles.tagText, isSelected && styles.tagTextSelected]}>
+          {interest.name}
+        </Text>
+        {isSelected && <CheckIcon />}
+      </Button>
+    </View>
+  );
+};
 
 const InterestsScreen = () => {
   const navigation = useNavigation<NavigationProp>();
-  const [selectedInterests, setSelectedInterests] = useState<Set<string>>(
-    new Set(['politics', 'it', 'world']),
+  // 선택 순서를 저장: Map<id, 순서(1, 2, ...)>
+  const [selectedInterests, setSelectedInterests] = useState<
+    Map<string, number>
+  >(new Map());
+
+  const toggleInterest = useCallback((id: string) => {
+    setSelectedInterests(prev => {
+      const newSelected = new Map(prev);
+      if (newSelected.has(id)) {
+        // 이미 선택된 경우 제거하고 순서 재정렬
+        const removedOrder = newSelected.get(id)!;
+        newSelected.delete(id);
+        // 제거된 순서보다 큰 순서들을 1씩 감소
+        newSelected.forEach((order, key) => {
+          if (order > removedOrder) {
+            newSelected.set(key, order - 1);
+          }
+        });
+      } else {
+        // 최대 3개까지 선택 가능
+        if (newSelected.size < 3) {
+          const nextOrder = newSelected.size + 1;
+          newSelected.set(id, nextOrder);
+        }
+      }
+      return newSelected;
+    });
+  }, []);
+
+  const getPriority = useCallback(
+    (id: string): number | null => {
+      return selectedInterests.get(id) || null;
+    },
+    [selectedInterests],
   );
 
-  const toggleInterest = (id: string) => {
-    const newSelected = new Set(selectedInterests);
-    if (newSelected.has(id)) {
-      newSelected.delete(id);
-    } else {
-      // 같은 우선순위의 다른 항목이 이미 선택되어 있는지 확인
-      const interest = INTERESTS.find(i => i.id === id);
-      if (interest) {
-        const samePrioritySelected = INTERESTS.find(
-          i => i.priority === interest.priority && newSelected.has(i.id),
-        );
-        if (samePrioritySelected) {
-          newSelected.delete(samePrioritySelected.id);
-        }
-        newSelected.add(id);
-      }
-    }
-    setSelectedInterests(newSelected);
-  };
-
-  const handleNext = () => {
+  const handleNext = useCallback(() => {
     navigation.navigate(RouteNames.DIFFICULTY_SETTING);
-  };
+  }, [navigation]);
 
-  const getInterestsByPriority = (priority: 1 | 2 | 3) => {
-    return INTERESTS.filter(i => i.priority === priority);
-  };
+  const isNextButtonActive = useMemo(
+    () => selectedInterests.size >= 2,
+    [selectedInterests.size],
+  );
 
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
-        <TouchableOpacity onPress={() => navigation.goBack()}>
-          <Text style={styles.backButton}>←</Text>
-        </TouchableOpacity>
-        <View style={styles.progressBar}>
-          <View style={[styles.progressFill, {width: '50%'}]} />
-        </View>
+        <Spacer num={24} />
+        <ProgressBar fill={1} />
       </View>
 
       <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
+        <Spacer num={92} />
         <Text style={styles.title}>관심분야를 선택해주세요</Text>
-        <Text style={styles.subtitle}>
-          화면에서 나의 관심분야 글을 확인할 수 있어요
+        <Spacer num={4} />
+        <Text style={[Body_15M, {color: COLORS.gray600}]}>
+          미션 화면에서 나의 관심분야 글을 확인할 수 있어요
         </Text>
-
-        {/* 1순위 */}
-        <View style={styles.prioritySection}>
-          <Text style={styles.priorityLabel}>1순위</Text>
-          <View style={styles.tagsContainer}>
-            {getInterestsByPriority(1).map(interest => (
-              <TouchableOpacity
+        <Spacer num={52} />
+        {/* 모든 관심분야 */}
+        <View style={styles.tagsWrapper}>
+          {/* 첫 번째 줄: 정치, 경제, 사회 */}
+          <View style={styles.tagsRow}>
+            {FIRST_ROW_INTERESTS.map(interest => (
+              <InterestTag
                 key={interest.id}
-                style={[
-                  styles.tag,
-                  selectedInterests.has(interest.id) && styles.tagSelected,
-                ]}
-                onPress={() => toggleInterest(interest.id)}>
-                <Text
-                  style={[
-                    styles.tagText,
-                    selectedInterests.has(interest.id) &&
-                      styles.tagTextSelected,
-                  ]}>
-                  {interest.name}
-                </Text>
-                {selectedInterests.has(interest.id) && (
-                  <Text style={styles.checkmark}>✓</Text>
-                )}
-              </TouchableOpacity>
+                interest={interest}
+                priority={getPriority(interest.id)}
+                isSelected={getPriority(interest.id) !== null}
+                onPress={toggleInterest}
+                isFirstRow
+              />
             ))}
           </View>
-        </View>
-
-        {/* 2순위 */}
-        <View style={styles.prioritySection}>
-          <Text style={styles.priorityLabel}>2순위</Text>
-          <View style={styles.tagsContainer}>
-            {getInterestsByPriority(2).map(interest => (
-              <TouchableOpacity
+          {/* 두 번째 줄: 생활/문화, IT/과학, 세계 */}
+          <View style={styles.tagsRow}>
+            {SECOND_ROW_INTERESTS.map(interest => (
+              <InterestTag
                 key={interest.id}
-                style={[
-                  styles.tag,
-                  selectedInterests.has(interest.id) && styles.tagSelected,
-                ]}
-                onPress={() => toggleInterest(interest.id)}>
-                <Text
-                  style={[
-                    styles.tagText,
-                    selectedInterests.has(interest.id) &&
-                      styles.tagTextSelected,
-                  ]}>
-                  {interest.name}
-                </Text>
-                {selectedInterests.has(interest.id) && (
-                  <Text style={styles.checkmark}>✓</Text>
-                )}
-              </TouchableOpacity>
-            ))}
-          </View>
-        </View>
-
-        {/* 3순위 */}
-        <View style={styles.prioritySection}>
-          <Text style={styles.priorityLabel}>3순위</Text>
-          <View style={styles.tagsContainer}>
-            {getInterestsByPriority(3).map(interest => (
-              <TouchableOpacity
-                key={interest.id}
-                style={[
-                  styles.tag,
-                  selectedInterests.has(interest.id) && styles.tagSelected,
-                ]}
-                onPress={() => toggleInterest(interest.id)}>
-                <Text
-                  style={[
-                    styles.tagText,
-                    selectedInterests.has(interest.id) &&
-                      styles.tagTextSelected,
-                  ]}>
-                  {interest.name}
-                </Text>
-                {selectedInterests.has(interest.id) && (
-                  <Text style={styles.checkmark}>✓</Text>
-                )}
-              </TouchableOpacity>
+                interest={interest}
+                priority={getPriority(interest.id)}
+                isSelected={getPriority(interest.id) !== null}
+                onPress={toggleInterest}
+              />
             ))}
           </View>
         </View>
       </ScrollView>
 
       <View style={styles.footer}>
-        <TouchableOpacity
-          style={styles.nextButton}
+        <Button
+          variant="primary"
+          title="다음"
           onPress={handleNext}
-          disabled={selectedInterests.size === 0}>
-          <Text
-            style={[
-              styles.nextButtonText,
-              selectedInterests.size === 0 && styles.nextButtonTextDisabled,
-            ]}>
-            다음
-          </Text>
-        </TouchableOpacity>
+          disabled={!isNextButtonActive}
+        />
       </View>
     </SafeAreaView>
   );
@@ -187,110 +197,71 @@ const InterestsScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: COLORS.white,
   },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: scaleWidth(20),
-    paddingTop: scaleWidth(12),
-    paddingBottom: scaleWidth(16),
     gap: scaleWidth(12),
-  },
-  backButton: {
-    fontSize: scaleWidth(24),
-    color: '#000000',
-  },
-  progressBar: {
-    flex: 1,
-    height: scaleWidth(4),
-    backgroundColor: '#E0E0E0',
-    borderRadius: scaleWidth(2),
-    overflow: 'hidden',
-  },
-  progressFill: {
-    height: '100%',
-    backgroundColor: '#9B59B6',
   },
   content: {
     flex: 1,
     paddingHorizontal: scaleWidth(20),
   },
   title: {
-    fontSize: scaleWidth(24),
-    fontWeight: '700',
-    color: '#000000',
-    marginBottom: scaleWidth(8),
-    marginTop: scaleWidth(8),
+    ...Heading_24EB_Round,
+    color: COLORS.black,
   },
   subtitle: {
-    fontSize: scaleWidth(14),
-    color: '#666666',
-    marginBottom: scaleWidth(32),
-    lineHeight: scaleWidth(20),
+    ...Body_16M,
+    color: COLORS.gray600,
   },
-  prioritySection: {
-    marginBottom: scaleWidth(32),
-  },
-  priorityLabel: {
-    fontSize: scaleWidth(16),
-    fontWeight: '600',
-    color: '#000000',
-    marginBottom: scaleWidth(12),
-  },
-  tagsContainer: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
+  tagsWrapper: {
     gap: scaleWidth(8),
   },
+  tagsRow: {
+    flexDirection: 'row',
+    gap: scaleWidth(12),
+  },
+  tagContainer: {
+    justifyContent: 'flex-end',
+    position: 'relative',
+  },
+  tagContainerFirstRow: {
+    justifyContent: 'flex-end',
+    position: 'relative',
+  },
+  tagSpacer: {
+    height: scaleWidth(50),
+  },
   tag: {
-    paddingHorizontal: scaleWidth(16),
-    paddingVertical: scaleWidth(10),
-    borderRadius: scaleWidth(20),
-    borderWidth: 1,
-    borderColor: '#E0E0E0',
-    backgroundColor: '#FFFFFF',
+    paddingHorizontal: scaleWidth(12),
+    paddingVertical: scaleWidth(8),
+    height: scaleWidth(43),
+    borderRadius: BORDER_RADIUS[30],
+    backgroundColor: COLORS.puple[3],
     flexDirection: 'row',
     alignItems: 'center',
-    gap: scaleWidth(6),
   },
   tagSelected: {
-    backgroundColor: '#9B59B6',
-    borderColor: '#9B59B6',
+    backgroundColor: COLORS.puple.main,
+    gap: scaleWidth(10),
+  },
+  priorityBadge: {
+    position: 'absolute',
+    top: scaleWidth(0),
+    alignSelf: 'center',
   },
   tagText: {
-    fontSize: scaleWidth(14),
-    color: '#666666',
+    ...Body_18M,
+    color: COLORS.puple.main,
   },
   tagTextSelected: {
-    color: '#FFFFFF',
-    fontWeight: '600',
-  },
-  checkmark: {
-    fontSize: scaleWidth(12),
-    color: '#FFFFFF',
-    fontWeight: '700',
+    ...Heading_18SB,
+    color: COLORS.white,
   },
   footer: {
     paddingHorizontal: scaleWidth(20),
-    paddingBottom: scaleWidth(40),
-    paddingTop: scaleWidth(20),
-  },
-  nextButton: {
-    width: '100%',
-    height: scaleWidth(56),
-    backgroundColor: '#E0E0E0',
-    borderRadius: scaleWidth(12),
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  nextButtonText: {
-    color: '#666666',
-    fontSize: scaleWidth(16),
-    fontWeight: '600',
-  },
-  nextButtonTextDisabled: {
-    color: '#999999',
   },
 });
 

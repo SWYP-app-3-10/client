@@ -8,7 +8,7 @@ const SplashScreen = () => {
       <View style={styles.content}>
         {/* 로고 placeholder */}
         <View style={styles.logoPlaceholder} />
-      </View>
+    </View>
     </SafeAreaView>
   );
 };

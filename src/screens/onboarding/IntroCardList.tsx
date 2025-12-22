@@ -1,0 +1,151 @@
+import React from 'react';
+import {
+  View,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
+  SafeAreaView,
+} from 'react-native';
+import {useNavigation} from '@react-navigation/native';
+import {NativeStackNavigationProp} from '@react-navigation/native-stack';
+import {RouteNames} from '../../../routes';
+import {
+  BORDER_RADIUS,
+  COLORS,
+  Heading_18EB_Round,
+  Heading_24EB_Round,
+  scaleWidth,
+} from '../../styles/global';
+import {OnboardingStackParamList} from '../../navigation/types';
+import Spacer from '../../components/Spacer';
+import FastImage from 'react-native-fast-image';
+import ActivityIndicator from '../../components/ActivityIndicator';
+import {Body_15M} from '../../styles/typography';
+
+type NavigationProp = NativeStackNavigationProp<OnboardingStackParamList>;
+
+const IntroCardList = () => {
+  const navigation = useNavigation<NavigationProp>();
+
+  return (
+    <SafeAreaView style={styles.container}>
+      <View style={{flex: 1}}>
+        <View style={{paddingHorizontal: scaleWidth(20)}}>
+          <Spacer num={48} />
+          <Text style={[Heading_24EB_Round, {color: COLORS.black}]}>
+            관심 있는 분야의 글을{'\n'}맞춤으로 추천받아요
+          </Text>
+          <Spacer num={20} />
+          <Text style={[Body_15M, {color: COLORS.gray600}]}>
+            미션 화면에서 나의 관심분야 글을 확인할 수 있어요
+          </Text>
+          <Spacer num={47} />
+        </View>
+        <View
+          style={{
+            paddingHorizontal: scaleWidth(41),
+          }}>
+          <FastImage
+            source={{uri: ''}}
+            aria-label="카드리스트"
+            resizeMode="contain"
+            style={{
+              borderWidth: 1,
+              height: scaleWidth(353),
+              borderColor: COLORS.gray400,
+              borderRadius: BORDER_RADIUS[20],
+            }}
+          />
+          <Spacer num={69} />
+
+          <ActivityIndicator activeIndex={0} />
+        </View>
+      </View>
+      <TouchableOpacity
+        style={{
+          height: scaleWidth(56),
+          borderRadius: BORDER_RADIUS[16],
+          justifyContent: 'center',
+          alignItems: 'center',
+          backgroundColor: COLORS.puple.main,
+          marginHorizontal: scaleWidth(20),
+        }}
+        onPress={() => navigation.navigate(RouteNames.INTRO_FUNCTION)}>
+        <Text style={[Heading_18EB_Round, {color: COLORS.white}]}>다음</Text>
+      </TouchableOpacity>
+    </SafeAreaView>
+  );
+};
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#FFFFFF',
+  },
+  content: {
+    flex: 1,
+    paddingHorizontal: scaleWidth(20),
+    paddingTop: scaleWidth(40),
+    paddingBottom: scaleWidth(40),
+  },
+  imagePlaceholder: {
+    width: '100%',
+    height: scaleWidth(300),
+    backgroundColor: '#F5F5F5',
+    borderRadius: scaleWidth(12),
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: scaleWidth(20),
+  },
+  textPlaceholder: {
+    width: '100%',
+    height: scaleWidth(80),
+    backgroundColor: '#F5F5F5',
+    borderRadius: scaleWidth(8),
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: scaleWidth(40),
+  },
+  placeholderText: {
+    color: '#999999',
+    fontSize: scaleWidth(14),
+  },
+  pagination: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: scaleWidth(40),
+    gap: scaleWidth(8),
+  },
+  dot: {
+    width: scaleWidth(8),
+    height: scaleWidth(8),
+    borderRadius: scaleWidth(4),
+    backgroundColor: '#E0E0E0',
+  },
+  activeDot: {
+    backgroundColor: '#9B59B6',
+    width: scaleWidth(24),
+  },
+  button: {
+    width: '100%',
+    height: scaleWidth(56),
+    backgroundColor: '#2ECC71',
+    borderRadius: scaleWidth(12),
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  socialButton: {
+    width: '100%',
+    height: scaleWidth(56),
+    backgroundColor: '#F5F5F5',
+    borderRadius: scaleWidth(12),
+  },
+  buttonText: {
+    color: '#FFFFFF',
+    fontSize: scaleWidth(16),
+    fontWeight: '600',
+  },
+});
+
+export default IntroCardList;

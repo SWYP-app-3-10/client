@@ -9,48 +9,72 @@ import {
 import {useNavigation} from '@react-navigation/native';
 import {NativeStackNavigationProp} from '@react-navigation/native-stack';
 import {RouteNames} from '../../../routes';
-import {scaleWidth} from '../../styles/global';
+import {
+  BORDER_RADIUS,
+  COLORS,
+  Heading_18EB_Round,
+  Heading_24EB_Round,
+  scaleWidth,
+} from '../../styles/global';
 import {OnboardingStackParamList} from '../../navigation/types';
-import FeatureCarousel from '../../components/FeatureCarousel';
+import Header from '../../components/Header';
+import Spacer from '../../components/Spacer';
+import FastImage from 'react-native-fast-image';
+import ActivityIndicator from '../../components/ActivityIndicator';
+import {Body_15M} from '../../styles/typography';
 
 type NavigationProp = NativeStackNavigationProp<OnboardingStackParamList>;
 
-const FeatureIntroduction01Screen = () => {
+const IntroSearch = () => {
   const navigation = useNavigation<NavigationProp>();
 
   return (
     <SafeAreaView style={styles.container}>
+      <Header />
+      <View style={{flex: 1}}>
+        <View style={{paddingHorizontal: scaleWidth(20)}}>
+          <Text style={[Heading_24EB_Round, {color: COLORS.black}]}>
+            더 다양한 분야의
+            {'\n'}글을 읽어볼 수 있어요
+          </Text>
+          <Spacer num={20} />
+          <Text style={[Body_15M, {color: COLORS.gray600}]}>
+            미션 화면에서 나의 관심분야 글을 확인할 수 있어요
+          </Text>
+          <Spacer num={86} />
+        </View>
+
+        <View
+          style={{
+            paddingHorizontal: scaleWidth(41),
+          }}>
+          <FastImage
+            source={{uri: ''}}
+            aria-label="카드리스트"
+            resizeMode="contain"
+            style={{
+              borderWidth: 1,
+              height: scaleWidth(276),
+              borderColor: COLORS.gray400,
+              borderRadius: BORDER_RADIUS[20],
+            }}
+          />
+          <Spacer num={124} />
+          <ActivityIndicator activeIndex={2} />
+        </View>
+      </View>
       <TouchableOpacity
         style={{
-          position: 'absolute',
-          top: 50,
-          left: 20,
-          padding: 10,
-          backgroundColor: '#ddd',
-          borderRadius: 8,
-          zIndex: 1,
+          height: scaleWidth(56),
+          borderRadius: BORDER_RADIUS[16],
+          justifyContent: 'center',
+          alignItems: 'center',
+          backgroundColor: COLORS.puple.main,
+          marginHorizontal: scaleWidth(20),
         }}
-        onPress={() => {
-          navigation.goBack();
-        }}>
-        <Text>뒤로가기</Text>
+        onPress={() => navigation.navigate(RouteNames.SOCIAL_LOGIN)}>
+        <Text style={[Heading_18EB_Round, {color: COLORS.white}]}>다음</Text>
       </TouchableOpacity>
-      <View style={styles.content}>
-        <FeatureCarousel />
-
-        <TouchableOpacity
-          style={{
-            width: '100%',
-            height: scaleWidth(56),
-            borderRadius: scaleWidth(12),
-            justifyContent: 'center',
-            alignItems: 'center',
-            backgroundColor: 'orange',
-          }}
-          onPress={() => navigation.navigate(RouteNames.INTERESTS)}>
-          <Text>일단 다음</Text>
-        </TouchableOpacity>
-      </View>
     </SafeAreaView>
   );
 };
@@ -126,4 +150,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default FeatureIntroduction01Screen;
+export default IntroSearch;

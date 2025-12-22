@@ -6,9 +6,10 @@ import {
 } from '@react-native-seoul/kakao-login';
 import NaverLogin, {GetProfileResponse} from '@react-native-seoul/naver-login';
 import {GOOGLE_CONFIG, NAVER_CONFIG} from '../config/socialLoginConfig';
+import appleAuth from '@invertase/react-native-apple-authentication';
 
 // 소셜 로그인 타입
-export type SocialLoginProvider = 'google' | 'kakao' | 'naver';
+export type SocialLoginProvider = 'google' | 'kakao' | 'naver' | 'apple';
 
 export interface SocialLoginResult {
   success: boolean;
@@ -200,6 +201,8 @@ export const signInWithSocial = async (
       return signInWithKakao();
     case 'naver':
       return signInWithNaver();
+    case 'apple':
+      return signInWithApple();
     default:
       return {
         success: false,
@@ -223,5 +226,50 @@ export const signOutSocial = async (
     case 'naver':
       await signOutNaver();
       break;
+  }
+};
+// 애플 로그인
+export const signInWithApple = async (): Promise<SocialLoginResult> => {
+  try {
+    // performs login request
+    const appleAuthRequestResponse = await appleAuth.performRequest({
+      requestedOperation: appleAuth.Operation.LOGIN,
+      requestedScopes: [appleAuth.Scope.EMAIL, appleAuth.Scope.FULL_NAME],
+    });
+
+    // get current authentication state for user
+    const credentialState = await appleAuth.getCredentialStateForUser(
+      appleAuthRequestResponse.user,
+    );
+
+    // use credentialState response to ensure the user is authenticated
+    if (credentialState === appleAuth.State.AUTHORIZED) {
+      // user is authenticated
+      const token = appleAuthRequestResponse.identityToken;
+      return {
+        success: true,
+        provider: 'apple',
+        accessToken: token || undefined,
+        userInfo: {
+          id: appleAuthRequestResponse.user || '',
+          email: appleAuthRequestResponse.email || undefined,
+          name: appleAuthRequestResponse.fullName?.givenName || undefined,
+          profileImage: appleAuthRequestResponse.identityToken || undefined,
+        },
+      };
+    } else {
+      return {
+        success: false,
+        provider: 'apple',
+        error: '애플 로그인 취소',
+      };
+    }
+  } catch (err: any) {
+    console.log('애플 로그인' + err);
+    return {
+      success: false,
+      provider: 'apple',
+      error: err.message || '애플 로그인 실패',
+    };
   }
 };

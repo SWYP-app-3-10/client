@@ -4,14 +4,16 @@ import {RouteNames} from '../../routes';
 // Root Stack Param List
 export type OnboardingStackParamList = {
   [RouteNames.DIFFICULTY_SETTING]: undefined;
-  [RouteNames.FEATURE_INTRO_01]: undefined;
   [RouteNames.INTERESTS]: undefined;
   [RouteNames.REWARD]: undefined;
+  [RouteNames.INTRO_CARDLIST]: undefined;
+  [RouteNames.INTRO_FUNCTION]: undefined;
+  [RouteNames.INTRO_SEARCH]: undefined;
+  [RouteNames.SOCIAL_LOGIN]: undefined;
 };
 
 // 2. 부모: 루트 스택 (온보딩 스택을 포함)
 export type RootStackParamList = {
-  [RouteNames.LOGIN]: undefined;
   Onboarding: NavigatorScreenParams<OnboardingStackParamList>;
   Maintab: NavigatorScreenParams<MainStackParamList>;
 };
@@ -47,6 +49,7 @@ export type SearchStackParamList = {
 // MyPage Stack Param List
 export type MyPageStackParamList = {
   [RouteNames.MY_PAGE]: undefined;
+  [RouteNames.COMPONENT_SHOWCASE]: undefined;
   // 서브 화면들 추가 예정
   // 예시: 'settings': undefined;
 };

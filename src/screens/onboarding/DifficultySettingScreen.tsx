@@ -1,30 +1,19 @@
 import React, {useState} from 'react';
+import {View, Text, StyleSheet, SafeAreaView, ScrollView} from 'react-native';
+import {BORDER_RADIUS, COLORS, scaleWidth} from '../../styles/global';
+import {useCompleteOnboarding} from '../../store/onboardingStore';
+import {ProgressBar} from '../../components';
 import {
-  View,
-  Text,
-  StyleSheet,
-  TouchableOpacity,
-  SafeAreaView,
-  ScrollView,
-} from 'react-native';
-import {CompositeNavigationProp, useNavigation} from '@react-navigation/native';
-import {NativeStackNavigationProp} from '@react-navigation/native-stack';
-import {scaleWidth} from '../../styles/global';
-import {
-  OnboardingStackParamList,
-  RootStackParamList,
-} from '../../navigation/types';
-import {RouteNames} from '../../../routes';
-import {useOnboarding} from '../../context/OnboardingContext';
+  Body_15M,
+  Body_16M,
+  Body_16R,
+  Body_16SB,
+  Heading_20EB_Round,
+  Heading_24EB_Round,
+} from '../../styles/typography';
+import Spacer from '../../components/Spacer';
+import Button from '../../components/Button';
 
-type InterestsScreenProps = CompositeNavigationProp<
-  NativeStackNavigationProp<
-    OnboardingStackParamList,
-    typeof RouteNames.INTERESTS
-  >,
-  // 부모 내비게이터 (Root) -> 이걸 붙여야 MAIN_TAB으로 이동 가능
-  NativeStackNavigationProp<RootStackParamList>
->;
 type Difficulty = 'beginner' | 'intermediate' | 'advanced';
 
 const DIFFICULTY_INFO = {
@@ -32,7 +21,7 @@ const DIFFICULTY_INFO = {
     label: '초급',
     time: '1분',
     description:
-      '초급 난이도는 짧은 시간 동안 간단한 내용을 학습할 수 있습니다. 하루에 1분만 투자하면 부담 없이 시작할 수 있어요.',
+      '록히드 마틴이 F-35 전투기 관련 총 11억 4천만 달러 규모의 대형 계약을 추가로 확보하면서 글로벌 방산 산업에 다시 한 번 강한 신호를 보냈다. 이번 계약은 단순한 무기 판매를 넘어, 미·중·러를 축으로 한 패권 경쟁이 얼마나 구조적으로 고착화되고 있는지를 보여주는 상징적 사건이다. ',
   },
   intermediate: {
     label: '중급',
@@ -49,10 +38,9 @@ const DIFFICULTY_INFO = {
 };
 
 const DifficultySettingScreen = () => {
-  const navigation = useNavigation<InterestsScreenProps>();
   const [selectedDifficulty, setSelectedDifficulty] =
     useState<Difficulty>('beginner');
-  const {completeOnboarding} = useOnboarding();
+  const completeOnboarding = useCompleteOnboarding();
   const handleNext = () => {
     // TODO: 온보딩 완료 처리 및 메인 화면으로 이동
     completeOnboarding();
@@ -63,23 +51,22 @@ const DifficultySettingScreen = () => {
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
-        <TouchableOpacity onPress={() => navigation.goBack()}>
-          <Text style={styles.backButton}>←</Text>
-        </TouchableOpacity>
-        <View style={styles.progressBar}>
-          <View style={[styles.progressFill, {width: '100%'}]} />
-        </View>
+        <ProgressBar fill={2} />
       </View>
 
       <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
+        <Spacer num={92} />
         <Text style={styles.title}>난이도를 선택해주세요</Text>
+        <Spacer num={4} />
         <Text style={styles.subtitle}>
           화면에서 나의 관심분야 글을 확인할 수 있어요
         </Text>
-
+        <Spacer num={32} />
         {/* 난이도 선택 버튼 */}
         <View style={styles.difficultyContainer}>
-          <TouchableOpacity
+          <Button
+            variant="primary"
+            title="초급"
             style={[
               styles.difficultyButton,
               selectedDifficulty === 'beginner' &&
@@ -94,8 +81,10 @@ const DifficultySettingScreen = () => {
               ]}>
               초급
             </Text>
-          </TouchableOpacity>
-          <TouchableOpacity
+          </Button>
+          <Button
+            variant="primary"
+            title="중급"
             style={[
               styles.difficultyButton,
               selectedDifficulty === 'intermediate' &&
@@ -110,8 +99,10 @@ const DifficultySettingScreen = () => {
               ]}>
               중급
             </Text>
-          </TouchableOpacity>
-          <TouchableOpacity
+          </Button>
+          <Button
+            variant="primary"
+            title="고급"
             style={[
               styles.difficultyButton,
               selectedDifficulty === 'advanced' &&
@@ -126,22 +117,29 @@ const DifficultySettingScreen = () => {
               ]}>
               고급
             </Text>
-          </TouchableOpacity>
+          </Button>
         </View>
-
+        <Spacer num={32} />
         {/* 선택된 난이도 설명 */}
-        <View style={styles.descriptionContainer}>
-          <Text style={styles.descriptionTitle}>
-            {selectedInfo.label} 소요시간 {selectedInfo.time}
-          </Text>
+        <View>
+          <View style={styles.descriptionTitleContainer}>
+            <Text style={styles.descriptionTitle}>{selectedInfo.label}</Text>
+            <Text style={styles.descriptionLabelTime}>
+              소요시간 {selectedInfo.time}
+            </Text>
+          </View>
+          <Spacer num={20} />
           <Text style={styles.descriptionText}>{selectedInfo.description}</Text>
         </View>
       </ScrollView>
 
       <View style={styles.footer}>
-        <TouchableOpacity style={styles.nextButton} onPress={handleNext}>
-          <Text style={styles.nextButtonText}>다음</Text>
-        </TouchableOpacity>
+        <Button
+          variant="primary"
+          title="다음"
+          onPress={handleNext}
+          // disabled={!isNextButtonActive}
+        />
       </View>
     </SafeAreaView>
   );
@@ -156,103 +154,68 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: scaleWidth(20),
-    paddingTop: scaleWidth(12),
-    paddingBottom: scaleWidth(16),
-    gap: scaleWidth(12),
-  },
-  backButton: {
-    fontSize: scaleWidth(24),
-    color: '#000000',
-  },
-  progressBar: {
-    flex: 1,
-    height: scaleWidth(4),
-    backgroundColor: '#E0E0E0',
-    borderRadius: scaleWidth(2),
-    overflow: 'hidden',
-  },
-  progressFill: {
-    height: '100%',
-    backgroundColor: '#9B59B6',
   },
   content: {
     flex: 1,
     paddingHorizontal: scaleWidth(20),
   },
   title: {
-    fontSize: scaleWidth(24),
-    fontWeight: '700',
-    color: '#000000',
-    marginBottom: scaleWidth(8),
-    marginTop: scaleWidth(8),
+    ...Heading_24EB_Round,
+    color: COLORS.black,
   },
   subtitle: {
-    fontSize: scaleWidth(14),
-    color: '#666666',
-    marginBottom: scaleWidth(32),
-    lineHeight: scaleWidth(20),
+    ...Body_15M,
+    color: COLORS.gray600,
   },
   difficultyContainer: {
     flexDirection: 'row',
     gap: scaleWidth(8),
-    marginBottom: scaleWidth(32),
+    height: scaleWidth(52),
+    backgroundColor: COLORS.gray100,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderRadius: BORDER_RADIUS[12],
   },
   difficultyButton: {
-    flex: 1,
-    height: scaleWidth(48),
-    borderRadius: scaleWidth(12),
-    borderWidth: 1,
-    borderColor: '#E0E0E0',
-    backgroundColor: '#FFFFFF',
+    backgroundColor: 'transparent',
+    width: scaleWidth(107),
+    height: scaleWidth(36),
+    borderRadius: BORDER_RADIUS[10],
     justifyContent: 'center',
     alignItems: 'center',
   },
   difficultyButtonSelected: {
-    backgroundColor: '#9B59B6',
-    borderColor: '#9B59B6',
+    backgroundColor: COLORS.puple.main,
+    borderColor: COLORS.puple.main,
+    borderRadius: BORDER_RADIUS[10],
   },
   difficultyButtonText: {
-    fontSize: scaleWidth(16),
-    color: '#666666',
-    fontWeight: '600',
+    ...Body_16SB,
+    color: COLORS.gray500,
   },
   difficultyButtonTextSelected: {
-    color: '#FFFFFF',
+    ...Body_16SB,
+    color: COLORS.white,
   },
-  descriptionContainer: {
-    backgroundColor: '#F9F9F9',
-    borderRadius: scaleWidth(12),
-    padding: scaleWidth(20),
-    marginBottom: scaleWidth(20),
+  descriptionTitleContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: scaleWidth(11),
   },
   descriptionTitle: {
-    fontSize: scaleWidth(18),
-    fontWeight: '600',
-    color: '#000000',
-    marginBottom: scaleWidth(12),
+    ...Heading_20EB_Round,
+    color: COLORS.puple.main,
+  },
+  descriptionLabelTime: {
+    ...Body_16M,
+    color: COLORS.puple.main,
   },
   descriptionText: {
-    fontSize: scaleWidth(14),
-    color: '#666666',
-    lineHeight: scaleWidth(20),
+    ...Body_16R,
+    color: COLORS.black,
   },
   footer: {
     paddingHorizontal: scaleWidth(20),
-    paddingBottom: scaleWidth(40),
-    paddingTop: scaleWidth(20),
-  },
-  nextButton: {
-    width: '100%',
-    height: scaleWidth(56),
-    backgroundColor: '#E0E0E0',
-    borderRadius: scaleWidth(12),
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  nextButtonText: {
-    color: '#666666',
-    fontSize: scaleWidth(16),
-    fontWeight: '600',
   },
 });
 

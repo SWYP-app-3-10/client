@@ -2,14 +2,12 @@ export const RouteNames = {
   // 스플래시
   SPLASH: 'splash' as const,
 
-  // 인증
-  LOGIN: 'login' as const,
-
   // 온보딩
-
   ONBOARDING: 'onboarding' as const,
+  INTRO_CARDLIST: 'intro-cardlist' as const,
+  INTRO_FUNCTION: 'intro-function' as const,
+  INTRO_SEARCH: 'intro-search' as const,
   SOCIAL_LOGIN: 'social-login' as const,
-  FEATURE_INTRO_01: 'feature-intro-01' as const,
   INTERESTS: 'interests' as const,
   DIFFICULTY_SETTING: 'difficulty-setting' as const,
 
@@ -28,4 +26,7 @@ export const RouteNames = {
 
   // 광고
   REWARD: 'reward' as const,
+
+  // 컴포넌트 쇼케이스
+  COMPONENT_SHOWCASE: 'component-showcase' as const,
 };

@@ -9,28 +9,31 @@ import {
 import {scaleWidth} from '../styles/global';
 
 // ... CAROUSEL_DATA는 동일합니다 ...
-const CAROUSEL_DATA = [
+export const CAROUSEL_DATA = [
   {
     id: '1',
     title: '뇌세포1',
     description: '뇌세포',
     color: '#E0E0E0',
+    imgUrl: <></>,
   },
   {
     id: '2',
     title: '뇌세포2',
     description: '뇌세포',
     color: '#D0D0D0',
+    imgUrl: <></>,
   },
   {
     id: '3',
     title: '퀴즈 모드',
     description: '뇌세포',
     color: '#C0C0C0',
+    imgUrl: <></>,
   },
 ];
 
-const FeatureCarousel = () => {
+const FeatureCarousel = ({data}: {data: any}) => {
   const {width} = useWindowDimensions();
   const [activeIndex, setActiveIndex] = useState(0);
 
@@ -54,22 +57,26 @@ const FeatureCarousel = () => {
     // 카드 wrapper 너비를 계산된 CARD_WIDTH로 고정
     <View style={[styles.cardWrapper, {width: CARD_WIDTH}]}>
       {/* 이미지 박스 */}
-      <View style={[styles.imageBox, {backgroundColor: item.color}]}>
-        <Text style={styles.icon}>🖼️</Text>
-        <Text style={styles.placeholderText}>이미지 영역</Text>
-      </View>
+      {item.imgUrl !== undefined && (
+        <View style={[styles.imageBox, {backgroundColor: item.color}]}>
+          <Text style={styles.icon}>🖼️</Text>
+          <Text style={styles.placeholderText}>이미지 영역</Text>
+        </View>
+      )}
       {/* 텍스트 박스 */}
-      <View style={styles.textBox}>
-        <Text style={styles.titleText}>{item.title}</Text>
-        <Text style={styles.descText}>{item.description}</Text>
-      </View>
+      {item.title !== '' && item.description !== '' && (
+        <View style={styles.textBox}>
+          <Text style={styles.titleText}>{item.title}</Text>
+          <Text style={styles.descText}>{item.description}</Text>
+        </View>
+      )}
     </View>
   );
 
   return (
     <View style={styles.container}>
       <FlatList
-        data={CAROUSEL_DATA}
+        data={data}
         renderItem={renderItem}
         keyExtractor={item => item.id}
         horizontal
