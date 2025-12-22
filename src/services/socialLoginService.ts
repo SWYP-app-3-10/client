@@ -12,6 +12,7 @@ import appleAuth from '@invertase/react-native-apple-authentication';
 import {
   getAuth,
   GoogleAuthProvider,
+  AppleAuthProvider,
   signInWithCredential,
   signOut,
 } from '@react-native-firebase/auth';
@@ -238,36 +239,53 @@ export const signOutSocial = async (
 };
 // 애플 로그인
 export const signInWithApple = async (): Promise<SocialLoginResult> => {
+  let appleAuthRequestResponse: any = null;
+  let identityToken: string | null = null;
+
   try {
-    const appleAuthRequestResponse = await appleAuth.performRequest({
+    appleAuthRequestResponse = await appleAuth.performRequest({
       requestedOperation: appleAuth.Operation.LOGIN,
       requestedScopes: [appleAuth.Scope.EMAIL, appleAuth.Scope.FULL_NAME],
     });
 
-    const credentialState = await appleAuth.getCredentialStateForUser(
-      appleAuthRequestResponse.user,
+    identityToken = appleAuthRequestResponse.identityToken;
+    const { user } = appleAuthRequestResponse;
+
+    if (!identityToken) {
+      throw new Error('Apple ID Token이 없습니다.');
+    }
+
+    if (!user) {
+      throw new Error('Apple User ID가 없습니다.');
+    }
+
+    const authInstance = getAuth();
+    const appleCredential = AppleAuthProvider.credential(
+      identityToken,
+      appleAuthRequestResponse.nonce || undefined,
     );
 
-    if (credentialState === appleAuth.State.AUTHORIZED) {
-      const token = appleAuthRequestResponse.identityToken;
-      return {
-        success: true,
-        provider: 'apple',
-        accessToken: token || undefined,
-        userInfo: {
-          id: appleAuthRequestResponse.user || '',
-          email: appleAuthRequestResponse.email || undefined,
-          name: appleAuthRequestResponse.fullName?.givenName || undefined,
-          profileImage: undefined, // 애플은 프로필 이미지를 제공하지 않음
-        },
-      };
-    } else {
-      return {
-        success: false,
-        provider: 'apple',
-        error: '애플 로그인 취소',
-      };
-    }
+    const userCredential = await signInWithCredential(
+      authInstance,
+      appleCredential,
+    );
+    const firebaseUser = userCredential.user;
+
+    return {
+      success: true,
+      provider: 'apple',
+      accessToken: identityToken,
+      userInfo: {
+        id: firebaseUser.uid,
+        email:
+          firebaseUser.email || appleAuthRequestResponse.email || undefined,
+        name:
+          firebaseUser.displayName ||
+          appleAuthRequestResponse.fullName?.givenName ||
+          undefined,
+        profileImage: undefined,
+      },
+    };
   } catch (err: any) {
     console.error('애플 로그인 에러:', err);
     return {
