@@ -8,9 +8,8 @@ export const GOOGLE_CONFIG = {
 
 // 네이버 로그인 설정
 export const NAVER_CONFIG = {
-  consumerKey: 'B5ZGu3ldTDQ4nxxBpWho',
-
-  consumerSecret: 'Xa1gbBbz2T',
-  appName: '뇌세포',
-  serviceUrlScheme: 'braincellnaver',
+  consumerKey: '4roVUz7ZIQwwxt9t20Wz',
+  consumerSecret: 'SrRwE8j1Fr',
+  appName: '뉴로스',
+  serviceUrlScheme: 'neurousnaver',
 };
