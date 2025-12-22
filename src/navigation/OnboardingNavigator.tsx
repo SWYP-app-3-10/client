@@ -16,12 +16,12 @@ const OnboardingNavigator = () => {
   const currentStep = useOnboardingStore(state => state.currentStep);
 
   // 현재 단계에 따라 초기 화면 결정
+  // difficulty 단계에서도 관심분야 화면으로 돌아가서 선택한 관심분야를 확인할 수 있도록 함
   const getInitialRouteName = () => {
     switch (currentStep) {
       case 'interests':
-        return RouteNames.INTERESTS;
       case 'difficulty':
-        return RouteNames.DIFFICULTY_SETTING;
+        return RouteNames.INTERESTS;
       case 'completed':
         return RouteNames.INTERESTS; // 완료된 경우는 RootNavigator에서 처리
       case 'login':

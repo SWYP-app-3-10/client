@@ -1,19 +1,21 @@
 import React from 'react';
-import {Text, View} from 'react-native';
-import {Ic_backIcon} from '../icons';
+import { Text, View } from 'react-native';
+import { Ic_backIcon } from '../icons';
 
-import {useNavigation} from '@react-navigation/native';
+import { useNavigation } from '@react-navigation/native';
 import IconButton from './IconButton';
-import {scaleWidth} from '../styles/global';
+import { scaleWidth } from '../styles/global';
 
 const Header = ({
   title,
   leftIcon,
   goBackAction,
+  iconColor,
 }: {
   title?: string;
   leftIcon?: React.ReactNode;
   goBackAction?: () => void;
+  iconColor?: string;
 }) => {
   const navigation = useNavigation();
   return (
@@ -21,14 +23,16 @@ const Header = ({
       style={{
         flexDirection: 'row',
         alignItems: 'center',
-        height: scaleWidth(48),
+        height: scaleWidth(52),
         paddingHorizontal: scaleWidth(20),
-      }}>
+        marginTop: scaleWidth(8),
+      }}
+    >
       {leftIcon ? (
         leftIcon
       ) : (
         <IconButton onPress={() => goBackAction ?? navigation.goBack()}>
-          <Ic_backIcon />
+          <Ic_backIcon color={iconColor} />
         </IconButton>
       )}
       <Text>{title}</Text>

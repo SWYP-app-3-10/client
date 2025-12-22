@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, Alert } from 'react-native';
+import { View, Text, StyleSheet, Alert, Platform } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -136,9 +136,17 @@ const LoginScreen = () => {
           <Text>로고</Text>
         </View>
         <View style={styles.buttonContainer}>
+          {Platform.OS === 'ios' && (
+            <SocialLoginButton
+              provider="apple"
+              onPress={handleAppleLogin}
+              loading={loading}
+              recentLogin={recentLogin}
+            />
+          )}
           <SocialLoginButton
             provider="apple"
-            onPress={handleAppleLogin}
+            onPress={() => navigation.navigate(RouteNames.INTERESTS)}
             loading={loading}
             recentLogin={recentLogin}
           />

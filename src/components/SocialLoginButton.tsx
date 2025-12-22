@@ -1,11 +1,5 @@
 import React from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  ActivityIndicator,
-  Platform,
-} from 'react-native';
+import { View, Text, StyleSheet, ActivityIndicator } from 'react-native';
 import { AppleButton } from '@invertase/react-native-apple-authentication';
 import Button from './Button';
 import {
@@ -46,22 +40,6 @@ const SocialLoginButton: React.FC<SocialLoginButtonProps> = ({
               style={styles.appleButton}
               onPress={onPress}
             />
-            {/* {Platform.OS === 'ios' && (
-              <Button
-                variant="outline"
-                style={styles.outlineButton}
-                onPress={onPress}
-                disabled={loading !== null}
-              >
-                {isLoading ? (
-                  <ActivityIndicator color="#FFFFFF" />
-                ) : (
-                  <Text style={styles.socialButtonText}>
-                    애플 계정으로 로그인
-                  </Text>
-                )}
-              </Button>
-            )} */}
           </>
         );
       case 'google':

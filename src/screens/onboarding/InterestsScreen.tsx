@@ -1,12 +1,5 @@
-import React, { useState, useCallback, useMemo } from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  ScrollView,
-  StatusBar,
-  Platform,
-} from 'react-native';
+import React, { useState, useCallback, useMemo, useEffect } from 'react';
+import { View, Text, StyleSheet, ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -30,6 +23,7 @@ import {
   ThirdIcon,
 } from '../../icons/commonIcons/commonIcons';
 import { Body_15M, Body_18M, Heading_18SB } from '../../styles/typography';
+import Header from '../../components/Header';
 
 type NavigationProp = NativeStackNavigationProp<OnboardingStackParamList>;
 
@@ -106,34 +100,54 @@ const InterestsScreen = () => {
   const setOnboardingStep = useOnboardingStore(
     state => state.setOnboardingStep,
   );
+  const savedInterests = useOnboardingStore(state => state.interests);
+  const setInterests = useOnboardingStore(state => state.setInterests);
+
   // 선택 순서를 저장: Map<id, 순서(1, 2, ...)>
   const [selectedInterests, setSelectedInterests] = useState<
     Map<string, number>
   >(new Map());
 
-  const toggleInterest = useCallback((id: string) => {
-    setSelectedInterests(prev => {
-      const newSelected = new Map(prev);
-      if (newSelected.has(id)) {
-        // 이미 선택된 경우 제거하고 순서 재정렬
-        const removedOrder = newSelected.get(id)!;
-        newSelected.delete(id);
-        // 제거된 순서보다 큰 순서들을 1씩 감소
-        newSelected.forEach((order, key) => {
-          if (order > removedOrder) {
-            newSelected.set(key, order - 1);
+  // 저장된 관심분야가 로드되면 state에 반영
+  useEffect(() => {
+    if (savedInterests) {
+      const interestsMap = new Map(Object.entries(savedInterests));
+      setSelectedInterests(interestsMap);
+    }
+  }, [savedInterests]);
+
+  const toggleInterest = useCallback(
+    (id: string) => {
+      setSelectedInterests(prev => {
+        const newSelected = new Map(prev);
+        if (newSelected.has(id)) {
+          // 이미 선택된 경우 제거하고 순서 재정렬
+          const removedOrder = newSelected.get(id)!;
+          newSelected.delete(id);
+          // 제거된 순서보다 큰 순서들을 1씩 감소
+          newSelected.forEach((order, key) => {
+            if (order > removedOrder) {
+              newSelected.set(key, order - 1);
+            }
+          });
+        } else {
+          // 최대 3개까지 선택 가능
+          if (newSelected.size < 3) {
+            const nextOrder = newSelected.size + 1;
+            newSelected.set(id, nextOrder);
           }
-        });
-      } else {
-        // 최대 3개까지 선택 가능
-        if (newSelected.size < 3) {
-          const nextOrder = newSelected.size + 1;
-          newSelected.set(id, nextOrder);
         }
-      }
-      return newSelected;
-    });
-  }, []);
+        // 변경된 관심분야를 AsyncStorage에 저장
+        const interestsData: Record<string, number> = {};
+        newSelected.forEach((order, key) => {
+          interestsData[key] = order;
+        });
+        setInterests(interestsData);
+        return newSelected;
+      });
+    },
+    [setInterests],
+  );
 
   const getPriority = useCallback(
     (id: string): number | null => {
@@ -154,13 +168,10 @@ const InterestsScreen = () => {
 
   return (
     <SafeAreaView style={styles.container} edges={['top', 'bottom']}>
-      <StatusBar
-        barStyle="dark-content"
-        backgroundColor={COLORS.white}
-        translucent={Platform.OS === 'android'}
-      />
+      <Header iconColor={COLORS.gray400} />
+      <Spacer num={2} />
+
       <View style={styles.header}>
-        <Spacer num={24} />
         <ProgressBar fill={1} />
       </View>
 

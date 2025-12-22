@@ -3,8 +3,8 @@
  * 현재는 더미 데이터를 반환하지만, 실제 API 연동 시 이 파일을 수정
  */
 
-import {Mission, Article} from '../data/mockData';
-import {mockMissions, mockArticles} from '../data/mockData';
+import { Mission, Article } from '../data/mockData';
+import { mockMissions, mockArticles } from '../data/mockData';
 
 // API 응답 시뮬레이션을 위한 딜레이 함수
 const delay = (ms: number) =>
@@ -58,6 +58,6 @@ export const updateMissionProgress = async (
   if (!mission) {
     throw new Error('Mission not found');
   }
-  const updatedMission = {...mission, current};
+  const updatedMission = { ...mission, current };
   return updatedMission;
 };

@@ -3,14 +3,24 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const ONBOARDING_COMPLETED_KEY = '@onboarding_completed';
 const ONBOARDING_STEP_KEY = '@onboarding_step';
+const INTERESTS_KEY = '@onboarding_interests';
+const DIFFICULTY_KEY = '@onboarding_difficulty';
 
 export type OnboardingStep = 'login' | 'interests' | 'difficulty' | 'completed';
+export type Difficulty = 'beginner' | 'intermediate' | 'advanced';
+
+// 관심분야 선택 데이터: Map<id, 순서(1, 2, 3)>
+export type InterestsData = Record<string, number>;
 
 interface OnboardingStore {
   isOnboardingCompleted: boolean;
   currentStep: OnboardingStep;
+  interests: InterestsData | null;
+  difficulty: Difficulty | null;
   completeOnboarding: () => Promise<void>;
   setOnboardingStep: (step: OnboardingStep) => Promise<void>;
+  setInterests: (interests: InterestsData) => Promise<void>;
+  setDifficulty: (difficulty: Difficulty) => Promise<void>;
   resetOnboarding: () => Promise<void>;
   loadOnboardingStatus: () => Promise<void>;
 }
@@ -18,6 +28,8 @@ interface OnboardingStore {
 export const useOnboardingStore = create<OnboardingStore>(set => ({
   isOnboardingCompleted: false,
   currentStep: 'login',
+  interests: null,
+  difficulty: null,
   completeOnboarding: async () => {
     try {
       await AsyncStorage.setItem(ONBOARDING_COMPLETED_KEY, 'true');
@@ -36,11 +48,34 @@ export const useOnboardingStore = create<OnboardingStore>(set => ({
       console.error('온보딩 단계 저장 실패:', error);
     }
   },
+  setInterests: async (interests: InterestsData) => {
+    try {
+      await AsyncStorage.setItem(INTERESTS_KEY, JSON.stringify(interests));
+      set({ interests });
+    } catch (error) {
+      console.error('관심분야 저장 실패:', error);
+    }
+  },
+  setDifficulty: async (difficulty: Difficulty) => {
+    try {
+      await AsyncStorage.setItem(DIFFICULTY_KEY, difficulty);
+      set({ difficulty });
+    } catch (error) {
+      console.error('난이도 저장 실패:', error);
+    }
+  },
   resetOnboarding: async () => {
     try {
       await AsyncStorage.removeItem(ONBOARDING_COMPLETED_KEY);
       await AsyncStorage.removeItem(ONBOARDING_STEP_KEY);
-      set({ isOnboardingCompleted: false, currentStep: 'login' });
+      await AsyncStorage.removeItem(INTERESTS_KEY);
+      await AsyncStorage.removeItem(DIFFICULTY_KEY);
+      set({
+        isOnboardingCompleted: false,
+        currentStep: 'login',
+        interests: null,
+        difficulty: null,
+      });
     } catch (error) {
       console.error('온보딩 상태 초기화 실패:', error);
     }
@@ -51,17 +86,45 @@ export const useOnboardingStore = create<OnboardingStore>(set => ({
       const step = (await AsyncStorage.getItem(
         ONBOARDING_STEP_KEY,
       )) as OnboardingStep | null;
+      const interestsStr = await AsyncStorage.getItem(INTERESTS_KEY);
+      const difficulty = (await AsyncStorage.getItem(
+        DIFFICULTY_KEY,
+      )) as Difficulty | null;
+
+      const interests: InterestsData | null = interestsStr
+        ? JSON.parse(interestsStr)
+        : null;
 
       if (completed === 'true') {
-        set({ isOnboardingCompleted: true, currentStep: 'completed' });
+        set({
+          isOnboardingCompleted: true,
+          currentStep: 'completed',
+          interests,
+          difficulty,
+        });
       } else if (step) {
-        set({ isOnboardingCompleted: false, currentStep: step });
+        set({
+          isOnboardingCompleted: false,
+          currentStep: step,
+          interests,
+          difficulty,
+        });
       } else {
-        set({ isOnboardingCompleted: false, currentStep: 'login' });
+        set({
+          isOnboardingCompleted: false,
+          currentStep: 'login',
+          interests: null,
+          difficulty: null,
+        });
       }
     } catch (error) {
       console.error('온보딩 상태 불러오기 실패:', error);
-      set({ isOnboardingCompleted: false, currentStep: 'login' });
+      set({
+        isOnboardingCompleted: false,
+        currentStep: 'login',
+        interests: null,
+        difficulty: null,
+      });
     }
   },
 }));

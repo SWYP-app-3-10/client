@@ -1,15 +1,12 @@
-import React, { useState } from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  ScrollView,
-  StatusBar,
-  Platform,
-} from 'react-native';
+import React, { useState, useCallback } from 'react';
+import { View, Text, StyleSheet, ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { BORDER_RADIUS, COLORS, scaleWidth } from '../../styles/global';
-import { useCompleteOnboarding } from '../../store/onboardingStore';
+import {
+  useCompleteOnboarding,
+  useOnboardingStore,
+  Difficulty,
+} from '../../store/onboardingStore';
 import { ProgressBar } from '../../components';
 import {
   Body_15M,
@@ -21,8 +18,7 @@ import {
 } from '../../styles/typography';
 import Spacer from '../../components/Spacer';
 import Button from '../../components/Button';
-
-type Difficulty = 'beginner' | 'intermediate' | 'advanced';
+import Header from '../../components/Header';
 
 const DIFFICULTY_INFO = {
   beginner: {
@@ -44,11 +40,23 @@ const DIFFICULTY_INFO = {
       '고급 난이도는 전문적이고 심화된 내용을 다룹니다. 하루에 5분 정도 투자하면 전문성을 키울 수 있어요.',
   },
 };
-
 const DifficultySettingScreen = () => {
-  const [selectedDifficulty, setSelectedDifficulty] =
-    useState<Difficulty>('beginner');
+  const savedDifficulty = useOnboardingStore(state => state.difficulty);
+  const setDifficulty = useOnboardingStore(state => state.setDifficulty);
+  const [selectedDifficulty, setSelectedDifficulty] = useState<Difficulty>(
+    savedDifficulty || 'beginner',
+  );
   const completeOnboarding = useCompleteOnboarding();
+
+  // 난이도 변경 시 저장
+  const handleDifficultyChange = useCallback(
+    (difficulty: Difficulty) => {
+      setSelectedDifficulty(difficulty);
+      setDifficulty(difficulty);
+    },
+    [setDifficulty],
+  );
+
   const handleNext = async () => {
     // 온보딩 완료 처리 및 메인 화면으로 이동
     await completeOnboarding();
@@ -58,11 +66,9 @@ const DifficultySettingScreen = () => {
 
   return (
     <SafeAreaView style={styles.container} edges={['top', 'bottom']}>
-      <StatusBar
-        barStyle="dark-content"
-        backgroundColor={COLORS.white}
-        translucent={Platform.OS === 'android'}
-      />
+      <Header iconColor={COLORS.gray400} />
+      <Spacer num={2} />
+
       <View style={styles.header}>
         <ProgressBar fill={2} />
       </View>
@@ -85,7 +91,7 @@ const DifficultySettingScreen = () => {
               selectedDifficulty === 'beginner' &&
                 styles.difficultyButtonSelected,
             ]}
-            onPress={() => setSelectedDifficulty('beginner')}
+            onPress={() => handleDifficultyChange('beginner')}
           >
             <Text
               style={[
@@ -105,7 +111,7 @@ const DifficultySettingScreen = () => {
               selectedDifficulty === 'intermediate' &&
                 styles.difficultyButtonSelected,
             ]}
-            onPress={() => setSelectedDifficulty('intermediate')}
+            onPress={() => handleDifficultyChange('intermediate')}
           >
             <Text
               style={[
@@ -125,7 +131,7 @@ const DifficultySettingScreen = () => {
               selectedDifficulty === 'advanced' &&
                 styles.difficultyButtonSelected,
             ]}
-            onPress={() => setSelectedDifficulty('advanced')}
+            onPress={() => handleDifficultyChange('advanced')}
           >
             <Text
               style={[
