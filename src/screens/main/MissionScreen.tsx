@@ -27,13 +27,21 @@ import { Article } from '../../data/mockData';
 import { clearAllAuthData } from '../../services/authService';
 import { useOnboardingStore } from '../../store/onboardingStore';
 import { Button } from '../../components';
+import { useNavigation } from '@react-navigation/native';
+import {
+  MainTabNavigationProp,
+  MissionStackParamList,
+} from '../../navigation/types';
+import { RouteNames } from '../../../routes';
 
 const MissionScreen = () => {
   const screenWidth = Dimensions.get('window').width;
   const scrollViewRef = useRef<ScrollView>(null);
   const [currentIndex, setCurrentIndex] = useState(0);
   const resetOnboarding = useOnboardingStore(state => state.resetOnboarding);
-
+  // 통합 네비게이션 타입 사용
+  const navigation =
+    useNavigation<MainTabNavigationProp<MissionStackParamList>>();
   // 개발용: 로그인 정보 초기화
   const handleClearLogin = async () => {
     Alert.alert(
@@ -185,6 +193,18 @@ const MissionScreen = () => {
           />
         )}
         {/* 헤더 */}
+        <Button
+          title="알림 페이지로"
+          variant="primary"
+          style={{
+            width: scaleWidth(50),
+            height: scaleWidth(50),
+            alignSelf: 'flex-end',
+          }}
+          onPress={() => {
+            navigation.navigate(RouteNames.CHARACTER_NOTIFICATION);
+          }}
+        />
         <View style={styles.header}>
           <View style={styles.headerLeft}>
             <Text style={styles.headerTitle}>오늘의 미션</Text>

@@ -271,11 +271,11 @@ export const signInWithApple = async (): Promise<SocialLoginResult> => {
     );
     const firebaseUser = userCredential.user;
 
-    return {
-      success: true,
-      provider: 'apple',
+      return {
+        success: true,
+        provider: 'apple',
       accessToken: identityToken,
-      userInfo: {
+        userInfo: {
         id: firebaseUser.uid,
         email:
           firebaseUser.email || appleAuthRequestResponse.email || undefined,
@@ -284,8 +284,8 @@ export const signInWithApple = async (): Promise<SocialLoginResult> => {
           appleAuthRequestResponse.fullName?.givenName ||
           undefined,
         profileImage: undefined,
-      },
-    };
+        },
+      };
   } catch (err: any) {
     console.error('애플 로그인 에러:', err);
     return {

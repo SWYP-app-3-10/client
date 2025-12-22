@@ -1,4 +1,9 @@
-import { NavigatorScreenParams } from '@react-navigation/native';
+import {
+  NavigatorScreenParams,
+  CompositeNavigationProp,
+} from '@react-navigation/native';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
 import { RouteNames } from '../../routes';
 import { NewsCategory } from '../screens/search/search_mockData';
 
@@ -13,24 +18,33 @@ export type OnboardingStackParamList = {
   [RouteNames.SOCIAL_LOGIN]: undefined;
 };
 
+// FullScreen Stack Param List (탭바 없는 전체 화면들)
+export type FullScreenStackParamList = {
+  [RouteNames.CHARACTER_NOTIFICATION]: undefined;
+  // 추후 탭바 없는 다른 화면들 추가 가능
+  // 예: [RouteNames.SETTINGS]: undefined;
+};
+
 // 2. 부모: 루트 스택 (온보딩 스택을 포함)
 export type RootStackParamList = {
   Onboarding: NavigatorScreenParams<OnboardingStackParamList>;
-  Maintab: NavigatorScreenParams<MainStackParamList>;
+  Maintab: NavigatorScreenParams<MainTabParamList>;
+  [RouteNames.FULL_SCREEN_STACK]: NavigatorScreenParams<FullScreenStackParamList>; // 전체 화면 스택 (탭바 없는 화면들)
+  // 전체 화면 스택 내부 화면들에 직접 접근 가능
+  [RouteNames.CHARACTER_NOTIFICATION]: undefined; // 알림 화면 (전체 화면 스택 내부)
 };
-// Main Stack Param List
-export type MainStackParamList = {
-  [RouteNames.MISSION]: undefined;
-  [RouteNames.CHARACTER]: NavigatorScreenParams<CharacterStackParamList>; // 캐릭터 스택
-  [RouteNames.SEARCH]: NavigatorScreenParams<SearchStackParamList>; // 검색 스택
-  [RouteNames.MY_PAGE]: undefined;
+
+// Main Tab Param List (Bottom Tab Navigator)
+export type MainTabParamList = {
+  [RouteNames.MISSION_TAB]: NavigatorScreenParams<MissionStackParamList>;
+  [RouteNames.CHARACTER_TAB]: NavigatorScreenParams<CharacterStackParamList>;
+  [RouteNames.SEARCH_TAB]: NavigatorScreenParams<SearchStackParamList>;
+  [RouteNames.MY_PAGE_TAB]: NavigatorScreenParams<MyPageStackParamList>;
 };
 
 // Mission Stack Param List
 export type MissionStackParamList = {
   [RouteNames.MISSION]: undefined;
-  // 서브 화면들 추가 예정
-  // 예시: 'mission-detail': {missionId: string};
 };
 
 // Character Stack Param List
@@ -38,7 +52,6 @@ export type CharacterStackParamList = {
   [RouteNames.CHARACTER]: undefined;
   [RouteNames.CHARACTER_CRITERIA]: undefined; // 기준 확인하기 (탭 2개 있는 화면)
   [RouteNames.CHARACTER_POINT_HISTORY]: undefined;
-  [RouteNames.CHARACTER_NOTIFICATION]: undefined;
 };
 
 // Search Stack Param List
@@ -59,3 +72,29 @@ export type MyPageStackParamList = {
   // 서브 화면들 추가 예정
   // 예시: 'settings': undefined;
 };
+
+/**
+ * 메인 탭 내부 스택 네비게이션 타입 헬퍼
+ *
+ * 각 탭 스택(Mission, Character, Search, MyPage)에서 사용하는 통합 네비게이션 타입
+ * - 자신의 스택 네비게이션
+ * - 탭 네비게이션
+ * - 루트 네비게이션
+ *
+ * @example
+ * // MissionScreen에서 사용
+ * type NavigationProp = MainTabNavigationProp<MissionStackParamList>;
+ * const navigation = useNavigation<NavigationProp>();
+ *
+ * // CharacterScreen에서 사용
+ * type NavigationProp = MainTabNavigationProp<CharacterStackParamList>;
+ * const navigation = useNavigation<NavigationProp>();
+ */
+export type MainTabNavigationProp<StackParamList extends Record<string, any>> =
+  CompositeNavigationProp<
+    NativeStackNavigationProp<StackParamList>,
+    CompositeNavigationProp<
+      BottomTabNavigationProp<MainTabParamList>,
+      NativeStackNavigationProp<RootStackParamList>
+    >
+  >;

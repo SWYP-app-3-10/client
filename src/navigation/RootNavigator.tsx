@@ -1,11 +1,13 @@
 import React from 'react';
-import {NavigationContainer} from '@react-navigation/native';
-import {createNativeStackNavigator} from '@react-navigation/native-stack';
-import {RouteNames} from '../../routes';
+import { NavigationContainer } from '@react-navigation/native';
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import { RouteNames } from '../../routes';
 import OnboardingNavigator from './OnboardingNavigator';
 import MainTabNavigator from './MainTabNavigator';
-import {useModalState, useModalStore} from '../store/modalStore';
-import {useIsOnboardingCompleted} from '../store/onboardingStore';
+import FullScreenStackNavigator from './FullScreenStackNavigator';
+import NotificationScreen from '../screens/character/notification/NotificationScreen';
+import { useModalState, useModalStore } from '../store/modalStore';
+import { useIsOnboardingCompleted } from '../store/onboardingStore';
 import NotificationModal from '../components/NotificationModal';
 
 const Stack = createNativeStackNavigator();
@@ -19,7 +21,7 @@ const RootNavigator: React.FC = () => {
 
   return (
     <NavigationContainer>
-      <Stack.Navigator screenOptions={{headerShown: false}}>
+      <Stack.Navigator screenOptions={{ headerShown: false }}>
         {!isOnboardingCompleted ? (
           // 온보딩 스택 (소셜 로그인 포함)
           <Stack.Screen
@@ -27,11 +29,23 @@ const RootNavigator: React.FC = () => {
             component={OnboardingNavigator}
           />
         ) : (
-          // 메인 스택 (온보딩 완료 후)
-          <Stack.Screen
-            name={RouteNames.MAIN_TAB}
-            component={MainTabNavigator}
-          />
+          <>
+            {/* 메인 스택 (온보딩 완료 후) */}
+            <Stack.Screen
+              name={RouteNames.MAIN_TAB}
+              component={MainTabNavigator}
+            />
+            {/* 전체 화면 스택 (탭바 없는 화면들: 알림, 설정 등) */}
+            <Stack.Screen
+              name={RouteNames.FULL_SCREEN_STACK}
+              component={FullScreenStackNavigator}
+            />
+            {/* 알림 화면 직접 접근 (CHARACTER_NOTIFICATION으로 바로 접근 가능) */}
+            <Stack.Screen
+              name={RouteNames.CHARACTER_NOTIFICATION}
+              component={NotificationScreen}
+            />
+          </>
         )}
       </Stack.Navigator>
       {/* 전역 모달 */}
@@ -59,7 +73,8 @@ const RootNavigator: React.FC = () => {
               }
             : undefined
         }
-        onClose={hideModal}>
+        onClose={hideModal}
+      >
         {modalState.children}
       </NotificationModal>
     </NavigationContainer>

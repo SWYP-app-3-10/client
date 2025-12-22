@@ -37,4 +37,7 @@ export const RouteNames = {
   CHARACTER_CRITERIA: 'character-criteria' as const,
   CHARACTER_POINT_HISTORY: 'character-point-history' as const,
   CHARACTER_NOTIFICATION: 'character-notification' as const,
+
+  // 전체 화면 스택 (탭바 없는 화면들)
+  FULL_SCREEN_STACK: 'full-screen-stack' as const,
 };

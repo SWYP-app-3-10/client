@@ -1,15 +1,14 @@
 import React from 'react';
 import { Text, View, TouchableOpacity, StyleSheet } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
-import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RouteNames } from '../../../routes';
-import type { CharacterStackParamList } from '../../navigation/types';
 import { SafeAreaView } from 'react-native-safe-area-context';
-
-type Nav = NativeStackNavigationProp<
+import { Button } from '../../components';
+import { scaleWidth } from '../../styles/global';
+import {
+  MainTabNavigationProp,
   CharacterStackParamList,
-  typeof RouteNames.CHARACTER
->;
+} from '../../navigation/types';
 
 /**
  * CharacterScreen
@@ -19,7 +18,8 @@ type Nav = NativeStackNavigationProp<
  */
 const CharacterScreen = () => {
   /** CharacterStack 내에서 화면 이동을 위한 네비게이션 */
-  const navigation = useNavigation<Nav>();
+  const navigation =
+    useNavigation<MainTabNavigationProp<CharacterStackParamList>>();
 
   return (
     <SafeAreaView style={styles.container}>
@@ -46,14 +46,18 @@ const CharacterScreen = () => {
         >
           <Text style={styles.buttonText}>포인트/경험치 내역</Text>
         </TouchableOpacity>
-
-        {/* 알림 화면 이동 */}
-        <TouchableOpacity
-          style={styles.button}
-          onPress={() => navigation.navigate(RouteNames.CHARACTER_NOTIFICATION)}
-        >
-          <Text style={styles.buttonText}>알림</Text>
-        </TouchableOpacity>
+        <Button
+          title="알림 페이지로"
+          variant="primary"
+          style={{
+            width: scaleWidth(50),
+            height: scaleWidth(50),
+            alignSelf: 'flex-end',
+          }}
+          onPress={() => {
+            navigation.navigate(RouteNames.CHARACTER_NOTIFICATION);
+          }}
+        />
       </View>
     </SafeAreaView>
   );
