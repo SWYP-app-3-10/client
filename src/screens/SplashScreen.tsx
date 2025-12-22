@@ -1,6 +1,7 @@
 import React from 'react';
-import {View, StyleSheet, SafeAreaView} from 'react-native';
-import {scaleWidth} from '../styles/global';
+import { View, StyleSheet } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { scaleWidth } from '../styles/global';
 
 const SplashScreen = () => {
   return (
@@ -8,7 +9,7 @@ const SplashScreen = () => {
       <View style={styles.content}>
         {/* 로고 placeholder */}
         <View style={styles.logoPlaceholder} />
-    </View>
+      </View>
     </SafeAreaView>
   );
 };

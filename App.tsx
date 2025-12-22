@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { QueryClientProvider } from '@tanstack/react-query';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
 import SplashScreen from './src/screens/SplashScreen';
 import RootNavigator from './src/navigation/RootNavigator';
 import { queryClient } from './src/config/queryClient';
@@ -40,9 +41,11 @@ const App = () => {
   }
 
   return (
-    <QueryClientProvider client={queryClient}>
-      <RootNavigator />
-    </QueryClientProvider>
+    <SafeAreaProvider>
+      <QueryClientProvider client={queryClient}>
+        <RootNavigator />
+      </QueryClientProvider>
+    </SafeAreaProvider>
   );
 };
 

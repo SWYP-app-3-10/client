@@ -1,26 +1,27 @@
-import React, {useState, useCallback, useMemo} from 'react';
-import {View, Text, StyleSheet, SafeAreaView, ScrollView} from 'react-native';
-import {useNavigation} from '@react-navigation/native';
-import {NativeStackNavigationProp} from '@react-navigation/native-stack';
-import {RouteNames} from '../../../routes';
+import React, { useState, useCallback, useMemo } from 'react';
+import { View, Text, StyleSheet, ScrollView } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { useNavigation } from '@react-navigation/native';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { RouteNames } from '../../../routes';
 import {
   Body_16M,
   COLORS,
   Heading_24EB_Round,
   scaleWidth,
 } from '../../styles/global';
-import {OnboardingStackParamList} from '../../navigation/types';
+import { OnboardingStackParamList } from '../../navigation/types';
 import Spacer from '../../components/Spacer';
 import ProgressBar from '../../components/ProgressBar';
-import {Button} from '../../components';
-import {BORDER_RADIUS} from '../../styles/global';
+import { Button } from '../../components';
+import { BORDER_RADIUS } from '../../styles/global';
 import {
   CheckIcon,
   FirstIcon,
   SecondIcon,
   ThirdIcon,
 } from '../../icons/commonIcons/commonIcons';
-import {Body_15M, Body_18M, Heading_18SB} from '../../styles/typography';
+import { Body_15M, Body_18M, Heading_18SB } from '../../styles/typography';
 
 type NavigationProp = NativeStackNavigationProp<OnboardingStackParamList>;
 
@@ -30,12 +31,12 @@ interface Interest {
 }
 
 const INTERESTS: Interest[] = [
-  {id: 'politics', name: '정치'},
-  {id: 'economy', name: '경제'},
-  {id: 'society', name: '사회'},
-  {id: 'lifestyle', name: '생활/문화'},
-  {id: 'it', name: 'IT/과학'},
-  {id: 'world', name: '세계'},
+  { id: 'politics', name: '정치' },
+  { id: 'economy', name: '경제' },
+  { id: 'society', name: '사회' },
+  { id: 'lifestyle', name: '생활/문화' },
+  { id: 'it', name: 'IT/과학' },
+  { id: 'world', name: '세계' },
 ];
 
 const FIRST_ROW_INTERESTS = INTERESTS.slice(0, 3);
@@ -71,7 +72,8 @@ const InterestTag: React.FC<InterestTagProps> = ({
 
   return (
     <View
-      style={isFirstRow ? styles.tagContainerFirstRow : styles.tagContainer}>
+      style={isFirstRow ? styles.tagContainerFirstRow : styles.tagContainer}
+    >
       {isSelected && <View style={styles.tagSpacer} />}
       {priority !== null && (
         <View style={styles.priorityBadge}>{renderPriorityIcon()}</View>
@@ -80,7 +82,8 @@ const InterestTag: React.FC<InterestTagProps> = ({
         variant="ghost"
         textStyle={styles.tagText}
         style={[styles.tag, isSelected && styles.tagSelected]}
-        onPress={() => onPress(interest.id)}>
+        onPress={() => onPress(interest.id)}
+      >
         <Text style={[styles.tagText, isSelected && styles.tagTextSelected]}>
           {interest.name}
         </Text>
@@ -148,7 +151,7 @@ const InterestsScreen = () => {
         <Spacer num={92} />
         <Text style={styles.title}>관심분야를 선택해주세요</Text>
         <Spacer num={4} />
-        <Text style={[Body_15M, {color: COLORS.gray600}]}>
+        <Text style={[Body_15M, { color: COLORS.gray600 }]}>
           미션 화면에서 나의 관심분야 글을 확인할 수 있어요
         </Text>
         <Spacer num={52} />

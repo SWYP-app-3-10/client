@@ -1,11 +1,12 @@
-import React, {useState} from 'react';
-import {View, Text, StyleSheet, ScrollView, SafeAreaView} from 'react-native';
-import {COLORS, scaleWidth} from '../styles/global';
-import {Button, Input} from '../components';
+import React, { useState } from 'react';
+import { View, Text, StyleSheet, ScrollView } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { COLORS, scaleWidth } from '../styles/global';
+import { Button, Input } from '../components';
 import NotificationModal from '../components/NotificationModal';
-import {YoutubeIcon} from '../icons';
+import { YoutubeIcon } from '../icons';
 import LottieView from 'lottie-react-native';
-import {useShowModal} from '../store/modalStore';
+import { useShowModal } from '../store/modalStore';
 
 const ComponentShowcaseScreen = () => {
   const [inputValue, setInputValue] = useState('');
@@ -22,7 +23,8 @@ const ComponentShowcaseScreen = () => {
     <SafeAreaView style={styles.container}>
       <ScrollView
         style={styles.scrollView}
-        contentContainerStyle={styles.content}>
+        contentContainerStyle={styles.content}
+      >
         {/* Header */}
         <View style={styles.header}>
           <Text style={styles.title}>공통 컴포넌트</Text>
@@ -34,13 +36,13 @@ const ComponentShowcaseScreen = () => {
           <Text style={styles.sectionTitle}>Button 컴포넌트</Text>
           <LottieView
             source={require('../assets/lottie/Cutebeardancing.json')} // 다운받은 json 파일 경로
-            style={{width: scaleWidth(100), height: scaleWidth(100)}}
+            style={{ width: scaleWidth(100), height: scaleWidth(100) }}
             autoPlay // 자동 재생
             loop // 무한 반복
           />
           <LottieView
             source={require('../assets/lottie/PolarBear.json')} // 다운받은 json 파일 경로
-            style={{width: scaleWidth(100), height: scaleWidth(100)}}
+            style={{ width: scaleWidth(100), height: scaleWidth(100) }}
             autoPlay // 자동 재생
             loop // 무한 반복
           />
@@ -264,7 +266,8 @@ const ComponentShowcaseScreen = () => {
           title: '포인트로 읽기',
           onPress: () => setShowPointModal(false),
         }}
-        onClose={() => setShowPointModal(false)}>
+        onClose={() => setShowPointModal(false)}
+      >
         <View style={pointContainerStyles.container}>
           <Text style={pointContainerStyles.text}> 포인트 100p </Text>
         </View>
@@ -273,8 +276,9 @@ const ComponentShowcaseScreen = () => {
       <NotificationModal
         visible={showXPModal}
         title="경험치 획득!"
-        primaryButton={{title: '확인', onPress: () => setShowXPModal(false)}}
-        onClose={() => setShowXPModal(false)}>
+        primaryButton={{ title: '확인', onPress: () => setShowXPModal(false) }}
+        onClose={() => setShowXPModal(false)}
+      >
         <View style={xpBadgeStyles.container}>
           <Text style={xpBadgeStyles.text}> 경험치 5 XP </Text>
         </View>
@@ -294,7 +298,10 @@ const ComponentShowcaseScreen = () => {
       <NotificationModal
         visible={showImageModal}
         title="이미지 있는 모달"
-        primaryButton={{title: '확인', onPress: () => setShowImageModal(false)}}
+        primaryButton={{
+          title: '확인',
+          onPress: () => setShowImageModal(false),
+        }}
         image={<YoutubeIcon />}
         onClose={() => setShowImageModal(false)}
       />

@@ -1,17 +1,17 @@
-import React, {useEffect, useState} from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   View,
   Text,
   StyleSheet,
-  SafeAreaView,
   ActivityIndicator,
   Alert,
   Platform,
 } from 'react-native';
-import {useNavigation} from '@react-navigation/native';
-import {NativeStackNavigationProp} from '@react-navigation/native-stack';
-import {RouteNames} from '../../../routes';
-import {BORDER_RADIUS, COLORS, scaleWidth} from '../../styles/global';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { useNavigation } from '@react-navigation/native';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { RouteNames } from '../../../routes';
+import { BORDER_RADIUS, COLORS, scaleWidth } from '../../styles/global';
 import {
   signInWithSocial,
   initializeGoogleSignIn,
@@ -19,17 +19,17 @@ import {
   initializeNaverLogin,
   SocialLoginProvider,
 } from '../../services/socialLoginService';
-import {OnboardingStackParamList} from '../../navigation/types';
-import {Button} from '../../components';
+import { OnboardingStackParamList } from '../../navigation/types';
+import { Button } from '../../components';
 import Spacer from '../../components/Spacer';
-import {AppleButton} from '@invertase/react-native-apple-authentication';
+import { AppleButton } from '@invertase/react-native-apple-authentication';
 import {
   getRecentLogin,
   saveRecentLogin,
   RecentLoginInfo,
 } from '../../services/authStorageService';
-import {Tooltip_RecentIcon} from '../../icons';
-import {useShowModal} from '../../store/modalStore';
+import { Tooltip_RecentIcon } from '../../icons';
+import { useShowModal } from '../../store/modalStore';
 
 type NavigationProp = NativeStackNavigationProp<OnboardingStackParamList>;
 
@@ -91,8 +91,8 @@ const LoginScreen = () => {
             title: '알림을 받으시겠어요?',
             description: `알림을 켜두면, 하루 두 번 문해력 루틴을 \n
 잊지 않고 챙길 수 있어요!`,
-            primaryButton: {title: '확인', onPress: () => {}},
-            secondaryButton: {title: '취소', onPress: () => {}},
+            primaryButton: { title: '확인', onPress: () => {} },
+            secondaryButton: { title: '취소', onPress: () => {} },
           });
         }
         // 로그인 성공 시 온보딩으로 이동
@@ -123,7 +123,8 @@ const LoginScreen = () => {
             backgroundColor: COLORS.gray300,
             justifyContent: 'center',
             alignItems: 'center',
-          }}>
+          }}
+        >
           <Text>로고</Text>
         </View>
         {/* 소셜 로그인 버튼들 */}
@@ -143,11 +144,11 @@ const LoginScreen = () => {
                   image: <></>,
                   title: '알림을 받으시겠어요?',
                   description: `알림을 켜두면, 하루 두 번 문해력 루틴을 \n잊지 않고 챙길 수 있어요!`,
-                  primaryButton: {title: '알림 받을래요', onPress: () => {}},
+                  primaryButton: { title: '알림 받을래요', onPress: () => {} },
                   secondaryButton: {
                     title: '괜찮아요',
                     variant: 'outline',
-                    textStyle: {color: COLORS.gray700},
+                    textStyle: { color: COLORS.gray700 },
                     style: {
                       borderColor: COLORS.gray300,
                       height: scaleWidth(48),
@@ -160,7 +161,8 @@ const LoginScreen = () => {
               } else {
                 navigation.navigate(RouteNames.INTERESTS);
               }
-            }}>
+            }}
+          >
             <Text>일단 다음</Text>
           </Button>
           {/* <TouchableOpacity
@@ -187,16 +189,17 @@ const LoginScreen = () => {
               buttonType={AppleButton.Type.SIGN_IN}
               buttonStyle={AppleButton.Style.BLACK}
               cornerRadius={BORDER_RADIUS[16]}
-              style={{width: '100%', height: scaleWidth(56)}}
+              style={{ width: '100%', height: scaleWidth(56) }}
               onPress={handleAppleLogin}
             />
           </View>
           {Platform.OS === 'ios' && (
             <Button
               variant="outline"
-              style={{borderColor: COLORS.black}}
+              style={{ borderColor: COLORS.black }}
               onPress={handleGoogleLogin}
-              disabled={loading !== null}>
+              disabled={loading !== null}
+            >
               {loading === 'apple' ? (
                 <ActivityIndicator color="#FFFFFF" />
               ) : (
@@ -216,9 +219,10 @@ const LoginScreen = () => {
             )}
             <Button
               variant="outline"
-              style={{borderColor: COLORS.black}}
+              style={{ borderColor: COLORS.black }}
               onPress={handleGoogleLogin}
-              disabled={loading !== null}>
+              disabled={loading !== null}
+            >
               {loading === 'google' ? (
                 <ActivityIndicator color="#000000" />
               ) : (
@@ -236,9 +240,10 @@ const LoginScreen = () => {
             )}
             <Button
               variant="primary"
-              style={{backgroundColor: '#FFD43B'}}
+              style={{ backgroundColor: '#FFD43B' }}
               onPress={handleKakaoLogin}
-              disabled={loading !== null}>
+              disabled={loading !== null}
+            >
               {loading === 'kakao' ? (
                 <ActivityIndicator color="#000000" />
               ) : (
@@ -256,13 +261,16 @@ const LoginScreen = () => {
             )}
             <Button
               variant="primary"
-              style={{backgroundColor: '#2DB400'}}
+              style={{ backgroundColor: '#2DB400' }}
               onPress={handleNaverLogin}
-              disabled={loading !== null}>
+              disabled={loading !== null}
+            >
               {loading === 'naver' ? (
                 <ActivityIndicator color="#FFFFFF" />
               ) : (
-                <Text style={[styles.socialButtonText, {color: COLORS.white}]}>
+                <Text
+                  style={[styles.socialButtonText, { color: COLORS.white }]}
+                >
                   Naver로 시작하기
                 </Text>
               )}

@@ -1,13 +1,13 @@
-import React, {useState, useRef, useEffect, useMemo} from 'react';
+import React, { useState, useRef, useEffect, useMemo } from 'react';
 import {
   View,
   Text,
   StyleSheet,
-  SafeAreaView,
   ScrollView,
   Dimensions,
   ActivityIndicator,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import {
   COLORS,
   scaleWidth,
@@ -20,9 +20,9 @@ import {
   Caption_12M,
 } from '../../styles/global';
 import Spacer from '../../components/Spacer';
-import {useMissions} from '../../hooks/useMissions';
-import {useArticles} from '../../hooks/useArticles';
-import {Article} from '../../data/mockData';
+import { useMissions } from '../../hooks/useMissions';
+import { useArticles } from '../../hooks/useArticles';
+import { Article } from '../../data/mockData';
 
 const MissionScreen = () => {
   const screenWidth = Dimensions.get('window').width;
@@ -143,7 +143,8 @@ const MissionScreen = () => {
       <ScrollView
         style={styles.scrollView}
         contentContainerStyle={styles.scrollContent}
-        showsVerticalScrollIndicator={false}>
+        showsVerticalScrollIndicator={false}
+      >
         {/* 헤더 */}
         <View style={styles.header}>
           <View style={styles.headerLeft}>
@@ -151,11 +152,6 @@ const MissionScreen = () => {
             <Text style={styles.headerDescription}>
               오늘의 미션을 통해 새로운 지식을 탐험하고 문해력을 키워보세요!
             </Text>
-          </View>
-          <View style={styles.profileContainer}>
-            <View style={styles.profileImage}>
-              <Text style={styles.profileText}>재민</Text>
-            </View>
           </View>
         </View>
 
@@ -171,11 +167,13 @@ const MissionScreen = () => {
             onScroll={handleScroll}
             onMomentumScrollEnd={handleMomentumScrollEnd}
             scrollEventThrottle={16}
-            decelerationRate="fast">
+            decelerationRate="fast"
+          >
             {circularMissions.map((mission, index) => (
               <View
                 key={`${mission.id}-${index}`}
-                style={[styles.missionCardContainer, {width: screenWidth}]}>
+                style={[styles.missionCardContainer, { width: screenWidth }]}
+              >
                 <View style={styles.missionCard}>
                   <View style={styles.missionCardGradient}>
                     <Text style={styles.missionCardTitle}>{mission.title}</Text>
@@ -286,21 +284,6 @@ const styles = StyleSheet.create({
     ...Body_16R,
     color: COLORS.gray700,
     lineHeight: scaleWidth(24),
-  },
-  profileContainer: {
-    alignItems: 'flex-end',
-  },
-  profileImage: {
-    width: scaleWidth(40),
-    height: scaleWidth(40),
-    borderRadius: scaleWidth(20),
-    backgroundColor: '#FF9500',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  profileText: {
-    ...Caption_12M,
-    color: COLORS.white,
   },
   missionCarouselWrapper: {
     marginHorizontal: -scaleWidth(20), // 부모 padding 상쇄

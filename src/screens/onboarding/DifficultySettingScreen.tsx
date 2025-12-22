@@ -1,8 +1,9 @@
-import React, {useState} from 'react';
-import {View, Text, StyleSheet, SafeAreaView, ScrollView} from 'react-native';
-import {BORDER_RADIUS, COLORS, scaleWidth} from '../../styles/global';
-import {useCompleteOnboarding} from '../../store/onboardingStore';
-import {ProgressBar} from '../../components';
+import React, { useState } from 'react';
+import { View, Text, StyleSheet, ScrollView } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { BORDER_RADIUS, COLORS, scaleWidth } from '../../styles/global';
+import { useCompleteOnboarding } from '../../store/onboardingStore';
+import { ProgressBar } from '../../components';
 import {
   Body_15M,
   Body_16M,
@@ -72,13 +73,15 @@ const DifficultySettingScreen = () => {
               selectedDifficulty === 'beginner' &&
                 styles.difficultyButtonSelected,
             ]}
-            onPress={() => setSelectedDifficulty('beginner')}>
+            onPress={() => setSelectedDifficulty('beginner')}
+          >
             <Text
               style={[
                 styles.difficultyButtonText,
                 selectedDifficulty === 'beginner' &&
                   styles.difficultyButtonTextSelected,
-              ]}>
+              ]}
+            >
               초급
             </Text>
           </Button>
@@ -90,13 +93,15 @@ const DifficultySettingScreen = () => {
               selectedDifficulty === 'intermediate' &&
                 styles.difficultyButtonSelected,
             ]}
-            onPress={() => setSelectedDifficulty('intermediate')}>
+            onPress={() => setSelectedDifficulty('intermediate')}
+          >
             <Text
               style={[
                 styles.difficultyButtonText,
                 selectedDifficulty === 'intermediate' &&
                   styles.difficultyButtonTextSelected,
-              ]}>
+              ]}
+            >
               중급
             </Text>
           </Button>
@@ -108,13 +113,15 @@ const DifficultySettingScreen = () => {
               selectedDifficulty === 'advanced' &&
                 styles.difficultyButtonSelected,
             ]}
-            onPress={() => setSelectedDifficulty('advanced')}>
+            onPress={() => setSelectedDifficulty('advanced')}
+          >
             <Text
               style={[
                 styles.difficultyButtonText,
                 selectedDifficulty === 'advanced' &&
                   styles.difficultyButtonTextSelected,
-              ]}>
+              ]}
+            >
               고급
             </Text>
           </Button>

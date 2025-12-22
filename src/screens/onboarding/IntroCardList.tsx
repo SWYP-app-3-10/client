@@ -1,14 +1,9 @@
 import React from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  TouchableOpacity,
-  SafeAreaView,
-} from 'react-native';
-import {useNavigation} from '@react-navigation/native';
-import {NativeStackNavigationProp} from '@react-navigation/native-stack';
-import {RouteNames} from '../../../routes';
+import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { useNavigation } from '@react-navigation/native';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { RouteNames } from '../../../routes';
 import {
   BORDER_RADIUS,
   COLORS,
@@ -16,11 +11,11 @@ import {
   Heading_24EB_Round,
   scaleWidth,
 } from '../../styles/global';
-import {OnboardingStackParamList} from '../../navigation/types';
+import { OnboardingStackParamList } from '../../navigation/types';
 import Spacer from '../../components/Spacer';
 import FastImage from 'react-native-fast-image';
 import ActivityIndicator from '../../components/ActivityIndicator';
-import {Body_15M} from '../../styles/typography';
+import { Body_15M } from '../../styles/typography';
 
 type NavigationProp = NativeStackNavigationProp<OnboardingStackParamList>;
 
@@ -29,14 +24,14 @@ const IntroCardList = () => {
 
   return (
     <SafeAreaView style={styles.container}>
-      <View style={{flex: 1}}>
-        <View style={{paddingHorizontal: scaleWidth(20)}}>
+      <View style={{ flex: 1 }}>
+        <View style={{ paddingHorizontal: scaleWidth(20) }}>
           <Spacer num={48} />
-          <Text style={[Heading_24EB_Round, {color: COLORS.black}]}>
+          <Text style={[Heading_24EB_Round, { color: COLORS.black }]}>
             관심 있는 분야의 글을{'\n'}맞춤으로 추천받아요
           </Text>
           <Spacer num={20} />
-          <Text style={[Body_15M, {color: COLORS.gray600}]}>
+          <Text style={[Body_15M, { color: COLORS.gray600 }]}>
             미션 화면에서 나의 관심분야 글을 확인할 수 있어요
           </Text>
           <Spacer num={47} />
@@ -44,9 +39,10 @@ const IntroCardList = () => {
         <View
           style={{
             paddingHorizontal: scaleWidth(41),
-          }}>
+          }}
+        >
           <FastImage
-            source={{uri: ''}}
+            source={{ uri: '' }}
             aria-label="카드리스트"
             resizeMode="contain"
             style={{
@@ -70,8 +66,9 @@ const IntroCardList = () => {
           backgroundColor: COLORS.puple.main,
           marginHorizontal: scaleWidth(20),
         }}
-        onPress={() => navigation.navigate(RouteNames.INTRO_FUNCTION)}>
-        <Text style={[Heading_18EB_Round, {color: COLORS.white}]}>다음</Text>
+        onPress={() => navigation.navigate(RouteNames.INTRO_FUNCTION)}
+      >
+        <Text style={[Heading_18EB_Round, { color: COLORS.white }]}>다음</Text>
       </TouchableOpacity>
     </SafeAreaView>
   );
