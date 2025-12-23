@@ -40,10 +40,12 @@ export interface NotificationModalProps {
   imageSize?: { width: number; height: number };
 
   // 단일 버튼 또는 이중 버튼
-  primaryButton: ModalButton;
+  primaryButton?: ModalButton;
   secondaryButton?: ModalButton;
   children?: ReactNode;
   closeButton?: boolean;
+  titleDescriptionGapSize?: number;
+  descriptionColor?: string;
   onClose?: () => void;
 }
 
@@ -58,6 +60,8 @@ const NotificationModal: React.FC<NotificationModalProps> = ({
   secondaryButton,
   closeButton,
   onClose,
+  titleDescriptionGapSize = 12,
+  descriptionColor,
 }) => {
   const handleClose = () => {
     onClose?.();
@@ -125,40 +129,53 @@ const NotificationModal: React.FC<NotificationModalProps> = ({
                 {/* 제목 */}
                 <Text style={styles.title}>{title}</Text>
 
+                <Spacer num={titleDescriptionGapSize} />
+
                 {/* 설명 텍스트 */}
                 {description && (
-                  <Text style={styles.description}>{description}</Text>
+                  <Text
+                    style={[
+                      styles.description,
+                      { color: descriptionColor ?? COLORS.gray800 },
+                    ]}
+                  >
+                    {description}
+                  </Text>
                 )}
                 {/* 컨텐츠 */}
                 {children && (
                   <View style={styles.childrenContainer}>{children}</View>
                 )}
-                <Spacer num={20} />
-                {/* 버튼 컨테이너 */}
-                <View
-                  style={[
-                    styles.buttonContainer,
-                    !secondaryButton && styles.singleButtonContainer,
-                  ]}
-                >
-                  {secondaryButton && (
-                    <Button
-                      title={secondaryButton.title}
-                      onPress={secondaryButton.onPress}
-                      variant={secondaryButton.variant || 'primary'}
-                      style={[styles.button, secondaryButton.style]}
-                      textStyle={secondaryButton.textStyle}
-                    />
-                  )}
-                  <Button
-                    title={primaryButton.title}
-                    onPress={primaryButton.onPress}
-                    variant={primaryButton.variant || 'primary'}
-                    style={
-                      secondaryButton ? styles.button : styles.singleButton
-                    }
-                  />
-                </View>
+                {primaryButton && (
+                  <>
+                    <Spacer num={20} />
+                    {/* 버튼 컨테이너 */}
+                    <View
+                      style={[
+                        styles.buttonContainer,
+                        !secondaryButton && styles.singleButtonContainer,
+                      ]}
+                    >
+                      {secondaryButton && (
+                        <Button
+                          title={secondaryButton.title}
+                          onPress={secondaryButton.onPress}
+                          variant={secondaryButton.variant || 'primary'}
+                          style={[styles.button, secondaryButton.style]}
+                          textStyle={secondaryButton.textStyle}
+                        />
+                      )}
+                      <Button
+                        title={primaryButton.title}
+                        onPress={primaryButton.onPress}
+                        variant={primaryButton.variant || 'primary'}
+                        style={
+                          secondaryButton ? styles.button : styles.singleButton
+                        }
+                      />
+                    </View>
+                  </>
+                )}
               </View>
             </View>
           </TouchableWithoutFeedback>
@@ -216,12 +233,10 @@ const styles = StyleSheet.create({
   title: {
     ...Heading_18EB_Round,
     color: COLORS.black,
-    marginBottom: scaleWidth(12),
     textAlign: 'center',
   },
   description: {
     ...Caption_14R,
-    color: COLORS.gray800,
     textAlign: 'center',
   },
 

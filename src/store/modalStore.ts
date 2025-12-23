@@ -11,9 +11,11 @@ interface ModalState {
   image?: NotificationModalProps['image'];
   imageSize?: { width: number; height: number };
   closeButton?: boolean;
-  primaryButton: ModalButton;
+  primaryButton?: ModalButton;
   secondaryButton?: ModalButton;
   children?: React.ReactNode;
+  titleDescriptionGapSize?: number;
+  descriptionColor?: string;
 }
 
 interface ModalStore {
@@ -25,10 +27,6 @@ interface ModalStore {
 const defaultModalState: ModalState = {
   visible: false,
   title: '',
-  primaryButton: {
-    title: '확인',
-    onPress: () => {},
-  },
 };
 
 export const useModalStore = create<ModalStore>(set => ({

@@ -8,6 +8,7 @@ import FullScreenStackNavigator from './FullScreenStackNavigator';
 import { useModalState, useModalStore } from '../store/modalStore';
 import { useIsOnboardingCompleted } from '../store/onboardingStore';
 import NotificationModal from '../components/NotificationModal';
+import SearchStackNavigator from './SearchStackNavigator';
 
 const Stack = createNativeStackNavigator();
 
@@ -34,6 +35,10 @@ const RootNavigator: React.FC = () => {
               name={RouteNames.MAIN_TAB}
               component={MainTabNavigator}
             />
+            <Stack.Screen
+              name={RouteNames.SEARCH_TAB}
+              component={SearchStackNavigator}
+            />
             {/* 전체 화면 스택 (탭바 없는 화면들: 알림, 설정 등) */}
             <Stack.Screen
               name={RouteNames.FULL_SCREEN_STACK}
@@ -50,13 +55,19 @@ const RootNavigator: React.FC = () => {
         image={modalState.image}
         imageSize={modalState.imageSize}
         closeButton={modalState.closeButton}
-        primaryButton={{
-          ...modalState.primaryButton,
-          onPress: () => {
-            modalState.primaryButton.onPress();
-            hideModal();
-          },
-        }}
+        titleDescriptionGapSize={modalState.titleDescriptionGapSize}
+        descriptionColor={modalState.descriptionColor}
+        primaryButton={
+          modalState.primaryButton
+            ? {
+                ...modalState.primaryButton,
+                onPress: () => {
+                  modalState.primaryButton?.onPress();
+                  hideModal();
+                },
+              }
+            : undefined
+        }
         secondaryButton={
           modalState.secondaryButton
             ? {

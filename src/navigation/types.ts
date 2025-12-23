@@ -21,9 +21,15 @@ export type OnboardingStackParamList = {
 // FullScreen Stack Param List (탭바 없는 전체 화면들)
 export type FullScreenStackParamList = {
   [RouteNames.CHARACTER_NOTIFICATION]: undefined;
-  [RouteNames.ARTICLE_DETAIL]: { articleId: number };
-  [RouteNames.QUIZ]: { articleId: number };
-  [RouteNames.AD_LOADING]: { articleId: number };
+  [RouteNames.ARTICLE_DETAIL]: {
+    articleId: number;
+    returnTo?: 'mission' | 'search';
+  };
+  [RouteNames.QUIZ]: { articleId: number; returnTo?: 'mission' | 'search' };
+  [RouteNames.AD_LOADING]: {
+    articleId: number;
+    returnTo?: 'mission' | 'search';
+  };
   // 추후 탭바 없는 다른 화면들 추가 가능
   // 예: [RouteNames.SETTINGS]: undefined;
 };

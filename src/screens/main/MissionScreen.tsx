@@ -8,11 +8,11 @@ import React, {
 import {
   View,
   Text,
-  StyleSheet,
   ScrollView,
   Dimensions,
   ActivityIndicator,
   Alert,
+  StyleSheet,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import {
@@ -42,7 +42,7 @@ import { Article } from '../../data/mock/missionData';
 // 상수
 const SCROLL_INITIAL_DELAY = 100;
 const SCROLL_EVENT_THROTTLE = 16;
-const ARTICLE_POINT_COST = 30; // 기사 읽기 포인트
+export const ARTICLE_POINT_COST = 30; // 기사 읽기 포인트
 
 const MissionScreen = () => {
   const screenWidth = Dimensions.get('window').width;
@@ -101,9 +101,11 @@ const MissionScreen = () => {
           description: `사용 가능 포인트: ${points}p`,
           closeButton: true,
           children: (
-            <View style={styles.modalContent}>
-              <Text style={styles.modalContentText}>
-                <Text style={styles.pointText}>{ARTICLE_POINT_COST}포인트</Text>
+            <View style={missionScreenStyles.modalContent}>
+              <Text style={missionScreenStyles.modalContentText}>
+                <Text style={missionScreenStyles.pointText}>
+                  {ARTICLE_POINT_COST}포인트
+                </Text>
                 가 사용됩니다
               </Text>
             </View>
@@ -117,6 +119,7 @@ const MissionScreen = () => {
                   screen: RouteNames.ARTICLE_DETAIL,
                   params: {
                     articleId: article.id,
+                    returnTo: 'mission',
                   },
                 });
               } else {
@@ -132,9 +135,11 @@ const MissionScreen = () => {
           description: `사용 가능 포인트: ${points}p`,
           closeButton: true,
           children: (
-            <View style={styles.modalContent}>
-              <Text style={styles.modalContentText}>
-                <Text style={styles.pointText}>{ARTICLE_POINT_COST}포인트</Text>
+            <View style={missionScreenStyles.modalContent}>
+              <Text style={missionScreenStyles.modalContentText}>
+                <Text style={missionScreenStyles.pointText}>
+                  {ARTICLE_POINT_COST}포인트
+                </Text>
                 가 사용됩니다
               </Text>
             </View>
@@ -146,6 +151,7 @@ const MissionScreen = () => {
                 screen: RouteNames.AD_LOADING,
                 params: {
                   articleId: article.id,
+                  returnTo: 'mission',
                 },
               });
             },
@@ -238,8 +244,8 @@ const MissionScreen = () => {
   // 로딩 상태
   if (missionsLoading || articlesLoading) {
     return (
-      <SafeAreaView style={styles.container}>
-        <View style={styles.loadingContainer}>
+      <SafeAreaView style={missionScreenStyles.container}>
+        <View style={missionScreenStyles.loadingContainer}>
           <ActivityIndicator size="large" color={COLORS.puple.main} />
         </View>
       </SafeAreaView>
@@ -249,8 +255,8 @@ const MissionScreen = () => {
   // 에러 상태
   if (missionsError || articlesError) {
     return (
-      <SafeAreaView style={styles.container}>
-        <View style={styles.errorContainer}>
+      <SafeAreaView style={missionScreenStyles.container}>
+        <View style={missionScreenStyles.errorContainer}>
           <Text>데이터를 불러오는 중 오류가 발생했습니다.</Text>
         </View>
       </SafeAreaView>
@@ -260,17 +266,17 @@ const MissionScreen = () => {
   // 데이터가 없을 때
   if (missions.length === 0) {
     return (
-      <SafeAreaView style={styles.container}>
-        <View style={styles.errorContainer} />
+      <SafeAreaView style={missionScreenStyles.container}>
+        <View style={missionScreenStyles.errorContainer} />
       </SafeAreaView>
     );
   }
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={missionScreenStyles.container}>
       <ScrollView
-        style={styles.scrollView}
-        contentContainerStyle={styles.scrollContent}
+        style={missionScreenStyles.scrollView}
+        contentContainerStyle={missionScreenStyles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
         {/* 개발용: 로그인 초기화 버튼 */}
@@ -279,20 +285,20 @@ const MissionScreen = () => {
             title="로그인 초기화"
             onPress={handleClearLogin}
             variant="ghost"
-            style={styles.clearLoginButton}
+            style={missionScreenStyles.clearLoginButton}
           />
         )}
         {/* 헤더 */}
         <Button
           title="알림 페이지로"
           variant="primary"
-          style={styles.notificationButton}
+          style={missionScreenStyles.notificationButton}
           onPress={handleNavigateToNotification}
         />
-        <View style={styles.header}>
-          <View style={styles.headerLeft}>
-            <Text style={styles.headerTitle}>오늘의 미션</Text>
-            <Text style={styles.headerDescription}>
+        <View style={missionScreenStyles.header}>
+          <View style={missionScreenStyles.headerLeft}>
+            <Text style={missionScreenStyles.headerTitle}>오늘의 미션</Text>
+            <Text style={missionScreenStyles.headerDescription}>
               오늘의 미션을 통해 새로운 지식을 탐험하고 문해력을 키워보세요!
             </Text>
           </View>
@@ -315,7 +321,10 @@ const MissionScreen = () => {
             {circularMissions.map((mission, index) => (
               <View
                 key={`${mission.id}-${index}`}
-                style={[styles.missionCardContainer, { width: screenWidth }]}
+                style={[
+                  missionScreenStyles.missionCardContainer,
+                  { width: screenWidth },
+                ]}
               >
                 <MissionCard mission={mission} />
               </View>
@@ -326,13 +335,14 @@ const MissionScreen = () => {
         <Spacer num={16} />
 
         {/* 캐러셀 인디케이터 */}
-        <View style={styles.carouselIndicators}>
+        <View style={missionScreenStyles.carouselIndicators}>
           {missions.map((_mission: unknown, index: number) => (
             <View
               key={index}
               style={[
-                styles.indicatorDot,
-                index === currentIndex && styles.indicatorDotActive,
+                missionScreenStyles.indicatorDot,
+                index === currentIndex &&
+                  missionScreenStyles.indicatorDotActive,
               ]}
             />
           ))}
@@ -341,7 +351,7 @@ const MissionScreen = () => {
         <Spacer num={24} />
 
         {/* 아티클 리스트 */}
-        <View style={styles.articleList}>
+        <View style={missionScreenStyles.articleList}>
           {articles.map(article => (
             <ArticleCard
               key={article.id}
@@ -355,7 +365,7 @@ const MissionScreen = () => {
   );
 };
 
-const styles = StyleSheet.create({
+export const missionScreenStyles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: COLORS.white,

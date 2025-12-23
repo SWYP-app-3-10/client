@@ -19,9 +19,10 @@ const AdLoadingScreen = () => {
   const route = useRoute();
   const navigation = useNavigation<NavigationProp>();
 
-  // @ts-ignore
-  const articleId = route.params?.articleId as number;
-
+  const articleId = (route.params as FullScreenStackParamList['ad-loading'])
+    ?.articleId as number;
+  const returnTo = (route.params as FullScreenStackParamList['ad-loading'])
+    ?.returnTo;
   const { isLoaded, isClosed, load, show, reward } = useRewardedAd(adUnitId, {
     requestNonPersonalizedAdsOnly: true,
   });
@@ -64,6 +65,7 @@ const AdLoadingScreen = () => {
       if (hasEarnedReward) {
         navigation.replace(RouteNames.ARTICLE_DETAIL, {
           articleId,
+          returnTo,
         });
       } else {
         // 보상 미지급 - 알림 후 뒤로가기
@@ -81,7 +83,7 @@ const AdLoadingScreen = () => {
         );
       }
     }
-  }, [isClosed, isAdShowing, hasEarnedReward, articleId, navigation]);
+  }, [isClosed, isAdShowing, hasEarnedReward, articleId, navigation, returnTo]);
 
   return (
     <SafeAreaView style={styles.container}>

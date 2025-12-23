@@ -113,8 +113,11 @@ const ArticleDetailScreen = () => {
         <Button
           title="퀴즈 풀기"
           onPress={() => {
+            // @ts-ignore
+            const returnTo = route.params?.returnTo || 'mission';
             navigation.navigate(RouteNames.QUIZ, {
               articleId: articleId || 0,
+              returnTo,
             });
           }}
           variant="primary"

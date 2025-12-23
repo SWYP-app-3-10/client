@@ -5,14 +5,8 @@ import NotificationScreen from '../screens/common/NotificationScreen';
 import ArticleDetailScreen from '../screens/common/ArticleDetailScreen';
 import QuizScreen from '../screens/common/QuizScreen';
 import AdLoadingScreen from '../screens/common/AdLoadingScreen';
-import { mockQuiz } from '../data/mock/quizData';
 
 const Stack = createNativeStackNavigator();
-
-// 퀴즈 화면 래퍼 컴포넌트 (route params 전달)
-const QuizScreenWrapper = ({ route }: any) => (
-  <QuizScreen quiz={mockQuiz} articleId={route.params?.articleId} />
-);
 
 /**
  * 탭바가 없는 전체 화면 스택 네비게이터
@@ -31,7 +25,7 @@ const FullScreenStackNavigator = () => {
         component={ArticleDetailScreen}
       />
       {/* 퀴즈 화면 */}
-      <Stack.Screen name={RouteNames.QUIZ} component={QuizScreenWrapper} />
+      <Stack.Screen name={RouteNames.QUIZ} component={QuizScreen} />
       {/* 광고 로딩 화면 */}
       <Stack.Screen name={RouteNames.AD_LOADING} component={AdLoadingScreen} />
       {/* 추후 탭바 없는 다른 화면들 추가 가능 */}

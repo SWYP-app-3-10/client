@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import {
   View,
   Text,
@@ -14,27 +14,46 @@ import {
   BORDER_RADIUS,
   Heading_24EB_Round,
   Body_16M,
+  Body_16SB,
 } from '../../styles/global';
 import Header from '../../components/Header';
 import Button from '../../components/Button';
 import Spacer from '../../components/Spacer';
-import { Quiz, QuizOption } from '../../data/mock/quizData';
+import { QuizOption } from '../../data/mock/quizData';
 import {
   CheckIcon,
   CircleIcon,
   CloseIcon,
 } from '../../icons/commonIcons/commonIcons';
-
-type QuizScreenProps = {
-  quiz: Quiz;
-  articleId: number;
-};
+import { useShowModal, useHideModal } from '../../store/modalStore';
+import DifficultySelectionModal, {
+  Difficulty,
+} from '../../components/DifficultySelectionModal';
+import {
+  useNavigation,
+  useRoute,
+  CommonActions,
+} from '@react-navigation/native';
+import { RouteNames } from '../../../routes';
+import { mockQuiz } from '../../data/mock/quizData';
 
 type QuizState = 'question' | 'feedback';
 
-const QuizScreen: React.FC<QuizScreenProps> = ({ quiz, articleId }) => {
+const QuizScreen: React.FC = () => {
+  const route = useRoute();
+  // @ts-ignore
+  const articleId = route.params?.articleId || 0;
+  // @ts-ignore
+  const returnTo = route.params?.returnTo || 'mission';
+  const quiz = mockQuiz; // TODO: articleId로 실제 퀴즈 데이터 가져오기
   const [selectedOptionId, setSelectedOptionId] = useState<number | null>(null);
   const [quizState, setQuizState] = useState<QuizState>('question');
+  const [selectedDifficulty, setSelectedDifficulty] =
+    useState<Difficulty | null>(null);
+  const showModal = useShowModal();
+  const hideModal = useHideModal();
+  const navigation = useNavigation();
+  const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const handleOptionSelect = (optionId: number) => {
     if (quizState === 'question') {
@@ -58,8 +77,68 @@ const QuizScreen: React.FC<QuizScreenProps> = ({ quiz, articleId }) => {
   };
 
   const handleComplete = () => {
-    // TODO: 난이도 모달 표시 (아직 구현하지 않음)
-    console.log('퀴즈 완료 - 난이도 모달 표시 예정');
+    // 기존 타이머가 있으면 클리어
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+    }
+
+    // 난이도 선택 모달 표시
+    showModal({
+      title: '이번 글의 난이도는\n 어떠셨나요?',
+      description: '콘텐츠의 난이도에 반영해드려요!',
+      titleDescriptionGapSize: scaleWidth(8),
+      descriptionColor: COLORS.gray600,
+      children: (
+        <DifficultySelectionModal
+          initialDifficulty={selectedDifficulty}
+          onSelect={setSelectedDifficulty}
+        />
+      ),
+    });
+
+    // 5초 후 자동으로 모달 닫고 원래 화면으로 이동
+    timeoutRef.current = setTimeout(() => {
+      hideModal();
+      // TODO: 서버로 난이도 전송
+      if (selectedDifficulty) {
+        console.log('난이도 전송:', {
+          articleId,
+          difficulty: selectedDifficulty,
+        });
+      }
+
+      // 원래 화면으로 이동 (스택 초기화)
+      navigation.dispatch(
+        CommonActions.reset({
+          index: 0,
+          routes: [
+            {
+              name: RouteNames.MAIN_TAB,
+              state: {
+                routes: [
+                  {
+                    name:
+                      returnTo === 'search'
+                        ? RouteNames.SEARCH_TAB
+                        : RouteNames.MISSION_TAB,
+                    state: {
+                      routes: [
+                        {
+                          name:
+                            returnTo === 'search'
+                              ? RouteNames.SEARCH
+                              : RouteNames.MISSION,
+                        },
+                      ],
+                    },
+                  },
+                ],
+              },
+            },
+          ],
+        }),
+      );
+    }, 3000);
   };
 
   const isCorrect = (optionId: number) => {
@@ -283,6 +362,34 @@ const styles = StyleSheet.create({
   },
   actionButton: {
     width: '100%',
+  },
+  difficultyOptionsContainer: {
+    width: '100%',
+  },
+  difficultyOption: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    height: scaleWidth(68),
+    paddingHorizontal: scaleWidth(32),
+    borderRadius: BORDER_RADIUS[16],
+    backgroundColor: COLORS.gray100,
+  },
+  difficultyOptionSelected: {
+    borderColor: COLORS.puple.main,
+    backgroundColor: COLORS.puple[3],
+    borderWidth: 1,
+  },
+  difficultyOptionText: {
+    ...Body_16SB,
+    color: COLORS.black,
+  },
+  difficultyCheckContainer: {
+    width: scaleWidth(28),
+    height: scaleWidth(28),
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderRadius: BORDER_RADIUS[99],
   },
 });
 
