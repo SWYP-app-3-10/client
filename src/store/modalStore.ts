@@ -1,4 +1,4 @@
-import {create} from 'zustand';
+import { create } from 'zustand';
 import {
   ModalButton,
   NotificationModalProps,
@@ -9,7 +9,7 @@ interface ModalState {
   title: string;
   description?: string;
   image?: NotificationModalProps['image'];
-  imageSize?: {width: number; height: number};
+  imageSize?: { width: number; height: number };
   primaryButton: ModalButton;
   secondaryButton?: ModalButton;
   children?: React.ReactNode;

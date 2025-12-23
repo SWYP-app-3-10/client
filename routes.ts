@@ -18,6 +18,9 @@ export const RouteNames = {
   SEARCH_TAB: '탐색' as const,
   MY_PAGE_TAB: '마이페이지' as const,
 
+  // 미션 - 아티클
+  ARTICLE_DETAIL: 'article' as const,
+
   // 메인 탭 내부 스크린들
   MISSION: 'mission' as const,
   CHARACTER: 'character' as const,

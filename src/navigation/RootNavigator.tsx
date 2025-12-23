@@ -5,7 +5,7 @@ import { RouteNames } from '../../routes';
 import OnboardingNavigator from './OnboardingNavigator';
 import MainTabNavigator from './MainTabNavigator';
 import FullScreenStackNavigator from './FullScreenStackNavigator';
-import NotificationScreen from '../screens/character/notification/NotificationScreen';
+import NotificationScreen from '../screens/common/NotificationScreen';
 import { useModalState, useModalStore } from '../store/modalStore';
 import { useIsOnboardingCompleted } from '../store/onboardingStore';
 import NotificationModal from '../components/NotificationModal';

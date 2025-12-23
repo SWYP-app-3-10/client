@@ -27,6 +27,8 @@ import { useMissions } from '../../hooks/useMissions';
 import { useArticles } from '../../hooks/useArticles';
 import { clearAllAuthData } from '../../services/authService';
 import { useOnboardingStore } from '../../store/onboardingStore';
+import { usePointStore } from '../../store/pointStore';
+import { useShowModal } from '../../store/modalStore';
 import { Button, MissionCard, ArticleCard } from '../../components';
 import { useNavigation } from '@react-navigation/native';
 import {
@@ -34,10 +36,18 @@ import {
   MissionStackParamList,
 } from '../../navigation/types';
 import { RouteNames } from '../../../routes';
+import { useRewardedAd, TestIds } from 'react-native-google-mobile-ads';
+import { Article } from '../../data/mockData';
 
 // 상수
 const SCROLL_INITIAL_DELAY = 100;
 const SCROLL_EVENT_THROTTLE = 16;
+const ARTICLE_POINT_COST = 30; // 기사 읽기 포인트
+const REWARD_AD_POINTS = 30; // 광고 시청 시 받는 포인트
+
+const adUnitId = __DEV__
+  ? TestIds.REWARDED
+  : 'ca-app-pub-xxxxxxxxxxxxx/yyyyyyyyyy';
 
 const MissionScreen = () => {
   const screenWidth = Dimensions.get('window').width;
@@ -46,6 +56,54 @@ const MissionScreen = () => {
   const resetOnboarding = useOnboardingStore(state => state.resetOnboarding);
   const navigation =
     useNavigation<MainTabNavigationProp<MissionStackParamList>>();
+  const { points, loadPoints, subtractPoints, addPoints } = usePointStore();
+  const showModal = useShowModal();
+
+  // 리워드 광고
+  const { isLoaded, isClosed, load, show, reward } = useRewardedAd(adUnitId, {
+    requestNonPersonalizedAdsOnly: true,
+  });
+  const [pendingArticleId, setPendingArticleId] = useState<number | null>(null);
+  const [isAdShowing, setIsAdShowing] = useState(false);
+  const [hasEarnedReward, setHasEarnedReward] = useState(false);
+
+  // 포인트 로드
+  useEffect(() => {
+    loadPoints();
+  }, [loadPoints]);
+
+  // 광고 보상 감지
+  useEffect(() => {
+    if (reward) {
+      setHasEarnedReward(true);
+    }
+  }, [reward]);
+
+  // 광고 닫힘 처리
+  useEffect(() => {
+    if (isClosed && isAdShowing && pendingArticleId) {
+      if (hasEarnedReward) {
+        // 광고 시청 완료 - 포인트 추가 후 기사 상세로 이동
+        addPoints(REWARD_AD_POINTS);
+        navigation.navigate(RouteNames.ARTICLE_DETAIL, {
+          articleId: pendingArticleId,
+        });
+      }
+      // 상태 초기화
+      setIsAdShowing(false);
+      setHasEarnedReward(false);
+      setPendingArticleId(null);
+      load();
+    }
+  }, [
+    isClosed,
+    isAdShowing,
+    hasEarnedReward,
+    pendingArticleId,
+    addPoints,
+    navigation,
+    load,
+  ]);
 
   // 개발용: 로그인 정보 초기화
   const handleClearLogin = useCallback(async () => {
@@ -75,6 +133,78 @@ const MissionScreen = () => {
   const handleNavigateToNotification = useCallback(() => {
     navigation.navigate(RouteNames.CHARACTER_NOTIFICATION);
   }, [navigation]);
+
+  // 기사 클릭 처리
+  const handleArticlePress = useCallback(
+    (article: Article) => {
+      // 포인트 확인
+      if (points >= ARTICLE_POINT_COST) {
+        // 포인트가 충분한 경우 - 포인트 사용 모달
+        showModal({
+          title: '새로운 글을 읽으시겠어요?',
+          description: `사용 가능 포인트: ${points}p`,
+          children: (
+            <View style={styles.modalContent}>
+              <Text style={styles.pointText}>
+                {ARTICLE_POINT_COST}포인트가 사용됩니다
+              </Text>
+            </View>
+          ),
+          primaryButton: {
+            title: '새 글 읽기',
+            onPress: async () => {
+              const success = await subtractPoints(ARTICLE_POINT_COST);
+              if (success) {
+                navigation.navigate(RouteNames.ARTICLE_DETAIL, {
+                  articleId: article.id,
+                });
+              } else {
+                Alert.alert('오류', '포인트 차감에 실패했습니다.');
+              }
+            },
+          },
+          secondaryButton: {
+            title: '취소',
+            variant: 'ghost',
+            onPress: () => {},
+          },
+        });
+      } else {
+        // 포인트가 부족한 경우 - 광고 시청 모달
+        showModal({
+          title: '광고를 보고 포인트 받으시겠어요?',
+          description: `사용 가능 포인트: ${points}p`,
+          children: (
+            <View style={styles.modalContent}>
+              <Text style={styles.pointText}>
+                {ARTICLE_POINT_COST}포인트가 사용됩니다
+              </Text>
+            </View>
+          ),
+          primaryButton: {
+            title: '포인트 받기',
+            onPress: () => {
+              if (isLoaded) {
+                setPendingArticleId(article.id);
+                setIsAdShowing(true);
+                setHasEarnedReward(false);
+                show();
+              } else {
+                Alert.alert('잠시만요', '광고를 불러오는 중입니다...');
+                load();
+              }
+            },
+          },
+          secondaryButton: {
+            title: '취소',
+            variant: 'ghost',
+            onPress: () => {},
+          },
+        });
+      }
+    },
+    [points, showModal, navigation, subtractPoints, isLoaded, load, show],
+  );
 
   // React Query hooks
   const {
@@ -181,7 +311,7 @@ const MissionScreen = () => {
   if (missions.length === 0) {
     return (
       <SafeAreaView style={styles.container}>
-        <View style={styles.errorContainer}></View>
+        <View style={styles.errorContainer} />
       </SafeAreaView>
     );
   }
@@ -263,7 +393,11 @@ const MissionScreen = () => {
         {/* 아티클 리스트 */}
         <View style={styles.articleList}>
           {articles.map(article => (
-            <ArticleCard key={article.id} article={article} />
+            <ArticleCard
+              key={article.id}
+              article={article}
+              onPress={() => handleArticlePress(article)}
+            />
           ))}
         </View>
       </ScrollView>
@@ -345,6 +479,17 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     paddingHorizontal: scaleWidth(20),
+  },
+  modalContent: {
+    width: '100%',
+    alignItems: 'center',
+    marginBottom: scaleWidth(8),
+  },
+  pointText: {
+    fontSize: scaleWidth(16),
+    fontWeight: '600',
+    color: COLORS.puple.main,
+    marginTop: scaleWidth(8),
   },
 });
 

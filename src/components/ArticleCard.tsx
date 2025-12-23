@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import {
   COLORS,
   scaleWidth,
@@ -19,11 +19,12 @@ interface Article {
 
 interface ArticleCardProps {
   article: Article;
+  onPress: () => void;
 }
 
-const ArticleCard = React.memo<ArticleCardProps>(({ article }) => {
+const ArticleCard = React.memo<ArticleCardProps>(({ article, onPress }) => {
   return (
-    <View style={styles.articleCardWrapper}>
+    <TouchableOpacity style={styles.articleCardWrapper} onPress={onPress}>
       <View style={styles.articleCard}>
         {/* 이미지 플레이스홀더 */}
         <View style={styles.articleImageContainer}>
@@ -43,7 +44,7 @@ const ArticleCard = React.memo<ArticleCardProps>(({ article }) => {
           <Text style={styles.articleDate}>{article.date}</Text>
         </View>
       </View>
-    </View>
+    </TouchableOpacity>
   );
 });
 

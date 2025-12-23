@@ -21,6 +21,7 @@ export type OnboardingStackParamList = {
 // FullScreen Stack Param List (탭바 없는 전체 화면들)
 export type FullScreenStackParamList = {
   [RouteNames.CHARACTER_NOTIFICATION]: undefined;
+  [RouteNames.ARTICLE_DETAIL]: { articleId: number };
   // 추후 탭바 없는 다른 화면들 추가 가능
   // 예: [RouteNames.SETTINGS]: undefined;
 };
@@ -32,6 +33,7 @@ export type RootStackParamList = {
   [RouteNames.FULL_SCREEN_STACK]: NavigatorScreenParams<FullScreenStackParamList>; // 전체 화면 스택 (탭바 없는 화면들)
   // 전체 화면 스택 내부 화면들에 직접 접근 가능
   [RouteNames.CHARACTER_NOTIFICATION]: undefined; // 알림 화면 (전체 화면 스택 내부)
+  [RouteNames.ARTICLE_DETAIL]: { articleId: number }; // 기사 상세 화면 (전체 화면 스택 내부)
 };
 
 // Main Tab Param List (Bottom Tab Navigator)

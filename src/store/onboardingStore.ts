@@ -1,16 +1,24 @@
+/**
+ * 온보딩 상태 관리 Store
+ * onboardingService를 통해 온보딩 데이터를 관리하며,
+ * 나중에 서버 API 연동 시 onboardingService만 수정하면 됨
+ */
+
 import { create } from 'zustand';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import {
+  getOnboardingStatus,
+  completeOnboarding as completeOnboardingService,
+  saveOnboardingStep as saveOnboardingStepService,
+  saveInterests as saveInterestsService,
+  saveDifficulty as saveDifficultyService,
+  resetOnboarding as resetOnboardingService,
+  type OnboardingStep,
+  type Difficulty,
+  type InterestsData,
+} from '../services/onboardingService';
 
-const ONBOARDING_COMPLETED_KEY = '@onboarding_completed';
-const ONBOARDING_STEP_KEY = '@onboarding_step';
-const INTERESTS_KEY = '@onboarding_interests';
-const DIFFICULTY_KEY = '@onboarding_difficulty';
-
-export type OnboardingStep = 'login' | 'interests' | 'difficulty' | 'completed';
-export type Difficulty = 'beginner' | 'intermediate' | 'advanced';
-
-// 관심분야 선택 데이터: Map<id, 순서(1, 2, 3)>
-export type InterestsData = Record<string, number>;
+// 타입 재export (외부에서 사용 가능하도록)
+export type { OnboardingStep, Difficulty, InterestsData };
 
 interface OnboardingStore {
   isOnboardingCompleted: boolean;
@@ -32,8 +40,7 @@ export const useOnboardingStore = create<OnboardingStore>(set => ({
   difficulty: null,
   completeOnboarding: async () => {
     try {
-      await AsyncStorage.setItem(ONBOARDING_COMPLETED_KEY, 'true');
-      await AsyncStorage.setItem(ONBOARDING_STEP_KEY, 'completed');
+      await completeOnboardingService();
       console.log('온보딩 완료! 메인 화면으로 전환합니다.');
       set({ isOnboardingCompleted: true, currentStep: 'completed' });
     } catch (error) {
@@ -42,7 +49,7 @@ export const useOnboardingStore = create<OnboardingStore>(set => ({
   },
   setOnboardingStep: async (step: OnboardingStep) => {
     try {
-      await AsyncStorage.setItem(ONBOARDING_STEP_KEY, step);
+      await saveOnboardingStepService(step);
       set({ currentStep: step });
     } catch (error) {
       console.error('온보딩 단계 저장 실패:', error);
@@ -50,7 +57,7 @@ export const useOnboardingStore = create<OnboardingStore>(set => ({
   },
   setInterests: async (interests: InterestsData) => {
     try {
-      await AsyncStorage.setItem(INTERESTS_KEY, JSON.stringify(interests));
+      await saveInterestsService(interests);
       set({ interests });
     } catch (error) {
       console.error('관심분야 저장 실패:', error);
@@ -58,7 +65,7 @@ export const useOnboardingStore = create<OnboardingStore>(set => ({
   },
   setDifficulty: async (difficulty: Difficulty) => {
     try {
-      await AsyncStorage.setItem(DIFFICULTY_KEY, difficulty);
+      await saveDifficultyService(difficulty);
       set({ difficulty });
     } catch (error) {
       console.error('난이도 저장 실패:', error);
@@ -66,10 +73,7 @@ export const useOnboardingStore = create<OnboardingStore>(set => ({
   },
   resetOnboarding: async () => {
     try {
-      await AsyncStorage.removeItem(ONBOARDING_COMPLETED_KEY);
-      await AsyncStorage.removeItem(ONBOARDING_STEP_KEY);
-      await AsyncStorage.removeItem(INTERESTS_KEY);
-      await AsyncStorage.removeItem(DIFFICULTY_KEY);
+      await resetOnboardingService();
       set({
         isOnboardingCompleted: false,
         currentStep: 'login',
@@ -82,41 +86,13 @@ export const useOnboardingStore = create<OnboardingStore>(set => ({
   },
   loadOnboardingStatus: async () => {
     try {
-      const completed = await AsyncStorage.getItem(ONBOARDING_COMPLETED_KEY);
-      const step = (await AsyncStorage.getItem(
-        ONBOARDING_STEP_KEY,
-      )) as OnboardingStep | null;
-      const interestsStr = await AsyncStorage.getItem(INTERESTS_KEY);
-      const difficulty = (await AsyncStorage.getItem(
-        DIFFICULTY_KEY,
-      )) as Difficulty | null;
-
-      const interests: InterestsData | null = interestsStr
-        ? JSON.parse(interestsStr)
-        : null;
-
-      if (completed === 'true') {
-        set({
-          isOnboardingCompleted: true,
-          currentStep: 'completed',
-          interests,
-          difficulty,
-        });
-      } else if (step) {
-        set({
-          isOnboardingCompleted: false,
-          currentStep: step,
-          interests,
-          difficulty,
-        });
-      } else {
-        set({
-          isOnboardingCompleted: false,
-          currentStep: 'login',
-          interests: null,
-          difficulty: null,
-        });
-      }
+      const data = await getOnboardingStatus();
+      set({
+        isOnboardingCompleted: data.isCompleted,
+        currentStep: data.step,
+        interests: data.interests,
+        difficulty: data.difficulty,
+      });
     } catch (error) {
       console.error('온보딩 상태 불러오기 실패:', error);
       set({
