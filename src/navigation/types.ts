@@ -38,12 +38,7 @@ export type FullScreenStackParamList = {
 export type RootStackParamList = {
   Onboarding: NavigatorScreenParams<OnboardingStackParamList>;
   Maintab: NavigatorScreenParams<MainTabParamList>;
-  [RouteNames.FULL_SCREEN_STACK]: NavigatorScreenParams<FullScreenStackParamList>; // 전체 화면 스택 (탭바 없는 화면들)
-  // 전체 화면 스택 내부 화면들에 직접 접근 가능
-  [RouteNames.CHARACTER_NOTIFICATION]: undefined; // 알림 화면 (전체 화면 스택 내부)
-  [RouteNames.ARTICLE_DETAIL]: { articleId: number }; // 기사 상세 화면 (전체 화면 스택 내부)
-  [RouteNames.QUIZ]: { articleId: number }; // 퀴즈 화면 (전체 화면 스택 내부)
-  [RouteNames.AD_LOADING]: { articleId: number }; // 광고 로딩 화면 (전체 화면 스택 내부)
+  [RouteNames.FULL_SCREEN_STACK]: NavigatorScreenParams<FullScreenStackParamList>;
 };
 
 // Main Tab Param List (Bottom Tab Navigator)

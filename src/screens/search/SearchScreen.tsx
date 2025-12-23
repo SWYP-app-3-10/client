@@ -1,11 +1,10 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import {
   View,
   Text,
   StyleSheet,
   TouchableOpacity,
   FlatList,
-  Alert,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -19,9 +18,7 @@ import SearchResultSkeleton from './components/SearchResultSkeleton';
 import { MOCK_NEWS, NewsCategory, NewsItems } from '../../data/mock/searchData';
 import SearchResultItem from './components/SearchResultItem';
 import CategoryTabs from './components/CategoryTabs';
-import { ARTICLE_POINT_COST, missionScreenStyles } from '../main/MissionScreen';
-import { useShowModal } from '../../store/modalStore';
-import { usePointStore } from '../../store/pointStore';
+import { useArticleNavigation } from '../../hooks/useArticleNavigation';
 
 /** 한 번에 추가로 보여줄 아이템 개수(페이지 단위) */
 const PAGE_SIZE = 10;
@@ -155,86 +152,8 @@ export default function SearchScreen({
     setPage(prev => prev + 1);
     setIsLoadingMore(false);
   };
-  // 기사 클릭 처리
-  const showModal = useShowModal();
-  const { points, loadPoints, subtractPoints } = usePointStore();
-  // 포인트 로드
-  useEffect(() => {
-    loadPoints();
-  }, [loadPoints]);
-
-  const handleArticlePress = useCallback(
-    (articleId: number) => {
-      // 포인트 확인
-      if (points >= ARTICLE_POINT_COST) {
-        // 포인트가 충분한 경우 - 포인트 사용 모달
-        showModal({
-          title: '새로운 글을 읽으시겠어요?',
-          description: `사용 가능 포인트: ${points}p`,
-          closeButton: true,
-          children: (
-            <View style={missionScreenStyles.modalContent}>
-              <Text style={missionScreenStyles.modalContentText}>
-                <Text style={missionScreenStyles.pointText}>
-                  {ARTICLE_POINT_COST}포인트
-                </Text>
-                가 사용됩니다
-              </Text>
-            </View>
-          ),
-          primaryButton: {
-            title: '새 글 읽기',
-            onPress: async () => {
-              const success = await subtractPoints(ARTICLE_POINT_COST);
-              if (success) {
-                navigation.navigate(RouteNames.FULL_SCREEN_STACK, {
-                  screen: RouteNames.ARTICLE_DETAIL,
-                  params: {
-                    // 테스트 하려고 1로 작성함
-                    articleId: articleId || 1,
-                    returnTo: 'search',
-                  },
-                });
-              } else {
-                Alert.alert('오류', '포인트 차감에 실패했습니다.');
-              }
-            },
-          },
-        });
-      } else {
-        // 포인트가 부족한 경우 - 광고 시청 모달
-        showModal({
-          title: '광고를 보고 포인트 받으시겠어요?',
-          description: `사용 가능 포인트: ${points}p`,
-          closeButton: true,
-          children: (
-            <View style={missionScreenStyles.modalContent}>
-              <Text style={missionScreenStyles.modalContentText}>
-                <Text style={missionScreenStyles.pointText}>
-                  {ARTICLE_POINT_COST}포인트
-                </Text>
-                가 사용됩니다
-              </Text>
-            </View>
-          ),
-          primaryButton: {
-            title: '포인트 받기',
-            onPress: () => {
-              navigation.navigate(RouteNames.FULL_SCREEN_STACK, {
-                screen: RouteNames.AD_LOADING,
-                params: {
-                  // 테스트 하려고 1로 작성함
-                  articleId: articleId || 1,
-                  returnTo: 'search',
-                },
-              });
-            },
-          },
-        });
-      }
-    },
-    [points, showModal, navigation, subtractPoints],
-  );
+  // 기사 클릭 처리 (커스텀 훅 사용)
+  const { handleArticlePress } = useArticleNavigation({ returnTo: 'search' });
   return (
     <SafeAreaView style={styles.safe}>
       <View style={styles.container}>

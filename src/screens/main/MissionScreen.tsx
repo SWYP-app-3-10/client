@@ -28,10 +28,9 @@ import { useMissions } from '../../hooks/useMissions';
 import { useArticles } from '../../hooks/useArticles';
 import { clearAllAuthData } from '../../services/authService';
 import { useOnboardingStore } from '../../store/onboardingStore';
-import { usePointStore } from '../../store/pointStore';
-import { useShowModal } from '../../store/modalStore';
 import { Button, MissionCard, ArticleCard } from '../../components';
 import { useNavigation } from '@react-navigation/native';
+import { useArticleNavigation } from '../../hooks/useArticleNavigation';
 import {
   MainTabNavigationProp,
   MissionStackParamList,
@@ -51,13 +50,7 @@ const MissionScreen = () => {
   const resetOnboarding = useOnboardingStore(state => state.resetOnboarding);
   const navigation =
     useNavigation<MainTabNavigationProp<MissionStackParamList>>();
-  const { points, loadPoints, subtractPoints } = usePointStore();
-  const showModal = useShowModal();
-
-  // 포인트 로드
-  useEffect(() => {
-    loadPoints();
-  }, [loadPoints]);
+  const { handleArticlePress } = useArticleNavigation({ returnTo: 'mission' });
 
   // 개발용: 로그인 정보 초기화
   const handleClearLogin = useCallback(async () => {
@@ -90,76 +83,12 @@ const MissionScreen = () => {
     });
   }, [navigation]);
 
-  // 기사 클릭 처리
-  const handleArticlePress = useCallback(
+  // 기사 클릭 처리 (커스텀 훅 사용)
+  const handleArticlePressWrapper = useCallback(
     (article: Article) => {
-      // 포인트 확인
-      if (points >= ARTICLE_POINT_COST) {
-        // 포인트가 충분한 경우 - 포인트 사용 모달
-        showModal({
-          title: '새로운 글을 읽으시겠어요?',
-          description: `사용 가능 포인트: ${points}p`,
-          closeButton: true,
-          children: (
-            <View style={missionScreenStyles.modalContent}>
-              <Text style={missionScreenStyles.modalContentText}>
-                <Text style={missionScreenStyles.pointText}>
-                  {ARTICLE_POINT_COST}포인트
-                </Text>
-                가 사용됩니다
-              </Text>
-            </View>
-          ),
-          primaryButton: {
-            title: '새 글 읽기',
-            onPress: async () => {
-              const success = await subtractPoints(ARTICLE_POINT_COST);
-              if (success) {
-                navigation.navigate(RouteNames.FULL_SCREEN_STACK, {
-                  screen: RouteNames.ARTICLE_DETAIL,
-                  params: {
-                    articleId: article.id,
-                    returnTo: 'mission',
-                  },
-                });
-              } else {
-                Alert.alert('오류', '포인트 차감에 실패했습니다.');
-              }
-            },
-          },
-        });
-      } else {
-        // 포인트가 부족한 경우 - 광고 시청 모달
-        showModal({
-          title: '광고를 보고 포인트 받으시겠어요?',
-          description: `사용 가능 포인트: ${points}p`,
-          closeButton: true,
-          children: (
-            <View style={missionScreenStyles.modalContent}>
-              <Text style={missionScreenStyles.modalContentText}>
-                <Text style={missionScreenStyles.pointText}>
-                  {ARTICLE_POINT_COST}포인트
-                </Text>
-                가 사용됩니다
-              </Text>
-            </View>
-          ),
-          primaryButton: {
-            title: '포인트 받기',
-            onPress: () => {
-              navigation.navigate(RouteNames.FULL_SCREEN_STACK, {
-                screen: RouteNames.AD_LOADING,
-                params: {
-                  articleId: article.id,
-                  returnTo: 'mission',
-                },
-              });
-            },
-          },
-        });
-      }
+      handleArticlePress(article.id);
     },
-    [points, showModal, navigation, subtractPoints],
+    [handleArticlePress],
   );
 
   // React Query hooks
@@ -356,7 +285,7 @@ const MissionScreen = () => {
             <ArticleCard
               key={article.id}
               article={article}
-              onPress={() => handleArticlePress(article)}
+              onPress={() => handleArticlePressWrapper(article)}
             />
           ))}
         </View>
