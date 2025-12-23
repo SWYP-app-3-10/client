@@ -8,11 +8,10 @@ import {
   Image,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useRoute } from '@react-navigation/native';
+import { useRoute, useNavigation } from '@react-navigation/native';
 import {
   COLORS,
   scaleWidth,
-  Heading_18EB_Round,
   Body_16R,
   Caption_14R,
   BORDER_RADIUS,
@@ -23,9 +22,15 @@ import Button from '../../components/Button';
 import { useArticles } from '../../hooks/useArticles';
 import { Article } from '../../data/mock/missionData';
 import Spacer from '../../components/Spacer';
+import { RouteNames } from '../../../routes';
+import { FullScreenStackParamList } from '../../navigation/types';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+
+type NavigationProp = NativeStackNavigationProp<FullScreenStackParamList>;
 
 const ArticleDetailScreen = () => {
   const route = useRoute();
+  const navigation = useNavigation<NavigationProp>();
   const { data: articles = [], isLoading } = useArticles();
 
   // @ts-ignore - route params 타입은 나중에 추가
@@ -108,8 +113,9 @@ const ArticleDetailScreen = () => {
         <Button
           title="퀴즈 풀기"
           onPress={() => {
-            // TODO: 퀴즈 화면으로 이동
-            console.log('퀴즈 풀기');
+            navigation.navigate(RouteNames.QUIZ, {
+              articleId: articleId || 0,
+            });
           }}
           variant="primary"
           style={styles.quizButton}

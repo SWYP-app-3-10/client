@@ -20,6 +20,7 @@ export const RouteNames = {
 
   // 미션 - 아티클
   ARTICLE_DETAIL: 'article' as const,
+  QUIZ: 'quiz' as const,
 
   // 메인 탭 내부 스크린들
   MISSION: 'mission' as const,
