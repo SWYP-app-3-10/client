@@ -11,10 +11,16 @@ import First from '../../assets/svg/First.svg';
 import Second from '../../assets/svg/Second.svg';
 import Third from '../../assets/svg/Third.svg';
 import { scaleWidth } from '../../styles/global';
+import Circle from '../../assets/svg/Circle.svg';
 
 export const YoutubeIcon = createIconComponent(Youtube, ICON_SIZES.X3L);
 export const Ic_backIcon = createIconComponent(Icon_back, ICON_SIZES.XL);
-export const CheckIcon = createIconComponent(Check, ICON_SIZES.XL);
+export const CircleIcon = createIconComponent(Circle, scaleWidth(14));
+export const CheckIcon = createRectangleIconComponent(
+  Check,
+  scaleWidth(9.29),
+  scaleWidth(7.44),
+);
 export const CloseIcon = createIconComponent(Close, ICON_SIZES.XL);
 //  가로, 세로 크기 다름
 export const FirstIcon = createRectangleIconComponent(

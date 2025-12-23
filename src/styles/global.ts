@@ -49,6 +49,8 @@ export const COLORS = {
   black: '#19181E',
   // 메인
   puple: { main: '#6F44F5', 3: '#F6F4FE', 5: '#9b7bFF' },
+  red: { main: '#ff7E6a', 3: '#FFEDEA' },
+  blue: { main: '#4d8cff', 3: '#E1EEFF' },
 };
 
 // 타이포그래피 스타일 export

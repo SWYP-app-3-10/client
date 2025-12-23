@@ -89,7 +89,11 @@ const InterestTag: React.FC<InterestTagProps> = ({
         <Text style={[styles.tagText, isSelected && styles.tagTextSelected]}>
           {interest.name}
         </Text>
-        {isSelected && <CheckIcon />}
+        {isSelected && (
+          <View style={styles.checkIconContainer}>
+            <CheckIcon color={COLORS.puple.main} />
+          </View>
+        )}
       </Button>
     </View>
   );
@@ -290,6 +294,14 @@ const styles = StyleSheet.create({
   tagTextSelected: {
     ...Heading_18SB,
     color: COLORS.white,
+  },
+  checkIconContainer: {
+    width: scaleWidth(24),
+    height: scaleWidth(24),
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderRadius: BORDER_RADIUS[99],
+    backgroundColor: COLORS.white,
   },
   footer: {
     paddingHorizontal: scaleWidth(20),

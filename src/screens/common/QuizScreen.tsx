@@ -11,13 +11,19 @@ import {
   COLORS,
   scaleWidth,
   Heading_20EB_Round,
-  Body_16R,
   BORDER_RADIUS,
+  Heading_24EB_Round,
+  Body_16M,
 } from '../../styles/global';
 import Header from '../../components/Header';
 import Button from '../../components/Button';
 import Spacer from '../../components/Spacer';
 import { Quiz, QuizOption } from '../../data/mock/quizData';
+import {
+  CheckIcon,
+  CircleIcon,
+  CloseIcon,
+} from '../../icons/commonIcons/commonIcons';
 
 type QuizScreenProps = {
   quiz: Quiz;
@@ -29,7 +35,6 @@ type QuizState = 'question' | 'feedback';
 const QuizScreen: React.FC<QuizScreenProps> = ({ quiz, articleId }) => {
   const [selectedOptionId, setSelectedOptionId] = useState<number | null>(null);
   const [quizState, setQuizState] = useState<QuizState>('question');
-  const [userAnswerId, setUserAnswerId] = useState<number | null>(null);
 
   const handleOptionSelect = (optionId: number) => {
     if (quizState === 'question') {
@@ -48,8 +53,6 @@ const QuizScreen: React.FC<QuizScreenProps> = ({ quiz, articleId }) => {
       answerId: selectedOptionId,
     });
 
-    // 사용자 답안 저장
-    setUserAnswerId(selectedOptionId);
     // 피드백 화면으로 전환
     setQuizState('feedback');
   };
@@ -63,11 +66,7 @@ const QuizScreen: React.FC<QuizScreenProps> = ({ quiz, articleId }) => {
     return optionId === quiz.correctAnswerId;
   };
 
-  const isUserAnswer = (optionId: number) => {
-    return optionId === userAnswerId;
-  };
-
-  const renderOption = (option: QuizOption, index: number) => {
+  const renderOption = (option: QuizOption) => {
     if (quizState === 'question') {
       // 문제 화면: 선택 여부에 따라 스타일 변경
       const isSelected = selectedOptionId === option.id;
@@ -78,26 +77,25 @@ const QuizScreen: React.FC<QuizScreenProps> = ({ quiz, articleId }) => {
           onPress={() => handleOptionSelect(option.id)}
         >
           <Text style={styles.optionText}>{option.text}</Text>
-          <View
-            style={[
-              styles.checkIcon,
-              isSelected
-                ? styles.checkIconSelected
-                : styles.checkIconUnselected,
-            ]}
-          >
-            {isSelected ? (
-              <Text style={styles.checkIconText}>✓</Text>
-            ) : (
-              <Text style={styles.checkIconTextUnselected}>✓</Text>
-            )}
+          <View style={[styles.checkIcon]}>
+            <View
+              style={[
+                styles.checkIconContainer,
+                {
+                  backgroundColor: isSelected
+                    ? COLORS.puple.main
+                    : COLORS.gray300,
+                },
+              ]}
+            >
+              <CheckIcon color={isSelected ? COLORS.white : COLORS.gray100} />
+            </View>
           </View>
         </TouchableOpacity>
       );
     } else {
       // 피드백 화면: 정답/오답에 따라 스타일 변경
       const correct = isCorrect(option.id);
-      const userSelected = isUserAnswer(option.id);
       return (
         <View
           key={option.id}
@@ -107,20 +105,16 @@ const QuizScreen: React.FC<QuizScreenProps> = ({ quiz, articleId }) => {
           ]}
         >
           <Text style={styles.optionText}>{option.text}</Text>
-          <View
-            style={[
-              styles.feedbackIcon,
-              correct
-                ? styles.feedbackIconCorrect
-                : styles.feedbackIconIncorrect,
-            ]}
-          >
-            {correct ? (
-              <View style={styles.circleIcon} />
-            ) : (
-              <Text style={styles.xIconText}>✕</Text>
-            )}
-          </View>
+
+          {correct ? (
+            <View style={styles.correctIconContainer}>
+              <CircleIcon />
+            </View>
+          ) : (
+            <View style={styles.incorrectIconContainer}>
+              <CloseIcon color={COLORS.white} />
+            </View>
+          )}
         </View>
       );
     }
@@ -129,23 +123,27 @@ const QuizScreen: React.FC<QuizScreenProps> = ({ quiz, articleId }) => {
   return (
     <SafeAreaView style={styles.container}>
       <Header iconColor={COLORS.black} />
+      <Spacer num={32} />
       <ScrollView
         style={styles.scrollView}
         contentContainerStyle={styles.content}
         showsVerticalScrollIndicator={false}
       >
         {/* Q 아이콘과 문제 */}
-        <View style={styles.questionContainer}>
-          <View style={styles.qIcon}>
-            <Text style={styles.qIconText}>Q</Text>
-          </View>
-          <Text style={styles.questionText}>{quiz.question}</Text>
-        </View>
+        <Text style={styles.qIconText}>Q</Text>
+        <Text style={styles.questionText}>{quiz.question}</Text>
 
-        <Spacer num={32} />
+        <Spacer num={40} />
 
         {/* 선택지 */}
-        {quiz.options.map((option, index) => renderOption(option, index))}
+        {quiz.options.map((option, index) => {
+          return (
+            <View key={option.id}>
+              {renderOption(option)}
+              {index !== quiz.options.length - 1 && <Spacer num={12} />}
+            </View>
+          );
+        })}
 
         <Spacer num={48} />
       </ScrollView>
@@ -181,78 +179,75 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'flex-start',
   },
-  qIcon: {
-    width: scaleWidth(48),
-    height: scaleWidth(48),
-    borderRadius: scaleWidth(24),
-    backgroundColor: COLORS.puple.main,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginRight: scaleWidth(16),
-  },
   qIconText: {
-    ...Heading_20EB_Round,
-    color: COLORS.white,
-    fontSize: scaleWidth(24),
+    ...Heading_24EB_Round,
+    color: COLORS.puple[5],
+    marginBottom: scaleWidth(4),
   },
   questionText: {
     ...Heading_20EB_Round,
     color: COLORS.black,
     flex: 1,
-    lineHeight: scaleWidth(28),
   },
   optionCard: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: scaleWidth(20),
-    paddingVertical: scaleWidth(20),
-    marginBottom: scaleWidth(12),
+    height: scaleWidth(68),
+    gap: scaleWidth(20),
+    paddingHorizontal: scaleWidth(24),
     borderRadius: BORDER_RADIUS[16],
     backgroundColor: COLORS.gray100,
-    borderWidth: 1,
-    borderColor: COLORS.gray300,
   },
   optionCardSelected: {
     borderColor: COLORS.puple.main,
-    backgroundColor: COLORS.white,
+    backgroundColor: COLORS.puple[3],
+    borderWidth: 1,
   },
   optionCardCorrect: {
-    borderColor: 'blue',
-    backgroundColor: COLORS.white,
+    borderColor: COLORS.blue.main,
+    backgroundColor: COLORS.blue[3],
+    borderWidth: 1,
   },
   optionCardIncorrect: {
-    borderColor: 'red',
-    backgroundColor: COLORS.white,
+    borderColor: COLORS.red.main,
+    backgroundColor: COLORS.red[3],
   },
-  optionText: {
-    ...Body_16R,
-    color: COLORS.black,
-    flex: 1,
-    marginRight: scaleWidth(12),
-  },
-  checkIcon: {
-    width: scaleWidth(24),
-    height: scaleWidth(24),
-    borderRadius: scaleWidth(12),
+  checkIconContainer: {
+    width: scaleWidth(28),
+    height: scaleWidth(28),
     justifyContent: 'center',
     alignItems: 'center',
-  },
-  checkIconSelected: {
-    backgroundColor: COLORS.puple.main,
-  },
-  checkIconUnselected: {
+    borderRadius: BORDER_RADIUS[99],
     backgroundColor: COLORS.gray300,
   },
-  checkIconText: {
-    color: COLORS.white,
-    fontSize: scaleWidth(16),
-    fontWeight: 'bold',
+  correctIconContainer: {
+    width: scaleWidth(28),
+    height: scaleWidth(28),
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderRadius: BORDER_RADIUS[99],
+    backgroundColor: COLORS.blue.main,
   },
-  checkIconTextUnselected: {
-    color: COLORS.gray500,
-    fontSize: scaleWidth(16),
-    fontWeight: 'bold',
+  incorrectIconContainer: {
+    width: scaleWidth(28),
+    height: scaleWidth(28),
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderRadius: BORDER_RADIUS[99],
+    backgroundColor: COLORS.red.main,
+  },
+  optionText: {
+    ...Body_16M,
+    color: COLORS.black,
+    flex: 1,
+  },
+  checkIcon: {
+    width: scaleWidth(28),
+    height: scaleWidth(28),
+    borderRadius: BORDER_RADIUS[99],
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   feedbackIcon: {
     width: scaleWidth(24),
