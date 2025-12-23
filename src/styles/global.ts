@@ -28,6 +28,7 @@ export const BORDER_RADIUS: Record<number, number> = {
   16: scaleWidth(16),
   20: scaleWidth(20),
   // ?
+  99: scaleWidth(99),
   30: scaleWidth(30),
   10: scaleWidth(10),
   12: scaleWidth(12),
@@ -35,7 +36,6 @@ export const BORDER_RADIUS: Record<number, number> = {
 
 // 컬러 팔레트
 export const COLORS = {
-  red: '#E74C3C',
   // 그레이 색상
   white: '#FFFFFF',
   gray100: '#F6F7F9',
@@ -48,13 +48,7 @@ export const COLORS = {
   gray800: '#767C91',
   black: '#19181E',
   // 메인
-  puple: { main: '#6F44F5', 3: '#F6F4FE' },
-
-  // 프라이머리 색상
-  // primary300: '#E5F8EF',
-  // primary400: '#C5F9DE',
-  // primary500: '#8EF3BF',
-  // primary600: '#64CD97',
+  puple: { main: '#6F44F5', 3: '#F6F4FE', 5: '#9b7bFF' },
 };
 
 // 타이포그래피 스타일 export
