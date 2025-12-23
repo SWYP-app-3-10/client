@@ -8,8 +8,8 @@ import {
   TouchableOpacityProps,
   StyleProp,
 } from 'react-native';
-import {BORDER_RADIUS, COLORS, scaleWidth} from '../styles/global';
-import {Heading_18EB_Round} from '../styles/typography';
+import { BORDER_RADIUS, COLORS, scaleWidth } from '../styles/global';
+import { Heading_18EB_Round } from '../styles/typography';
 
 export type ButtonVariant = 'primary' | 'outline' | 'ghost';
 
@@ -61,7 +61,8 @@ const Button: React.FC<ButtonProps> = ({
       onPress={onPress}
       disabled={disabled}
       activeOpacity={0.7}
-      hitSlop={hitslop ?? 10}>
+      hitSlop={hitslop ?? 10}
+    >
       {children ? children : <Text style={textStyles}>{title}</Text>}
     </TouchableOpacity>
   );

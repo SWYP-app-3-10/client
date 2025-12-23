@@ -1,4 +1,4 @@
-import React, {ReactNode} from 'react';
+import React, { ReactNode } from 'react';
 import {
   View,
   Text,
@@ -11,8 +11,18 @@ import {
   ViewStyle,
   TextStyle,
 } from 'react-native';
-import {BORDER_RADIUS, COLORS, scaleWidth} from '../styles/global';
-import Button, {ButtonVariant} from './Button';
+import {
+  BORDER_RADIUS,
+  COLORS,
+  Heading_18EB_Round,
+  Caption_14R,
+  scaleWidth,
+} from '../styles/global';
+import Button, { ButtonVariant } from './Button';
+import IconButton from './IconButton';
+import { CloseIcon } from '../icons';
+import { ICON_SIZES } from '../icons/config/iconSizes';
+import Spacer from './Spacer';
 
 export interface ModalButton {
   title: string;
@@ -27,12 +37,13 @@ export interface NotificationModalProps {
   title: string;
   description?: string;
   image?: ImageSourcePropType | ReactNode;
-  imageSize?: {width: number; height: number};
+  imageSize?: { width: number; height: number };
 
   // 단일 버튼 또는 이중 버튼
   primaryButton: ModalButton;
   secondaryButton?: ModalButton;
   children?: ReactNode;
+  closeButton?: boolean;
   onClose?: () => void;
 }
 
@@ -41,10 +52,11 @@ const NotificationModal: React.FC<NotificationModalProps> = ({
   title,
   description,
   image,
-  imageSize = {width: scaleWidth(80), height: scaleWidth(80)},
+  imageSize = { width: scaleWidth(80), height: scaleWidth(80) },
   children,
   primaryButton,
   secondaryButton,
+  closeButton,
   onClose,
 }) => {
   const handleClose = () => {
@@ -85,48 +97,68 @@ const NotificationModal: React.FC<NotificationModalProps> = ({
       visible={visible}
       transparent={true}
       animationType="fade"
-      onRequestClose={handleClose}>
+      onRequestClose={handleClose}
+    >
       <TouchableWithoutFeedback onPress={handleOverlayPress}>
         <View style={styles.overlay}>
           <TouchableWithoutFeedback onPress={() => {}}>
             <View style={styles.modalContainer}>
-              {/* 이미지 */}
-              {renderImage()}
-
-              {/* 제목 */}
-              <Text style={styles.title}>{title}</Text>
-
-              {/* 설명 텍스트 */}
-              {description && (
-                <Text style={styles.description}>{description}</Text>
-              )}
-
-              {/* 컨텐츠 */}
-              {children && (
-                <View style={styles.childrenContainer}>{children}</View>
-              )}
-
-              {/* 버튼 컨테이너 */}
               <View
                 style={[
-                  styles.buttonContainer,
-                  !secondaryButton && styles.singleButtonContainer,
-                ]}>
-                {secondaryButton && (
-                  <Button
-                    title={secondaryButton.title}
-                    onPress={secondaryButton.onPress}
-                    variant={secondaryButton.variant || 'primary'}
-                    style={[styles.button, secondaryButton.style]}
-                    textStyle={secondaryButton.textStyle}
-                  />
+                  styles.modalContent,
+                  {
+                    paddingTop: closeButton ? scaleWidth(23) : scaleWidth(40),
+                  },
+                ]}
+              >
+                {/* 닫기 버튼 */}
+                {closeButton && (
+                  <View style={styles.closeButtonContainer}>
+                    <IconButton onPress={handleClose}>
+                      <CloseIcon color={COLORS.gray500} size={ICON_SIZES.M} />
+                    </IconButton>
+                  </View>
                 )}
-                <Button
-                  title={primaryButton.title}
-                  onPress={primaryButton.onPress}
-                  variant={primaryButton.variant || 'primary'}
-                  style={secondaryButton ? styles.button : styles.singleButton}
-                />
+                {/* 이미지 */}
+                {renderImage()}
+
+                {/* 제목 */}
+                <Text style={styles.title}>{title}</Text>
+
+                {/* 설명 텍스트 */}
+                {description && (
+                  <Text style={styles.description}>{description}</Text>
+                )}
+                {/* 컨텐츠 */}
+                {children && (
+                  <View style={styles.childrenContainer}>{children}</View>
+                )}
+                <Spacer num={20} />
+                {/* 버튼 컨테이너 */}
+                <View
+                  style={[
+                    styles.buttonContainer,
+                    !secondaryButton && styles.singleButtonContainer,
+                  ]}
+                >
+                  {secondaryButton && (
+                    <Button
+                      title={secondaryButton.title}
+                      onPress={secondaryButton.onPress}
+                      variant={secondaryButton.variant || 'primary'}
+                      style={[styles.button, secondaryButton.style]}
+                      textStyle={secondaryButton.textStyle}
+                    />
+                  )}
+                  <Button
+                    title={primaryButton.title}
+                    onPress={primaryButton.onPress}
+                    variant={primaryButton.variant || 'primary'}
+                    style={
+                      secondaryButton ? styles.button : styles.singleButton
+                    }
+                  />
+                </View>
               </View>
             </View>
           </TouchableWithoutFeedback>
@@ -142,16 +174,22 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(0, 0, 0, 0.5)',
     justifyContent: 'center',
     alignItems: 'center',
-    paddingHorizontal: scaleWidth(20),
   },
   modalContainer: {
     backgroundColor: COLORS.white,
     borderRadius: BORDER_RADIUS[20],
-    paddingHorizontal: scaleWidth(24),
-    paddingTop: scaleWidth(40),
-    paddingBottom: scaleWidth(24),
-    width: '100%',
+    width: scaleWidth(312),
     alignItems: 'center',
+  },
+  modalContent: {
+    width: '100%',
+    paddingHorizontal: scaleWidth(24),
+    paddingBottom: scaleWidth(24),
+  },
+  closeButtonContainer: {
+    width: '100%',
+    alignItems: 'flex-end',
+    marginBottom: scaleWidth(15),
   },
   imagePlaceholder: {
     backgroundColor: COLORS.gray100,
@@ -176,31 +214,26 @@ const styles = StyleSheet.create({
   },
 
   title: {
-    fontSize: scaleWidth(20),
-    fontWeight: '600',
+    ...Heading_18EB_Round,
     color: COLORS.black,
     marginBottom: scaleWidth(12),
     textAlign: 'center',
   },
   description: {
-    fontSize: scaleWidth(14),
-    color: COLORS.gray600,
+    ...Caption_14R,
+    color: COLORS.gray800,
     textAlign: 'center',
-    lineHeight: scaleWidth(20),
-    marginBottom: scaleWidth(16),
   },
 
   buttonContainer: {
     flexDirection: 'row',
     width: '100%',
     gap: scaleWidth(12),
-    marginTop: scaleWidth(8),
   },
   singleButtonContainer: {
     flexDirection: 'column',
   },
   button: {
-    flex: 1,
     height: scaleWidth(48),
   },
   singleButton: {
@@ -208,7 +241,8 @@ const styles = StyleSheet.create({
     height: scaleWidth(48),
   },
   childrenContainer: {
-    marginBottom: scaleWidth(16),
+    justifyContent: 'center',
+    alignItems: 'center',
   },
 });
 

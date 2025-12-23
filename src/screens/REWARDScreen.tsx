@@ -1,4 +1,4 @@
-import React, {useCallback, useEffect, useState} from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import {
   Alert,
   Button,
@@ -7,11 +7,10 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import {useRewardedAd, TestIds} from 'react-native-google-mobile-ads';
-import {useNavigation, useFocusEffect} from '@react-navigation/native';
-import {NativeStackNavigationProp} from '@react-navigation/native-stack';
-import {OnboardingStackParamList} from '../navigation/types';
-import {scaleWidth} from '../styles/global';
+import { useRewardedAd, TestIds } from 'react-native-google-mobile-ads';
+import { useNavigation, useFocusEffect } from '@react-navigation/native';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { OnboardingStackParamList } from '../navigation/types';
 
 const adUnitId = __DEV__
   ? TestIds.REWARDED
@@ -20,7 +19,7 @@ const adUnitId = __DEV__
 type NavigationProp = NativeStackNavigationProp<OnboardingStackParamList>;
 
 const REWARDScreen = () => {
-  const {isLoaded, isClosed, load, show, reward} = useRewardedAd(adUnitId, {
+  const { isLoaded, isClosed, load, show, reward } = useRewardedAd(adUnitId, {
     requestNonPersonalizedAdsOnly: true,
   });
   const navigation = useNavigation<NavigationProp>();
@@ -103,7 +102,8 @@ const REWARDScreen = () => {
         }}
         onPress={() => {
           navigation.goBack();
-        }}>
+        }}
+      >
         <Text>뒤로가기</Text>
       </TouchableOpacity>
 
@@ -151,7 +151,7 @@ const styles = StyleSheet.create({
     marginBottom: 20,
     elevation: 5,
     shadowColor: '#000',
-    shadowOffset: {width: 0, height: 2},
+    shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.2,
     shadowRadius: 4,
   },

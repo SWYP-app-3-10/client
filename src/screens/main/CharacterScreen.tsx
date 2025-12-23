@@ -55,7 +55,9 @@ const CharacterScreen = () => {
             alignSelf: 'flex-end',
           }}
           onPress={() => {
-            navigation.navigate(RouteNames.CHARACTER_NOTIFICATION);
+            navigation.navigate(RouteNames.FULL_SCREEN_STACK, {
+              screen: RouteNames.CHARACTER_NOTIFICATION,
+            });
           }}
         />
       </View>

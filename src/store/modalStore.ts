@@ -10,6 +10,7 @@ interface ModalState {
   description?: string;
   image?: NotificationModalProps['image'];
   imageSize?: { width: number; height: number };
+  closeButton?: boolean;
   primaryButton: ModalButton;
   secondaryButton?: ModalButton;
   children?: React.ReactNode;

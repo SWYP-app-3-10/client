@@ -68,6 +68,8 @@ export const mockArticles: Article[] = [
     category: '경제',
     readTime: '5분',
     date: '2025.12.25',
+    imageUrl:
+      'https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?w=800&h=600&fit=crop',
   },
   {
     id: 2,
@@ -76,6 +78,8 @@ export const mockArticles: Article[] = [
     category: '경제',
     readTime: '5분',
     date: '2025.12.25',
+    imageUrl:
+      'https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?w=800&h=600&fit=crop',
   },
   {
     id: 3,
@@ -84,5 +88,7 @@ export const mockArticles: Article[] = [
     category: '경제',
     readTime: '5분',
     date: '2025.12.25',
+    imageUrl:
+      'https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?w=800&h=600&fit=crop',
   },
 ];

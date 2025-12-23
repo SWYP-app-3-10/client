@@ -1,4 +1,4 @@
-import {scaleWidth} from '../../styles/global';
+import { scaleWidth } from '../../styles/global';
 
 // 아이콘 사이즈 상수
 export const ICON_SIZES = {

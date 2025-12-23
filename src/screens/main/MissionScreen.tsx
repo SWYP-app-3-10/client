@@ -21,6 +21,7 @@ import {
   Heading_20EB_Round,
   Body_16R,
   BORDER_RADIUS,
+  Body_16M,
 } from '../../styles/global';
 import Spacer from '../../components/Spacer';
 import { useMissions } from '../../hooks/useMissions';
@@ -79,21 +80,47 @@ const MissionScreen = () => {
     }
   }, [reward]);
 
+  // 광고 로드 완료 후 자동 표시 (필요할 때만)
+  useEffect(() => {
+    if (isLoaded && pendingArticleId && !isAdShowing) {
+      // 광고가 로드되었고, 대기 중인 기사가 있고, 아직 광고를 보여주지 않은 경우
+      setIsAdShowing(true);
+      setHasEarnedReward(false);
+      try {
+        show();
+      } catch (error) {
+        console.error('광고 표시 실패:', error);
+        Alert.alert('오류', '광고를 표시할 수 없습니다.');
+        setIsAdShowing(false);
+        setPendingArticleId(null);
+      }
+    }
+  }, [isLoaded, pendingArticleId, isAdShowing, show]);
+
   // 광고 닫힘 처리
   useEffect(() => {
     if (isClosed && isAdShowing && pendingArticleId) {
       if (hasEarnedReward) {
         // 광고 시청 완료 - 포인트 추가 후 기사 상세로 이동
         addPoints(REWARD_AD_POINTS);
-        navigation.navigate(RouteNames.ARTICLE_DETAIL, {
-          articleId: pendingArticleId,
+        navigation.navigate(RouteNames.FULL_SCREEN_STACK, {
+          screen: RouteNames.ARTICLE_DETAIL,
+          params: {
+            articleId: pendingArticleId,
+          },
         });
+      } else {
+        // 광고를 끝까지 보지 않은 경우
+        Alert.alert(
+          '알림',
+          '광고를 끝까지 시청해야 포인트를 받을 수 있습니다.',
+        );
       }
       // 상태 초기화
       setIsAdShowing(false);
       setHasEarnedReward(false);
       setPendingArticleId(null);
-      load();
+      // 다음 사용을 위해 광고 재로드는 하지 않음 (필요할 때만 로드)
     }
   }, [
     isClosed,
@@ -102,7 +129,6 @@ const MissionScreen = () => {
     pendingArticleId,
     addPoints,
     navigation,
-    load,
   ]);
 
   // 개발용: 로그인 정보 초기화
@@ -131,7 +157,9 @@ const MissionScreen = () => {
   }, [resetOnboarding]);
 
   const handleNavigateToNotification = useCallback(() => {
-    navigation.navigate(RouteNames.CHARACTER_NOTIFICATION);
+    navigation.navigate(RouteNames.FULL_SCREEN_STACK, {
+      screen: RouteNames.CHARACTER_NOTIFICATION,
+    });
   }, [navigation]);
 
   // 기사 클릭 처리
@@ -143,10 +171,12 @@ const MissionScreen = () => {
         showModal({
           title: '새로운 글을 읽으시겠어요?',
           description: `사용 가능 포인트: ${points}p`,
+          closeButton: true,
           children: (
             <View style={styles.modalContent}>
-              <Text style={styles.pointText}>
-                {ARTICLE_POINT_COST}포인트가 사용됩니다
+              <Text style={styles.modalContentText}>
+                <Text style={styles.pointText}>{ARTICLE_POINT_COST}포인트</Text>
+                가 사용됩니다
               </Text>
             </View>
           ),
@@ -155,18 +185,16 @@ const MissionScreen = () => {
             onPress: async () => {
               const success = await subtractPoints(ARTICLE_POINT_COST);
               if (success) {
-                navigation.navigate(RouteNames.ARTICLE_DETAIL, {
-                  articleId: article.id,
+                navigation.navigate(RouteNames.FULL_SCREEN_STACK, {
+                  screen: RouteNames.ARTICLE_DETAIL,
+                  params: {
+                    articleId: article.id,
+                  },
                 });
               } else {
                 Alert.alert('오류', '포인트 차감에 실패했습니다.');
               }
             },
-          },
-          secondaryButton: {
-            title: '취소',
-            variant: 'ghost',
-            onPress: () => {},
           },
         });
       } else {
@@ -174,31 +202,40 @@ const MissionScreen = () => {
         showModal({
           title: '광고를 보고 포인트 받으시겠어요?',
           description: `사용 가능 포인트: ${points}p`,
+          closeButton: true,
           children: (
             <View style={styles.modalContent}>
-              <Text style={styles.pointText}>
-                {ARTICLE_POINT_COST}포인트가 사용됩니다
+              <Text style={styles.modalContentText}>
+                <Text style={styles.pointText}>{ARTICLE_POINT_COST}포인트</Text>
+                가 사용됩니다
               </Text>
             </View>
           ),
           primaryButton: {
             title: '포인트 받기',
-            onPress: () => {
+            onPress: async () => {
               if (isLoaded) {
                 setPendingArticleId(article.id);
                 setIsAdShowing(true);
                 setHasEarnedReward(false);
-                show();
+                try {
+                  await show();
+                } catch (error) {
+                  console.error('광고 표시 실패:', error);
+                  Alert.alert('오류', '광고를 표시할 수 없습니다.');
+                  setIsAdShowing(false);
+                  setPendingArticleId(null);
+                }
               } else {
-                Alert.alert('잠시만요', '광고를 불러오는 중입니다...');
+                // 광고가 로드되지 않은 경우 - 로드 시작
+                setPendingArticleId(article.id);
                 load();
+                Alert.alert(
+                  '광고 로딩 중',
+                  '광고를 불러오는 중입니다. 잠시만 기다려주세요.',
+                );
               }
             },
-          },
-          secondaryButton: {
-            title: '취소',
-            variant: 'ghost',
-            onPress: () => {},
           },
         });
       }
@@ -480,16 +517,16 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingHorizontal: scaleWidth(20),
   },
-  modalContent: {
-    width: '100%',
-    alignItems: 'center',
-    marginBottom: scaleWidth(8),
+  modalContentText: {
+    ...Body_16M,
+    color: COLORS.gray700,
   },
   pointText: {
-    fontSize: scaleWidth(16),
-    fontWeight: '600',
+    ...Body_16M,
     color: COLORS.puple.main,
-    marginTop: scaleWidth(8),
+  },
+  modalContent: {
+    marginTop: scaleWidth(4),
   },
 });
 

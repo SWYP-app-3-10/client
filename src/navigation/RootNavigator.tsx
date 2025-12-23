@@ -5,7 +5,6 @@ import { RouteNames } from '../../routes';
 import OnboardingNavigator from './OnboardingNavigator';
 import MainTabNavigator from './MainTabNavigator';
 import FullScreenStackNavigator from './FullScreenStackNavigator';
-import NotificationScreen from '../screens/common/NotificationScreen';
 import { useModalState, useModalStore } from '../store/modalStore';
 import { useIsOnboardingCompleted } from '../store/onboardingStore';
 import NotificationModal from '../components/NotificationModal';
@@ -40,11 +39,6 @@ const RootNavigator: React.FC = () => {
               name={RouteNames.FULL_SCREEN_STACK}
               component={FullScreenStackNavigator}
             />
-            {/* 알림 화면 직접 접근 (CHARACTER_NOTIFICATION으로 바로 접근 가능) */}
-            <Stack.Screen
-              name={RouteNames.CHARACTER_NOTIFICATION}
-              component={NotificationScreen}
-            />
           </>
         )}
       </Stack.Navigator>
@@ -55,6 +49,7 @@ const RootNavigator: React.FC = () => {
         description={modalState.description}
         image={modalState.image}
         imageSize={modalState.imageSize}
+        closeButton={modalState.closeButton}
         primaryButton={{
           ...modalState.primaryButton,
           onPress: () => {
