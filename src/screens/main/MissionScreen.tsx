@@ -37,18 +37,12 @@ import {
   MissionStackParamList,
 } from '../../navigation/types';
 import { RouteNames } from '../../../routes';
-import { useRewardedAd, TestIds } from 'react-native-google-mobile-ads';
 import { Article } from '../../data/mock/missionData';
 
 // 상수
 const SCROLL_INITIAL_DELAY = 100;
 const SCROLL_EVENT_THROTTLE = 16;
 const ARTICLE_POINT_COST = 30; // 기사 읽기 포인트
-const REWARD_AD_POINTS = 30; // 광고 시청 시 받는 포인트
-
-const adUnitId = __DEV__
-  ? TestIds.REWARDED
-  : 'ca-app-pub-xxxxxxxxxxxxx/yyyyyyyyyy';
 
 const MissionScreen = () => {
   const screenWidth = Dimensions.get('window').width;
@@ -57,79 +51,13 @@ const MissionScreen = () => {
   const resetOnboarding = useOnboardingStore(state => state.resetOnboarding);
   const navigation =
     useNavigation<MainTabNavigationProp<MissionStackParamList>>();
-  const { points, loadPoints, subtractPoints, addPoints } = usePointStore();
+  const { points, loadPoints, subtractPoints } = usePointStore();
   const showModal = useShowModal();
-
-  // 리워드 광고
-  const { isLoaded, isClosed, load, show, reward } = useRewardedAd(adUnitId, {
-    requestNonPersonalizedAdsOnly: true,
-  });
-  const [pendingArticleId, setPendingArticleId] = useState<number | null>(null);
-  const [isAdShowing, setIsAdShowing] = useState(false);
-  const [hasEarnedReward, setHasEarnedReward] = useState(false);
 
   // 포인트 로드
   useEffect(() => {
     loadPoints();
   }, [loadPoints]);
-
-  // 광고 보상 감지
-  useEffect(() => {
-    if (reward) {
-      setHasEarnedReward(true);
-    }
-  }, [reward]);
-
-  // 광고 로드 완료 후 자동 표시 (필요할 때만)
-  useEffect(() => {
-    if (isLoaded && pendingArticleId && !isAdShowing) {
-      // 광고가 로드되었고, 대기 중인 기사가 있고, 아직 광고를 보여주지 않은 경우
-      setIsAdShowing(true);
-      setHasEarnedReward(false);
-      try {
-        show();
-      } catch (error) {
-        console.error('광고 표시 실패:', error);
-        Alert.alert('오류', '광고를 표시할 수 없습니다.');
-        setIsAdShowing(false);
-        setPendingArticleId(null);
-      }
-    }
-  }, [isLoaded, pendingArticleId, isAdShowing, show]);
-
-  // 광고 닫힘 처리
-  useEffect(() => {
-    if (isClosed && isAdShowing && pendingArticleId) {
-      if (hasEarnedReward) {
-        // 광고 시청 완료 - 포인트 추가 후 기사 상세로 이동
-        addPoints(REWARD_AD_POINTS);
-        navigation.navigate(RouteNames.FULL_SCREEN_STACK, {
-          screen: RouteNames.ARTICLE_DETAIL,
-          params: {
-            articleId: pendingArticleId,
-          },
-        });
-      } else {
-        // 광고를 끝까지 보지 않은 경우
-        Alert.alert(
-          '알림',
-          '광고를 끝까지 시청해야 포인트를 받을 수 있습니다.',
-        );
-      }
-      // 상태 초기화
-      setIsAdShowing(false);
-      setHasEarnedReward(false);
-      setPendingArticleId(null);
-      // 다음 사용을 위해 광고 재로드는 하지 않음 (필요할 때만 로드)
-    }
-  }, [
-    isClosed,
-    isAdShowing,
-    hasEarnedReward,
-    pendingArticleId,
-    addPoints,
-    navigation,
-  ]);
 
   // 개발용: 로그인 정보 초기화
   const handleClearLogin = useCallback(async () => {
@@ -213,34 +141,19 @@ const MissionScreen = () => {
           ),
           primaryButton: {
             title: '포인트 받기',
-            onPress: async () => {
-              if (isLoaded) {
-                setPendingArticleId(article.id);
-                setIsAdShowing(true);
-                setHasEarnedReward(false);
-                try {
-                  await show();
-                } catch (error) {
-                  console.error('광고 표시 실패:', error);
-                  Alert.alert('오류', '광고를 표시할 수 없습니다.');
-                  setIsAdShowing(false);
-                  setPendingArticleId(null);
-                }
-              } else {
-                // 광고가 로드되지 않은 경우 - 로드 시작
-                setPendingArticleId(article.id);
-                load();
-                Alert.alert(
-                  '광고 로딩 중',
-                  '광고를 불러오는 중입니다. 잠시만 기다려주세요.',
-                );
-              }
+            onPress: () => {
+              navigation.navigate(RouteNames.FULL_SCREEN_STACK, {
+                screen: RouteNames.AD_LOADING,
+                params: {
+                  articleId: article.id,
+                },
+              });
             },
           },
         });
       }
     },
-    [points, showModal, navigation, subtractPoints, isLoaded, load, show],
+    [points, showModal, navigation, subtractPoints],
   );
 
   // React Query hooks

@@ -4,6 +4,7 @@ import { RouteNames } from '../../routes';
 import NotificationScreen from '../screens/common/NotificationScreen';
 import ArticleDetailScreen from '../screens/common/ArticleDetailScreen';
 import QuizScreen from '../screens/common/QuizScreen';
+import AdLoadingScreen from '../screens/common/AdLoadingScreen';
 import { mockQuiz } from '../data/mock/quizData';
 
 const Stack = createNativeStackNavigator();
@@ -31,6 +32,8 @@ const FullScreenStackNavigator = () => {
       />
       {/* 퀴즈 화면 */}
       <Stack.Screen name={RouteNames.QUIZ} component={QuizScreenWrapper} />
+      {/* 광고 로딩 화면 */}
+      <Stack.Screen name={RouteNames.AD_LOADING} component={AdLoadingScreen} />
       {/* 추후 탭바 없는 다른 화면들 추가 가능 */}
     </Stack.Navigator>
   );

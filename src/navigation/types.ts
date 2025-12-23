@@ -23,6 +23,7 @@ export type FullScreenStackParamList = {
   [RouteNames.CHARACTER_NOTIFICATION]: undefined;
   [RouteNames.ARTICLE_DETAIL]: { articleId: number };
   [RouteNames.QUIZ]: { articleId: number };
+  [RouteNames.AD_LOADING]: { articleId: number };
   // 추후 탭바 없는 다른 화면들 추가 가능
   // 예: [RouteNames.SETTINGS]: undefined;
 };
@@ -36,6 +37,7 @@ export type RootStackParamList = {
   [RouteNames.CHARACTER_NOTIFICATION]: undefined; // 알림 화면 (전체 화면 스택 내부)
   [RouteNames.ARTICLE_DETAIL]: { articleId: number }; // 기사 상세 화면 (전체 화면 스택 내부)
   [RouteNames.QUIZ]: { articleId: number }; // 퀴즈 화면 (전체 화면 스택 내부)
+  [RouteNames.AD_LOADING]: { articleId: number }; // 광고 로딩 화면 (전체 화면 스택 내부)
 };
 
 // Main Tab Param List (Bottom Tab Navigator)
