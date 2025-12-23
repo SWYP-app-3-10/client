@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
-import type { NewsItems } from '../search_mockData';
+import type { NewsItems } from '../../../data/mock/searchData';
 
 type Props = {
   /** 표시할 뉴스 데이터 */

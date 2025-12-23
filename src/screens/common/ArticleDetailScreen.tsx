@@ -17,7 +17,7 @@ import {
 } from '../../styles/global';
 import Header from '../../components/Header';
 import { useArticles } from '../../hooks/useArticles';
-import { Article } from '../../data/mockData';
+import { Article } from '../../data/mock/missionData';
 
 const ArticleDetailScreen = () => {
   const route = useRoute();

@@ -22,6 +22,12 @@
 ```
 src/
 ├── api/                  # Axios 인스턴스 및 API 호출 함수
+├── data/
+│   └── mock/             # 더미 데이터 (API 연동 후 삭제 예정)
+│       ├── missionData.ts
+│       ├── characterData.ts
+│       ├── searchData.ts
+│       └── notificationData.ts
 ├── hooks/
 │   └── queries/          # React Query 커스텀 훅 (useQuery, useMutation)
 ├── navigation/           # 네비게이션 설정

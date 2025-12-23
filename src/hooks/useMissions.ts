@@ -2,19 +2,19 @@
  * 미션 관련 React Query hooks
  */
 
-import {useQuery, useMutation, useQueryClient} from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
   fetchMissions,
   fetchMissionById,
   updateMissionProgress,
 } from '../api/missionApi';
-import {Mission} from '../data/mockData';
+import { Mission } from '../data/mock/missionData';
 
 // Query Keys
 export const missionKeys = {
   all: ['missions'] as const,
   lists: () => [...missionKeys.all, 'list'] as const,
-  list: (filters: string) => [...missionKeys.lists(), {filters}] as const,
+  list: (filters: string) => [...missionKeys.lists(), { filters }] as const,
   details: () => [...missionKeys.all, 'detail'] as const,
   detail: (id: number) => [...missionKeys.details(), id] as const,
 };
@@ -50,8 +50,13 @@ export const useUpdateMissionProgress = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: ({missionId, current}: {missionId: number; current: number}) =>
-      updateMissionProgress(missionId, current),
+    mutationFn: ({
+      missionId,
+      current,
+    }: {
+      missionId: number;
+      current: number;
+    }) => updateMissionProgress(missionId, current),
     onSuccess: (data, variables) => {
       // 미션 목록 캐시 업데이트
       queryClient.setQueryData<Mission[]>(missionKeys.lists(), old => {
@@ -65,7 +70,7 @@ export const useUpdateMissionProgress = () => {
       queryClient.setQueryData(missionKeys.detail(variables.missionId), data);
 
       // 미션 목록 쿼리 무효화 (서버에서 최신 데이터 가져오기)
-      queryClient.invalidateQueries({queryKey: missionKeys.lists()});
+      queryClient.invalidateQueries({ queryKey: missionKeys.lists() });
     },
   });
 };

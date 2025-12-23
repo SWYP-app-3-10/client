@@ -37,7 +37,7 @@ import {
 } from '../../navigation/types';
 import { RouteNames } from '../../../routes';
 import { useRewardedAd, TestIds } from 'react-native-google-mobile-ads';
-import { Article } from '../../data/mockData';
+import { Article } from '../../data/mock/missionData';
 
 // 상수
 const SCROLL_INITIAL_DELAY = 100;

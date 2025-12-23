@@ -5,7 +5,7 @@ import {
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
 import { RouteNames } from '../../routes';
-import { NewsCategory } from '../screens/search/search_mockData';
+import { NewsCategory } from '../data/mock/searchData';
 
 // Root Stack Param List
 export type OnboardingStackParamList = {

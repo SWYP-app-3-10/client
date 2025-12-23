@@ -3,7 +3,10 @@ import { View, Text, Pressable, FlatList, StyleSheet } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { notificationMock, NotificationItem } from './notification_mockData';
+import {
+  notificationMock,
+  NotificationItem,
+} from '../../data/mock/notificationData';
 
 /**
  * NotificationScreen

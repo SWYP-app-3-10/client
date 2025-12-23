@@ -12,7 +12,7 @@ import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { SearchStackParamList } from '../../navigation/types';
 import { RouteNames } from '../../../routes';
 import SearchResultSkeleton from './components/SearchResultSkeleton';
-import { MOCK_NEWS, NewsCategory, NewsItems } from './search_mockData';
+import { MOCK_NEWS, NewsCategory, NewsItems } from '../../data/mock/searchData';
 import SearchResultItem from './components/SearchResultItem';
 import CategoryTabs from './components/CategoryTabs';
 

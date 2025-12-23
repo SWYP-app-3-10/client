@@ -1,4 +1,3 @@
-/* eslint-disable prettier/prettier */
 /**
  * 캐릭터 관련 화면(레벨/내역/알림)에서 공통으로 쓰는 Mock 데이터
  */
@@ -24,13 +23,6 @@ export type PointHistoryItem = {
   createdAt: string;
   xpDelta: number; // +/-
   ptDelta: number; // +/-
-};
-
-export type NotificationItem = {
-  id: string;
-  title: string;
-  createdAt: string;
-  isRead: boolean; // 읽음 여부
 };
 
 /** 레벨 목록(기준 확인 리스트) */
@@ -145,27 +137,5 @@ export const pointHistoryMock: PointHistoryItem[] = [
     createdAt: '2025년 12월 04일',
     xpDelta: +40,
     ptDelta: +40,
-  },
-];
-
-/** 알림 리스트 */
-export const notificationMock: NotificationItem[] = [
-  {
-    id: 'n1',
-    title: '오늘의 미션이 갱신되었어요!',
-    createdAt: '1분 전',
-    isRead: false,
-  },
-  {
-    id: 'n2',
-    title: '레벨업까지 50XP 남았어요!',
-    createdAt: '오늘',
-    isRead: false,
-  },
-  {
-    id: 'n3',
-    title: '관심분야를 업데이트 해보세요',
-    createdAt: '3일 전',
-    isRead: true,
   },
 ];
