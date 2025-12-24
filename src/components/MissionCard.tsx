@@ -22,8 +22,8 @@ const MissionCard = React.memo(
 
     // 상태별 그라데이션 색상
     const gradientColors = isCompleted
-      ? ['#845DFF', '#764CF8', '#6F44F5']
-      : ['#845DFF', '#6F44F5'];
+      ? [COLORS.puple.light, COLORS.puple.lighter, COLORS.puple.main]
+      : [COLORS.puple.light, COLORS.puple.main];
 
     // 공통 콘텐츠
     const cardContent = (
@@ -79,10 +79,10 @@ const MissionCard = React.memo(
                 <LinearGradient
                   colors={
                     myPage && isCompleted
-                      ? ['#FFE682', '#FCB000'] // 마이페이지 완료: 노란색
+                      ? [COLORS.yellow.light, COLORS.yellow.main] // 마이페이지 완료: 노란색
                       : isCompleted
-                      ? ['#9B7BFF', '#9B7BFF'] // 완료: #9B7BFF
-                      : ['#FFE682', '#FCB000'] // 진행 중: 노란색
+                      ? [COLORS.puple[5], COLORS.puple[5]] // 완료: #9B7BFF
+                      : [COLORS.yellow.light, COLORS.yellow.main] // 진행 중: 노란색
                   }
                   start={{ x: 0, y: 0 }}
                   end={{ x: 1, y: 0 }}
@@ -197,7 +197,7 @@ const styles = StyleSheet.create({
     color: COLORS.white,
   },
   missionCardTitleCompleted: {
-    color: '#BFABFF', // 완료 상태 타이틀 색상
+    color: COLORS.puple.completed, // 완료 상태 타이틀 색상
   },
   progressBarWrapper: {
     flexDirection: 'row',
@@ -245,7 +245,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   progressTextCompleted: {
-    color: '#BFABFF', // 완료 상태 진행률 텍스트 색상
+    color: COLORS.puple.completed, // 완료 상태 진행률 텍스트 색상
   },
   missionCardTitleMyPage: {
     color: COLORS.black,

@@ -55,7 +55,7 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.white,
     borderRadius: BORDER_RADIUS[16],
     // iOS 그림자
-    shadowColor: '#000000',
+    shadowColor: COLORS.shadow,
     shadowOffset: {
       width: 0,
       height: scaleWidth(2),
@@ -77,7 +77,7 @@ const styles = StyleSheet.create({
   articleImagePlaceholder: {
     width: '100%',
     height: '100%',
-    backgroundColor: '#D9D9D9',
+    backgroundColor: COLORS.placeholder,
   },
   articleTag: {
     position: 'absolute',

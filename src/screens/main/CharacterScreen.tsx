@@ -359,7 +359,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: 'rgba(255, 255, 255, 0.7)',
+    backgroundColor: COLORS.overlayWhite,
     width: scaleWidth(172),
     height: scaleWidth(42),
     borderRadius: BORDER_RADIUS[99],
@@ -373,7 +373,7 @@ const styles = StyleSheet.create({
   },
 
   levelCard: {
-    backgroundColor: 'rgba(255, 255, 255, 0.7)',
+    backgroundColor: COLORS.overlayWhite,
     width: scaleWidth(353),
     height: scaleWidth(268),
     borderRadius: BORDER_RADIUS[20],

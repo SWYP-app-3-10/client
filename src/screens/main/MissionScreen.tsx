@@ -21,7 +21,6 @@ import {
   Heading_20EB_Round,
   Body_16R,
   BORDER_RADIUS,
-  Body_16M,
 } from '../../styles/global';
 import Spacer from '../../components/Spacer';
 import { useMissions } from '../../hooks/useMissions';
@@ -370,17 +369,6 @@ export const missionScreenStyles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     paddingHorizontal: scaleWidth(20),
-  },
-  modalContentText: {
-    ...Body_16M,
-    color: COLORS.gray700,
-  },
-  pointText: {
-    ...Body_16M,
-    color: COLORS.puple.main,
-  },
-  modalContent: {
-    marginTop: scaleWidth(4),
   },
 });
 

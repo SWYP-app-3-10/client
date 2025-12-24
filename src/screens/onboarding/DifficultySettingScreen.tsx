@@ -173,7 +173,7 @@ const DifficultySettingScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: COLORS.white,
   },
   header: {
     flexDirection: 'row',

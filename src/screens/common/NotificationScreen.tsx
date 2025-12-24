@@ -7,6 +7,7 @@ import {
   notificationMock,
   NotificationItem,
 } from '../../data/mock/notificationData';
+import { COLORS } from '../../styles/global';
 
 /**
  * NotificationScreen
@@ -106,7 +107,7 @@ export default NotificationScreen;
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: COLORS.white,
   },
 
   /* 헤더 */
@@ -124,14 +125,14 @@ const styles = StyleSheet.create({
   },
   backIcon: {
     fontSize: 26,
-    color: '#111',
+    color: COLORS.black,
   },
   headerTitle: {
     flex: 1,
     textAlign: 'center',
     fontSize: 16,
     fontWeight: '700',
-    color: '#111',
+    color: COLORS.black,
   },
   headerRightSpace: {
     width: 44,
@@ -147,16 +148,16 @@ const styles = StyleSheet.create({
   row: {
     paddingHorizontal: 20,
     paddingVertical: 25,
-    backgroundColor: '#fff',
+    backgroundColor: COLORS.white,
   },
   rowUnread: {
-    backgroundColor: '#F4F1FF',
+    backgroundColor: COLORS.puple[3],
   },
 
   title: {
     fontSize: 15,
     fontWeight: '700',
-    color: '#111827',
+    color: COLORS.black,
   },
   titleUnread: {
     fontWeight: '800',
@@ -165,13 +166,13 @@ const styles = StyleSheet.create({
   subtitle: {
     marginTop: 6,
     fontSize: 12,
-    color: '#98A2B3',
+    color: COLORS.gray600,
   },
 
   date: {
     marginTop: 13,
     fontSize: 12,
-    color: '#B3B8C4',
+    color: COLORS.gray500,
   },
 
   /* 푸터 안내 문구 */
@@ -181,6 +182,6 @@ const styles = StyleSheet.create({
   },
   footerText: {
     fontSize: 12,
-    color: '#B3B8C4',
+    color: COLORS.gray500,
   },
 });

@@ -48,6 +48,7 @@ export interface NotificationModalProps {
   descriptionColor?: string;
   onClose?: () => void;
   titleStyle?: StyleProp<TextStyle>;
+  closeOnBackdropPress?: boolean;
 }
 
 const NotificationModal: React.FC<NotificationModalProps> = ({
@@ -64,14 +65,17 @@ const NotificationModal: React.FC<NotificationModalProps> = ({
   titleDescriptionGapSize = 12,
   descriptionColor,
   titleStyle,
+  closeOnBackdropPress = true,
 }) => {
   const handleClose = () => {
     onClose?.();
   };
 
   const handleOverlayPress = () => {
-    // 배경 탭 시 모달 닫기
-    handleClose();
+    // closeOnBackdropPress가 false면 배경 클릭해도 닫지 않음
+    if (closeOnBackdropPress) {
+      handleClose();
+    }
   };
 
   const renderImage = () => {
@@ -190,7 +194,7 @@ const NotificationModal: React.FC<NotificationModalProps> = ({
 const styles = StyleSheet.create({
   overlay: {
     flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    backgroundColor: COLORS.overlay,
     justifyContent: 'center',
     alignItems: 'center',
   },
