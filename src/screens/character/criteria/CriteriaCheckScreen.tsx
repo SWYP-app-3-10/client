@@ -1,3 +1,4 @@
+// CriteriaCheckScreen.tsx
 import React, { useState } from 'react';
 import { View, Text, Pressable, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -5,6 +6,15 @@ import { useNavigation } from '@react-navigation/native';
 
 import LevelCriteriaScreen from './level/LevelCriteriaScreen';
 import PointCriteriaScreen from './expAndPoint/PointCriteriaScreen';
+
+// ✅ 공통 디자인 시스템
+import {
+  COLORS,
+  BORDER_RADIUS,
+  scaleWidth,
+  Heading_18EB_Round,
+  Caption_12M,
+} from '../../../styles/global';
 
 /** 상단 세그먼트 탭 키 */
 type TabKey = 'LEVEL' | 'POINT';
@@ -25,7 +35,7 @@ const CriteriaCheckScreen = () => {
   const [tab, setTab] = useState<TabKey>('LEVEL');
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={styles.container} edges={['top']}>
       {/* 헤더 영역 */}
       <View style={styles.header}>
         {/* 뒤로가기 버튼 */}
@@ -37,7 +47,7 @@ const CriteriaCheckScreen = () => {
         <Text style={styles.headerTitle}>기준 확인하기</Text>
 
         {/* 우측 정렬용 빈 공간(타이틀 중앙 정렬 유지) */}
-        <View style={{ width: 24 }} />
+        <View style={styles.headerRightSpace} />
       </View>
 
       {/* 세그먼트 탭 */}
@@ -90,37 +100,71 @@ const CriteriaCheckScreen = () => {
 export default CriteriaCheckScreen;
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#fff' },
+  container: {
+    flex: 1, // 화면 전체 높이 차지
+    backgroundColor: COLORS.white, // 화면 배경색(디자인 시스템)
+    paddingHorizontal: scaleWidth(20), // ✅ 컨텐츠 좌우 기준 여백(폭 정렬 통일)
+  },
 
   header: {
-    height: 52,
-    paddingHorizontal: 16,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
+    height: scaleWidth(52), // 헤더 높이
+    flexDirection: 'row', // 좌(뒤로) 중(타이틀) 우(스페이서) 가로 배치
+    alignItems: 'center', // 세로 중앙 정렬
+    justifyContent: 'space-between', // 좌/중/우 간격 균등 배치
   },
-  backBtn: { width: 24 },
-  back: { fontSize: 20 },
-  headerTitle: { fontSize: 16, fontWeight: '700' },
+
+  backBtn: {
+    width: scaleWidth(24), // 터치 영역 너비
+    height: scaleWidth(24), // 터치 영역 높이
+    justifyContent: 'center', // 아이콘 세로 중앙
+    alignItems: 'flex-start', // 아이콘 왼쪽 정렬
+  },
+
+  back: {
+    fontSize: scaleWidth(20), // 뒤로가기 아이콘 크기
+    color: COLORS.black, // 아이콘 색상
+  },
+
+  headerTitle: {
+    ...Heading_18EB_Round, // 타이틀 타이포
+    color: COLORS.black, // 타이틀 색상
+  },
+
+  headerRightSpace: {
+    width: scaleWidth(24), // 우측 스페이서(타이틀 중앙 유지)
+  },
 
   segmentWrap: {
-    marginHorizontal: 16,
-    marginTop: 8,
-    height: 44,
-    borderRadius: 12,
-    backgroundColor: '#F2F3F5',
-    flexDirection: 'row',
-    padding: 4,
+    marginTop: scaleWidth(8), // 헤더와 간격
+    height: scaleWidth(44), // 세그먼트 높이
+    borderRadius: BORDER_RADIUS[12], // 세그먼트 라운드
+    backgroundColor: COLORS.gray100, // 세그먼트 배경색
+    flexDirection: 'row', // 버튼 2개 가로 배치
+    padding: scaleWidth(4), // 세그먼트 내부 여백
   },
-  segmentBtn: {
-    flex: 1,
-    borderRadius: 10,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  segmentBtnActive: { backgroundColor: '#fff' },
-  segmentText: { fontSize: 13, color: '#9AA0A6', fontWeight: '700' },
-  segmentTextActive: { color: '#111' },
 
-  body: { flex: 1, paddingTop: 8 },
+  segmentBtn: {
+    flex: 1, // 버튼이 반반 영역 차지
+    borderRadius: BORDER_RADIUS[10] ?? scaleWidth(10), // 버튼 라운드(토큰 없으면 스케일)
+    justifyContent: 'center', // 텍스트 세로 중앙
+    alignItems: 'center', // 텍스트 가로 중앙
+  },
+
+  segmentBtnActive: {
+    backgroundColor: COLORS.white, // 활성 버튼 배경색
+  },
+
+  segmentText: {
+    ...Caption_12M, // 텍스트 타이포
+    color: COLORS.gray700, // 비활성 텍스트 색상
+  },
+
+  segmentTextActive: {
+    color: COLORS.black, // 활성 텍스트 색상
+  },
+
+  body: {
+    flex: 1, // 남은 영역 전체 사용
+    marginTop: scaleWidth(8), // 세그먼트와 컨텐츠 간격
+  },
 });
