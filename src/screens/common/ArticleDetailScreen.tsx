@@ -80,12 +80,12 @@ const ArticleDetailScreen = () => {
             <Text style={styles.category}>{article.category}</Text>
           </View>
           <Spacer num={8} />
-          <Text style={styles.title}>{article.title}</Text>
+        <Text style={styles.title}>{article.title}</Text>
           <Text style={styles.meta}>{article.date} | 조회수 2,000</Text>
           <Spacer num={40} />
 
           {/* 본문 */}
-          <Text style={styles.body}>
+        <Text style={styles.body}>
             록히드 마틴이 F-35 전투기 관련 총 11억 4천만 달러 규모의 대형 계약을
             추가로 확보하면서 글로벌 방산 산업에 다시 한 번 강한 신호를 보냈다.
             이번 계약은 단순한 무기 판매를 넘어, 미·중·러를 축으로 한 패권
@@ -97,7 +97,7 @@ const ArticleDetailScreen = () => {
             있다. 이처럼 충돌 가능성이 상존하는 국제 질서 속에서 각 국가는 '전쟁
             억지'를 명분으로 군사 예산을 더욱 확대하고 있으며, 그 수혜는
             자연스럽게 글로벌 방산 기업들로 향한다.
-            {'\n\n'}
+          {'\n\n'}
             아이러니하게도 국제 정세의 불안은 금융시장에서는 불확실성이지만,
             방산 업종에는 오히려 '확실한 수요'로 작용한다. 미·중·러 간 갈등이
             단기간에 완화될 가능성은 크지 않으며, 우주·사이버·무인 전력까지 경쟁
@@ -105,7 +105,7 @@ const ArticleDetailScreen = () => {
             비롯한 글로벌 방산 기업들의 중장기 전망은 당분간 낙관적인 흐름을
             이어갈 가능성이 높다. 전쟁을 원치 않는 국제 사회의 역설적인 선택이,
             결국 더 많은 무기와 더 강한 군사력을 요구하고 있는 셈이다.
-          </Text>
+        </Text>
         </View>
         <Spacer num={48} />
 

@@ -228,7 +228,8 @@ const MissionScreen = () => {
           <View style={missionScreenStyles.headerLeft}>
             <Text style={missionScreenStyles.headerTitle}>오늘의 미션</Text>
             <Text style={missionScreenStyles.headerDescription}>
-              오늘의 미션을 통해 새로운 지식을 탐험하고 문해력을 키워보세요!
+              오늘의 미션을 통해 새로운 지식을 탐험하고
+              {'\n'}문해력을 키워보세요!
             </Text>
           </View>
         </View>
@@ -328,7 +329,7 @@ export const missionScreenStyles = StyleSheet.create({
   headerTitle: {
     ...Heading_20EB_Round,
     color: COLORS.black,
-    marginBottom: scaleWidth(8),
+    marginBottom: scaleWidth(4),
   },
   headerDescription: {
     ...Body_16R,

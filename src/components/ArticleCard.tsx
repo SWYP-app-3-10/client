@@ -77,7 +77,7 @@ const styles = StyleSheet.create({
   articleImagePlaceholder: {
     width: '100%',
     height: '100%',
-    backgroundColor: COLORS.gray200,
+    backgroundColor: '#D9D9D9',
   },
   articleTag: {
     position: 'absolute',
