@@ -11,9 +11,10 @@ import { Alert } from 'react-native';
 import { usePointStore } from '../../store/pointStore';
 import { AD_REWARD_POINTS } from '../../config/rewards';
 
-const adUnitId = __DEV__
-  ? TestIds.REWARDED
-  : 'ca-app-pub-xxxxxxxxxxxxx/yyyyyyyyyy';
+const adUnitId = TestIds.REWARDED;
+// const adUnitId = __DEV__
+//   ? TestIds.REWARDED
+//   : 'ca-app-pub-xxxxxxxxxxxxx/yyyyyyyyyy';
 
 type NavigationProp = NativeStackNavigationProp<FullScreenStackParamList>;
 
