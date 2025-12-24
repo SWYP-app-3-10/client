@@ -3,6 +3,7 @@
  */
 
 import client from './client';
+import { USE_MOCK_DATA } from '../config/apiConfig';
 import {
   Mission,
   Article,
@@ -19,18 +20,21 @@ const delay = (ms: number) =>
  * @returns Promise<Mission[]>
  */
 export const fetchMissions = async (): Promise<Mission[]> => {
+  // 더미 데이터 사용 모드이거나 서버 연결 실패 시 더미 데이터 반환
+  if (USE_MOCK_DATA) {
+    await delay(200);
+    return mockMissions;
+  }
+
   try {
     // 서버 API 호출
     const response = await client.get<Mission[]>('/missions');
     return response.data;
   } catch (error) {
-    console.error('미션 목록 조회 실패:', error);
-    // 개발 모드에서는 더미 데이터 반환 (서버 연동 전까지)
-    if (__DEV__) {
-      await delay(1000);
-      return mockMissions;
-    }
-    throw error;
+    console.error('미션 목록 조회 실패, 더미 데이터 사용:', error);
+    // 서버 연결 실패 시 자동으로 더미 데이터 반환
+    await delay(200);
+    return mockMissions;
   }
 };
 
@@ -39,18 +43,21 @@ export const fetchMissions = async (): Promise<Mission[]> => {
  * @returns Promise<Article[]>
  */
 export const fetchArticles = async (): Promise<Article[]> => {
+  // 더미 데이터 사용 모드이거나 서버 연결 실패 시 더미 데이터 반환
+  if (USE_MOCK_DATA) {
+    await delay(200);
+    return mockArticles;
+  }
+
   try {
     // 서버 API 호출
     const response = await client.get<Article[]>('/articles');
     return response.data;
   } catch (error) {
-    console.error('기사 목록 조회 실패:', error);
-    // 개발 모드에서는 더미 데이터 반환 (서버 연동 전까지)
-    if (__DEV__) {
-      await delay(800);
-      return mockArticles;
-    }
-    throw error;
+    console.error('기사 목록 조회 실패, 더미 데이터 사용:', error);
+    // 서버 연결 실패 시 자동으로 더미 데이터 반환
+    await delay(200);
+    return mockArticles;
   }
 };
 
@@ -62,19 +69,23 @@ export const fetchArticles = async (): Promise<Article[]> => {
 export const fetchMissionById = async (
   missionId: number,
 ): Promise<Mission | null> => {
+  // 더미 데이터 사용 모드이거나 서버 연결 실패 시 더미 데이터 반환
+  if (USE_MOCK_DATA) {
+    await delay(150);
+    const mission = mockMissions.find(m => m.id === missionId);
+    return mission || null;
+  }
+
   try {
     // 서버 API 호출
     const response = await client.get<Mission>(`/missions/${missionId}`);
     return response.data;
   } catch (error) {
-    console.error('미션 조회 실패:', error);
-    // 개발 모드에서는 더미 데이터 반환 (서버 연동 전까지)
-    if (__DEV__) {
-      await delay(500);
-      const mission = mockMissions.find(m => m.id === missionId);
-      return mission || null;
-    }
-    throw error;
+    console.error('미션 조회 실패, 더미 데이터 사용:', error);
+    // 서버 연결 실패 시 자동으로 더미 데이터 반환
+    await delay(150);
+    const mission = mockMissions.find(m => m.id === missionId);
+    return mission || null;
   }
 };
 
@@ -88,6 +99,17 @@ export const updateMissionProgress = async (
   missionId: number,
   current: number,
 ): Promise<Mission> => {
+  // 더미 데이터 사용 모드이거나 서버 연결 실패 시 더미 데이터 반환
+  if (USE_MOCK_DATA) {
+    await delay(200);
+    const mission = mockMissions.find(m => m.id === missionId);
+    if (!mission) {
+      throw new Error('Mission not found');
+    }
+    const updatedMission = { ...mission, current };
+    return updatedMission;
+  }
+
   try {
     // 서버 API 호출
     const response = await client.patch<Mission>(`/missions/${missionId}`, {
@@ -95,17 +117,14 @@ export const updateMissionProgress = async (
     });
     return response.data;
   } catch (error) {
-    console.error('미션 진행도 업데이트 실패:', error);
-    // 개발 모드에서는 더미 데이터 반환 (서버 연동 전까지)
-    if (__DEV__) {
-      await delay(500);
-      const mission = mockMissions.find(m => m.id === missionId);
-      if (!mission) {
-        throw new Error('Mission not found');
-      }
-      const updatedMission = { ...mission, current };
-      return updatedMission;
+    console.error('미션 진행도 업데이트 실패, 더미 데이터 사용:', error);
+    // 서버 연결 실패 시 자동으로 더미 데이터 반환
+    await delay(200);
+    const mission = mockMissions.find(m => m.id === missionId);
+    if (!mission) {
+      throw new Error('Mission not found');
     }
-    throw error;
+    const updatedMission = { ...mission, current };
+    return updatedMission;
   }
 };

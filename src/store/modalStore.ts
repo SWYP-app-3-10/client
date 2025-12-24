@@ -18,6 +18,7 @@ interface ModalState {
   titleDescriptionGapSize?: number;
   descriptionColor?: string;
   titleStyle?: StyleProp<TextStyle>;
+  closeOnBackdropPress?: boolean; // 배경 클릭 시 닫기 여부 (기본값: true)
 }
 
 interface ModalStore {

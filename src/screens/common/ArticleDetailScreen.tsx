@@ -75,22 +75,25 @@ const ArticleDetailScreen = () => {
       timerRef.current = null;
     }
 
+    // article이 없거나 이미 경험치를 획득했으면 타이머 설정하지 않음
     if (!article || hasEarnedExperienceRef.current) {
       return;
     }
 
-    // 경험치 획득 함수 (useEffect 내부에서 정의하여 최신 값 참조)
+    // 경험치 획득 함수
     const handleExperienceGain = async () => {
+      // 다시 한 번 체크 (타이머 실행 시점에 이미 획득했을 수 있음)
       if (hasEarnedExperienceRef.current) {
-        return; // 이미 경험치를 획득했으면 중복 방지
+        return;
       }
+
+      // ref를 먼저 true로 설정하여 중복 실행 방지
+      hasEarnedExperienceRef.current = true;
+      setHasEarnedExperience(true);
 
       try {
         // 경험치 추가 (useMutation이 자동으로 캐시 무효화 처리)
         await addExperience(ARTICLE_READ_EXPERIENCE);
-
-        hasEarnedExperienceRef.current = true;
-        setHasEarnedExperience(true);
 
         // 경험치 획득 모달 표시
         showModal({
@@ -105,6 +108,9 @@ const ArticleDetailScreen = () => {
         });
       } catch (error) {
         console.error('경험치 획득 실패:', error);
+        // 에러 발생 시 ref를 다시 false로 설정하여 재시도 가능하게
+        hasEarnedExperienceRef.current = false;
+        setHasEarnedExperience(false);
       }
     };
 
@@ -113,14 +119,14 @@ const ArticleDetailScreen = () => {
       handleExperienceGain();
     }, readingTime * 1000);
 
+    // cleanup: 컴포넌트 언마운트 또는 의존성 변경 시 타이머 정리
     return () => {
       if (timerRef.current) {
         clearTimeout(timerRef.current);
         timerRef.current = null;
       }
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [articleId, readingTime]); // articleId나 readingTime이 변경될 때만 타이머 재설정
+  }, [article, readingTime, addExperience, showModal]); // article, readingTime, addExperience, showModal을 의존성에 추가
 
   if (isLoading) {
     return (
@@ -142,7 +148,7 @@ const ArticleDetailScreen = () => {
       </SafeAreaView>
     );
   }
-  console.log(article.imageUrl);
+
   return (
     <SafeAreaView style={styles.container}>
       <Header iconColor={COLORS.black} />

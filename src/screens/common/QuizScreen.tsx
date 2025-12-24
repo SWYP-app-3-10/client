@@ -36,6 +36,7 @@ import {
 } from '@react-navigation/native';
 import { RouteNames } from '../../../routes';
 import { mockQuiz } from '../../data/mock/quizData';
+import { ExperienceModalContent } from '../../components/ArticlePointModalContent';
 
 type QuizState = 'question' | 'feedback';
 
@@ -71,9 +72,17 @@ const QuizScreen: React.FC = () => {
       quizId: quiz.id,
       answerId: selectedOptionId,
     });
-
-    // 피드백 화면으로 전환
-    setQuizState('feedback');
+    showModal({
+      title: '포인트 & 경험치 획득!',
+      titleDescriptionGapSize: scaleWidth(20),
+      children: React.createElement(ExperienceModalContent, { point: true }),
+      primaryButton: {
+        title: '확인',
+        onPress: () => {
+          setQuizState('feedback');
+        },
+      },
+    });
   };
 
   const handleComplete = () => {
@@ -88,6 +97,7 @@ const QuizScreen: React.FC = () => {
       description: '콘텐츠의 난이도에 반영해드려요!',
       titleDescriptionGapSize: scaleWidth(8),
       descriptionColor: COLORS.gray600,
+      closeOnBackdropPress: false,
       children: (
         <DifficultySelectionModal
           initialDifficulty={selectedDifficulty}

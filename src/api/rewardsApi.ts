@@ -4,6 +4,7 @@
  */
 
 import client from './client';
+import { USE_MOCK_DATA } from '../config/apiConfig';
 
 // API 응답 시뮬레이션을 위한 딜레이 함수 (개발용)
 const delay = (ms: number) =>
@@ -40,29 +41,44 @@ export interface RewardsConfig {
  * @returns Promise<RewardsConfig>
  */
 export const fetchRewardsConfig = async (): Promise<RewardsConfig> => {
+  // 더미 데이터 사용 모드이거나 서버 연결 실패 시 더미 데이터 반환
+  if (USE_MOCK_DATA) {
+    await delay(150);
+    return {
+      articleReadPointCost: 30,
+      articleReadExperience: 5,
+      adRewardPoints: 60,
+      quizCorrectExperience: 25,
+      quizCorrectPoint: 30,
+      quizIncorrectExperience: 15,
+      quizIncorrectPoint: 10,
+      dailyAttendanceExperience: 5,
+      dailyAttendancePoint: 10,
+      weeklyAttendanceExperience: 30,
+      weeklyAttendancePoint: 30,
+    };
+  }
+
   try {
     // 서버 API 호출
     const response = await client.get<RewardsConfig>('/config/rewards');
     return response.data;
   } catch (error) {
-    console.error('리워드 설정 조회 실패:', error);
-    // 개발 모드에서는 더미 데이터 반환 (서버 연동 전까지)
-    if (__DEV__) {
-      await delay(300);
-      return {
-        articleReadPointCost: 30,
-        articleReadExperience: 5,
-        adRewardPoints: 60,
-        quizCorrectExperience: 25,
-        quizCorrectPoint: 30,
-        quizIncorrectExperience: 15,
-        quizIncorrectPoint: 10,
-        dailyAttendanceExperience: 5,
-        dailyAttendancePoint: 10,
-        weeklyAttendanceExperience: 30,
-        weeklyAttendancePoint: 30,
-      };
-    }
-    throw error;
+    console.error('리워드 설정 조회 실패, 더미 데이터 사용:', error);
+    // 서버 연결 실패 시 자동으로 더미 데이터 반환
+    await delay(150);
+    return {
+      articleReadPointCost: 30,
+      articleReadExperience: 5,
+      adRewardPoints: 60,
+      quizCorrectExperience: 25,
+      quizCorrectPoint: 30,
+      quizIncorrectExperience: 15,
+      quizIncorrectPoint: 10,
+      dailyAttendanceExperience: 5,
+      dailyAttendancePoint: 10,
+      weeklyAttendanceExperience: 30,
+      weeklyAttendancePoint: 30,
+    };
   }
 };
