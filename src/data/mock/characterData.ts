@@ -29,26 +29,32 @@ export type PointHistoryItem = {
 export const levelList: LevelCriteria[] = [
   {
     id: 1,
-    title: 'Lv.1 이제막',
+    title: 'Lv.1 아메바',
     requiredExp: 0,
     summary: '기본 미션으로 적응해요',
   },
   {
     id: 2,
-    title: 'Lv.2 조금알고',
+    title: 'Lv.2 꼬물 물고기',
     requiredExp: 100,
     summary: '미션 보상이 조금 증가해요',
   },
   {
     id: 3,
-    title: 'Lv.3 꽤함',
+    title: 'Lv.3 리틀 몽키',
     requiredExp: 250,
     summary: '연속 달성 보너스가 유리해요',
   },
   {
     id: 4,
-    title: 'Lv.4 전문가',
+    title: 'Lv.4 꼬마 원시인',
     requiredExp: 450,
+    summary: '고급 미션이 해금돼요',
+  },
+  {
+    id: 5,
+    title: 'Lv.5 아인슈타인',
+    requiredExp: 800,
     summary: '고급 미션이 해금돼요',
   },
 ];
@@ -57,7 +63,7 @@ export const levelList: LevelCriteria[] = [
 export const levelDetailMap: Record<number, LevelDetail> = {
   1: {
     levelId: 1,
-    title: 'Lv.1 이제막',
+    title: 'Lv.1 아메바',
     requiredExp: 0,
     rewards: [
       { label: '기사 읽기(10초+)', xp: 40, pt: 0 },
@@ -68,7 +74,7 @@ export const levelDetailMap: Record<number, LevelDetail> = {
   },
   2: {
     levelId: 2,
-    title: 'Lv.2 조금알고',
+    title: 'Lv.2 꼬물 물고기',
     requiredExp: 100,
     rewards: [
       { label: '기사 읽기(10초+)', xp: 50, pt: 0 },
@@ -79,7 +85,7 @@ export const levelDetailMap: Record<number, LevelDetail> = {
   },
   3: {
     levelId: 3,
-    title: 'Lv.3 꽤함',
+    title: 'Lv.3 리틀 몽키',
     requiredExp: 250,
     rewards: [
       { label: '기사 읽기(10초+)', xp: 60, pt: 0 },
@@ -90,12 +96,23 @@ export const levelDetailMap: Record<number, LevelDetail> = {
   },
   4: {
     levelId: 4,
-    title: 'Lv.4 전문가',
+    title: 'Lv.4 꼬마 원시인',
     requiredExp: 450,
     rewards: [
       { label: '기사 읽기(10초+)', xp: 70, pt: 0 },
       { label: '미션 완료', xp: 60, pt: 20 },
       { label: '광고 시청', xp: 18, pt: 6 },
+    ],
+    tips: ['고급 미션 위주로 플레이', '스트릭 유지로 보너스를 챙기세요'],
+  },
+  5: {
+    levelId: 5,
+    title: 'Lv.5 아인슈타인',
+    requiredExp: 800,
+    rewards: [
+      { label: '기사 읽기(10초+)', xp: 80, pt: 0 },
+      { label: '미션 완료', xp: 70, pt: 25 },
+      { label: '광고 시청', xp: 20, pt: 7 },
     ],
     tips: ['고급 미션 위주로 플레이', '스트릭 유지로 보너스를 챙기세요'],
   },
