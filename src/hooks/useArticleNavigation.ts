@@ -1,4 +1,4 @@
-import React, { useCallback } from 'react';
+import React, { useCallback, useRef } from 'react';
 import { Alert } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -32,6 +32,7 @@ export const useArticleNavigation = ({
   const navigation = useNavigation<NavigationProp>();
   const showModal = useShowModal();
   const { points, subtractPoints } = usePointStore();
+  const isProcessingRef = useRef(false);
 
   const handleArticlePress = useCallback(
     (articleId: number) => {
@@ -46,17 +47,40 @@ export const useArticleNavigation = ({
           primaryButton: {
             title: '새 글 읽기',
             onPress: async () => {
-              const success = await subtractPoints(ARTICLE_READ_POINT_COST);
-              if (success) {
-                navigation.navigate(RouteNames.FULL_SCREEN_STACK, {
-                  screen: RouteNames.ARTICLE_DETAIL,
-                  params: {
-                    articleId,
-                    returnTo,
-                  },
-                });
-              } else {
-                Alert.alert('오류', '포인트 차감에 실패했습니다.');
+              // 중복 호출 방지
+              if (isProcessingRef.current) {
+                console.log(
+                  '[useArticleNavigation] 포인트 차감 이미 처리 중, 중복 호출 방지',
+                );
+                return;
+              }
+
+              isProcessingRef.current = true;
+              console.log(
+                `[useArticleNavigation] 포인트 차감 시도: ${ARTICLE_READ_POINT_COST}`,
+              );
+
+              try {
+                const success = await subtractPoints(ARTICLE_READ_POINT_COST);
+                console.log(
+                  `[useArticleNavigation] 포인트 차감 결과: ${success}`,
+                );
+                if (success) {
+                  navigation.navigate(RouteNames.FULL_SCREEN_STACK, {
+                    screen: RouteNames.ARTICLE_DETAIL,
+                    params: {
+                      articleId,
+                      returnTo,
+                    },
+                  });
+                } else {
+                  Alert.alert('오류', '포인트 차감에 실패했습니다.');
+                }
+              } finally {
+                // 네비게이션 후 리셋 (다음 기사 읽기 가능하도록)
+                setTimeout(() => {
+                  isProcessingRef.current = false;
+                }, 1000);
               }
             },
           },

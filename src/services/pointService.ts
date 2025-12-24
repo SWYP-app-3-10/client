@@ -76,7 +76,10 @@ export const addPoints = async (amount: number): Promise<number> => {
   if (USE_MOCK_DATA) {
     const currentPoints = await getPoints();
     const newPoints = currentPoints + amount;
-    await AsyncStorage.setItem(POINT_KEY, newPoints.toString());
+    await savePoints(newPoints);
+    console.log(
+      `[pointService] 포인트 추가: ${currentPoints} + ${amount} = ${newPoints}`,
+    );
     return newPoints;
   }
 
@@ -111,11 +114,17 @@ export const subtractPoints = async (
   // 더미 데이터 사용 모드에서는 로컬에서 바로 처리
   if (USE_MOCK_DATA) {
     const currentPoints = await getPoints();
+    console.log(
+      `[pointService] 포인트 차감 시도: ${currentPoints} - ${amount}`,
+    );
     if (currentPoints < amount) {
       return { success: false, newPoints: currentPoints };
     }
     const newPoints = currentPoints - amount;
-    await AsyncStorage.setItem(POINT_KEY, newPoints.toString());
+    await savePoints(newPoints);
+    console.log(
+      `[pointService] 포인트 차감 완료: ${currentPoints} - ${amount} = ${newPoints}`,
+    );
     return { success: true, newPoints };
   }
 
@@ -138,11 +147,17 @@ export const subtractPoints = async (
     }
     // 서버 연결 실패 시 로컬에서 처리
     const currentPoints = await getPoints();
+    console.log(
+      `[pointService] 포인트 차감 시도 (서버 실패 후 로컬): ${currentPoints} - ${amount}`,
+    );
     if (currentPoints < amount) {
       return { success: false, newPoints: currentPoints };
     }
     const newPoints = currentPoints - amount;
-    await AsyncStorage.setItem(POINT_KEY, newPoints.toString());
+    await savePoints(newPoints);
+    console.log(
+      `[pointService] 포인트 차감 완료 (로컬): ${currentPoints} - ${amount} = ${newPoints}`,
+    );
     return { success: true, newPoints };
   }
 };

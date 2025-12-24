@@ -43,6 +43,7 @@ import { useCharacterData, useAttendanceData } from '../../hooks/useCharacter';
 import { useMissions } from '../../hooks/useMissions';
 import { usePointStore } from '../../store/pointStore';
 import { ActivityIndicator } from 'react-native';
+import { useExperienceStore } from '../../store/experienceStore';
 
 const CharacterScreen = () => {
   const rootNavigation =
@@ -72,10 +73,10 @@ const CharacterScreen = () => {
 
   // 포인트는 전역 스토어에서 가져오기
   const { points: currentPoints } = usePointStore();
-
+  const { experience } = useExperienceStore();
   // 기본값 설정
   const currentLevel = characterData?.currentLevel ?? 1;
-  const currentExp = characterData?.currentExp ?? 0;
+  const currentExp = experience ?? 0;
   const nextLevelExp = characterData?.nextLevelExp ?? 100;
 
   // 메모이제이션: 레벨 데이터
@@ -203,12 +204,12 @@ const CharacterScreen = () => {
           </View>
           {/* 레벨 버튼 */}
           <View style={styles.levelButtonContainer}>
-            <TouchableOpacity style={styles.levelButton}>
+            <View style={styles.levelButton}>
               <Text style={styles.levelButtonText}>
                 {currentLevelData?.title || 'Lv. 1 아메바'}
               </Text>
               <InfoIcon />
-            </TouchableOpacity>
+            </View>
             {/* 툴팁 */}
             {showTooltip && (
               <View style={styles.tooltipContainer}>
@@ -360,7 +361,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: COLORS.overlayWhite,
-    width: scaleWidth(172),
+    paddingHorizontal: scaleWidth(16),
     height: scaleWidth(42),
     borderRadius: BORDER_RADIUS[99],
     gap: scaleWidth(14),

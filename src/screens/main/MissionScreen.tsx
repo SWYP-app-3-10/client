@@ -15,6 +15,7 @@ import {
   StyleSheet,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import {
   COLORS,
   scaleWidth,
@@ -36,10 +37,20 @@ import {
 } from '../../navigation/types';
 import { RouteNames } from '../../../routes';
 import { Article } from '../../data/mock/missionData';
+import { useShowModal } from '../../store/modalStore';
+import { usePointStore } from '../../store/pointStore';
+import { ExperienceModalContent } from '../../components/ArticlePointModalContent';
+
+import {
+  DAILY_ATTENDANCE_EXPERIENCE,
+  DAILY_ATTENDANCE_POINT,
+} from '../../config/rewards';
+import { useExperienceStore } from '../../store/experienceStore';
 
 // 상수
 const SCROLL_INITIAL_DELAY = 100;
 const SCROLL_EVENT_THROTTLE = 16;
+const DAILY_MISSION_ENTRY_KEY = '@daily_mission_entry'; // 날짜 기반으로 매일 체크
 
 export {
   QUIZ_CORRECT_EXPERIENCE,
@@ -56,6 +67,10 @@ const MissionScreen = () => {
   const navigation =
     useNavigation<MainTabNavigationProp<MissionStackParamList>>();
   const { handleArticlePress } = useArticleNavigation({ returnTo: 'mission' });
+  const showModal = useShowModal();
+  const { addPoints } = usePointStore();
+  const { addExperience } = useExperienceStore();
+  const hasCheckedDailyEntryRef = useRef(false);
 
   // 개발용: 로그인 정보 초기화
   const handleClearLogin = useCallback(async () => {
@@ -116,6 +131,61 @@ const MissionScreen = () => {
     return [missions[missions.length - 1], ...missions, missions[0]];
   }, [missions]);
 
+  // 매일 첫 진입 시 포인트 획득 모달 표시
+  useEffect(() => {
+    // 중복 실행 방지
+    if (hasCheckedDailyEntryRef.current) {
+      return;
+    }
+
+    const checkDailyEntry = async () => {
+      try {
+        // 오늘 날짜 (YYYY-MM-DD 형식)
+        const today = new Date().toISOString().split('T')[0];
+        const lastEntryDate = await AsyncStorage.getItem(
+          DAILY_MISSION_ENTRY_KEY,
+        );
+
+        // 오늘 아직 모달을 보지 않았다면
+        if (lastEntryDate !== today) {
+          // 먼저 날짜 저장하여 중복 방지
+          await AsyncStorage.setItem(DAILY_MISSION_ENTRY_KEY, today);
+          hasCheckedDailyEntryRef.current = true;
+
+          // 포인트와 경험치 추가
+          await Promise.all([
+            addPoints(DAILY_ATTENDANCE_POINT),
+            addExperience(DAILY_ATTENDANCE_EXPERIENCE),
+          ]);
+
+          // 모달 표시
+          showModal({
+            title: '포인트 & 경험치 획득!',
+            children: React.createElement(ExperienceModalContent, {
+              point: true,
+              daily: true,
+            }),
+            primaryButton: {
+              title: '확인',
+              onPress: () => {
+                // 모달 닫기는 자동으로 처리됨
+              },
+            },
+          });
+        } else {
+          // 이미 오늘 체크했으면 ref만 설정
+          hasCheckedDailyEntryRef.current = true;
+        }
+      } catch (error) {
+        console.error('일일 진입 체크 실패:', error);
+        hasCheckedDailyEntryRef.current = false; // 에러 시 다시 시도 가능하도록
+      }
+    };
+
+    checkDailyEntry();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // 의존성 배열 비워서 한 번만 실행
+  // AsyncStorage.clear();
   // 초기 위치를 첫 번째 실제 아이템으로 설정
   useEffect(() => {
     const timer = setTimeout(() => {

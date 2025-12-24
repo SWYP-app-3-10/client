@@ -3,10 +3,23 @@ import { View, Text, StyleSheet } from 'react-native';
 import {
   ARTICLE_READ_POINT_COST,
   AD_REWARD_POINTS,
-  ARTICLE_READ_EXPERIENCE,
+  QUIZ_CORRECT_POINT,
+  QUIZ_INCORRECT_POINT,
+  QUIZ_CORRECT_EXPERIENCE,
+  QUIZ_INCORRECT_EXPERIENCE,
+  DAILY_ATTENDANCE_POINT,
+  DAILY_ATTENDANCE_EXPERIENCE,
 } from '../config/rewards';
 
-import { COLORS, scaleWidth, Body_16M, BORDER_RADIUS } from '../styles/global';
+import {
+  COLORS,
+  scaleWidth,
+  Body_16M,
+  BORDER_RADIUS,
+  Heading_20EB_Round,
+} from '../styles/global';
+import { levelDetailMap } from '../data/mock/characterData';
+
 export const ArticlePointModalContent: React.FC = () => {
   return (
     <View style={styles.modalContent}>
@@ -28,35 +41,76 @@ export const ArticlePointModalContentGet: React.FC = () => {
   );
 };
 
-export const ExperienceModalContent: React.FC<{ point?: boolean }> = ({
-  point = false,
-}) => {
+export const ExperienceModalContent: React.FC<{
+  point?: boolean;
+  correct?: boolean;
+  daily?: boolean;
+}> = ({ point = false, correct = false, daily = false }) => {
+  const getPointText = daily
+    ? DAILY_ATTENDANCE_POINT
+    : correct
+    ? QUIZ_CORRECT_POINT
+    : QUIZ_INCORRECT_POINT;
+  const getExperienceText = daily
+    ? DAILY_ATTENDANCE_EXPERIENCE
+    : correct
+    ? QUIZ_CORRECT_EXPERIENCE
+    : QUIZ_INCORRECT_EXPERIENCE;
+
   return (
     <View style={styles.modalContent}>
+      <View
+        style={[
+          styles.modalContentTextWrap,
+          { backgroundColor: COLORS.blue[3] },
+        ]}
+      >
+        <Text style={styles.getExperienceText}>
+          경험치 {getExperienceText} XP
+        </Text>
+      </View>
       {point && (
         <View
           style={[
             styles.modalContentTextWrap,
-            { backgroundColor: COLORS.blue[5] },
+            { backgroundColor: COLORS.yellow[1], marginLeft: scaleWidth(6) },
           ]}
         >
-          <Text style={styles.getPointText}>
-            {ARTICLE_READ_POINT_COST}포인트
-          </Text>
+          <Text style={styles.getPointText}>포인트 {getPointText} P</Text>
         </View>
       )}
-      <View style={styles.modalContentTextWrap}>
-        <Text style={styles.pointText}>{ARTICLE_READ_EXPERIENCE}경험치</Text>
-      </View>
     </View>
   );
 };
 
+export const LevelUpModalContent: React.FC<{ newLevel: number }> = ({
+  newLevel,
+}) => {
+  const levelTitle = levelDetailMap[newLevel].title;
+  return (
+    <View style={styles.levelUpModalContent}>
+      <Text style={styles.levelUpModalContentText}>{levelTitle}</Text>
+    </View>
+  );
+};
 const styles = StyleSheet.create({
+  levelUpModalContent: {
+    marginTop: scaleWidth(20),
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: '100%',
+    height: scaleWidth(62),
+    borderRadius: BORDER_RADIUS[12],
+    backgroundColor: COLORS.puple[3],
+  },
+  levelUpModalContentText: {
+    ...Heading_20EB_Round,
+    color: COLORS.puple.main,
+  },
   modalContentTextWrap: {
     justifyContent: 'center',
     alignItems: 'center',
-    borderWidth: 1,
+
     width: scaleWidth(111),
     height: scaleWidth(36),
     borderRadius: BORDER_RADIUS[30],
@@ -69,9 +123,13 @@ const styles = StyleSheet.create({
     ...Body_16M,
     color: COLORS.puple.main,
   },
-  getPointText: {
+  getExperienceText: {
     ...Body_16M,
     color: COLORS.blue[6],
+  },
+  getPointText: {
+    ...Body_16M,
+    color: COLORS.yellow.medium,
   },
   modalContent: {
     marginTop: scaleWidth(4),

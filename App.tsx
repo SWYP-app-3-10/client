@@ -6,12 +6,16 @@ import SplashScreen from './src/screens/SplashScreen';
 import RootNavigator from './src/navigation/RootNavigator';
 import { queryClient } from './src/config/queryClient';
 import { useOnboardingStore } from './src/store/onboardingStore';
+import { usePointStore } from './src/store/pointStore';
+import { useExperienceStore } from './src/store/experienceStore';
 
 const App = () => {
   const [isSplashLoading, setIsSplashLoading] = useState(true);
   const loadOnboardingStatus = useOnboardingStore(
     state => state.loadOnboardingStatus,
   );
+  const loadPoints = usePointStore(state => state.loadPoints);
+  const loadExperience = useExperienceStore(state => state.loadExperience);
 
   // Firebase 초기화
   useEffect(() => {
@@ -39,21 +43,26 @@ const App = () => {
   }, []);
 
   useEffect(() => {
-    // 스플래시 화면에서 온보딩 완료 여부 확인
-    const checkOnboardingStatus = async () => {
+    // 스플래시 화면에서 온보딩 완료 여부 및 포인트/경험치 로드
+    const initializeAppData = async () => {
       try {
-        // AsyncStorage에서 온보딩 완료 여부 확인
-        await loadOnboardingStatus();
+        // 병렬로 모든 초기화 작업 수행
+        await Promise.all([
+          loadOnboardingStatus(),
+          loadPoints(),
+          loadExperience(),
+        ]);
+        console.log('[App] 앱 초기화 완료 - 포인트/경험치 로드됨');
       } catch (error) {
-        console.error('온보딩 상태 확인 중 오류:', error);
+        console.error('앱 초기화 중 오류:', error);
       } finally {
         // 스플래시 화면 표시 시간 (최소 1초)
         setTimeout(() => setIsSplashLoading(false), 1000);
       }
     };
 
-    checkOnboardingStatus();
-  }, [loadOnboardingStatus]);
+    initializeAppData();
+  }, [loadOnboardingStatus, loadPoints, loadExperience]);
 
   // 스플래시 로딩 중
   if (isSplashLoading) {

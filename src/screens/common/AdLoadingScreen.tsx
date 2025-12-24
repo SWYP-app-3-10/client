@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { View, StyleSheet, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRoute, useNavigation } from '@react-navigation/native';
@@ -33,7 +33,7 @@ const AdLoadingScreen = () => {
 
   const [isAdShowing, setIsAdShowing] = useState(false);
   const [hasEarnedReward, setHasEarnedReward] = useState(false);
-  const [hasAddedPoints, setHasAddedPoints] = useState(false);
+  const hasAddedPointsRef = useRef(false);
 
   // 보상 감지
   useEffect(() => {
@@ -54,6 +54,7 @@ const AdLoadingScreen = () => {
     if (isLoaded && !isAdShowing) {
       setIsAdShowing(true);
       setHasEarnedReward(false);
+      hasAddedPointsRef.current = false; // 새 광고 시청 시 리셋
       try {
         show();
       } catch (error) {
@@ -66,11 +67,14 @@ const AdLoadingScreen = () => {
 
   // 광고 시청 완료 시 포인트 추가
   useEffect(() => {
-    if (hasEarnedReward && !hasAddedPoints) {
-      addPoints(AD_REWARD_POINTS);
-      setHasAddedPoints(true);
+    if (hasEarnedReward && !hasAddedPointsRef.current) {
+      hasAddedPointsRef.current = true;
+      addPoints(AD_REWARD_POINTS).catch(error => {
+        console.error('포인트 추가 중 오류:', error);
+        hasAddedPointsRef.current = false; // 에러 시 다시 시도 가능하도록
+      });
     }
-  }, [hasEarnedReward, hasAddedPoints, addPoints]);
+  }, [hasEarnedReward, addPoints]);
 
   // 광고 닫힘 처리
   useEffect(() => {

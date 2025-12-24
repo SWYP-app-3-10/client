@@ -7,6 +7,7 @@ import {
   Image,
   ImageSourcePropType,
   TouchableWithoutFeedback,
+  Pressable,
   StyleProp,
   ViewStyle,
   TextStyle,
@@ -107,86 +108,84 @@ const NotificationModal: React.FC<NotificationModalProps> = ({
       visible={visible}
       transparent={true}
       animationType="fade"
-      onRequestClose={handleClose}
+      onRequestClose={closeOnBackdropPress ? handleClose : undefined}
     >
-      <TouchableWithoutFeedback onPress={handleOverlayPress}>
-        <View style={styles.overlay}>
-          <TouchableWithoutFeedback onPress={() => {}}>
-            <View style={styles.modalContainer}>
-              <View
-                style={[
-                  styles.modalContent,
-                  {
-                    paddingTop: closeButton ? scaleWidth(23) : scaleWidth(40),
-                  },
-                ]}
-              >
-                {/* 닫기 버튼 */}
-                {closeButton && (
-                  <View style={styles.closeButtonContainer}>
-                    <IconButton onPress={handleClose}>
-                      <CloseIcon color={COLORS.gray500} size={ICON_SIZES.M} />
-                    </IconButton>
-                  </View>
-                )}
-                {/* 이미지 */}
-                {renderImage()}
+      <Pressable style={styles.overlay} onPress={handleOverlayPress}>
+        <TouchableWithoutFeedback onPress={() => {}}>
+          <View style={styles.modalContainer}>
+            <View
+              style={[
+                styles.modalContent,
+                {
+                  paddingTop: closeButton ? scaleWidth(23) : scaleWidth(40),
+                },
+              ]}
+            >
+              {/* 닫기 버튼 */}
+              {closeButton && (
+                <View style={styles.closeButtonContainer}>
+                  <IconButton onPress={handleClose}>
+                    <CloseIcon color={COLORS.gray500} size={ICON_SIZES.M} />
+                  </IconButton>
+                </View>
+              )}
+              {/* 이미지 */}
+              {renderImage()}
 
-                {/* 제목 */}
-                <Text style={titleStyle ?? styles.title}>{title}</Text>
+              {/* 제목 */}
+              <Text style={titleStyle ?? styles.title}>{title}</Text>
 
-                <Spacer num={titleDescriptionGapSize} />
+              <Spacer num={titleDescriptionGapSize} />
 
-                {/* 설명 텍스트 */}
-                {description && (
-                  <Text
+              {/* 설명 텍스트 */}
+              {description && (
+                <Text
+                  style={[
+                    styles.description,
+                    { color: descriptionColor ?? COLORS.gray800 },
+                  ]}
+                >
+                  {description}
+                </Text>
+              )}
+              {/* 컨텐츠 */}
+              {children && (
+                <View style={styles.childrenContainer}>{children}</View>
+              )}
+              {primaryButton && (
+                <>
+                  <Spacer num={20} />
+                  {/* 버튼 컨테이너 */}
+                  <View
                     style={[
-                      styles.description,
-                      { color: descriptionColor ?? COLORS.gray800 },
+                      styles.buttonContainer,
+                      !secondaryButton && styles.singleButtonContainer,
                     ]}
                   >
-                    {description}
-                  </Text>
-                )}
-                {/* 컨텐츠 */}
-                {children && (
-                  <View style={styles.childrenContainer}>{children}</View>
-                )}
-                {primaryButton && (
-                  <>
-                    <Spacer num={20} />
-                    {/* 버튼 컨테이너 */}
-                    <View
-                      style={[
-                        styles.buttonContainer,
-                        !secondaryButton && styles.singleButtonContainer,
-                      ]}
-                    >
-                      {secondaryButton && (
-                        <Button
-                          title={secondaryButton.title}
-                          onPress={secondaryButton.onPress}
-                          variant={secondaryButton.variant || 'primary'}
-                          style={[styles.button, secondaryButton.style]}
-                          textStyle={secondaryButton.textStyle}
-                        />
-                      )}
+                    {secondaryButton && (
                       <Button
-                        title={primaryButton.title}
-                        onPress={primaryButton.onPress}
-                        variant={primaryButton.variant || 'primary'}
-                        style={
-                          secondaryButton ? styles.button : styles.singleButton
-                        }
+                        title={secondaryButton.title}
+                        onPress={secondaryButton.onPress}
+                        variant={secondaryButton.variant || 'primary'}
+                        style={[styles.button, secondaryButton.style]}
+                        textStyle={secondaryButton.textStyle}
                       />
-                    </View>
-                  </>
-                )}
-              </View>
+                    )}
+                    <Button
+                      title={primaryButton.title}
+                      onPress={primaryButton.onPress}
+                      variant={primaryButton.variant || 'primary'}
+                      style={
+                        secondaryButton ? styles.button : styles.singleButton
+                      }
+                    />
+                  </View>
+                </>
+              )}
             </View>
-          </TouchableWithoutFeedback>
-        </View>
-      </TouchableWithoutFeedback>
+          </View>
+        </TouchableWithoutFeedback>
+      </Pressable>
     </Modal>
   );
 };

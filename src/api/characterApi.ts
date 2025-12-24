@@ -30,14 +30,37 @@ export interface AttendanceData {
  * 캐릭터 정보 조회
  * @returns Promise<CharacterData>
  */
+import { getExperience } from '../services/experienceService';
+import { levelList } from '../data/mock/characterData';
+
 export const fetchCharacterData = async (): Promise<CharacterData> => {
   // 더미 데이터 사용 모드이거나 서버 연결 실패 시 더미 데이터 반환
   if (USE_MOCK_DATA) {
     await delay(200);
+    // 실제 경험치를 가져와서 레벨 계산
+    const currentExp = await getExperience();
+
+    // 경험치를 기반으로 현재 레벨과 다음 레벨 경험치 계산
+    let currentLevel = 1;
+    let nextLevelExp = 100;
+
+    // levelList를 역순으로 확인하여 현재 레벨 찾기
+    for (let i = levelList.length - 1; i >= 0; i--) {
+      if (currentExp >= levelList[i].requiredExp) {
+        currentLevel = levelList[i].id;
+        // 다음 레벨 경험치 찾기
+        const nextLevel = levelList.find(l => l.id === currentLevel + 1);
+        nextLevelExp = nextLevel
+          ? nextLevel.requiredExp
+          : levelList[levelList.length - 1].requiredExp * 2;
+        break;
+      }
+    }
+
     return {
-      currentLevel: 1,
-      currentExp: 50,
-      nextLevelExp: 100,
+      currentLevel,
+      currentExp,
+      nextLevelExp,
     };
   }
 
@@ -49,10 +72,30 @@ export const fetchCharacterData = async (): Promise<CharacterData> => {
     console.error('캐릭터 정보 조회 실패, 더미 데이터 사용:', error);
     // 서버 연결 실패 시 자동으로 더미 데이터 반환
     await delay(200);
+    // 실제 경험치를 가져와서 레벨 계산
+    const currentExp = await getExperience();
+
+    // 경험치를 기반으로 현재 레벨과 다음 레벨 경험치 계산
+    let currentLevel = 1;
+    let nextLevelExp = 100;
+
+    // levelList를 역순으로 확인하여 현재 레벨 찾기
+    for (let i = levelList.length - 1; i >= 0; i--) {
+      if (currentExp >= levelList[i].requiredExp) {
+        currentLevel = levelList[i].id;
+        // 다음 레벨 경험치 찾기
+        const nextLevel = levelList.find(l => l.id === currentLevel + 1);
+        nextLevelExp = nextLevel
+          ? nextLevel.requiredExp
+          : levelList[levelList.length - 1].requiredExp * 2;
+        break;
+      }
+    }
+
     return {
-      currentLevel: 1,
-      currentExp: 50,
-      nextLevelExp: 100,
+      currentLevel,
+      currentExp,
+      nextLevelExp,
     };
   }
 };

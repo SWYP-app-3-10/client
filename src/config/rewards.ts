@@ -11,7 +11,7 @@ import { RewardsConfig } from '../api/rewardsApi';
 export const DEFAULT_REWARDS_CONFIG: RewardsConfig = {
   // 기사 읽기 관련
   articleReadPointCost: 30,
-  articleReadExperience: 5,
+  articleReadExperience: 15,
 
   // 광고 시청 관련
   adRewardPoints: 60,

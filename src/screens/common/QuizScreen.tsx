@@ -37,6 +37,12 @@ import {
 import { RouteNames } from '../../../routes';
 import { mockQuiz } from '../../data/mock/quizData';
 import { ExperienceModalContent } from '../../components/ArticlePointModalContent';
+import { usePointStore } from '../../store/pointStore';
+import { useExperienceStore } from '../../store/experienceStore';
+import {
+  QUIZ_CORRECT_POINT,
+  QUIZ_CORRECT_EXPERIENCE,
+} from '../../config/rewards';
 
 type QuizState = 'question' | 'feedback';
 
@@ -61,7 +67,8 @@ const QuizScreen: React.FC = () => {
       setSelectedOptionId(optionId);
     }
   };
-
+  const { addPoints } = usePointStore();
+  const { addExperience } = useExperienceStore();
   const handleNext = async () => {
     if (!selectedOptionId) return;
 
@@ -72,17 +79,28 @@ const QuizScreen: React.FC = () => {
       quizId: quiz.id,
       answerId: selectedOptionId,
     });
+
+    await Promise.all([
+      addPoints(QUIZ_CORRECT_POINT),
+      addExperience(QUIZ_CORRECT_EXPERIENCE),
+    ]);
+
     showModal({
       title: '포인트 & 경험치 획득!',
       titleDescriptionGapSize: scaleWidth(20),
-      children: React.createElement(ExperienceModalContent, { point: true }),
+      children: React.createElement(ExperienceModalContent, {
+        point: true,
+        correct: isCorrect(selectedOptionId),
+      }),
       primaryButton: {
         title: '확인',
-        onPress: () => {
-          setQuizState('feedback');
-        },
+        onPress: () => {},
       },
     });
+    if (true) {
+      // 피드백 안떴다면
+      setQuizState('feedback');
+    }
   };
 
   const handleComplete = () => {
@@ -238,15 +256,15 @@ const QuizScreen: React.FC = () => {
       </ScrollView>
 
       {/* 하단 버튼 */}
-      <View style={styles.buttonContainer}>
-        <Button
-          title={quizState === 'question' ? '다음' : '완료'}
-          onPress={quizState === 'question' ? handleNext : handleComplete}
-          variant="primary"
-          style={styles.actionButton}
-          disabled={quizState === 'question' && !selectedOptionId}
-        />
-      </View>
+      {/* <View style={styles.buttonContainer}> */}
+      <Button
+        title={quizState === 'question' ? '다음' : '완료'}
+        onPress={quizState === 'question' ? handleNext : handleComplete}
+        variant="primary"
+        style={styles.actionButton}
+        disabled={quizState === 'question' && !selectedOptionId}
+      />
+      {/* </View> */}
     </SafeAreaView>
   );
 };
@@ -371,7 +389,7 @@ const styles = StyleSheet.create({
     borderTopColor: COLORS.gray200,
   },
   actionButton: {
-    width: '100%',
+    marginHorizontal: scaleWidth(20),
   },
   difficultyOptionsContainer: {
     width: '100%',

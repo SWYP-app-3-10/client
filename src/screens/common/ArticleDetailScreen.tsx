@@ -1,4 +1,10 @@
-import React, { useEffect, useRef, useState, useMemo } from 'react';
+import React, {
+  useEffect,
+  useRef,
+  useState,
+  useMemo,
+  useCallback,
+} from 'react';
 import {
   View,
   Text,
@@ -8,7 +14,12 @@ import {
   Image,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useRoute, useNavigation } from '@react-navigation/native';
+import {
+  useRoute,
+  useNavigation,
+  useFocusEffect,
+  useIsFocused,
+} from '@react-navigation/native';
 import {
   COLORS,
   scaleWidth,
@@ -28,8 +39,8 @@ import { FullScreenStackParamList } from '../../navigation/types';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useOnboardingStore, Difficulty } from '../../store/onboardingStore';
 import { useShowModal } from '../../store/modalStore';
-import { useAddExperience } from '../../hooks/useCharacter';
 import { ARTICLE_READ_EXPERIENCE } from '../../config/rewards';
+import { useExperienceStore } from '../../store/experienceStore';
 
 type NavigationProp = NativeStackNavigationProp<FullScreenStackParamList>;
 
@@ -46,9 +57,11 @@ const ArticleDetailScreen = () => {
   const { data: articles = [], isLoading } = useArticles();
   const difficulty = useOnboardingStore(state => state.difficulty);
   const showModal = useShowModal();
-  const { mutateAsync: addExperience } = useAddExperience();
+  const { addExperience } = useExperienceStore();
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const hasEarnedExperienceRef = useRef(false);
+  const isScreenFocusedRef = useRef(true);
+  const isFocused = useIsFocused();
   const [, setHasEarnedExperience] = useState(false);
 
   // @ts-ignore - route params 타입은 나중에 추가
@@ -61,11 +74,46 @@ const ArticleDetailScreen = () => {
       ? READING_TIME_BY_DIFFICULTY[difficulty]
       : READING_TIME_BY_DIFFICULTY.beginner; // 기본값: 초급
   }, [difficulty]);
+  // 화면 포커스 상태 추적
+  useFocusEffect(
+    useCallback(() => {
+      // 화면이 포커스될 때
+      isScreenFocusedRef.current = true;
+      hasEarnedExperienceRef.current = false;
+      setHasEarnedExperience(false);
+
+      return () => {
+        // 화면이 포커스를 잃을 때 (다른 화면으로 이동)
+        isScreenFocusedRef.current = false;
+        // 타이머 정리
+        if (timerRef.current) {
+          clearTimeout(timerRef.current);
+          timerRef.current = null;
+        }
+      };
+    }, []),
+  );
+
   // articleId가 변경되면 경험치 획득 상태 리셋
   useEffect(() => {
     hasEarnedExperienceRef.current = false;
     setHasEarnedExperience(false);
-  }, [articleId]);
+    isScreenFocusedRef.current = isFocused;
+  }, [articleId, isFocused]);
+
+  // 네비게이션 이벤트 리스너: 페이지 이탈 전 타이머 정리
+  useEffect(() => {
+    const unsubscribe = navigation.addListener('beforeRemove', () => {
+      // 페이지 이탈 전 타이머 정리
+      if (timerRef.current) {
+        clearTimeout(timerRef.current);
+        timerRef.current = null;
+      }
+      isScreenFocusedRef.current = false;
+    });
+
+    return unsubscribe;
+  }, [navigation]);
 
   // 타이머 설정
   useEffect(() => {
@@ -82,8 +130,24 @@ const ArticleDetailScreen = () => {
 
     // 경험치 획득 함수
     const handleExperienceGain = async () => {
+      // 화면이 포커스되어 있지 않으면 경험치를 주지 않음
+      if (!isScreenFocusedRef.current || !isFocused) {
+        console.log(
+          '[ArticleDetailScreen] 화면 포커스 없음으로 인해 경험치 지급 취소',
+        );
+        return;
+      }
+
       // 다시 한 번 체크 (타이머 실행 시점에 이미 획득했을 수 있음)
       if (hasEarnedExperienceRef.current) {
+        return;
+      }
+
+      // 화면이 여전히 포커스되어 있는지 다시 확인
+      if (!isScreenFocusedRef.current || !isFocused) {
+        console.log(
+          '[ArticleDetailScreen] 화면 포커스 없음으로 인해 경험치 지급 취소',
+        );
         return;
       }
 
@@ -94,6 +158,14 @@ const ArticleDetailScreen = () => {
       try {
         // 경험치 추가 (useMutation이 자동으로 캐시 무효화 처리)
         await addExperience(ARTICLE_READ_EXPERIENCE);
+
+        // 화면이 여전히 포커스되어 있는지 최종 확인
+        if (!isScreenFocusedRef.current || !isFocused) {
+          console.log(
+            '[ArticleDetailScreen] 경험치 추가 후 화면 포커스 없음 감지, 모달 표시 취소',
+          );
+          return;
+        }
 
         // 경험치 획득 모달 표시
         showModal({
@@ -109,8 +181,10 @@ const ArticleDetailScreen = () => {
       } catch (error) {
         console.error('경험치 획득 실패:', error);
         // 에러 발생 시 ref를 다시 false로 설정하여 재시도 가능하게
-        hasEarnedExperienceRef.current = false;
-        setHasEarnedExperience(false);
+        if (isScreenFocusedRef.current && isFocused) {
+          hasEarnedExperienceRef.current = false;
+          setHasEarnedExperience(false);
+        }
       }
     };
 
@@ -126,7 +200,7 @@ const ArticleDetailScreen = () => {
         timerRef.current = null;
       }
     };
-  }, [article, readingTime, addExperience, showModal]); // article, readingTime, addExperience, showModal을 의존성에 추가
+  }, [article, readingTime, addExperience, showModal, isFocused]); // article, readingTime, addExperience, showModal, isFocused를 의존성에 추가
 
   if (isLoading) {
     return (

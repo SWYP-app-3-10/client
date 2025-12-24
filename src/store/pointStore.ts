@@ -18,7 +18,7 @@ interface PointStore {
   loadPoints: () => Promise<void>;
 }
 
-export const usePointStore = create<PointStore>(set => ({
+export const usePointStore = create<PointStore>((set, get) => ({
   points: 0,
   setPoints: async (points: number) => {
     try {
@@ -32,6 +32,7 @@ export const usePointStore = create<PointStore>(set => ({
     try {
       const newPoints = await addPointsService(amount);
       set({ points: newPoints });
+      console.log('포인트 추가 성공:', newPoints, '현재 포인트:', get().points);
     } catch (error) {
       console.error('포인트 추가 실패:', error);
     }
@@ -40,6 +41,12 @@ export const usePointStore = create<PointStore>(set => ({
     try {
       const result = await subtractPointsService(amount);
       set({ points: result.newPoints });
+      console.log(
+        '포인트 차감 성공:',
+        result.newPoints,
+        '현재 포인트:',
+        get().points,
+      );
       return result.success;
     } catch (error) {
       console.error('포인트 차감 실패:', error);
