@@ -3,6 +3,7 @@ import {
   ModalButton,
   NotificationModalProps,
 } from '../components/NotificationModal';
+import { StyleProp, TextStyle } from 'react-native';
 
 interface ModalState {
   visible: boolean;
@@ -16,6 +17,7 @@ interface ModalState {
   children?: React.ReactNode;
   titleDescriptionGapSize?: number;
   descriptionColor?: string;
+  titleStyle?: StyleProp<TextStyle>;
 }
 
 interface ModalStore {
@@ -27,6 +29,7 @@ interface ModalStore {
 const defaultModalState: ModalState = {
   visible: false,
   title: '',
+  titleStyle: undefined,
 };
 
 export const useModalStore = create<ModalStore>(set => ({

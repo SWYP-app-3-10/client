@@ -6,8 +6,11 @@ import { useShowModal } from '../store/modalStore';
 import { usePointStore } from '../store/pointStore';
 import { RouteNames } from '../../routes';
 import { RootStackParamList } from '../navigation/types';
-import { ARTICLE_POINT_COST } from '../screens/main/MissionScreen';
-import { ArticlePointModalContent } from '../components/ArticlePointModalContent';
+import { ARTICLE_READ_POINT_COST } from '../config/rewards';
+import {
+  ArticlePointModalContent,
+  ArticlePointModalContentGet,
+} from '../components/ArticlePointModalContent';
 
 type ReturnTo = 'mission' | 'search';
 
@@ -33,7 +36,7 @@ export const useArticleNavigation = ({
   const handleArticlePress = useCallback(
     (articleId: number) => {
       // 포인트 확인
-      if (points >= ARTICLE_POINT_COST) {
+      if (points >= ARTICLE_READ_POINT_COST) {
         // 포인트가 충분한 경우 - 포인트 사용 모달
         showModal({
           title: '새로운 글을 읽으시겠어요?',
@@ -43,7 +46,7 @@ export const useArticleNavigation = ({
           primaryButton: {
             title: '새 글 읽기',
             onPress: async () => {
-              const success = await subtractPoints(ARTICLE_POINT_COST);
+              const success = await subtractPoints(ARTICLE_READ_POINT_COST);
               if (success) {
                 navigation.navigate(RouteNames.FULL_SCREEN_STACK, {
                   screen: RouteNames.ARTICLE_DETAIL,
@@ -64,7 +67,7 @@ export const useArticleNavigation = ({
           title: '광고를 보고 포인트 받으시겠어요?',
           description: `사용 가능 포인트: ${points}p`,
           closeButton: true,
-          children: React.createElement(ArticlePointModalContent),
+          children: React.createElement(ArticlePointModalContentGet),
           primaryButton: {
             title: '포인트 받기',
             onPress: () => {

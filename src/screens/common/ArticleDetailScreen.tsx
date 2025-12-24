@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useRef, useState, useMemo } from 'react';
 import {
   View,
   Text,
@@ -22,20 +22,105 @@ import Button from '../../components/Button';
 import { useArticles } from '../../hooks/useArticles';
 import { Article } from '../../data/mock/missionData';
 import Spacer from '../../components/Spacer';
+import { ExperienceModalContent } from '../../components/ArticlePointModalContent';
 import { RouteNames } from '../../../routes';
 import { FullScreenStackParamList } from '../../navigation/types';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { useOnboardingStore, Difficulty } from '../../store/onboardingStore';
+import { useShowModal } from '../../store/modalStore';
+import { useAddExperience } from '../../hooks/useCharacter';
+import { ARTICLE_READ_EXPERIENCE } from '../../config/rewards';
 
 type NavigationProp = NativeStackNavigationProp<FullScreenStackParamList>;
+
+// 난이도별 읽기 시간 (초)
+const READING_TIME_BY_DIFFICULTY: Record<Difficulty, number> = {
+  beginner: 50, // 초급: 50초
+  intermediate: 90, // 중급: 90초
+  advanced: 190, // 고급: 3분 10초 (190초)
+};
 
 const ArticleDetailScreen = () => {
   const route = useRoute();
   const navigation = useNavigation<NavigationProp>();
   const { data: articles = [], isLoading } = useArticles();
+  const difficulty = useOnboardingStore(state => state.difficulty);
+  const showModal = useShowModal();
+  const { mutateAsync: addExperience } = useAddExperience();
+  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const hasEarnedExperienceRef = useRef(false);
+  const [, setHasEarnedExperience] = useState(false);
 
   // @ts-ignore - route params 타입은 나중에 추가
   const articleId = route.params?.articleId;
   const article = articles.find((a: Article) => a.id === articleId);
+
+  // 난이도에 따른 읽기 시간 설정
+  const readingTime = useMemo(() => {
+    return difficulty && difficulty in READING_TIME_BY_DIFFICULTY
+      ? READING_TIME_BY_DIFFICULTY[difficulty]
+      : READING_TIME_BY_DIFFICULTY.beginner; // 기본값: 초급
+  }, [difficulty]);
+  // articleId가 변경되면 경험치 획득 상태 리셋
+  useEffect(() => {
+    hasEarnedExperienceRef.current = false;
+    setHasEarnedExperience(false);
+  }, [articleId]);
+
+  // 타이머 설정
+  useEffect(() => {
+    // 기존 타이머 정리
+    if (timerRef.current) {
+      clearTimeout(timerRef.current);
+      timerRef.current = null;
+    }
+
+    if (!article || hasEarnedExperienceRef.current) {
+      return;
+    }
+
+    // 경험치 획득 함수 (useEffect 내부에서 정의하여 최신 값 참조)
+    const handleExperienceGain = async () => {
+      if (hasEarnedExperienceRef.current) {
+        return; // 이미 경험치를 획득했으면 중복 방지
+      }
+
+      try {
+        // 경험치 추가 (useMutation이 자동으로 캐시 무효화 처리)
+        await addExperience(ARTICLE_READ_EXPERIENCE);
+
+        hasEarnedExperienceRef.current = true;
+        setHasEarnedExperience(true);
+
+        // 경험치 획득 모달 표시
+        showModal({
+          title: '경험치 획득!',
+          children: React.createElement(ExperienceModalContent),
+          primaryButton: {
+            title: '확인',
+            onPress: () => {
+              // 모달 닫기 (hideModal은 모달 컴포넌트에서 처리)
+            },
+          },
+        });
+      } catch (error) {
+        console.error('경험치 획득 실패:', error);
+      }
+    };
+
+    // 새 타이머 설정
+    timerRef.current = setTimeout(() => {
+      handleExperienceGain();
+    }, readingTime * 1000);
+
+    return () => {
+      if (timerRef.current) {
+        clearTimeout(timerRef.current);
+        timerRef.current = null;
+      }
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [articleId, readingTime]); // articleId나 readingTime이 변경될 때만 타이머 재설정
 
   if (isLoading) {
     return (
@@ -80,12 +165,12 @@ const ArticleDetailScreen = () => {
             <Text style={styles.category}>{article.category}</Text>
           </View>
           <Spacer num={8} />
-        <Text style={styles.title}>{article.title}</Text>
+          <Text style={styles.title}>{article.title}</Text>
           <Text style={styles.meta}>{article.date} | 조회수 2,000</Text>
           <Spacer num={40} />
 
           {/* 본문 */}
-        <Text style={styles.body}>
+          <Text style={styles.body}>
             록히드 마틴이 F-35 전투기 관련 총 11억 4천만 달러 규모의 대형 계약을
             추가로 확보하면서 글로벌 방산 산업에 다시 한 번 강한 신호를 보냈다.
             이번 계약은 단순한 무기 판매를 넘어, 미·중·러를 축으로 한 패권
@@ -97,7 +182,7 @@ const ArticleDetailScreen = () => {
             있다. 이처럼 충돌 가능성이 상존하는 국제 질서 속에서 각 국가는 '전쟁
             억지'를 명분으로 군사 예산을 더욱 확대하고 있으며, 그 수혜는
             자연스럽게 글로벌 방산 기업들로 향한다.
-          {'\n\n'}
+            {'\n\n'}
             아이러니하게도 국제 정세의 불안은 금융시장에서는 불확실성이지만,
             방산 업종에는 오히려 '확실한 수요'로 작용한다. 미·중·러 간 갈등이
             단기간에 완화될 가능성은 크지 않으며, 우주·사이버·무인 전력까지 경쟁
@@ -105,7 +190,7 @@ const ArticleDetailScreen = () => {
             비롯한 글로벌 방산 기업들의 중장기 전망은 당분간 낙관적인 흐름을
             이어갈 가능성이 높다. 전쟁을 원치 않는 국제 사회의 역설적인 선택이,
             결국 더 많은 무기와 더 강한 군사력을 요구하고 있는 셈이다.
-        </Text>
+          </Text>
         </View>
         <Spacer num={48} />
 

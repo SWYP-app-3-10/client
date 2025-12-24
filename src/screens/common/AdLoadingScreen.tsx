@@ -8,6 +8,8 @@ import { COLORS } from '../../styles/global';
 import { FullScreenStackParamList } from '../../navigation/types';
 import { RouteNames } from '../../../routes';
 import { Alert } from 'react-native';
+import { usePointStore } from '../../store/pointStore';
+import { AD_REWARD_POINTS } from '../../config/rewards';
 
 const adUnitId = __DEV__
   ? TestIds.REWARDED
@@ -18,6 +20,7 @@ type NavigationProp = NativeStackNavigationProp<FullScreenStackParamList>;
 const AdLoadingScreen = () => {
   const route = useRoute();
   const navigation = useNavigation<NavigationProp>();
+  const { addPoints } = usePointStore();
 
   const articleId = (route.params as FullScreenStackParamList['ad-loading'])
     ?.articleId as number;
@@ -29,6 +32,7 @@ const AdLoadingScreen = () => {
 
   const [isAdShowing, setIsAdShowing] = useState(false);
   const [hasEarnedReward, setHasEarnedReward] = useState(false);
+  const [hasAddedPoints, setHasAddedPoints] = useState(false);
 
   // 보상 감지
   useEffect(() => {
@@ -58,6 +62,14 @@ const AdLoadingScreen = () => {
       }
     }
   }, [isLoaded, isAdShowing, show, navigation]);
+
+  // 광고 시청 완료 시 포인트 추가
+  useEffect(() => {
+    if (hasEarnedReward && !hasAddedPoints) {
+      addPoints(AD_REWARD_POINTS);
+      setHasAddedPoints(true);
+    }
+  }, [hasEarnedReward, hasAddedPoints, addPoints]);
 
   // 광고 닫힘 처리
   useEffect(() => {

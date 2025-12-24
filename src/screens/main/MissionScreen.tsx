@@ -41,7 +41,13 @@ import { Article } from '../../data/mock/missionData';
 // 상수
 const SCROLL_INITIAL_DELAY = 100;
 const SCROLL_EVENT_THROTTLE = 16;
-export const ARTICLE_POINT_COST = 30; // 기사 읽기 포인트
+
+export {
+  QUIZ_CORRECT_EXPERIENCE,
+  QUIZ_CORRECT_POINT,
+  QUIZ_INCORRECT_EXPERIENCE,
+  QUIZ_INCORRECT_POINT,
+} from '../../config/rewards';
 
 const MissionScreen = () => {
   const screenWidth = Dimensions.get('window').width;

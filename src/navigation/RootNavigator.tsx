@@ -57,6 +57,7 @@ const RootNavigator: React.FC = () => {
         closeButton={modalState.closeButton}
         titleDescriptionGapSize={modalState.titleDescriptionGapSize}
         descriptionColor={modalState.descriptionColor}
+        titleStyle={modalState.titleStyle}
         primaryButton={
           modalState.primaryButton
             ? {

@@ -41,7 +41,7 @@ export const useOnboardingStore = create<OnboardingStore>(set => ({
   completeOnboarding: async () => {
     try {
       await completeOnboardingService();
-    console.log('온보딩 완료! 메인 화면으로 전환합니다.');
+      console.log('온보딩 완료! 메인 화면으로 전환합니다.');
       set({ isOnboardingCompleted: true, currentStep: 'completed' });
     } catch (error) {
       console.error('온보딩 완료 상태 저장 실패:', error);

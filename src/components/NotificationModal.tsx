@@ -47,6 +47,7 @@ export interface NotificationModalProps {
   titleDescriptionGapSize?: number;
   descriptionColor?: string;
   onClose?: () => void;
+  titleStyle?: StyleProp<TextStyle>;
 }
 
 const NotificationModal: React.FC<NotificationModalProps> = ({
@@ -62,6 +63,7 @@ const NotificationModal: React.FC<NotificationModalProps> = ({
   onClose,
   titleDescriptionGapSize = 12,
   descriptionColor,
+  titleStyle,
 }) => {
   const handleClose = () => {
     onClose?.();
@@ -127,7 +129,7 @@ const NotificationModal: React.FC<NotificationModalProps> = ({
                 {renderImage()}
 
                 {/* 제목 */}
-                <Text style={styles.title}>{title}</Text>
+                <Text style={titleStyle ?? styles.title}>{title}</Text>
 
                 <Spacer num={titleDescriptionGapSize} />
 

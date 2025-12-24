@@ -1,9 +1,9 @@
 /**
  * 포인트 관련 서비스
- * 서버 API 연동 시 이 파일을 수정하여 실제 포인트 로직 구현
  */
 
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import client from '../api/client';
 
 const POINT_KEY = '@user_points';
 
@@ -13,22 +13,27 @@ const POINT_KEY = '@user_points';
  */
 export const getPoints = async (): Promise<number> => {
   try {
-    // TODO: 서버 API로 포인트 조회
-    // 예시:
-    // const response = await api.get('/user/points');
-    // return response.data.points;
-
-    // 현재는 로컬 스토리지에서 조회
-    const stored = await AsyncStorage.getItem(POINT_KEY);
-    if (stored) {
-      return parseInt(stored, 10) || 0;
-    }
-    // 초기값 설정 (테스트용 90포인트)
-    await AsyncStorage.setItem(POINT_KEY, '90');
-    return 90;
+    // 서버 API 호출
+    const response = await client.get<{ points: number }>('/user/points');
+    const serverPoints = response.data.points;
+    // 로컬에도 저장 (오프라인 대비)
+    await AsyncStorage.setItem(POINT_KEY, serverPoints.toString());
+    return serverPoints;
   } catch (error) {
     console.error('포인트 조회 실패:', error);
-    return 0;
+    // 개발 모드 또는 오프라인 시 로컬 스토리지에서 조회
+    if (__DEV__) {
+      const stored = await AsyncStorage.getItem(POINT_KEY);
+      if (stored) {
+        return parseInt(stored, 10) || 0;
+      }
+      // 초기값 설정 (테스트용 90포인트)
+      await AsyncStorage.setItem(POINT_KEY, '90');
+      return 90;
+    }
+    // 프로덕션에서는 로컬 값 반환
+    const stored = await AsyncStorage.getItem(POINT_KEY);
+    return stored ? parseInt(stored, 10) : 0;
   }
 };
 
@@ -38,14 +43,17 @@ export const getPoints = async (): Promise<number> => {
  */
 export const savePoints = async (points: number): Promise<void> => {
   try {
-    // TODO: 서버 API로 포인트 저장
-    // 예시:
-    // await api.put('/user/points', { points });
-
-    // 현재는 로컬 스토리지에 저장
+    // 서버 API 호출
+    await client.put('/user/points', { points });
+    // 로컬에도 저장 (오프라인 대비)
     await AsyncStorage.setItem(POINT_KEY, points.toString());
   } catch (error) {
     console.error('포인트 저장 실패:', error);
+    // 개발 모드에서는 로컬에만 저장
+    if (__DEV__) {
+      await AsyncStorage.setItem(POINT_KEY, points.toString());
+      return;
+    }
     throw error;
   }
 };
@@ -56,18 +64,24 @@ export const savePoints = async (points: number): Promise<void> => {
  */
 export const addPoints = async (amount: number): Promise<number> => {
   try {
-    // TODO: 서버 API로 포인트 추가
-    // 예시:
-    // const response = await api.post('/user/points/add', { amount });
-    // return response.data.newPoints;
-
-    // 현재는 로컬에서 처리
-    const currentPoints = await getPoints();
-    const newPoints = currentPoints + amount;
-    await savePoints(newPoints);
+    // 서버 API 호출
+    const response = await client.post<{ newPoints: number }>(
+      '/user/points/add',
+      { amount },
+    );
+    const newPoints = response.data.newPoints;
+    // 로컬에도 저장 (오프라인 대비)
+    await AsyncStorage.setItem(POINT_KEY, newPoints.toString());
     return newPoints;
   } catch (error) {
     console.error('포인트 추가 실패:', error);
+    // 개발 모드에서는 로컬에서 처리
+    if (__DEV__) {
+      const currentPoints = await getPoints();
+      const newPoints = currentPoints + amount;
+      await AsyncStorage.setItem(POINT_KEY, newPoints.toString());
+      return newPoints;
+    }
     throw error;
   }
 };
@@ -81,29 +95,32 @@ export const subtractPoints = async (
   amount: number,
 ): Promise<{ success: boolean; newPoints: number }> => {
   try {
-    // TODO: 서버 API로 포인트 차감
-    // 예시:
-    // try {
-    //   const response = await api.post('/user/points/subtract', { amount });
-    //   return { success: true, newPoints: response.data.newPoints };
-    // } catch (error) {
-    //   if (error.response?.status === 400) {
-    //     // 포인트 부족
-    //     return { success: false, newPoints: await getPoints() };
-    //   }
-    //   throw error;
-    // }
-
-    // 현재는 로컬에서 처리
-    const currentPoints = await getPoints();
-    if (currentPoints < amount) {
+    // 서버 API 호출
+    const response = await client.post<{ newPoints: number }>(
+      '/user/points/subtract',
+      { amount },
+    );
+    const newPoints = response.data.newPoints;
+    // 로컬에도 저장 (오프라인 대비)
+    await AsyncStorage.setItem(POINT_KEY, newPoints.toString());
+    return { success: true, newPoints };
+  } catch (error: any) {
+    console.error('포인트 차감 실패:', error);
+    // 400 에러는 포인트 부족
+    if (error.response?.status === 400) {
+      const currentPoints = await getPoints();
       return { success: false, newPoints: currentPoints };
     }
-    const newPoints = currentPoints - amount;
-    await savePoints(newPoints);
-    return { success: true, newPoints };
-  } catch (error) {
-    console.error('포인트 차감 실패:', error);
+    // 개발 모드에서는 로컬에서 처리
+    if (__DEV__) {
+      const currentPoints = await getPoints();
+      if (currentPoints < amount) {
+        return { success: false, newPoints: currentPoints };
+      }
+      const newPoints = currentPoints - amount;
+      await AsyncStorage.setItem(POINT_KEY, newPoints.toString());
+      return { success: true, newPoints };
+    }
     return { success: false, newPoints: await getPoints() };
   }
 };

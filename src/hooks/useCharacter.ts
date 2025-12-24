@@ -2,10 +2,11 @@
  * 캐릭터 관련 React Query hooks
  */
 
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
   fetchCharacterData,
   fetchAttendanceData,
+  addExperience,
   CharacterData,
   AttendanceData,
 } from '../api/characterApi';
@@ -38,5 +39,20 @@ export const useAttendanceData = () => {
     queryFn: fetchAttendanceData,
     staleTime: 1000 * 60 * 5, // 5분간 fresh 상태 유지
     gcTime: 1000 * 60 * 10, // 10분간 캐시 유지
+  });
+};
+
+/**
+ * 경험치 추가 Mutation
+ */
+export const useAddExperience = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation<CharacterData, Error, number>({
+    mutationFn: addExperience,
+    onSuccess: () => {
+      // 캐릭터 데이터 캐시 무효화하여 최신 데이터 가져오기
+      queryClient.invalidateQueries({ queryKey: characterKeys.data() });
+    },
   });
 };
