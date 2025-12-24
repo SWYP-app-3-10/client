@@ -30,6 +30,8 @@ export type FullScreenStackParamList = {
     articleId: number;
     returnTo?: 'mission' | 'search';
   };
+  [RouteNames.CHARACTER_CRITERIA]: undefined;
+  [RouteNames.CHARACTER_POINT_HISTORY]: undefined;
   // 추후 탭바 없는 다른 화면들 추가 가능
   // 예: [RouteNames.SETTINGS]: undefined;
 };
@@ -75,7 +77,6 @@ export type SearchStackParamList = {
 // MyPage Stack Param List
 export type MyPageStackParamList = {
   [RouteNames.MY_PAGE]: undefined;
-  [RouteNames.COMPONENT_SHOWCASE]: undefined;
   // 서브 화면들 추가 예정
   // 예시: 'settings': undefined;
 };

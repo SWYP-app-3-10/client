@@ -13,43 +13,53 @@ import Spacer from './Spacer';
 import { Mission } from '../data/mock/missionData';
 import { LockIcon } from '../icons/commonIcons/simpleImages';
 
-const MissionCard = React.memo(({ mission }: { mission: Mission }) => {
-  const progressPercentage =
-    mission.status === '완료' ? 100 : (mission.current / mission.total) * 100;
-  const isNotStarted = mission.status === null;
-  const isCompleted = mission.status === '완료';
+const MissionCard = React.memo(
+  ({ mission, myPage = false }: { mission: Mission; myPage?: boolean }) => {
+    const progressPercentage =
+      mission.status === '완료' ? 100 : (mission.current / mission.total) * 100;
+    const isNotStarted = mission.status === null;
+    const isCompleted = mission.status === '완료';
 
-  // 상태별 그라데이션 색상
-  const gradientColors = isCompleted
-    ? ['#845DFF', '#764CF8', '#6F44F5']
-    : ['#845DFF', '#6F44F5'];
-  return (
-    <View
-      style={[
-        styles.missionCard,
-        {
-          opacity: isNotStarted ? 0.3 : 1,
-        },
-      ]}
-    >
-      <LinearGradient
-        colors={gradientColors}
-        start={{ x: 0, y: 0 }}
-        end={{ x: 1, y: 0 }}
-        style={styles.missionCardGradient}
-      >
+    // 상태별 그라데이션 색상
+    const gradientColors = isCompleted
+      ? ['#845DFF', '#764CF8', '#6F44F5']
+      : ['#845DFF', '#6F44F5'];
+
+    // 공통 콘텐츠
+    const cardContent = (
+      <>
         <View style={styles.progressInfo}>
           <Text
             style={[
               styles.missionCardTitle,
               isCompleted && styles.missionCardTitleCompleted,
+              myPage && styles.missionCardTitleMyPage,
             ]}
           >
             {mission.title}
           </Text>
           {mission.status && (
-            <View style={styles.progressStatusContainer}>
-              <Text style={styles.progressStatus}>{mission.status}</Text>
+            <View
+              style={[
+                styles.progressStatusContainer,
+                myPage &&
+                  (isCompleted
+                    ? styles.progressStatusContainerMyPageCompleted
+                    : styles.progressStatusContainerMyPageInProgress),
+              ]}
+            >
+              <Text
+                style={[
+                  styles.progressStatus,
+                  myPage && [
+                    isCompleted
+                      ? { color: COLORS.gray800 }
+                      : { color: COLORS.puple.main },
+                  ],
+                ]}
+              >
+                {mission.status}
+              </Text>
             </View>
           )}
         </View>
@@ -61,13 +71,16 @@ const MissionCard = React.memo(({ mission }: { mission: Mission }) => {
               style={[
                 styles.progressBarContainer,
                 isCompleted && styles.progressBarContainerCompleted,
+                myPage && styles.progressBarContainerMyPageCompleted,
               ]}
             >
               {/* 진행 바 */}
               {!isNotStarted && (
                 <LinearGradient
                   colors={
-                    isCompleted
+                    myPage && isCompleted
+                      ? ['#FFE682', '#FCB000'] // 마이페이지 완료: 노란색
+                      : isCompleted
                       ? ['#9B7BFF', '#9B7BFF'] // 완료: #9B7BFF
                       : ['#FFE682', '#FCB000'] // 진행 중: 노란색
                   }
@@ -87,35 +100,97 @@ const MissionCard = React.memo(({ mission }: { mission: Mission }) => {
               style={[
                 styles.progressText,
                 isCompleted && styles.progressTextCompleted,
+                myPage && styles.progressTextMyPage,
               ]}
             >
               {mission.current}/{mission.total}
             </Text>
           </View>
         </View>
-        {/* 시작 전 상태: 자물쇠 아이콘 중앙에 표시 */}
-        {isNotStarted && (
-          <View style={styles.lockIconOverlay}>
-            <LockIcon />
-          </View>
+      </>
+    );
+
+    return (
+      <View style={styles.missionCard}>
+        {myPage ? (
+          <>
+            <View
+              style={[
+                styles.missionCardWhite,
+                {
+                  opacity: isNotStarted ? 0.3 : 1,
+                },
+              ]}
+            >
+              {cardContent}
+            </View>
+            {/* 보더는 opacity 적용 안 됨 */}
+            <View style={styles.missionCardWhiteBorder} />
+            {/* 자물쇠 아이콘은 opacity 적용 안 됨 */}
+            {isNotStarted && (
+              <View style={styles.lockIconOverlay}>
+                <LockIcon />
+              </View>
+            )}
+          </>
+        ) : (
+          <>
+            <View
+              style={{
+                opacity: isNotStarted ? 0.3 : 1,
+              }}
+            >
+              <LinearGradient
+                colors={gradientColors}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 0 }}
+                style={styles.missionCardGradient}
+              >
+                {cardContent}
+              </LinearGradient>
+            </View>
+            {/* 자물쇠 아이콘은 opacity 적용 안 됨 */}
+            {isNotStarted && (
+              <View style={styles.lockIconOverlay}>
+                <LockIcon />
+              </View>
+            )}
+          </>
         )}
-      </LinearGradient>
-    </View>
-  );
-});
+      </View>
+    );
+  },
+);
 
 MissionCard.displayName = 'MissionCard';
 
 const styles = StyleSheet.create({
   missionCard: {
     borderRadius: BORDER_RADIUS[20],
-    overflow: 'hidden',
+
     position: 'relative',
   },
   missionCardGradient: {
     borderRadius: BORDER_RADIUS[20],
     paddingHorizontal: scaleWidth(20),
     paddingVertical: scaleWidth(24),
+  },
+  missionCardWhite: {
+    borderRadius: BORDER_RADIUS[16],
+    paddingHorizontal: scaleWidth(20),
+    paddingVertical: scaleWidth(24),
+    backgroundColor: COLORS.white,
+  },
+  missionCardWhiteBorder: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    borderRadius: BORDER_RADIUS[16],
+    borderWidth: 1,
+    borderColor: COLORS.gray300,
+    pointerEvents: 'none',
   },
   missionCardTitle: {
     ...Heading_18B,
@@ -172,8 +247,26 @@ const styles = StyleSheet.create({
   progressTextCompleted: {
     color: '#BFABFF', // 완료 상태 진행률 텍스트 색상
   },
+  missionCardTitleMyPage: {
+    color: COLORS.black,
+  },
+  progressTextMyPage: {
+    color: COLORS.black,
+  },
+  progressStatusContainerMyPageInProgress: {
+    backgroundColor: COLORS.puple[3],
+  },
+  progressStatusContainerMyPageCompleted: {
+    backgroundColor: COLORS.gray200,
+  },
+  progressStatusMyPage: {
+    color: COLORS.puple.main,
+  },
   progressBarContainerCompleted: {
-    backgroundColor: '#CACED9', // 완료 상태 프로그래스바 배경색 (gray400)
+    backgroundColor: COLORS.gray400,
+  },
+  progressBarContainerMyPageCompleted: {
+    backgroundColor: COLORS.gray200,
   },
   lockIconOverlay: {
     position: 'absolute',
