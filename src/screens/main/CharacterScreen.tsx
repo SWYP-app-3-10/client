@@ -1,4 +1,4 @@
-import React, { useCallback } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 import {
   Text,
   View,
@@ -27,7 +27,6 @@ import {
   CharacterStackParamList,
   MainTabNavigationProp,
 } from '../../navigation/types';
-import { mockMissions } from '../../data/mock/missionData';
 import { levelList } from '../../screens/character/criteria/level/levelData';
 import Spacer from '../../components/Spacer';
 import LottieView from 'lottie-react-native';
@@ -40,33 +39,60 @@ import {
 } from '../../icons';
 import { useFocusEffect } from '@react-navigation/native';
 import { Body_15M } from '../../styles/typography';
-
-// 더미 데이터
-const currentLevel = 1;
-const currentExp = 50;
-const nextLevelExp = 100;
-const currentPoints = 150;
-const progressPercentage = (currentExp / nextLevelExp) * 100;
-
-// 주간 출석 기록 (월~일)
-const attendanceData = [
-  { day: '월', attended: true },
-  { day: '화', attended: true },
-  { day: '수', attended: false },
-  { day: '목', attended: false },
-  { day: '금', attended: false },
-  { day: '토', attended: false },
-  { day: '일', attended: false },
-];
+import { useCharacterData, useAttendanceData } from '../../hooks/useCharacter';
+import { useMissions } from '../../hooks/useMissions';
+import { usePointStore } from '../../store/pointStore';
+import { ActivityIndicator } from 'react-native';
 
 const CharacterScreen = () => {
   const rootNavigation =
     useNavigation<MainTabNavigationProp<CharacterStackParamList>>();
-  const [isScrolled, setIsScrolled] = React.useState(false);
-  const [showTooltip, setShowTooltip] = React.useState(true);
+  const [isScrolled, setIsScrolled] = useState(false);
+  const [showTooltip, setShowTooltip] = useState(true);
   const lottieHeight = scaleWidth(882);
 
-  const currentLevelData = levelList.find(l => l.id === currentLevel);
+  // React Query hooks
+  const {
+    data: characterData,
+    isLoading: characterLoading,
+    error: characterError,
+  } = useCharacterData();
+
+  const {
+    data: attendanceData = [],
+    isLoading: attendanceLoading,
+    error: attendanceError,
+  } = useAttendanceData();
+
+  const {
+    data: missions = [],
+    isLoading: missionsLoading,
+    error: missionsError,
+  } = useMissions();
+
+  // 포인트는 전역 스토어에서 가져오기
+  const { points: currentPoints } = usePointStore();
+
+  // 기본값 설정
+  const currentLevel = characterData?.currentLevel ?? 1;
+  const currentExp = characterData?.currentExp ?? 0;
+  const nextLevelExp = characterData?.nextLevelExp ?? 100;
+
+  // 메모이제이션: 레벨 데이터
+  const currentLevelData = useMemo(
+    () => levelList.find(l => l.id === currentLevel),
+    [currentLevel],
+  );
+
+  // 메모이제이션: 진행률 계산
+  const progressPercentageValue = useMemo(
+    () => Math.round((currentExp / nextLevelExp) * 100),
+    [currentExp, nextLevelExp],
+  );
+
+  // 로딩 상태
+  const isLoading = characterLoading || attendanceLoading || missionsLoading;
+  const hasError = characterError || attendanceError || missionsError;
 
   useFocusEffect(
     useCallback(() => {
@@ -85,10 +111,55 @@ const CharacterScreen = () => {
     }, []),
   );
 
-  const handleScroll = (event: any) => {
-    const scrollY = event.nativeEvent.contentOffset.y;
-    setIsScrolled(scrollY > lottieHeight - 100); // 로티 영역을 거의 지나면 true
-  };
+  // 스크롤 핸들러 메모이제이션
+  const handleScroll = useCallback(
+    (event: any) => {
+      const scrollY = event.nativeEvent.contentOffset.y;
+      setIsScrolled(scrollY > lottieHeight - 100); // 로티 영역을 거의 지나면 true
+    },
+    [lottieHeight],
+  );
+
+  // 네비게이션 핸들러들 메모이제이션
+  const handleNavigateToNotification = useCallback(() => {
+    rootNavigation.navigate(RouteNames.FULL_SCREEN_STACK, {
+      screen: RouteNames.CHARACTER_NOTIFICATION,
+    });
+  }, [rootNavigation]);
+
+  const handleNavigateToCriteria = useCallback(() => {
+    rootNavigation.navigate(RouteNames.FULL_SCREEN_STACK, {
+      screen: RouteNames.CHARACTER_CRITERIA,
+    });
+  }, [rootNavigation]);
+
+  const handleNavigateToPointHistory = useCallback(() => {
+    rootNavigation.navigate(RouteNames.FULL_SCREEN_STACK, {
+      screen: RouteNames.CHARACTER_POINT_HISTORY,
+    });
+  }, [rootNavigation]);
+
+  // 로딩 상태
+  if (isLoading) {
+    return (
+      <SafeAreaView style={styles.container}>
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color={COLORS.puple.main} />
+        </View>
+      </SafeAreaView>
+    );
+  }
+
+  // 에러 상태
+  if (hasError) {
+    return (
+      <SafeAreaView style={styles.container}>
+        <View style={styles.errorContainer}>
+          <Text>데이터를 불러오는 중 오류가 발생했습니다.</Text>
+        </View>
+      </SafeAreaView>
+    );
+  }
 
   return (
     <>
@@ -107,7 +178,6 @@ const CharacterScreen = () => {
         <ScrollView
           bounces={false}
           style={styles.scrollView}
-          contentContainerStyle={{}}
           showsVerticalScrollIndicator={false}
           onScroll={handleScroll}
           scrollEventThrottle={16}
@@ -128,11 +198,7 @@ const CharacterScreen = () => {
               title=""
               variant="primary"
               style={styles.notificationButton}
-              onPress={() => {
-                rootNavigation.navigate(RouteNames.FULL_SCREEN_STACK, {
-                  screen: RouteNames.CHARACTER_NOTIFICATION,
-                });
-              }}
+              onPress={handleNavigateToNotification}
             />
           </View>
           {/* 레벨 버튼 */}
@@ -157,13 +223,7 @@ const CharacterScreen = () => {
           <View style={styles.levelCard}>
             <View style={styles.levelCardHeader}>
               <Text style={styles.levelCardTitle}>Lv. {currentLevel}</Text>
-              <TouchableOpacity
-                onPress={() =>
-                  rootNavigation.navigate(RouteNames.FULL_SCREEN_STACK, {
-                    screen: RouteNames.CHARACTER_CRITERIA,
-                  })
-                }
-              >
+              <TouchableOpacity onPress={handleNavigateToCriteria}>
                 <View style={styles.levelCriteriaLinkWrapper}>
                   <Text style={styles.levelCriteriaLink}>
                     레벨 기준 확인하기
@@ -179,7 +239,7 @@ const CharacterScreen = () => {
                   style={[
                     styles.progressBarIconWrapper,
                     {
-                      width: `${Math.round(progressPercentage)}%`,
+                      width: `${progressPercentageValue}%`,
                     },
                   ]}
                 >
@@ -193,7 +253,7 @@ const CharacterScreen = () => {
                   경험치 {currentExp}/{nextLevelExp}
                 </Text>
                 <Text style={styles.progressPercentage}>
-                  {Math.round(progressPercentage)}%
+                  {progressPercentageValue}%
                 </Text>
               </View>
             </View>
@@ -203,11 +263,7 @@ const CharacterScreen = () => {
             {/* 포인트/경험치 정보 */}
             <TouchableOpacity
               style={styles.statsRowContainer}
-              onPress={() =>
-                rootNavigation.navigate(RouteNames.FULL_SCREEN_STACK, {
-                  screen: RouteNames.CHARACTER_POINT_HISTORY,
-                })
-              }
+              onPress={handleNavigateToPointHistory}
             >
               <View style={styles.statsRowContainerWrapper}>
                 <View style={styles.statsRow}>
@@ -253,7 +309,7 @@ const CharacterScreen = () => {
               진행 중인 미션을 완료하면 새로운 미션이 열려요!
             </Text>
             <Spacer num={16} />
-            {mockMissions.map(mission => (
+            {missions.map(mission => (
               <View key={mission.id} style={styles.missionCardWrapper}>
                 <MissionCard mission={mission} myPage={true} />
               </View>
@@ -288,10 +344,6 @@ const styles = StyleSheet.create({
     width: '100%',
     height: '100%',
   },
-  lottiePlaceholder: {
-    ...Heading_20EB_Round,
-    color: COLORS.gray600,
-  },
   levelButtonContainer: {
     position: 'absolute',
     top: scaleWidth(60),
@@ -318,11 +370,6 @@ const styles = StyleSheet.create({
   levelButtonText: {
     ...Heading_20EB_Round,
     color: COLORS.black,
-  },
-  infoIcon: {
-    position: 'absolute',
-    top: scaleWidth(11),
-    right: scaleWidth(22),
   },
 
   levelCard: {
@@ -427,11 +474,6 @@ const styles = StyleSheet.create({
     ...Body_16M,
     color: COLORS.black,
   },
-  arrow: {
-    ...Body_16M,
-    color: COLORS.gray600,
-    fontSize: scaleWidth(20),
-  },
   attendanceSection: {
     paddingHorizontal: scaleWidth(20),
     position: 'absolute',
@@ -492,5 +534,16 @@ const styles = StyleSheet.create({
     width: scaleWidth(50),
     height: scaleWidth(50),
     borderRadius: BORDER_RADIUS[16],
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  errorContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: scaleWidth(20),
   },
 });

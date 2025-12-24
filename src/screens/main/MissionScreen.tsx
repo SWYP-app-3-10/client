@@ -104,16 +104,11 @@ const MissionScreen = () => {
     error: articlesError,
   } = useArticles();
 
-  // 순환 캐러셀을 위한 데이터: [마지막, ...원본, 첫번째]
   const circularMissions = useMemo(() => {
     if (missions.length === 0) {
       return [];
     }
-    return [
-      missions[missions.length - 1], // 마지막 복제
-      ...missions,
-      missions[0], // 첫 번째 복제
-    ];
+    return [missions[missions.length - 1], ...missions, missions[0]];
   }, [missions]);
 
   // 초기 위치를 첫 번째 실제 아이템으로 설정
