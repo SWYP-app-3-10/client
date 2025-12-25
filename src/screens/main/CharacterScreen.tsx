@@ -24,8 +24,7 @@ import {
   Caption_12M,
   Heading_18EB_Round,
 } from '../../styles/global';
-import { MissionCard } from '../../components';
-import Button from '../../components/Button';
+import { Button, MissionCard } from '../../components';
 import {
   CharacterStackParamList,
   MainTabNavigationProp,
