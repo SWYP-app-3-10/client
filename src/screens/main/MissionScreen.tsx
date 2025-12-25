@@ -1,49 +1,79 @@
-import React, { useState, useRef, useEffect, useMemo } from 'react';
+import React, {
+  useState,
+  useRef,
+  useEffect,
+  useMemo,
+  useCallback,
+} from 'react';
 import {
   View,
   Text,
-  StyleSheet,
   ScrollView,
   Dimensions,
   ActivityIndicator,
   Alert,
+  StyleSheet,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import {
   COLORS,
   scaleWidth,
-  BORDER_RADIUS,
   Heading_20EB_Round,
-  Heading_18SB,
-  Body_16M,
   Body_16R,
-  Caption_14R,
-  Caption_12M,
+  BORDER_RADIUS,
 } from '../../styles/global';
 import Spacer from '../../components/Spacer';
 import { useMissions } from '../../hooks/useMissions';
 import { useArticles } from '../../hooks/useArticles';
-import { Article } from '../../data/mockData';
 import { clearAllAuthData } from '../../services/authService';
 import { useOnboardingStore } from '../../store/onboardingStore';
-import { Button } from '../../components';
+import { Button, MissionCard, ArticleCard } from '../../components';
 import { useNavigation } from '@react-navigation/native';
+import { useArticleNavigation } from '../../hooks/useArticleNavigation';
 import {
   MainTabNavigationProp,
   MissionStackParamList,
 } from '../../navigation/types';
 import { RouteNames } from '../../../routes';
+import { Article } from '../../data/mock/missionData';
+import { useShowModal } from '../../store/modalStore';
+import { usePointStore } from '../../store/pointStore';
+import { ExperienceModalContent } from '../../components/ArticlePointModalContent';
+
+import {
+  DAILY_ATTENDANCE_EXPERIENCE,
+  DAILY_ATTENDANCE_POINT,
+} from '../../config/rewards';
+import { useExperienceStore } from '../../store/experienceStore';
+
+// 상수
+const SCROLL_INITIAL_DELAY = 100;
+const SCROLL_EVENT_THROTTLE = 16;
+const DAILY_MISSION_ENTRY_KEY = '@daily_mission_entry'; // 날짜 기반으로 매일 체크
+
+export {
+  QUIZ_CORRECT_EXPERIENCE,
+  QUIZ_CORRECT_POINT,
+  QUIZ_INCORRECT_EXPERIENCE,
+  QUIZ_INCORRECT_POINT,
+} from '../../config/rewards';
 
 const MissionScreen = () => {
   const screenWidth = Dimensions.get('window').width;
   const scrollViewRef = useRef<ScrollView>(null);
   const [currentIndex, setCurrentIndex] = useState(0);
   const resetOnboarding = useOnboardingStore(state => state.resetOnboarding);
-  // 통합 네비게이션 타입 사용
   const navigation =
     useNavigation<MainTabNavigationProp<MissionStackParamList>>();
+  const { handleArticlePress } = useArticleNavigation({ returnTo: 'mission' });
+  const showModal = useShowModal();
+  const { addPoints } = usePointStore();
+  const { addExperience } = useExperienceStore();
+  const hasCheckedDailyEntryRef = useRef(false);
+
   // 개발용: 로그인 정보 초기화
-  const handleClearLogin = async () => {
+  const handleClearLogin = useCallback(async () => {
     Alert.alert(
       '로그인 초기화',
       '모든 로그인 및 온보딩 정보를 삭제하시겠습니까?',
@@ -65,7 +95,21 @@ const MissionScreen = () => {
         },
       ],
     );
-  };
+  }, [resetOnboarding]);
+
+  const handleNavigateToNotification = useCallback(() => {
+    navigation.navigate(RouteNames.FULL_SCREEN_STACK, {
+      screen: RouteNames.CHARACTER_NOTIFICATION,
+    });
+  }, [navigation]);
+
+  // 기사 클릭 처리 (커스텀 훅 사용)
+  const handleArticlePressWrapper = useCallback(
+    (article: Article) => {
+      handleArticlePress(article.id);
+    },
+    [handleArticlePress],
+  );
 
   // React Query hooks
   const {
@@ -80,72 +124,127 @@ const MissionScreen = () => {
     error: articlesError,
   } = useArticles();
 
-  // 순환 캐러셀을 위한 데이터: [마지막, ...원본, 첫번째]
   const circularMissions = useMemo(() => {
     if (missions.length === 0) {
       return [];
     }
-    return [
-      missions[missions.length - 1], // 마지막 복제
-      ...missions,
-      missions[0], // 첫 번째 복제
-    ];
+    return [missions[missions.length - 1], ...missions, missions[0]];
   }, [missions]);
 
+  // 매일 첫 진입 시 포인트 획득 모달 표시
+  useEffect(() => {
+    // 중복 실행 방지
+    if (hasCheckedDailyEntryRef.current) {
+      return;
+    }
+
+    const checkDailyEntry = async () => {
+      try {
+        // 오늘 날짜 (YYYY-MM-DD 형식)
+        const today = new Date().toISOString().split('T')[0];
+        const lastEntryDate = await AsyncStorage.getItem(
+          DAILY_MISSION_ENTRY_KEY,
+        );
+
+        // 오늘 아직 모달을 보지 않았다면
+        if (lastEntryDate !== today) {
+          // 먼저 날짜 저장하여 중복 방지
+          await AsyncStorage.setItem(DAILY_MISSION_ENTRY_KEY, today);
+          hasCheckedDailyEntryRef.current = true;
+
+          // 포인트와 경험치 추가
+          await Promise.all([
+            addPoints(DAILY_ATTENDANCE_POINT),
+            addExperience(DAILY_ATTENDANCE_EXPERIENCE),
+          ]);
+
+          // 모달 표시
+          showModal({
+            title: '포인트 & 경험치 획득!',
+            children: React.createElement(ExperienceModalContent, {
+              point: true,
+              daily: true,
+            }),
+            primaryButton: {
+              title: '확인',
+              onPress: () => {
+                // 모달 닫기는 자동으로 처리됨
+              },
+            },
+          });
+        } else {
+          // 이미 오늘 체크했으면 ref만 설정
+          hasCheckedDailyEntryRef.current = true;
+        }
+      } catch (error) {
+        console.error('일일 진입 체크 실패:', error);
+        hasCheckedDailyEntryRef.current = false; // 에러 시 다시 시도 가능하도록
+      }
+    };
+
+    checkDailyEntry();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // 의존성 배열 비워서 한 번만 실행
+  // AsyncStorage.clear();
   // 초기 위치를 첫 번째 실제 아이템으로 설정
   useEffect(() => {
-    setTimeout(() => {
+    const timer = setTimeout(() => {
       scrollViewRef.current?.scrollTo({
         x: screenWidth,
         animated: false,
       });
-    }, 100);
+    }, SCROLL_INITIAL_DELAY);
+
+    return () => clearTimeout(timer);
   }, [screenWidth]);
 
-  const handleScroll = (event: any) => {
-    const scrollPosition = event.nativeEvent.contentOffset.x;
-    const index = Math.round(scrollPosition / screenWidth);
+  const handleScroll = useCallback(
+    (event: any) => {
+      const scrollPosition = event.nativeEvent.contentOffset.x;
+      const index = Math.round(scrollPosition / screenWidth);
 
-    // 복제본을 제외한 실제 인덱스 계산
-    if (index === 0) {
-      // 첫 번째 복제본 (마지막 실제 아이템)
-      setCurrentIndex(missions.length - 1);
-    } else if (index === circularMissions.length - 1) {
-      // 마지막 복제본 (첫 번째 실제 아이템)
-      setCurrentIndex(0);
-    } else {
-      // 실제 아이템 (인덱스 - 1)
-      setCurrentIndex(index - 1);
-    }
-  };
+      // 복제본을 제외한 실제 인덱스 계산
+      if (index === 0) {
+        setCurrentIndex(missions.length - 1);
+      } else if (index === circularMissions.length - 1) {
+        setCurrentIndex(0);
+      } else {
+        setCurrentIndex(index - 1);
+      }
+    },
+    [screenWidth, missions.length, circularMissions.length],
+  );
 
-  const handleMomentumScrollEnd = (event: any) => {
-    const scrollPosition = event.nativeEvent.contentOffset.x;
-    const index = Math.round(scrollPosition / screenWidth);
+  const handleMomentumScrollEnd = useCallback(
+    (event: any) => {
+      const scrollPosition = event.nativeEvent.contentOffset.x;
+      const index = Math.round(scrollPosition / screenWidth);
 
-    // 첫 번째 복제본에 도달하면 마지막 실제 아이템으로 점프
-    if (index === 0 && missions.length > 0) {
-      scrollViewRef.current?.scrollTo({
-        x: screenWidth * missions.length,
-        animated: false,
-      });
-      setCurrentIndex(missions.length - 1);
-    }
-    // 마지막 복제본에 도달하면 첫 번째 실제 아이템으로 점프
-    else if (index === circularMissions.length - 1 && missions.length > 0) {
-      scrollViewRef.current?.scrollTo({
-        x: screenWidth,
-        animated: false,
-      });
-      setCurrentIndex(0);
-    }
-  };
+      // 첫 번째 복제본에 도달하면 마지막 실제 아이템으로 점프
+      if (index === 0 && missions.length > 0) {
+        scrollViewRef.current?.scrollTo({
+          x: screenWidth * missions.length,
+          animated: false,
+        });
+        setCurrentIndex(missions.length - 1);
+      }
+      // 마지막 복제본에 도달하면 첫 번째 실제 아이템으로 점프
+      else if (index === circularMissions.length - 1 && missions.length > 0) {
+        scrollViewRef.current?.scrollTo({
+          x: screenWidth,
+          animated: false,
+        });
+        setCurrentIndex(0);
+      }
+    },
+    [screenWidth, missions.length, circularMissions.length],
+  );
 
   // 로딩 상태
   if (missionsLoading || articlesLoading) {
     return (
-      <SafeAreaView style={styles.container}>
-        <View style={styles.loadingContainer}>
+      <SafeAreaView style={missionScreenStyles.container}>
+        <View style={missionScreenStyles.loadingContainer}>
           <ActivityIndicator size="large" color={COLORS.puple.main} />
         </View>
       </SafeAreaView>
@@ -155,11 +254,9 @@ const MissionScreen = () => {
   // 에러 상태
   if (missionsError || articlesError) {
     return (
-      <SafeAreaView style={styles.container}>
-        <View style={styles.errorContainer}>
-          <Text style={styles.errorText}>
-            데이터를 불러오는 중 오류가 발생했습니다.
-          </Text>
+      <SafeAreaView style={missionScreenStyles.container}>
+        <View style={missionScreenStyles.errorContainer}>
+          <Text>데이터를 불러오는 중 오류가 발생했습니다.</Text>
         </View>
       </SafeAreaView>
     );
@@ -168,19 +265,17 @@ const MissionScreen = () => {
   // 데이터가 없을 때
   if (missions.length === 0) {
     return (
-      <SafeAreaView style={styles.container}>
-        <View style={styles.errorContainer}>
-          <Text style={styles.errorText}>미션이 없습니다.</Text>
-        </View>
+      <SafeAreaView style={missionScreenStyles.container}>
+        <View style={missionScreenStyles.errorContainer} />
       </SafeAreaView>
     );
   }
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={missionScreenStyles.container}>
       <ScrollView
-        style={styles.scrollView}
-        contentContainerStyle={styles.scrollContent}
+        style={missionScreenStyles.scrollView}
+        contentContainerStyle={missionScreenStyles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
         {/* 개발용: 로그인 초기화 버튼 */}
@@ -189,27 +284,22 @@ const MissionScreen = () => {
             title="로그인 초기화"
             onPress={handleClearLogin}
             variant="ghost"
-            style={styles.clearLoginButton}
+            style={missionScreenStyles.clearLoginButton}
           />
         )}
         {/* 헤더 */}
         <Button
           title="알림 페이지로"
           variant="primary"
-          style={{
-            width: scaleWidth(50),
-            height: scaleWidth(50),
-            alignSelf: 'flex-end',
-          }}
-          onPress={() => {
-            navigation.navigate(RouteNames.CHARACTER_NOTIFICATION);
-          }}
+          style={missionScreenStyles.notificationButton}
+          onPress={handleNavigateToNotification}
         />
-        <View style={styles.header}>
-          <View style={styles.headerLeft}>
-            <Text style={styles.headerTitle}>오늘의 미션</Text>
-            <Text style={styles.headerDescription}>
-              오늘의 미션을 통해 새로운 지식을 탐험하고 문해력을 키워보세요!
+        <View style={missionScreenStyles.header}>
+          <View style={missionScreenStyles.headerLeft}>
+            <Text style={missionScreenStyles.headerTitle}>오늘의 미션</Text>
+            <Text style={missionScreenStyles.headerDescription}>
+              오늘의 미션을 통해 새로운 지식을 탐험하고
+              {'\n'}문해력을 키워보세요!
             </Text>
           </View>
         </View>
@@ -217,7 +307,7 @@ const MissionScreen = () => {
         <Spacer num={24} />
 
         {/* 미션 진행 카드 캐러셀 */}
-        <View style={styles.missionCarouselWrapper}>
+        <View>
           <ScrollView
             ref={scrollViewRef}
             horizontal
@@ -225,42 +315,18 @@ const MissionScreen = () => {
             showsHorizontalScrollIndicator={false}
             onScroll={handleScroll}
             onMomentumScrollEnd={handleMomentumScrollEnd}
-            scrollEventThrottle={16}
+            scrollEventThrottle={SCROLL_EVENT_THROTTLE}
             decelerationRate="fast"
           >
             {circularMissions.map((mission, index) => (
               <View
                 key={`${mission.id}-${index}`}
-                style={[styles.missionCardContainer, { width: screenWidth }]}
+                style={[
+                  missionScreenStyles.missionCardContainer,
+                  { width: screenWidth },
+                ]}
               >
-                <View style={styles.missionCard}>
-                  <View style={styles.missionCardGradient}>
-                    <Text style={styles.missionCardTitle}>{mission.title}</Text>
-                    <Spacer num={16} />
-                    {/* 진행 바 */}
-                    <View style={styles.progressBarContainer}>
-                      <View
-                        style={[
-                          styles.progressBar,
-                          {
-                            width: `${
-                              (mission.current / mission.total) * 100
-                            }%`,
-                          },
-                        ]}
-                      />
-                    </View>
-                    <Spacer num={8} />
-                    <View style={styles.progressInfo}>
-                      <Text style={styles.progressStatus}>
-                        {mission.status}
-                      </Text>
-                      <Text style={styles.progressText}>
-                        {mission.current}/{mission.total}
-                      </Text>
-                    </View>
-                  </View>
-                </View>
+                <MissionCard mission={mission} />
               </View>
             ))}
           </ScrollView>
@@ -269,13 +335,14 @@ const MissionScreen = () => {
         <Spacer num={16} />
 
         {/* 캐러셀 인디케이터 */}
-        <View style={styles.carouselIndicators}>
+        <View style={missionScreenStyles.carouselIndicators}>
           {missions.map((_mission: unknown, index: number) => (
             <View
               key={index}
               style={[
-                styles.indicatorDot,
-                index === currentIndex && styles.indicatorDotActive,
+                missionScreenStyles.indicatorDot,
+                index === currentIndex &&
+                  missionScreenStyles.indicatorDotActive,
               ]}
             />
           ))}
@@ -284,27 +351,13 @@ const MissionScreen = () => {
         <Spacer num={24} />
 
         {/* 아티클 리스트 */}
-        <View style={styles.articleList}>
-          {articles.map((article: Article) => (
-            <View key={article.id} style={styles.articleCard}>
-              {/* 이미지 플레이스홀더 */}
-              <View style={styles.articleImageContainer}>
-                <View style={styles.articleImagePlaceholder} />
-                <View style={styles.articleTag}>
-                  <Text style={styles.articleTagText}>
-                    {article.category} | {article.readTime}
-                  </Text>
-                </View>
-              </View>
-              {/* 아티클 정보 */}
-              <View style={styles.articleInfo}>
-                <Text style={styles.articleTitle} numberOfLines={2}>
-                  {article.title}
-                </Text>
-                <Spacer num={8} />
-                <Text style={styles.articleDate}>{article.date}</Text>
-              </View>
-            </View>
+        <View style={missionScreenStyles.articleList}>
+          {articles.map(article => (
+            <ArticleCard
+              key={article.id}
+              article={article}
+              onPress={() => handleArticlePressWrapper(article)}
+            />
           ))}
         </View>
       </ScrollView>
@@ -312,7 +365,7 @@ const MissionScreen = () => {
   );
 };
 
-const styles = StyleSheet.create({
+export const missionScreenStyles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: COLORS.white,
@@ -321,7 +374,6 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   scrollContent: {
-    paddingHorizontal: scaleWidth(20),
     paddingTop: scaleWidth(20),
     paddingBottom: scaleWidth(100), // 하단 네비게이션 바 공간
   },
@@ -329,6 +381,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'flex-start',
+    paddingHorizontal: scaleWidth(20),
   },
   headerLeft: {
     flex: 1,
@@ -338,58 +391,23 @@ const styles = StyleSheet.create({
     paddingHorizontal: scaleWidth(8),
     paddingVertical: scaleWidth(4),
   },
+  notificationButton: {
+    width: scaleWidth(50),
+    height: scaleWidth(50),
+    alignSelf: 'flex-end',
+  },
   headerTitle: {
     ...Heading_20EB_Round,
     color: COLORS.black,
-    marginBottom: scaleWidth(8),
+    marginBottom: scaleWidth(4),
   },
   headerDescription: {
     ...Body_16R,
     color: COLORS.gray700,
     lineHeight: scaleWidth(24),
   },
-  missionCarouselWrapper: {
-    marginHorizontal: -scaleWidth(20), // 부모 padding 상쇄
-  },
   missionCardContainer: {
     paddingHorizontal: scaleWidth(20),
-  },
-  missionCard: {
-    borderRadius: BORDER_RADIUS[20],
-    overflow: 'hidden',
-  },
-  missionCardGradient: {
-    padding: scaleWidth(24),
-    borderRadius: BORDER_RADIUS[20],
-    backgroundColor: COLORS.puple.main,
-  },
-  missionCardTitle: {
-    ...Heading_18SB,
-    color: COLORS.white,
-  },
-  progressBarContainer: {
-    height: scaleWidth(8),
-    backgroundColor: 'rgba(255, 255, 255, 0.3)',
-    borderRadius: scaleWidth(4),
-    overflow: 'hidden',
-  },
-  progressBar: {
-    height: '100%',
-    backgroundColor: '#FFD43B',
-    borderRadius: scaleWidth(4),
-  },
-  progressInfo: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  progressStatus: {
-    ...Body_16M,
-    color: COLORS.white,
-  },
-  progressText: {
-    ...Body_16M,
-    color: COLORS.white,
   },
   carouselIndicators: {
     flexDirection: 'row',
@@ -400,55 +418,16 @@ const styles = StyleSheet.create({
   indicatorDot: {
     width: scaleWidth(8),
     height: scaleWidth(8),
-    borderRadius: scaleWidth(4),
     backgroundColor: COLORS.gray300,
+    borderRadius: BORDER_RADIUS[99],
   },
   indicatorDotActive: {
     backgroundColor: COLORS.puple.main,
+    width: scaleWidth(12),
+    height: scaleWidth(12),
   },
   articleList: {
-    gap: scaleWidth(16),
-  },
-  articleCard: {
-    borderRadius: BORDER_RADIUS[16],
-    overflow: 'hidden',
-    backgroundColor: COLORS.white,
-  },
-  articleImageContainer: {
-    position: 'relative',
-    width: '100%',
-    height: scaleWidth(200),
-  },
-  articleImagePlaceholder: {
-    width: '100%',
-    height: '100%',
-    backgroundColor: COLORS.gray200,
-  },
-  articleTag: {
-    position: 'absolute',
-    top: scaleWidth(12),
-    right: scaleWidth(12),
-    paddingHorizontal: scaleWidth(8),
-    paddingVertical: scaleWidth(4),
-    backgroundColor: COLORS.white,
-    borderRadius: scaleWidth(12),
-    opacity: 0.9,
-  },
-  articleTagText: {
-    ...Caption_12M,
-    color: COLORS.gray700,
-  },
-  articleInfo: {
-    padding: scaleWidth(16),
-  },
-  articleTitle: {
-    ...Heading_18SB,
-    color: COLORS.black,
-    lineHeight: scaleWidth(24),
-  },
-  articleDate: {
-    ...Caption_14R,
-    color: COLORS.gray600,
+    gap: scaleWidth(24),
   },
   loadingContainer: {
     flex: 1,
@@ -460,11 +439,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     paddingHorizontal: scaleWidth(20),
-  },
-  errorText: {
-    ...Body_16M,
-    color: COLORS.red,
-    textAlign: 'center',
   },
 });
 

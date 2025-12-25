@@ -1,4 +1,3 @@
-/* eslint-disable prettier/prettier */
 /**
  * 캐릭터 관련 화면(레벨/내역/알림)에서 공통으로 쓰는 Mock 데이터
  */
@@ -26,37 +25,36 @@ export type PointHistoryItem = {
   ptDelta: number; // +/-
 };
 
-export type NotificationItem = {
-  id: string;
-  title: string;
-  createdAt: string;
-  isRead: boolean; // 읽음 여부
-};
-
 /** 레벨 목록(기준 확인 리스트) */
 export const levelList: LevelCriteria[] = [
   {
     id: 1,
-    title: 'Lv.1 이제막',
+    title: 'Lv.1 아메바',
     requiredExp: 0,
     summary: '기본 미션으로 적응해요',
   },
   {
     id: 2,
-    title: 'Lv.2 조금알고',
+    title: 'Lv.2 꼬물 물고기',
     requiredExp: 100,
     summary: '미션 보상이 조금 증가해요',
   },
   {
     id: 3,
-    title: 'Lv.3 꽤함',
+    title: 'Lv.3 리틀 몽키',
     requiredExp: 250,
     summary: '연속 달성 보너스가 유리해요',
   },
   {
     id: 4,
-    title: 'Lv.4 전문가',
+    title: 'Lv.4 꼬마 원시인',
     requiredExp: 450,
+    summary: '고급 미션이 해금돼요',
+  },
+  {
+    id: 5,
+    title: 'Lv.5 아인슈타인',
+    requiredExp: 800,
     summary: '고급 미션이 해금돼요',
   },
 ];
@@ -65,7 +63,7 @@ export const levelList: LevelCriteria[] = [
 export const levelDetailMap: Record<number, LevelDetail> = {
   1: {
     levelId: 1,
-    title: 'Lv.1 이제막',
+    title: 'Lv.1 아메바',
     requiredExp: 0,
     rewards: [
       { label: '기사 읽기(10초+)', xp: 40, pt: 0 },
@@ -76,7 +74,7 @@ export const levelDetailMap: Record<number, LevelDetail> = {
   },
   2: {
     levelId: 2,
-    title: 'Lv.2 조금알고',
+    title: 'Lv.2 꼬물 물고기',
     requiredExp: 100,
     rewards: [
       { label: '기사 읽기(10초+)', xp: 50, pt: 0 },
@@ -87,7 +85,7 @@ export const levelDetailMap: Record<number, LevelDetail> = {
   },
   3: {
     levelId: 3,
-    title: 'Lv.3 꽤함',
+    title: 'Lv.3 리틀 몽키',
     requiredExp: 250,
     rewards: [
       { label: '기사 읽기(10초+)', xp: 60, pt: 0 },
@@ -98,12 +96,23 @@ export const levelDetailMap: Record<number, LevelDetail> = {
   },
   4: {
     levelId: 4,
-    title: 'Lv.4 전문가',
+    title: 'Lv.4 꼬마 원시인',
     requiredExp: 450,
     rewards: [
       { label: '기사 읽기(10초+)', xp: 70, pt: 0 },
       { label: '미션 완료', xp: 60, pt: 20 },
       { label: '광고 시청', xp: 18, pt: 6 },
+    ],
+    tips: ['고급 미션 위주로 플레이', '스트릭 유지로 보너스를 챙기세요'],
+  },
+  5: {
+    levelId: 5,
+    title: 'Lv.5 아인슈타인',
+    requiredExp: 800,
+    rewards: [
+      { label: '기사 읽기(10초+)', xp: 80, pt: 0 },
+      { label: '미션 완료', xp: 70, pt: 25 },
+      { label: '광고 시청', xp: 20, pt: 7 },
     ],
     tips: ['고급 미션 위주로 플레이', '스트릭 유지로 보너스를 챙기세요'],
   },
@@ -145,27 +154,5 @@ export const pointHistoryMock: PointHistoryItem[] = [
     createdAt: '2025년 12월 04일',
     xpDelta: +40,
     ptDelta: +40,
-  },
-];
-
-/** 알림 리스트 */
-export const notificationMock: NotificationItem[] = [
-  {
-    id: 'n1',
-    title: '오늘의 미션이 갱신되었어요!',
-    createdAt: '1분 전',
-    isRead: false,
-  },
-  {
-    id: 'n2',
-    title: '레벨업까지 50XP 남았어요!',
-    createdAt: '오늘',
-    isRead: false,
-  },
-  {
-    id: 'n3',
-    title: '관심분야를 업데이트 해보세요',
-    createdAt: '3일 전',
-    isRead: true,
   },
 ];

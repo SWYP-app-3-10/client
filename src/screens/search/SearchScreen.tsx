@@ -8,18 +8,17 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { NativeStackScreenProps } from '@react-navigation/native-stack';
-import type { SearchStackParamList } from '../../navigation/types';
+import { RouteProp, useNavigation } from '@react-navigation/native';
+import {
+  MainTabNavigationProp,
+  SearchStackParamList,
+} from '../../navigation/types';
 import { RouteNames } from '../../../routes';
 import SearchResultSkeleton from './components/SearchResultSkeleton';
-import { MOCK_NEWS, NewsCategory, NewsItems } from './search_mockData';
+import { MOCK_NEWS, NewsCategory, NewsItems } from '../../data/mock/searchData';
 import SearchResultItem from './components/SearchResultItem';
 import CategoryTabs from './components/CategoryTabs';
-
-type Props = NativeStackScreenProps<
-  SearchStackParamList,
-  typeof RouteNames.SEARCH
->;
+import { useArticleNavigation } from '../../hooks/useArticleNavigation';
 
 /** 한 번에 추가로 보여줄 아이템 개수(페이지 단위) */
 const PAGE_SIZE = 10;
@@ -53,11 +52,16 @@ const SearchListFooter = ({ loading }: { loading: boolean }) => {
  * - keyword가 있으면 "검색 모드", 없으면 "탐색 모드"
  * - 목록은 클라이언트 페이지네이션(무한 스크롤) 형태로 노출
  */
-export default function SearchScreen({ navigation, route }: Props) {
+export default function SearchScreen({
+  route,
+}: {
+  route: RouteProp<SearchStackParamList, 'search'>;
+}) {
   /** 현재 선택된 카테고리(탐색 모드에서 사용) */
   const [selectedCategory, setSelectedCategory] =
     useState<NewsCategory>('경제');
-
+  const navigation =
+    useNavigation<MainTabNavigationProp<SearchStackParamList>>();
   /** 검색 키워드(있으면 검색 모드) */
   const [keyword, setKeyword] = useState<string | undefined>();
 
@@ -148,7 +152,8 @@ export default function SearchScreen({ navigation, route }: Props) {
     setPage(prev => prev + 1);
     setIsLoadingMore(false);
   };
-
+  // 기사 클릭 처리 (커스텀 훅 사용)
+  const { handleArticlePress } = useArticleNavigation({ returnTo: 'search' });
   return (
     <SafeAreaView style={styles.safe}>
       <View style={styles.container}>
@@ -208,7 +213,12 @@ export default function SearchScreen({ navigation, route }: Props) {
           style={styles.list}
           data={visibleData}
           keyExtractor={item => item.id}
-          renderItem={({ item }) => <SearchResultItem item={item} />}
+          renderItem={({ item }) => (
+            <SearchResultItem
+              item={item}
+              onPress={() => handleArticlePress(Number(item.id))}
+            />
+          )}
           contentContainerStyle={styles.listContent}
           onEndReachedThreshold={0.6}
           onEndReached={loadMore}

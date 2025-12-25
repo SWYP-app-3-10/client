@@ -1,6 +1,6 @@
 import React from 'react';
 import { ScrollView, Text, TouchableOpacity, StyleSheet } from 'react-native';
-import type { NewsCategory } from '../search_mockData';
+import type { NewsCategory } from '../../../data/mock/searchData';
 
 type Props = {
   /** 전체 카테고리 목록 */

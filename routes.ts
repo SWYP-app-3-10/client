@@ -18,6 +18,11 @@ export const RouteNames = {
   SEARCH_TAB: '탐색' as const,
   MY_PAGE_TAB: '마이페이지' as const,
 
+  // 미션 - 아티클
+  ARTICLE_DETAIL: 'article' as const,
+  QUIZ: 'quiz' as const,
+  AD_LOADING: 'ad-loading' as const,
+
   // 메인 탭 내부 스크린들
   MISSION: 'mission' as const,
   CHARACTER: 'character' as const,
@@ -26,9 +31,6 @@ export const RouteNames = {
 
   // 광고
   REWARD: 'reward' as const,
-
-  // 컴포넌트 쇼케이스
-  COMPONENT_SHOWCASE: 'component-showcase' as const,
 
   // 검색 서브 화면
   SEARCH_INPUT: 'search-input' as const,

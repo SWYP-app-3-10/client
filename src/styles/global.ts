@@ -28,6 +28,7 @@ export const BORDER_RADIUS: Record<number, number> = {
   16: scaleWidth(16),
   20: scaleWidth(20),
   // ?
+  99: scaleWidth(99),
   30: scaleWidth(30),
   10: scaleWidth(10),
   12: scaleWidth(12),
@@ -35,7 +36,6 @@ export const BORDER_RADIUS: Record<number, number> = {
 
 // 컬러 팔레트
 export const COLORS = {
-  red: '#E74C3C',
   // 그레이 색상
   white: '#FFFFFF',
   gray100: '#F6F7F9',
@@ -48,13 +48,46 @@ export const COLORS = {
   gray800: '#767C91',
   black: '#19181E',
   // 메인
-  puple: { main: '#6F44F5', 3: '#F6F4FE' },
-
-  // 프라이머리 색상
-  // primary300: '#E5F8EF',
-  // primary400: '#C5F9DE',
-  // primary500: '#8EF3BF',
-  // primary600: '#64CD97',
+  puple: {
+    main: '#6F44F5',
+    3: '#F6F4FE',
+    5: '#9b7bFF',
+    light: '#845DFF',
+    lighter: '#764CF8',
+    completed: '#BFABFF',
+  },
+  red: { main: '#ff7E6a', 3: '#FFEDEA' },
+  blue: { main: '#4d8cff', 3: '#E1EEFF', 5: '#E8F4FF', 6: '#00b1fc' },
+  yellow: {
+    1: '#fff0ba',
+    light: '#FFE682',
+    medium: '#Fcb600',
+    main: '#FCB000',
+  },
+  // 그림자
+  shadow: '#000000',
+  // Placeholder/배경
+  placeholder: '#D9D9D9',
+  // 오버레이
+  overlay: 'rgba(0, 0, 0, 0.5)',
+  overlayWhite: 'rgba(255, 255, 255, 0.7)',
+  // 소셜 로그인
+  kakao: '#FFD43B',
+  naver: '#2DB400',
+  // 온보딩
+  onboardingPurple: '#9B59B6',
+  onboardingGreen: '#2ECC71',
+  // 기타
+  grayLight: '#F5F5F5',
+  grayMedium: '#E0E0E0',
+  grayDark: '#D0D0D0',
+  grayDarker: '#C0C0C0',
+  grayDDD: '#ddd',
+  purpleDark: '#6200EE',
+  textDark: '#333',
+  textMedium: '#666',
+  gold: '#FFD700',
+  iconDefault: '#171717',
 };
 
 // 타이포그래피 스타일 export

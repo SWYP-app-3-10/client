@@ -2,14 +2,14 @@
  * 아티클 관련 React Query hooks
  */
 
-import {useQuery} from '@tanstack/react-query';
-import {fetchArticles} from '../api/missionApi';
+import { useQuery } from '@tanstack/react-query';
+import { fetchArticles } from '../api/missionApi';
 
 // Query Keys
 export const articleKeys = {
   all: ['articles'] as const,
   lists: () => [...articleKeys.all, 'list'] as const,
-  list: (filters: string) => [...articleKeys.lists(), {filters}] as const,
+  list: (filters: string) => [...articleKeys.lists(), { filters }] as const,
   details: () => [...articleKeys.all, 'detail'] as const,
   detail: (id: number) => [...articleKeys.details(), id] as const,
 };

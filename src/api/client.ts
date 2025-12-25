@@ -1,15 +1,11 @@
 import axios from 'axios';
-import {Platform} from 'react-native';
 
 // 1. 환경 변수 및 URL 설정
 // 실제 배포 시에는 PROD_URL만 사용되지만, 로컬 개발을 위해 분기합니다.
 const PROD_URL = 'https://api.your-backend.com'; // 배포된 백엔드 주소
 
 // 안드로이드 에뮬레이터는 10.0.2.2, iOS 시뮬레이터는 localhost를 사용해야 내 컴퓨터에 접속됩니다.
-const DEV_URL = Platform.select({
-  android: 'http://10.0.2.2:8080', // 백엔드 포트 번호에 맞게 수정 (예: 3000, 8080)
-  ios: 'http://localhost:8080', // 백엔드 포트 번호에 맞게 수정
-});
+const DEV_URL = 'http://10.0.2.2:8080'; // 백엔드 포트 번호에 맞게 수정 (예: 3000, 8080)
 
 // 2. Axios Instance 생성
 const client = axios.create({

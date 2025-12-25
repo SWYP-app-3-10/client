@@ -77,7 +77,7 @@ const IntroCardList = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: COLORS.white,
   },
   content: {
     flex: 1,
@@ -88,7 +88,7 @@ const styles = StyleSheet.create({
   imagePlaceholder: {
     width: '100%',
     height: scaleWidth(300),
-    backgroundColor: '#F5F5F5',
+    backgroundColor: COLORS.grayLight,
     borderRadius: scaleWidth(12),
     justifyContent: 'center',
     alignItems: 'center',
@@ -97,14 +97,14 @@ const styles = StyleSheet.create({
   textPlaceholder: {
     width: '100%',
     height: scaleWidth(80),
-    backgroundColor: '#F5F5F5',
+    backgroundColor: COLORS.grayLight,
     borderRadius: scaleWidth(8),
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: scaleWidth(40),
   },
   placeholderText: {
-    color: '#999999',
+    color: COLORS.gray600,
     fontSize: scaleWidth(14),
   },
   pagination: {
@@ -118,16 +118,16 @@ const styles = StyleSheet.create({
     width: scaleWidth(8),
     height: scaleWidth(8),
     borderRadius: scaleWidth(4),
-    backgroundColor: '#E0E0E0',
+    backgroundColor: COLORS.grayMedium,
   },
   activeDot: {
-    backgroundColor: '#9B59B6',
+    backgroundColor: COLORS.onboardingPurple,
     width: scaleWidth(24),
   },
   button: {
     width: '100%',
     height: scaleWidth(56),
-    backgroundColor: '#2ECC71',
+    backgroundColor: COLORS.onboardingGreen,
     borderRadius: scaleWidth(12),
     justifyContent: 'center',
     alignItems: 'center',
@@ -135,11 +135,11 @@ const styles = StyleSheet.create({
   socialButton: {
     width: '100%',
     height: scaleWidth(56),
-    backgroundColor: '#F5F5F5',
+    backgroundColor: COLORS.grayLight,
     borderRadius: scaleWidth(12),
   },
   buttonText: {
-    color: '#FFFFFF',
+    color: COLORS.white,
     fontSize: scaleWidth(16),
     fontWeight: '600',
   },

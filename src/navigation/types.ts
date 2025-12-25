@@ -5,7 +5,7 @@ import {
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
 import { RouteNames } from '../../routes';
-import { NewsCategory } from '../screens/search/search_mockData';
+import { NewsCategory } from '../data/mock/searchData';
 
 // Root Stack Param List
 export type OnboardingStackParamList = {
@@ -21,6 +21,17 @@ export type OnboardingStackParamList = {
 // FullScreen Stack Param List (탭바 없는 전체 화면들)
 export type FullScreenStackParamList = {
   [RouteNames.CHARACTER_NOTIFICATION]: undefined;
+  [RouteNames.ARTICLE_DETAIL]: {
+    articleId: number;
+    returnTo?: 'mission' | 'search';
+  };
+  [RouteNames.QUIZ]: { articleId: number; returnTo?: 'mission' | 'search' };
+  [RouteNames.AD_LOADING]: {
+    articleId: number;
+    returnTo?: 'mission' | 'search';
+  };
+  [RouteNames.CHARACTER_CRITERIA]: undefined;
+  [RouteNames.CHARACTER_POINT_HISTORY]: undefined;
   // 추후 탭바 없는 다른 화면들 추가 가능
   // 예: [RouteNames.SETTINGS]: undefined;
 };
@@ -29,9 +40,7 @@ export type FullScreenStackParamList = {
 export type RootStackParamList = {
   Onboarding: NavigatorScreenParams<OnboardingStackParamList>;
   Maintab: NavigatorScreenParams<MainTabParamList>;
-  [RouteNames.FULL_SCREEN_STACK]: NavigatorScreenParams<FullScreenStackParamList>; // 전체 화면 스택 (탭바 없는 화면들)
-  // 전체 화면 스택 내부 화면들에 직접 접근 가능
-  [RouteNames.CHARACTER_NOTIFICATION]: undefined; // 알림 화면 (전체 화면 스택 내부)
+  [RouteNames.FULL_SCREEN_STACK]: NavigatorScreenParams<FullScreenStackParamList>;
 };
 
 // Main Tab Param List (Bottom Tab Navigator)
@@ -68,7 +77,6 @@ export type SearchStackParamList = {
 // MyPage Stack Param List
 export type MyPageStackParamList = {
   [RouteNames.MY_PAGE]: undefined;
-  [RouteNames.COMPONENT_SHOWCASE]: undefined;
   // 서브 화면들 추가 예정
   // 예시: 'settings': undefined;
 };

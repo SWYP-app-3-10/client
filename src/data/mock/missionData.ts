@@ -8,7 +8,7 @@ export interface Mission {
   title: string;
   current: number;
   total: number;
-  status: '진행 중' | '시작하기' | '완료';
+  status: '진행 중' | '완료' | null;
 }
 
 export interface Article {
@@ -25,9 +25,9 @@ export const mockMissions: Mission[] = [
   {
     id: 1,
     title: '경제 분야 글 3개 읽기',
-    current: 1,
+    current: 3,
     total: 3,
-    status: '진행 중',
+    status: '완료',
   },
   {
     id: 2,
@@ -41,7 +41,7 @@ export const mockMissions: Mission[] = [
     title: '기술 분야 글 2개 읽기',
     current: 0,
     total: 2,
-    status: '시작하기',
+    status: null,
   },
   {
     id: 4,
@@ -68,6 +68,8 @@ export const mockArticles: Article[] = [
     category: '경제',
     readTime: '5분',
     date: '2025.12.25',
+    imageUrl:
+      'https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?w=800&h=600&fit=crop',
   },
   {
     id: 2,
@@ -76,6 +78,8 @@ export const mockArticles: Article[] = [
     category: '경제',
     readTime: '5분',
     date: '2025.12.25',
+    imageUrl:
+      'https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?w=800&h=600&fit=crop',
   },
   {
     id: 3,
@@ -84,5 +88,7 @@ export const mockArticles: Article[] = [
     category: '경제',
     readTime: '5분',
     date: '2025.12.25',
+    imageUrl:
+      'https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?w=800&h=600&fit=crop',
   },
 ];

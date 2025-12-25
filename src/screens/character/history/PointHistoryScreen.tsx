@@ -1,7 +1,10 @@
 import React, { useMemo } from 'react';
 import { View, Text, Pressable, FlatList, StyleSheet } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
-import { pointHistoryMock, PointHistoryItem } from '../character_mockData';
+import {
+  pointHistoryMock,
+  PointHistoryItem,
+} from '../../../data/mock/characterData';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 /**

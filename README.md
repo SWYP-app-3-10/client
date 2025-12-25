@@ -22,6 +22,12 @@
 ```
 src/
 ├── api/                  # Axios 인스턴스 및 API 호출 함수
+├── data/
+│   └── mock/             # 더미 데이터 (API 연동 후 삭제 예정)
+│       ├── missionData.ts
+│       ├── characterData.ts
+│       ├── searchData.ts
+│       └── notificationData.ts
 ├── hooks/
 │   └── queries/          # React Query 커스텀 훅 (useQuery, useMutation)
 ├── navigation/           # 네비게이션 설정
@@ -36,7 +42,12 @@ src/
 ├── screens/             # 화면 컴포넌트
 │   ├── auth/            # 인증 관련 화면
 │   ├── onboarding/      # 온보딩 화면
-│   └── main/            # 메인 화면
+│   ├── main/            # 메인 화면 (각 탭의 메인 화면)
+│   ├── common/          # 공통 화면 (여러 탭에서 사용)
+│   │   ├── ArticleDetailScreen.tsx
+│   │   └── NotificationScreen.tsx
+│   ├── character/       # 캐릭터 탭 관련 하위 화면
+│   └── search/          # 검색 탭 관련 화면
 ├── components/          # 공통 컴포넌트
 │   ├── Button.tsx
 │   ├── Input.tsx
@@ -45,10 +56,13 @@ src/
 ├── store/               # Zustand 상태 관리
 │   ├── modalStore.ts    # 전역 모달 상태
 │   ├── onboardingStore.ts  # 온보딩 상태
-│   └── authStore.ts    # 인증 상태
-├── services/            # 서비스 레이어
+│   ├── authStore.ts    # 인증 상태
+│   └── pointStore.ts   # 포인트 상태
+├── services/            # 서비스 레이어 (로컬/서버 데이터 처리)
+│   ├── authService.ts
 │   ├── authStorageService.ts
-│   └── socialLoginService.ts
+│   ├── socialLoginService.ts
+│   └── pointService.ts
 └── styles/              # 스타일 정의
     ├── global.ts
     └── typography.ts
@@ -70,6 +84,10 @@ src/
   ├─ 캐릭터 스택
   ├─ 검색 스택
   └─ 마이페이지 스택
+  ↓
+전체 화면 스택 (탭바 없는 화면)
+  ├─ 기사 상세 (ARTICLE_DETAIL)
+  └─ 알림 (CHARACTER_NOTIFICATION)
 ```
 
 ## 상태 관리 (Zustand)
@@ -276,6 +294,9 @@ npm run lint -- --fix
 - ✅ Zustand 기반 상태 관리
 - ✅ TypeScript 지원
 - ✅ React Navigation 기반 네비게이션
+- ✅ 포인트 시스템 (기사 읽기, 광고 시청)
+- ✅ 리워드 광고 연동 (Google Mobile Ads)
+- ✅ 공통 화면 (기사 상세, 알림)
 
 ## 라이선스
 

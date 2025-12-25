@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { scaleWidth } from '../styles/global';
+import { COLORS, scaleWidth } from '../styles/global';
 
 const SplashScreen = () => {
   return (
@@ -17,7 +17,7 @@ const SplashScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: COLORS.white,
   },
   content: {
     flex: 1,
@@ -27,7 +27,7 @@ const styles = StyleSheet.create({
   logoPlaceholder: {
     width: scaleWidth(120),
     height: scaleWidth(120),
-    backgroundColor: '#F5F5F5',
+    backgroundColor: COLORS.grayLight,
     borderRadius: scaleWidth(12),
   },
 });

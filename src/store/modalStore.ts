@@ -1,18 +1,24 @@
-import {create} from 'zustand';
+import { create } from 'zustand';
 import {
   ModalButton,
   NotificationModalProps,
 } from '../components/NotificationModal';
+import { StyleProp, TextStyle } from 'react-native';
 
 interface ModalState {
   visible: boolean;
   title: string;
   description?: string;
   image?: NotificationModalProps['image'];
-  imageSize?: {width: number; height: number};
-  primaryButton: ModalButton;
+  imageSize?: { width: number; height: number };
+  closeButton?: boolean;
+  primaryButton?: ModalButton;
   secondaryButton?: ModalButton;
   children?: React.ReactNode;
+  titleDescriptionGapSize?: number;
+  descriptionColor?: string;
+  titleStyle?: StyleProp<TextStyle>;
+  closeOnBackdropPress?: boolean; // 배경 클릭 시 닫기 여부 (기본값: true)
 }
 
 interface ModalStore {
@@ -24,10 +30,7 @@ interface ModalStore {
 const defaultModalState: ModalState = {
   visible: false,
   title: '',
-  primaryButton: {
-    title: '확인',
-    onPress: () => {},
-  },
+  titleStyle: undefined,
 };
 
 export const useModalStore = create<ModalStore>(set => ({

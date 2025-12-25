@@ -1,4 +1,4 @@
-import React, {useCallback, useEffect, useState} from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import {
   Alert,
   Button,
@@ -7,11 +7,11 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import {useRewardedAd, TestIds} from 'react-native-google-mobile-ads';
-import {useNavigation, useFocusEffect} from '@react-navigation/native';
-import {NativeStackNavigationProp} from '@react-navigation/native-stack';
-import {OnboardingStackParamList} from '../navigation/types';
-import {scaleWidth} from '../styles/global';
+import { useRewardedAd, TestIds } from 'react-native-google-mobile-ads';
+import { useNavigation, useFocusEffect } from '@react-navigation/native';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { OnboardingStackParamList } from '../navigation/types';
+import { COLORS } from '../styles/global';
 
 const adUnitId = __DEV__
   ? TestIds.REWARDED
@@ -20,7 +20,7 @@ const adUnitId = __DEV__
 type NavigationProp = NativeStackNavigationProp<OnboardingStackParamList>;
 
 const REWARDScreen = () => {
-  const {isLoaded, isClosed, load, show, reward} = useRewardedAd(adUnitId, {
+  const { isLoaded, isClosed, load, show, reward } = useRewardedAd(adUnitId, {
     requestNonPersonalizedAdsOnly: true,
   });
   const navigation = useNavigation<NavigationProp>();
@@ -97,13 +97,14 @@ const REWARDScreen = () => {
           top: 50,
           left: 20,
           padding: 10,
-          backgroundColor: '#ddd',
+          backgroundColor: COLORS.grayDDD,
           borderRadius: 8,
           zIndex: 1,
         }}
         onPress={() => {
           navigation.goBack();
-        }}>
+        }}
+      >
         <Text>뒤로가기</Text>
       </TouchableOpacity>
 
@@ -122,7 +123,7 @@ const REWARDScreen = () => {
           title={isLoaded ? '광고 보고 코인 받기' : '광고 로딩 중...'}
           onPress={handleShowAd}
           disabled={!isLoaded}
-          color="#6200EE"
+          color={COLORS.purpleDark}
         />
       </View>
     </View>
@@ -135,36 +136,36 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     padding: 20,
-    backgroundColor: '#f5f5f5',
+    backgroundColor: COLORS.grayLight,
   },
   title: {
     fontSize: 24,
     fontWeight: 'bold',
     marginBottom: 30,
-    color: '#333',
+    color: COLORS.textDark,
   },
   coinBox: {
-    backgroundColor: '#FFD700',
+    backgroundColor: COLORS.gold,
     paddingVertical: 15,
     paddingHorizontal: 30,
     borderRadius: 20,
     marginBottom: 20,
     elevation: 5,
-    shadowColor: '#000',
-    shadowOffset: {width: 0, height: 2},
+    shadowColor: COLORS.shadow,
+    shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.2,
     shadowRadius: 4,
   },
   coinText: {
     fontSize: 20,
     fontWeight: 'bold',
-    color: '#333',
+    color: COLORS.textDark,
   },
   description: {
     textAlign: 'center',
     marginBottom: 30,
     fontSize: 16,
-    color: '#666',
+    color: COLORS.textMedium,
     lineHeight: 24,
   },
   buttonContainer: {

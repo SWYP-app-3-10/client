@@ -51,7 +51,7 @@ const SocialLoginButton: React.FC<SocialLoginButtonProps> = ({
             disabled={loading !== null}
           >
             {isLoading ? (
-              <ActivityIndicator color="#000000" />
+              <ActivityIndicator color={COLORS.black} />
             ) : (
               <Text style={styles.socialButtonText}>
                 Google 계정으로 로그인
@@ -68,7 +68,7 @@ const SocialLoginButton: React.FC<SocialLoginButtonProps> = ({
             disabled={loading !== null}
           >
             {isLoading ? (
-              <ActivityIndicator color="#000000" />
+              <ActivityIndicator color={COLORS.black} />
             ) : (
               <Text style={[styles.socialButtonText, styles.kakaoButtonText]}>
                 카카오로 시작하기
@@ -85,7 +85,7 @@ const SocialLoginButton: React.FC<SocialLoginButtonProps> = ({
             disabled={loading !== null}
           >
             {isLoading ? (
-              <ActivityIndicator color="#FFFFFF" />
+              <ActivityIndicator color={COLORS.white} />
             ) : (
               <Text style={[styles.socialButtonText, styles.naverButtonText]}>
                 Naver로 시작하기
@@ -141,16 +141,16 @@ const styles = StyleSheet.create({
     borderColor: COLORS.black,
   },
   kakaoButton: {
-    backgroundColor: '#FFD43B',
+    backgroundColor: COLORS.kakao,
   },
   naverButton: {
-    backgroundColor: '#2DB400',
+    backgroundColor: COLORS.naver,
   },
   socialButtonText: {
     ...Heading_18EB_Round,
   },
   kakaoButtonText: {
-    color: '#000000',
+    color: COLORS.black,
   },
   naverButtonText: {
     color: COLORS.white,
