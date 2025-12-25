@@ -10,10 +10,12 @@ import {
   COLORS,
   BORDER_RADIUS,
   scaleWidth,
-  Heading_18EB_Round,
-  Caption_14R,
-  Heading_18B,
   Body_16SB,
+  Caption_12M,
+  Heading_24EB_Round,
+  Heading_18EB_Round,
+  Heading_18B,
+  Caption_14R,
 } from '../../../../styles/global';
 
 import XpIcon from '../../../../assets/svg/Coin_XP.svg';
@@ -157,18 +159,23 @@ const PointCriteriaScreen = () => {
 export default PointCriteriaScreen;
 
 const styles = StyleSheet.create({
+  wrap: {
+    paddingBottom: scaleWidth(24), // 하단 스크롤 여백(부모 paddingHorizontal 사용 중)
+  },
+  h1: {
+    ...Heading_24EB_Round, // 섹션 타이틀 타이포
+    color: COLORS.black, // 타이틀 색상
+    marginBottom: scaleWidth(10), // 타이틀 아래 간격
+  },
   // 스크롤 컨테이너
   scroll: {
     flex: 1,
   },
-
-  // 스크롤 콘텐츠 영역
   content: {
     paddingTop: scaleWidth(20),
     paddingBottom: scaleWidth(50),
     paddingHorizontal: scaleWidth(20),
   },
-
   // 화면 메인 타이틀
   title: {
     ...Heading_18EB_Round,
