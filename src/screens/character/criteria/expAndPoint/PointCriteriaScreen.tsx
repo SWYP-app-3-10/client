@@ -7,9 +7,9 @@ import {
   COLORS,
   BORDER_RADIUS,
   scaleWidth,
-  Heading_18EB_Round,
   Body_16SB,
   Caption_12M,
+  Heading_24EB_Round,
 } from '../../../../styles/global';
 
 /**
@@ -108,7 +108,7 @@ const styles = StyleSheet.create({
   },
 
   h1: {
-    ...Heading_18EB_Round, // 섹션 타이틀 타이포
+    ...Heading_24EB_Round, // 섹션 타이틀 타이포
     color: COLORS.black, // 타이틀 색상
     marginBottom: scaleWidth(10), // 타이틀 아래 간격
   },

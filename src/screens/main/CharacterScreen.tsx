@@ -10,6 +10,8 @@ import {
 import { useNavigation } from '@react-navigation/native';
 import { RouteNames } from '../../../routes';
 import { SafeAreaView } from 'react-native-safe-area-context';
+// ✅ 공통 디자인 시스템
+
 import {
   COLORS,
   scaleWidth,
@@ -22,7 +24,8 @@ import {
   Caption_12M,
   Heading_18EB_Round,
 } from '../../styles/global';
-import { Button, MissionCard } from '../../components';
+import { MissionCard } from '../../components';
+import Button from '../../components/Button';
 import {
   CharacterStackParamList,
   MainTabNavigationProp,

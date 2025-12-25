@@ -8,10 +8,13 @@ import {
   COLORS,
   BORDER_RADIUS,
   scaleWidth,
-  Heading_18EB_Round,
   Body_16SB,
-  Caption_14R,
   Caption_12M,
+  Heading_24EB_Round,
+  Caption_14R,
+  Heading_18EB_Round,
+  Caption_12SB,
+  Body_16M,
 } from '../../../../styles/global';
 
 /**
@@ -19,6 +22,7 @@ import {
  *
  * - 현재 경험치/레벨 정보를 보여주고, 레벨별 기준 목록을 렌더링하는 화면
  * - 상단: 현재 XP 및 다음 레벨까지 필요한 XP 안내 카드
+ *    ■ TODO "N" <-> "XP" 분리 필요
  * - 하단: 전체 레벨 리스트(현재 레벨에는 "내 레벨" 배지 표시)
  */
 const LevelCriteriaScreen = () => {
@@ -65,7 +69,6 @@ const LevelCriteriaScreen = () => {
 
           {/* 요약 타이틀/설명 */}
           <Text style={styles.summaryTitle}>{item.summaryTitle}</Text>
-          <Text style={styles.summaryDesc}>{item.summaryDesc}</Text>
         </View>
       </View>
     );
@@ -111,23 +114,23 @@ export default LevelCriteriaScreen;
 
 const styles = StyleSheet.create({
   listContent: {
-    paddingBottom: scaleWidth(24), // 하단 스크롤 여백
+    paddingTop: scaleWidth(32), // 상단 패딩
+    paddingBottom: scaleWidth(32), // 하단 스크롤 여백
   },
 
   headerSpace: {
-    height: scaleWidth(12), // 카드와 리스트 간격
+    height: scaleWidth(32), // 카드와 리스트 간격
   },
 
   separator: {
-    height: scaleWidth(12), // 카드 간 간격
+    height: scaleWidth(20), // 카드 간 간격
   },
 
   xpCard: {
-    marginTop: scaleWidth(8), // 상단 여백(부모 body 기준)
     padding: scaleWidth(20), // 카드 내부 패딩
     borderRadius: BORDER_RADIUS[16], // 카드 라운드
     borderWidth: scaleWidth(1), // 카드 테두리 두께
-    borderColor: COLORS.gray200, // 테두리 색
+    borderColor: COLORS.gray300, // 테두리 색
     backgroundColor: COLORS.white, // 카드 배경색
     flexDirection: 'row', // 좌(텍스트) 우(아이콘) 가로 배치
     alignItems: 'center', // 세로 중앙 정렬
@@ -138,18 +141,18 @@ const styles = StyleSheet.create({
   },
 
   xpQ: {
-    ...Caption_14R, // 공통 타이포(캡션)
+    ...Body_16SB, // "현재 나의 경험치는?" 타이포
     color: COLORS.black, // 텍스트 색
   },
 
   xpValue: {
-    ...Heading_18EB_Round, // 공통 타이포(헤딩)
-    marginTop: scaleWidth(6), // 질문과 값 사이 간격
+    ...Heading_24EB_Round, // N XP 타이포
+    marginTop: scaleWidth(16), // 질문과 값 사이 간격
     color: COLORS.black, // 값 텍스트 색
   },
 
   xpHint: {
-    ...Caption_12M, // 공통 타이포(캡션)
+    ...Caption_14R, // 공통 타이포(캡션)
     marginTop: scaleWidth(8), // 값과 힌트 사이 간격
     color: COLORS.gray700, // 힌트 텍스트 색
   },
@@ -159,62 +162,60 @@ const styles = StyleSheet.create({
   },
 
   xpImg: {
-    width: scaleWidth(64), // 아이콘 영역 너비
-    height: scaleWidth(64), // 아이콘 영역 높이
+    width: scaleWidth(92), // 아이콘 영역 너비
+    height: scaleWidth(92), // 아이콘 영역 높이
     borderRadius: BORDER_RADIUS[12], // 아이콘 영역 라운드
     backgroundColor: COLORS.gray200, // 임시 배경
   },
 
   row: {
-    padding: scaleWidth(16), // 카드 내부 패딩
-    borderRadius: BORDER_RADIUS[16], // 카드 라운드
-    borderWidth: scaleWidth(1), // 카드 테두리 두께
-    borderColor: COLORS.gray100, // 테두리 색
     backgroundColor: COLORS.white, // 카드 배경색
     flexDirection: 'row', // 썸네일 + 텍스트 가로 배치
     alignItems: 'center', // 세로 중앙 정렬
   },
 
   thumb: {
-    width: scaleWidth(64), // 썸네일 너비
-    height: scaleWidth(64), // 썸네일 높이
+    width: scaleWidth(110), // 썸네일 너비
+    height: scaleWidth(130), // 썸네일 높이
     borderRadius: BORDER_RADIUS[16], // 썸네일 라운드
-    backgroundColor: COLORS.gray200, // 임시 배경
-    marginRight: scaleWidth(12), // 썸네일과 텍스트 사이 간격
+    backgroundColor: COLORS.gray200, // TODO 임시 배경
+    marginRight: scaleWidth(24), // 썸네일과 텍스트 사이 간격
   },
 
   textArea: {
     flex: 1, // 텍스트 영역이 남는 공간 채움
+    gap: scaleWidth(3), // 텍스트 요소 간격
   },
 
   rowTop: {
     flexDirection: 'row', // 타이틀과 배지를 가로로
     alignItems: 'center', // 세로 중앙 정렬
+    justifyContent: 'space-between', // 좌(타이틀) / 우(배지) 양끝 정렬
   },
 
   title: {
-    ...Body_16SB, // 공통 타이포(본문 세미볼드)
+    ...Heading_18EB_Round, // 공통 타이포(본문 세미볼드)
     color: COLORS.black, // 타이틀 텍스트 색
-    marginRight: scaleWidth(8), // 타이틀과 배지 사이 간격
+    flex: 1, // 타이틀이 가능한 영역을 차지하게 해서 배지가 오른쪽으로 밀리게 함
+    marginRight: scaleWidth(8), // 타이틀과 배지 사이 최소 간격(겹침 방지)
   },
 
   myLevelPill: {
-    height: scaleWidth(24), // 배지 높이
-    paddingHorizontal: scaleWidth(10), // 배지 좌우 패딩
-    borderRadius: scaleWidth(999), // pill 형태
+    paddingVertical: scaleWidth(4), // 배지 상하 패딩
+    paddingHorizontal: scaleWidth(8), // 배지 좌우 패딩
+    borderRadius: BORDER_RADIUS[30], // pill 형태
     backgroundColor: COLORS.puple[3], // 배지 배경색
     justifyContent: 'center', // 텍스트 세로 중앙
     alignItems: 'center', // 텍스트 가로 중앙
   },
 
   myLevelText: {
-    ...Caption_12M, // 공통 타이포(캡션)
+    ...Caption_12SB, // 공통 타이포(캡션)
     color: COLORS.puple.main, // 배지 텍스트 색
   },
 
   summaryTitle: {
-    ...Caption_12M, // 공통 타이포(캡션)
-    marginTop: scaleWidth(6), // 타이틀 아래 간격
+    ...Body_16M, // 공통 타이포(캡션)
     color: COLORS.gray800, // 요약 타이틀 색
   },
 
