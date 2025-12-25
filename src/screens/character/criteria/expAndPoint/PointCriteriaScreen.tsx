@@ -125,7 +125,9 @@ const PointCriteriaScreen = () => {
         <InfoItem
           title="포인트"
           titleStyle={styles.infoTitlePt}
-          description={`포인트를 사용해 더 많은 글을 읽을 수 있어요\n글 한 편당 30포인트가 필요해요`}
+          description={
+            '포인트를 사용해 더 많은 글을 읽을 수 있어요\n글 한 편당 30포인트가 필요해요'
+          }
           iconType="PT"
         />
       </View>
@@ -164,6 +166,7 @@ const styles = StyleSheet.create({
   content: {
     paddingTop: scaleWidth(20),
     paddingBottom: scaleWidth(50),
+    paddingHorizontal: scaleWidth(20),
   },
 
   // 화면 메인 타이틀
