@@ -284,6 +284,7 @@ export default LevelCriteriaScreen;
  */
 const styles = StyleSheet.create({
   listContent: {
+    marginHorizontal: scaleWidth(20),
     paddingTop: scaleWidth(32), // 리스트 상단 패딩
     paddingBottom: scaleWidth(64), // 리스트 하단 패딩
   },

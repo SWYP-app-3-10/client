@@ -158,6 +158,7 @@ const styles = StyleSheet.create({
   // 스크롤 컨테이너
   scroll: {
     flex: 1,
+    marginHorizontal: scaleWidth(20),
   },
 
   // 스크롤 콘텐츠 영역
