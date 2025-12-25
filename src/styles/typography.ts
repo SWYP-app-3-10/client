@@ -1,5 +1,5 @@
-import {StyleSheet, TextStyle} from 'react-native';
-import {scaleWidth} from './global';
+import { StyleSheet, TextStyle } from 'react-native';
+import { scaleWidth } from './global';
 
 const getFontFamily = (weight: number): string => {
   if (weight >= 800) {

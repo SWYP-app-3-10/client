@@ -7,13 +7,13 @@ import { useNavigation } from '@react-navigation/native';
 import LevelCriteriaScreen from './level/LevelCriteriaScreen';
 import PointCriteriaScreen from './expAndPoint/PointCriteriaScreen';
 
-// ✅ 공통 디자인 시스템
+// 공통 디자인 시스템
 import {
   COLORS,
   BORDER_RADIUS,
   scaleWidth,
-  Heading_18EB_Round,
-  Caption_12M,
+  Heading_16B,
+  Body_16SB,
 } from '../../../styles/global';
 
 /** 상단 세그먼트 탭 키 */
@@ -103,7 +103,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1, // 화면 전체 높이 차지
     backgroundColor: COLORS.white, // 화면 배경색(디자인 시스템)
-    paddingHorizontal: scaleWidth(20), // ✅ 컨텐츠 좌우 기준 여백(폭 정렬 통일)
+    paddingHorizontal: scaleWidth(20), // 컨텐츠 좌우 기준 여백(폭 정렬 통일)
   },
 
   header: {
@@ -114,8 +114,8 @@ const styles = StyleSheet.create({
   },
 
   backBtn: {
-    width: scaleWidth(24), // 터치 영역 너비
-    height: scaleWidth(24), // 터치 영역 높이
+    width: scaleWidth(48), // 터치 영역 너비
+    height: scaleWidth(48), // 터치 영역 높이
     justifyContent: 'center', // 아이콘 세로 중앙
     alignItems: 'flex-start', // 아이콘 왼쪽 정렬
   },
@@ -126,21 +126,21 @@ const styles = StyleSheet.create({
   },
 
   headerTitle: {
-    ...Heading_18EB_Round, // 타이틀 타이포
+    ...Heading_16B, // 타이틀 타이포
     color: COLORS.black, // 타이틀 색상
   },
 
   headerRightSpace: {
-    width: scaleWidth(24), // 우측 스페이서(타이틀 중앙 유지)
+    width: scaleWidth(48), // 우측 스페이서(타이틀 중앙 유지, 뒤로가기 버튼과 동일 너비)
   },
 
   segmentWrap: {
-    marginTop: scaleWidth(8), // 헤더와 간격
-    height: scaleWidth(44), // 세그먼트 높이
+    marginTop: scaleWidth(8), // ■ TODO 헤더와 간격
+    height: scaleWidth(52), // 세그먼트 높이
     borderRadius: BORDER_RADIUS[12], // 세그먼트 라운드
     backgroundColor: COLORS.gray100, // 세그먼트 배경색
     flexDirection: 'row', // 버튼 2개 가로 배치
-    padding: scaleWidth(4), // 세그먼트 내부 여백
+    padding: scaleWidth(8), // 세그먼트 내부 여백 (피그마 -> (52-36)/2 = 8)
   },
 
   segmentBtn: {
@@ -155,8 +155,8 @@ const styles = StyleSheet.create({
   },
 
   segmentText: {
-    ...Caption_12M, // 텍스트 타이포
-    color: COLORS.gray700, // 비활성 텍스트 색상
+    ...Body_16SB, // 텍스트 타이포
+    color: COLORS.gray500, // 비활성 텍스트 색상
   },
 
   segmentTextActive: {
@@ -165,6 +165,6 @@ const styles = StyleSheet.create({
 
   body: {
     flex: 1, // 남은 영역 전체 사용
-    marginTop: scaleWidth(8), // 세그먼트와 컨텐츠 간격
+    marginTop: scaleWidth(0), // 세그먼트와 컨텐츠 간격 -> 탭 별로 크기 다름
   },
 });
