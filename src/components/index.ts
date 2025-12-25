@@ -17,3 +17,8 @@ export { default as SocialLoginButton } from './SocialLoginButton';
 
 export { default as MissionCard } from './MissionCard';
 export { default as ArticleCard } from './ArticleCard';
+
+// 추가
+export { default as Header } from './Header';
+
+export { default as Spacer } from './Spacer';

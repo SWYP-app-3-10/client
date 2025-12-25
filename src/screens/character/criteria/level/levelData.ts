@@ -7,12 +7,13 @@ export type LevelCriteria = {
 };
 
 export const levelList: LevelCriteria[] = [
+  // summaryDesc 반영하지 않음 -> 추후 기획 수정 시 사용
   {
     id: 1,
     title: 'Lv. 1 아메바',
     requiredExp: 0,
     summaryTitle: '처음 시작',
-    summaryDesc: '누구나 ...', // 반영하지 않음 -> 추후 기획 수정 시 사용
+    summaryDesc: '누구나 ...',
   },
   {
     id: 2,

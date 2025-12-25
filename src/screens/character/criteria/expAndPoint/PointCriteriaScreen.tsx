@@ -1,16 +1,23 @@
 // PointCriteriaScreen.tsx
-import React from 'react';
+import React, { memo } from 'react';
 import { ScrollView, View, Text, StyleSheet } from 'react-native';
+
+// 공통 컴포넌트
+import { Spacer } from '../../../../components';
 
 // 공통 디자인 시스템 (색/스케일/라운드/타이포)
 import {
   COLORS,
   BORDER_RADIUS,
   scaleWidth,
+  Heading_18EB_Round,
+  Caption_14R,
+  Heading_18B,
   Body_16SB,
-  Caption_12M,
-  Heading_24EB_Round,
 } from '../../../../styles/global';
+
+import XpIcon from '../../../../assets/svg/Coin_XP.svg';
+import PtIcon from '../../../../assets/svg/Coin_Pt.svg';
 
 /**
  * 경험치/포인트 획득 기준 목록
@@ -20,82 +27,127 @@ import {
  */
 const rows = [
   { label: '미션 달성 시', xp: '40 XP', p: '40 P' },
-  { label: '글 읽었을 시', xp: '5 XP', p: '' },
+  { label: '글 읽기 시', xp: '5 XP', p: '' },
   { label: '퀴즈 정답 시', xp: '20 XP', p: '30 P' },
   { label: '퀴즈 오답 시', xp: '10 XP', p: '10 P' },
   { label: '데일리 출석 시', xp: '5 XP', p: '10 P' },
   { label: '위클리 출석 시', xp: '30 XP', p: '30 P' },
-  { label: '광고 보았을 시', xp: '', p: '60 P' },
+  { label: '광고 시청 시', xp: '', p: '60 P' },
 ];
 
+type RowItemProps = {
+  label: string;
+  xp?: string;
+  p?: string;
+};
+
 /**
- * PointCriteriaScreen
- *
- * - 포인트/경험치 개념 설명 + 획득 기준 안내 화면
- * - 상단: 포인트/경험치 정의 카드
- * - 하단: 조건별 보상 리스트(배지 형태)
+ * RowItem (각 줄이 개별 카드)
+ * - 리스트를 row마다 카드(라운드/보더/배경)로 분리해서 렌더링
+ * - 오른쪽에 XP/P pill 배지(값이 있을 때만) 표시
  */
+const RowItem = memo(({ label, xp, p }: RowItemProps) => {
+  return (
+    <View style={styles.rowCard}>
+      {/* 좌측: 조건 라벨 */}
+      <Text style={styles.rowLabel}>{label}</Text>
+
+      {/* 우측: 보상 배지 */}
+      <View style={styles.badges}>
+        {!!xp && (
+          <View style={styles.xpPill}>
+            <Text style={styles.pillTextXp}>{xp}</Text>
+          </View>
+        )}
+        {!!p && (
+          <View style={styles.ptPill}>
+            <Text style={styles.pillTextPt}>{p}</Text>
+          </View>
+        )}
+      </View>
+    </View>
+  );
+});
+RowItem.displayName = 'RowItem';
+
+type InfoItemProps = {
+  title: string;
+  titleStyle: object;
+  description: string;
+  iconType?: 'XP' | 'PT';
+};
+
+const InfoItem = memo(
+  ({ title, titleStyle, description, iconType }: InfoItemProps) => {
+    return (
+      <View style={styles.infoBlock}>
+        {/* 아이콘 + 타이틀(한 줄 세트) */}
+        <View style={styles.infoHead}>
+          {iconType === 'XP' ? (
+            <XpIcon width={scaleWidth(36)} height={scaleWidth(36)} />
+          ) : (
+            <PtIcon width={scaleWidth(36)} height={scaleWidth(36)} />
+          )}
+          <Text style={[styles.infoTitleBase, titleStyle]}>{title}</Text>
+        </View>
+
+        {/* 설명 */}
+        <Text style={styles.infoDescSeparated}>{description}</Text>
+      </View>
+    );
+  },
+);
+InfoItem.displayName = 'InfoItem';
+
 const PointCriteriaScreen = () => {
   return (
     <ScrollView
-      contentContainerStyle={styles.wrap}
-      showsVerticalScrollIndicator={false}
+      style={styles.scroll} // 스크롤 컨테이너
+      contentContainerStyle={styles.content} // 세로 여백
+      showsVerticalScrollIndicator={false} // 스크롤바 숨김
     >
-      {/* 섹션 1: 개념 설명 */}
-      <Text style={styles.h1}>포인트 & 경험치란?</Text>
+      {/* 섹션 1: 제목 */}
+      <Text style={styles.title}>포인트 & 경험치란?</Text>
 
-      <View style={styles.card}>
-        {/* 경험치 설명 */}
-        <View style={styles.cardRow}>
-          <View style={styles.icon} />
-          <View style={styles.cardTextArea}>
-            <Text style={[styles.cardTitle, styles.xpTitle]}>경험치</Text>
-            <Text style={styles.cardDesc}>
-              경험치를 통해 레벨 업을 할 수 있어요
-            </Text>
-          </View>
-        </View>
+      {/* 섹션 1: 개념 설명 카드 */}
+      <View style={styles.infoCard}>
+        {/* 경험치 블록 (아이콘+타이틀 세트 / 설명 분리) */}
+        <InfoItem
+          title="경험치"
+          titleStyle={styles.infoTitleXp}
+          description="경험치를 모아 캐릭터 레벨을 올릴 수 있어요"
+          iconType="XP"
+        />
 
-        <View style={styles.divider} />
+        <View style={styles.infoDivider} />
 
-        {/* 포인트 설명 */}
-        <View style={styles.cardRow}>
-          <View style={styles.icon} />
-          <View style={styles.cardTextArea}>
-            <Text style={[styles.cardTitle, styles.pointTitle]}>포인트</Text>
-            <Text style={styles.cardDesc}>
-              포인트를 사용해 글을 더 읽을 수 있어요{'\n'}글 하나에 30 포인트가
-              필요해요
-            </Text>
-          </View>
-        </View>
+        {/* 포인트 블록 (아이콘+타이틀 세트 / 설명 분리) */}
+        <InfoItem
+          title="포인트"
+          titleStyle={styles.infoTitlePt}
+          description={`포인트를 사용해 더 많은 글을 읽을 수 있어요\n글 한 편당 30포인트가 필요해요`}
+          iconType="PT"
+        />
       </View>
 
-      {/* 섹션 2: 획득 기준 목록 */}
-      <Text style={styles.h2}>경험치와 포인트는 이렇게 모을 수 있어요!</Text>
+      {/* 섹션 2: 제목 */}
+      <Text style={styles.subTitle}>
+        경험치와 포인트는 이렇게 모을 수 있어요!
+      </Text>
 
+      {/* 섹션 2: 기준 리스트 (각 row 개별 카드 + gap) */}
       <View style={styles.list}>
-        {rows.map(r => (
-          <View key={r.label} style={styles.row}>
-            {/* 조건 라벨 */}
-            <Text style={styles.rowLabel}>{r.label}</Text>
-
-            {/* 보상 배지 (값이 있는 경우에만 노출) */}
-            <View style={styles.badges}>
-              {!!r.xp && (
-                <View style={[styles.badge, styles.badgeXp]}>
-                  <Text style={styles.badgeText}>{r.xp}</Text>
-                </View>
-              )}
-              {!!r.p && (
-                <View style={[styles.badge, styles.badgePt]}>
-                  <Text style={styles.badgeText}>{r.p}</Text>
-                </View>
-              )}
-            </View>
-          </View>
+        {rows.map(item => (
+          <RowItem
+            key={item.label}
+            label={item.label}
+            xp={item.xp}
+            p={item.p}
+          />
         ))}
       </View>
+
+      <Spacer num={24} />
     </ScrollView>
   );
 };
@@ -103,118 +155,141 @@ const PointCriteriaScreen = () => {
 export default PointCriteriaScreen;
 
 const styles = StyleSheet.create({
-  wrap: {
-    paddingBottom: scaleWidth(24), // 하단 스크롤 여백(부모 paddingHorizontal 사용 중)
+  // 스크롤 컨테이너
+  scroll: {
+    flex: 1,
   },
 
-  h1: {
-    ...Heading_24EB_Round, // 섹션 타이틀 타이포
-    color: COLORS.black, // 타이틀 색상
-    marginBottom: scaleWidth(10), // 타이틀 아래 간격
+  // 스크롤 콘텐츠 영역
+  content: {
+    paddingTop: scaleWidth(20),
+    paddingBottom: scaleWidth(50),
   },
 
-  h2: {
-    ...Body_16SB, // 섹션 타이틀(하단) 타이포
-    color: COLORS.black, // 타이틀 색상
-    marginTop: scaleWidth(18), // 위쪽 간격
-    marginBottom: scaleWidth(10), // 아래 간격
+  // 화면 메인 타이틀
+  title: {
+    ...Heading_18EB_Round,
+    color: COLORS.black,
+    marginBottom: scaleWidth(24),
   },
 
-  card: {
-    borderRadius: BORDER_RADIUS[16], // 카드 라운드
-    borderWidth: scaleWidth(1), // 카드 테두리 두께
-    borderColor: COLORS.gray200, // 카드 테두리 색상
-    padding: scaleWidth(14), // 카드 내부 패딩
-    backgroundColor: COLORS.white, // 카드 배경색
+  // 섹션 서브 타이틀
+  subTitle: {
+    ...Heading_18EB_Round,
+    color: COLORS.black,
+    marginBottom: scaleWidth(24),
   },
 
-  cardRow: {
-    flexDirection: 'row', // 아이콘 + 텍스트 가로 배치
-    alignItems: 'flex-start', // 상단 기준 정렬
-    gap: scaleWidth(12), // 아이콘/텍스트 간격
+  // 상단 개념 설명 카드
+  infoCard: {
+    borderRadius: BORDER_RADIUS[16],
+    borderWidth: scaleWidth(1),
+    borderColor: COLORS.gray300,
+    padding: scaleWidth(20),
+    backgroundColor: COLORS.white,
+    marginBottom: scaleWidth(40),
   },
 
-  cardTextArea: {
-    flex: 1, // 텍스트 영역이 남는 공간 채움
+  // 경험치/포인트 블록
+  infoBlock: {},
+
+  // 아이콘 + 타이틀 행
+  infoHead: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: scaleWidth(12),
   },
 
-  icon: {
-    width: scaleWidth(22), // 아이콘 너비
-    height: scaleWidth(22), // 아이콘 높이
-    borderRadius: BORDER_RADIUS[10] ?? scaleWidth(6), // 아이콘 라운드(토큰 없으면 스케일)
-    backgroundColor: COLORS.gray200, // 아이콘 임시 배경색
+  // 개념 타이틀 공통
+  infoTitleBase: {
+    ...Heading_18B,
   },
 
-  cardTitle: {
-    ...Body_16SB, // 타이틀 타이포
-    marginBottom: scaleWidth(6), // 타이틀-설명 간격
+  // 경험치 타이틀
+  infoTitleXp: {
+    color: COLORS.blue[6],
   },
 
-  pointTitle: {
-    color: COLORS.puple.main, // 포인트 타이틀 컬러(메인 컬러로 통일)
+  // 포인트 타이틀
+  infoTitlePt: {
+    color: COLORS.yellow.medium,
   },
 
-  xpTitle: {
-    color: COLORS.puple.main, // 경험치 타이틀 컬러(메인 컬러로 통일)
+  // 개념 설명 텍스트
+  infoDescSeparated: {
+    ...Caption_14R,
+    color: COLORS.gray800,
+    lineHeight: scaleWidth(23),
+    marginTop: scaleWidth(16),
   },
 
-  cardDesc: {
-    ...Caption_12M, // 설명 타이포
-    color: COLORS.gray700, // 설명 텍스트 색상
-    lineHeight: scaleWidth(18), // 줄간격
+  // 카드 내부 구분선
+  infoDivider: {
+    height: scaleWidth(1),
+    backgroundColor: COLORS.gray300,
+    marginVertical: scaleWidth(24),
   },
 
-  divider: {
-    height: scaleWidth(1), // 구분선 두께
-    backgroundColor: COLORS.gray100, // 구분선 색상
-    marginVertical: scaleWidth(24), // 위아래 간격
-  },
-
+  // 기준 리스트 컨테이너
   list: {
-    marginTop: scaleWidth(8), // 타이틀과 리스트 간격
-    gap: scaleWidth(16), // 행 간 간격
+    gap: scaleWidth(16),
   },
 
-  row: {
-    height: scaleWidth(72), // 행 높이
-    borderRadius: BORDER_RADIUS[16], // 행 라운드
-    borderWidth: scaleWidth(1), // 행 테두리 두께
-    borderColor: COLORS.gray200, // 행 테두리 색상
-    backgroundColor: COLORS.white, // 행 배경색
-    padding: scaleWidth(20), // 좌우 패딩
-    flexDirection: 'row', // 라벨 + 배지 가로 배치
-    alignItems: 'center', // 세로 중앙 정렬
-    justifyContent: 'space-between', // 양 끝 정렬
+  // 기준 리스트 카드
+  rowCard: {
+    height: scaleWidth(72),
+    borderRadius: BORDER_RADIUS[16],
+    borderWidth: scaleWidth(1),
+    borderColor: COLORS.gray300,
+    backgroundColor: COLORS.white,
+    paddingHorizontal: scaleWidth(20),
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
   },
 
+  // 기준 라벨 텍스트
   rowLabel: {
-    ...Body_16SB, // 라벨 타이포
-    color: COLORS.black, // 라벨 색상
+    ...Body_16SB,
+    color: COLORS.black,
   },
 
+  // 보상 배지 영역
   badges: {
-    flexDirection: 'row', // 배지 가로 배치
-    gap: scaleWidth(6), // 배지 간 간격
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: scaleWidth(6),
   },
 
-  badge: {
-    paddingHorizontal: scaleWidth(8), // 배지 좌우 패딩
-    height: scaleWidth(28), // 배지 높이
-    borderRadius: scaleWidth(999), // pill 형태
-    justifyContent: 'center', // 텍스트 세로 중앙
-    alignItems: 'center', // 텍스트 가로 중앙
+  // XP 배지
+  xpPill: {
+    paddingHorizontal: scaleWidth(8),
+    paddingVertical: scaleWidth(4),
+    borderRadius: BORDER_RADIUS[30],
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: COLORS.blue[5],
   },
 
-  badgeXp: {
-    backgroundColor: COLORS.puple[3], // XP 배지 배경(연한 메인)
+  // 포인트 배지
+  ptPill: {
+    paddingHorizontal: scaleWidth(8),
+    paddingVertical: scaleWidth(4),
+    borderRadius: BORDER_RADIUS[30],
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: COLORS.yellow[1],
   },
 
-  badgePt: {
-    backgroundColor: COLORS.gray100, // 포인트 배지 배경(연한 그레이)
+  // XP 배지 텍스트
+  pillTextXp: {
+    ...Body_16SB,
+    color: COLORS.blue[6],
   },
 
-  badgeText: {
-    ...Caption_12M, // 배지 텍스트 타이포
-    color: COLORS.black, // 배지 텍스트 색상
+  // 포인트 배지 텍스트
+  pillTextPt: {
+    ...Body_16SB,
+    color: COLORS.yellow.medium,
   },
 });

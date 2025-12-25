@@ -1,9 +1,20 @@
 // LevelCriteriaScreen.tsx
-import React, { useMemo } from 'react';
-import { View, Text, StyleSheet, FlatList } from 'react-native';
+import React, { useCallback, useMemo, useRef, useState } from 'react';
+import {
+  View,
+  Text,
+  StyleSheet,
+  FlatList,
+  Pressable,
+  LayoutChangeEvent,
+  ListRenderItem,
+} from 'react-native';
 import { levelList, LevelCriteria } from './levelData';
 
-// 공통 디자인 시스템 (색/스케일/라운드/타이포)
+// XP 아이콘 SVG import
+import XpIcon from '../../../../assets/svg/Coin_XP.svg';
+
+// 공통 디자인 시스템
 import {
   COLORS,
   BORDER_RADIUS,
@@ -18,210 +29,437 @@ import {
 } from '../../../../styles/global';
 
 /**
- * LevelCriteriaScreen
+ * value를 min~max 범위로 제한
+ * → 툴팁 위치가 부모 영역을 벗어나지 않도록 보정
+ */
+const clamp = (value: number, min: number, max: number) =>
+  Math.min(Math.max(value, min), max);
+
+/**
+ * ======================================
+ * useTooltip
  *
- * - 현재 경험치/레벨 정보를 보여주고, 레벨별 기준 목록을 렌더링하는 화면
- * - 상단: 현재 XP 및 다음 레벨까지 필요한 XP 안내 카드
- *    ■ TODO "N" <-> "XP" 분리 필요
- * - 하단: 전체 레벨 리스트(현재 레벨에는 "내 레벨" 배지 표시)
+ * 툴팁 전용 커스텀 훅
+ *
+ * - 툴팁 표시/숨김 토글
+ * - 자동 닫힘 타이머 관리
+ * - 말풍선과 꼬리가 아이콘 중앙을 가리키도록 위치 계산
+ * ======================================
+ */
+function useTooltip(autoHideMs: number) {
+  /** 툴팁 표시 여부 */
+  const [visible, setVisible] = useState(false);
+
+  /** 자동 닫힘 타이머 */
+  const hideTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  /**
+   * 레이아웃 측정 값들
+   * - leftAreaWidth : 툴팁이 포함된 영역 너비
+   * - iconCenterX   : 정보 아이콘 중앙 좌표
+   * - tooltipWidth  : 실제 툴팁 너비
+   */
+  const [leftAreaWidth, setLeftAreaWidth] = useState(0);
+  const [iconCenterX, setIconCenterX] = useState(0);
+  const [tooltipWidth, setTooltipWidth] = useState(0);
+
+  /** 기존 타이머 제거 */
+  const clearTimer = useCallback(() => {
+    if (hideTimerRef.current) {
+      clearTimeout(hideTimerRef.current);
+      hideTimerRef.current = null;
+    }
+  }, []);
+
+  /** 툴팁 열기 + 자동 닫힘 예약 */
+  const openWithAutoHide = useCallback(() => {
+    clearTimer();
+    setVisible(true);
+
+    hideTimerRef.current = setTimeout(() => {
+      setVisible(false);
+      hideTimerRef.current = null;
+    }, autoHideMs);
+  }, [autoHideMs, clearTimer]);
+
+  /**
+   * XP 영역 클릭 시 토글
+   * - 닫힘 → 열림 (+ 자동 닫힘)
+   * - 열림 → 닫힘
+   */
+  const toggle = useCallback(() => {
+    setVisible(prev => {
+      const next = !prev;
+      clearTimer();
+      if (next) openWithAutoHide();
+      return next;
+    });
+  }, [clearTimer, openWithAutoHide]);
+
+  /**
+   * 툴팁 말풍선 좌측 위치
+   * - 아이콘 중앙 기준
+   * - 부모 영역 밖으로 나가지 않도록 clamp
+   */
+  const tooltipLeft = useMemo(() => {
+    if (!leftAreaWidth || !tooltipWidth) return 0;
+
+    const raw = iconCenterX - tooltipWidth / 2;
+    return clamp(raw, 0, leftAreaWidth - tooltipWidth);
+  }, [leftAreaWidth, tooltipWidth, iconCenterX]);
+
+  /**
+   * 툴팁 꼬리 위치
+   * - 말풍선 내부 기준
+   * - 아이콘 중앙을 가리키도록 계산
+   */
+  const arrowLeft = useMemo(() => {
+    const ARROW_HALF = scaleWidth(6);
+    return Math.max(scaleWidth(10), iconCenterX - tooltipLeft - ARROW_HALF);
+  }, [iconCenterX, tooltipLeft]);
+
+  /** 레이아웃 측정 콜백 */
+  const onLayoutLeftArea = (e: LayoutChangeEvent) =>
+    setLeftAreaWidth(e.nativeEvent.layout.width);
+
+  const onLayoutIcon = (e: LayoutChangeEvent) => {
+    const { x, width } = e.nativeEvent.layout;
+    setIconCenterX(x + width / 2);
+  };
+
+  const onLayoutTooltip = (e: LayoutChangeEvent) =>
+    setTooltipWidth(e.nativeEvent.layout.width);
+
+  return {
+    visible,
+    toggle,
+    tooltipLeft,
+    arrowLeft,
+    onLayoutLeftArea,
+    onLayoutIcon,
+    onLayoutTooltip,
+  };
+}
+
+/**
+ * ======================================
+ * 상단 XP 요약 카드
+ * ======================================
+ */
+function XpSummaryCard({
+  currentXp,
+  needXp,
+}: {
+  currentXp: number;
+  needXp: number;
+}) {
+  const tooltip = useTooltip(1500);
+
+  return (
+    <View style={styles.xpCard}>
+      <View style={styles.xpLeft} onLayout={tooltip.onLayoutLeftArea}>
+        <Text style={styles.xpQ}>현재 나의 경험치는?</Text>
+
+        <Pressable onPress={tooltip.toggle} style={styles.xpValueRow}>
+          <Text style={styles.xpNumber}>{currentXp}</Text>
+          <Text style={styles.xpUnit}> XP</Text>
+
+          <View style={styles.xpInfoIcon} onLayout={tooltip.onLayoutIcon}>
+            <Text style={styles.xpInfoIconText}>i</Text>
+          </View>
+        </Pressable>
+
+        {tooltip.visible && (
+          <View
+            style={[styles.tooltipWrap, { left: tooltip.tooltipLeft }]}
+            onLayout={tooltip.onLayoutTooltip}
+          >
+            <Text style={styles.tooltipText}>
+              퀴즈, 글 읽기, 출석 등 다양한 활동으로{'\n'}
+              경험치를 모을 수 있어요
+            </Text>
+            <View style={[styles.tooltipArrow, { left: tooltip.arrowLeft }]} />
+          </View>
+        )}
+
+        <Text style={styles.xpHint}>
+          다음 단계 달성을 위해서는{'\n'}
+          <Text style={styles.xpHintStrong}>{needXp}XP</Text>가 더 필요해요
+        </Text>
+      </View>
+
+      {/* 내부에 XP 아이콘 삽입 */}
+      <View style={styles.xpImg}>
+        <XpIcon width={scaleWidth(92)} height={scaleWidth(92)} />
+      </View>
+    </View>
+  );
+}
+
+/**
+ * ======================================
+ * 레벨 리스트 아이템
+ * ======================================
+ */
+function LevelRow({ item, isMine }: { item: LevelCriteria; isMine: boolean }) {
+  return (
+    <View style={styles.row}>
+      <View style={styles.thumb} />
+
+      <View style={styles.textArea}>
+        <View style={styles.rowTop}>
+          <Text style={styles.title} numberOfLines={1}>
+            {item.title}
+          </Text>
+
+          {isMine && (
+            <View style={styles.myLevelPill}>
+              <Text style={styles.myLevelText}>내 레벨</Text>
+            </View>
+          )}
+        </View>
+
+        <Text style={styles.summaryTitle}>{item.summaryTitle}</Text>
+      </View>
+    </View>
+  );
+}
+
+/**
+ * ======================================
+ * Screen
+ * ======================================
  */
 const LevelCriteriaScreen = () => {
-  /**
-   * 현재 유저 상태 (더미 데이터)
-   * - 추후 서버 응답/전역 상태로 교체
-   */
+  // TODO: 서버 연동 시 전역 상태로 교체
   const currentXp = 50;
   const currentLevelId = 1;
 
   /**
-   * 다음 레벨 달성까지 필요한 XP 계산
+   * 다음 레벨까지 필요한 XP 계산
+   * - 현재 XP / 레벨 변경 시에만 재계산
    */
-  const xpToNext = useMemo(() => {
+  const needXp = useMemo(() => {
     const next = levelList.find(l => l.id === currentLevelId + 1);
     if (!next) return 0;
     return Math.max(0, next.requiredExp - currentXp);
   }, [currentLevelId, currentXp]);
 
-  /**
-   * 레벨 리스트 아이템 렌더러
-   */
-  const renderItem = ({ item }: { item: LevelCriteria }) => {
-    const isMine = item.id === currentLevelId;
+  /** FlatList 아이템 렌더 함수 */
+  const renderItem: ListRenderItem<LevelCriteria> = useCallback(
+    ({ item }) => <LevelRow item={item} isMine={item.id === currentLevelId} />,
+    [currentLevelId],
+  );
 
-    return (
-      <View style={styles.row}>
-        {/* 썸네일(대표 이미지) 자리 */}
-        <View style={styles.thumb} />
-
-        {/* 텍스트 영역 */}
-        <View style={styles.textArea}>
-          <View style={styles.rowTop}>
-            {/* 레벨명 */}
-            <Text style={styles.title}>{item.title}</Text>
-
-            {/* 현재 레벨 배지 */}
-            {isMine && (
-              <View style={styles.myLevelPill}>
-                <Text style={styles.myLevelText}>내 레벨</Text>
-              </View>
-            )}
-          </View>
-
-          {/* 요약 타이틀/설명 */}
-          <Text style={styles.summaryTitle}>{item.summaryTitle}</Text>
-        </View>
-      </View>
-    );
-  };
+  /** FlatList 헤더 */
+  const Header = useMemo(
+    () => (
+      <>
+        <XpSummaryCard currentXp={currentXp} needXp={needXp} />
+        <View style={styles.headerSpace} />
+      </>
+    ),
+    [currentXp, needXp],
+  );
 
   return (
     <FlatList
-      data={levelList} // 레벨 데이터
-      keyExtractor={item => String(item.id)} // 고유키(문자열)
-      renderItem={renderItem} // 아이템 렌더 함수
-      showsVerticalScrollIndicator={false} // 스크롤바 숨김
-      contentContainerStyle={styles.listContent} // 리스트 패딩/여백
-      ItemSeparatorComponent={() => <View style={styles.separator} />} // 카드 간 간격
-      ListHeaderComponent={
-        <>
-          {/* 상단: 현재 XP 요약 카드 */}
-          <View style={styles.xpCard}>
-            <View style={styles.xpLeft}>
-              <Text style={styles.xpQ}>현재 나의 경험치는?</Text>
-
-              <Text style={styles.xpValue}>{currentXp} XP</Text>
-
-              <Text style={styles.xpHint}>
-                다음 단계 달성을 위해서는{'\n'}
-                <Text style={styles.xpHintStrong}>{xpToNext}XP</Text>가 더
-                필요해요
-              </Text>
-            </View>
-
-            {/* 우측 이미지/아이콘 자리 */}
-            <View style={styles.xpImg} />
-          </View>
-
-          {/* XP 카드와 리스트 사이 간격 */}
-          <View style={styles.headerSpace} />
-        </>
-      }
+      data={levelList}
+      keyExtractor={item => String(item.id)}
+      renderItem={renderItem}
+      ListHeaderComponent={Header}
+      ItemSeparatorComponent={() => <View style={styles.separator} />}
+      showsVerticalScrollIndicator={false}
+      contentContainerStyle={styles.listContent}
     />
   );
 };
 
 export default LevelCriteriaScreen;
 
+/**
+ * ======================================
+ * styles
+ * ======================================
+ */
 const styles = StyleSheet.create({
   listContent: {
-    paddingTop: scaleWidth(32), // 상단 패딩
-    paddingBottom: scaleWidth(32), // 하단 스크롤 여백
+    paddingTop: scaleWidth(32), // 리스트 상단 패딩
+    paddingBottom: scaleWidth(64), // 리스트 하단 패딩
   },
 
   headerSpace: {
-    height: scaleWidth(32), // 카드와 리스트 간격
+    height: scaleWidth(32), // 헤더와 리스트 간 여백
   },
 
   separator: {
-    height: scaleWidth(20), // 카드 간 간격
+    height: scaleWidth(20), // 리스트 아이템 간 간격
   },
 
+  // XP 카드 컨테이너
   xpCard: {
-    padding: scaleWidth(20), // 카드 내부 패딩
-    borderRadius: BORDER_RADIUS[16], // 카드 라운드
-    borderWidth: scaleWidth(1), // 카드 테두리 두께
-    borderColor: COLORS.gray300, // 테두리 색
-    backgroundColor: COLORS.white, // 카드 배경색
-    flexDirection: 'row', // 좌(텍스트) 우(아이콘) 가로 배치
-    alignItems: 'center', // 세로 중앙 정렬
+    padding: scaleWidth(20),
+    borderRadius: BORDER_RADIUS[16],
+    borderWidth: scaleWidth(1),
+    borderColor: COLORS.gray300,
+    backgroundColor: COLORS.white,
+    flexDirection: 'row',
+    alignItems: 'center',
   },
 
+  // XP 카드 좌측 영역
   xpLeft: {
-    flex: 1, // 좌측 텍스트 영역이 남는 공간 채움
+    flex: 1,
+    position: 'relative',
   },
 
+  // 질문 텍스트
   xpQ: {
-    ...Body_16SB, // "현재 나의 경험치는?" 타이포
-    color: COLORS.black, // 텍스트 색
+    ...Body_16SB,
+    color: COLORS.black,
   },
 
-  xpValue: {
-    ...Heading_24EB_Round, // N XP 타이포
-    marginTop: scaleWidth(16), // 질문과 값 사이 간격
-    color: COLORS.black, // 값 텍스트 색
+  // XP 값 라인
+  xpValueRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: scaleWidth(16),
   },
 
+  // XP 숫자
+  xpNumber: {
+    ...Heading_24EB_Round,
+    color: COLORS.black,
+  },
+
+  // XP 단위
+  xpUnit: {
+    ...Heading_24EB_Round,
+    color: COLORS.black,
+  },
+
+  // 정보 아이콘
+  xpInfoIcon: {
+    marginLeft: scaleWidth(12),
+    width: scaleWidth(22),
+    height: scaleWidth(22),
+    backgroundColor: COLORS.gray300,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+
+  // 아이콘 텍스트
+  xpInfoIconText: {
+    ...Caption_12SB,
+    color: COLORS.white,
+  },
+
+  // 툴팁 말풍선
+  tooltipWrap: {
+    position: 'absolute',
+    top: scaleWidth(84),
+    backgroundColor: COLORS.puple.light,
+    paddingHorizontal: scaleWidth(12),
+    paddingVertical: scaleWidth(8),
+    borderRadius: BORDER_RADIUS[12],
+    maxWidth: scaleWidth(260),
+    zIndex: 10,
+  },
+
+  // 툴팁 설명
+  tooltipText: {
+    ...Caption_12M,
+    color: COLORS.white,
+  },
+
+  // 툴팁 꼬리
+  tooltipArrow: {
+    position: 'absolute',
+    top: -scaleWidth(6),
+    width: 0,
+    height: 0,
+    borderLeftWidth: scaleWidth(6),
+    borderRightWidth: scaleWidth(6),
+    borderBottomWidth: scaleWidth(6),
+    borderLeftColor: 'transparent',
+    borderRightColor: 'transparent',
+    borderBottomColor: COLORS.puple.light,
+  },
+
+  // 다음 XP 안내
   xpHint: {
-    ...Caption_14R, // 공통 타이포(캡션)
-    marginTop: scaleWidth(8), // 값과 힌트 사이 간격
-    color: COLORS.gray700, // 힌트 텍스트 색
+    ...Caption_14R,
+    marginTop: scaleWidth(8),
+    color: COLORS.gray700,
   },
 
+  // XP 강조
   xpHintStrong: {
-    color: COLORS.puple.main, // 강조 텍스트 색
+    color: COLORS.puple.main,
   },
 
+  // 우측 아이콘 영역
   xpImg: {
-    width: scaleWidth(92), // 아이콘 영역 너비
-    height: scaleWidth(92), // 아이콘 영역 높이
-    borderRadius: BORDER_RADIUS[12], // 아이콘 영역 라운드
-    backgroundColor: COLORS.gray200, // 임시 배경
+    width: scaleWidth(92),
+    height: scaleWidth(92),
+    borderRadius: BORDER_RADIUS[12],
+    alignItems: 'center',
+    justifyContent: 'center',
   },
 
+  // 리스트 행
   row: {
-    backgroundColor: COLORS.white, // 카드 배경색
-    flexDirection: 'row', // 썸네일 + 텍스트 가로 배치
-    alignItems: 'center', // 세로 중앙 정렬
+    backgroundColor: COLORS.white,
+    flexDirection: 'row',
+    alignItems: 'center',
   },
 
+  // 레벨 썸네일
   thumb: {
-    width: scaleWidth(110), // 썸네일 너비
-    height: scaleWidth(130), // 썸네일 높이
-    borderRadius: BORDER_RADIUS[16], // 썸네일 라운드
-    backgroundColor: COLORS.gray200, // TODO 임시 배경
-    marginRight: scaleWidth(24), // 썸네일과 텍스트 사이 간격
+    width: scaleWidth(110),
+    height: scaleWidth(130),
+    borderRadius: BORDER_RADIUS[16],
+    backgroundColor: COLORS.gray200,
+    marginRight: scaleWidth(24),
   },
 
+  // 텍스트 영역
   textArea: {
-    flex: 1, // 텍스트 영역이 남는 공간 채움
-    gap: scaleWidth(3), // 텍스트 요소 간격
+    flex: 1,
   },
 
+  // 제목 + 배지
   rowTop: {
-    flexDirection: 'row', // 타이틀과 배지를 가로로
-    alignItems: 'center', // 세로 중앙 정렬
-    justifyContent: 'space-between', // 좌(타이틀) / 우(배지) 양끝 정렬
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
   },
 
+  // 레벨명
   title: {
-    ...Heading_18EB_Round, // 공통 타이포(본문 세미볼드)
-    color: COLORS.black, // 타이틀 텍스트 색
-    flex: 1, // 타이틀이 가능한 영역을 차지하게 해서 배지가 오른쪽으로 밀리게 함
-    marginRight: scaleWidth(8), // 타이틀과 배지 사이 최소 간격(겹침 방지)
+    ...Heading_18EB_Round,
+    color: COLORS.black,
+    flex: 1,
+    marginRight: scaleWidth(8),
   },
 
+  // "내 레벨" 버튼
   myLevelPill: {
-    paddingVertical: scaleWidth(4), // 배지 상하 패딩
-    paddingHorizontal: scaleWidth(8), // 배지 좌우 패딩
-    borderRadius: BORDER_RADIUS[30], // pill 형태
-    backgroundColor: COLORS.puple[3], // 배지 배경색
-    justifyContent: 'center', // 텍스트 세로 중앙
-    alignItems: 'center', // 텍스트 가로 중앙
+    paddingVertical: scaleWidth(4),
+    paddingHorizontal: scaleWidth(8),
+    borderRadius: BORDER_RADIUS[30],
+    backgroundColor: COLORS.puple[3],
   },
 
+  // 배지 텍스트
   myLevelText: {
-    ...Caption_12SB, // 공통 타이포(캡션)
-    color: COLORS.puple.main, // 배지 텍스트 색
+    ...Caption_12SB,
+    color: COLORS.puple.main,
   },
 
+  // 레벨 요약 설명
   summaryTitle: {
-    ...Body_16M, // 공통 타이포(캡션)
-    color: COLORS.gray800, // 요약 타이틀 색
-  },
-
-  summaryDesc: {
-    ...Caption_12M, // 공통 타이포(캡션)
-    marginTop: scaleWidth(2), // summaryTitle과 간격
-    color: COLORS.gray700, // 설명 텍스트 색
+    ...Body_16M,
+    color: COLORS.gray800,
   },
 });
