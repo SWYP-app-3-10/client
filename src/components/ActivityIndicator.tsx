@@ -1,6 +1,6 @@
 import React from 'react';
-import {View} from 'react-native';
-import {COLORS, scaleWidth} from '../styles/global';
+import { View } from 'react-native';
+import { COLORS, scaleWidth } from '../styles/global';
 
 const ActivityIndicator = ({
   activeIndex,
@@ -15,17 +15,18 @@ const ActivityIndicator = ({
         flexDirection: 'row',
         justifyContent: 'center',
         gap: scaleWidth(6),
-      }}>
+      }}
+    >
       {[...Array(dotCount)].map((_, index) => (
         <View
           key={index}
           style={[
-            {height: scaleWidth(6), borderRadius: 99},
+            { height: scaleWidth(6), borderRadius: 99 },
             {
               backgroundColor:
                 index === activeIndex ? COLORS.puple.main : COLORS.gray300,
             },
-            {width: index === activeIndex ? scaleWidth(24) : scaleWidth(6)},
+            { width: index === activeIndex ? scaleWidth(24) : scaleWidth(6) },
           ]}
         />
       ))}
