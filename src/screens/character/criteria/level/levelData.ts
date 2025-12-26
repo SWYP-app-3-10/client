@@ -13,7 +13,7 @@ export const levelList: LevelCriteria[] = [
     title: 'Lv. 1 아메바',
     requiredExp: 0,
     summaryTitle: '처음 시작',
-    summaryDesc: '누구나 ...',
+    summaryDesc: '누구나 ...', // 반영하지 않음 -> 추후 기획 수정 시 사용
   },
   {
     id: 2,

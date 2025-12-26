@@ -10,6 +10,8 @@ import {
 import { useNavigation } from '@react-navigation/native';
 import { RouteNames } from '../../../routes';
 import { SafeAreaView } from 'react-native-safe-area-context';
+// ✅ 공통 디자인 시스템
+
 import {
   COLORS,
   scaleWidth,
