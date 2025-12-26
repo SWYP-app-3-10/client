@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   View,
   Text,
@@ -8,10 +8,12 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
+
 import { SearchStackParamList } from '../../navigation/types';
 import { RouteNames } from '../../../routes';
+
 import RecentSearches from '../../components/RecentSearches';
-import { scaleWidth } from '../../styles/global';
+import { COLORS, scaleWidth } from '../../styles/global';
 import {
   loadRecents,
   addRecent,
@@ -30,7 +32,7 @@ type SearchRecord = {
 /**
  * SearchInputScreen
  *
- * - 검색어 입력 화면
+ * - 검색어 입력 화면 (이미지 1)
  * - 최근 검색어를 AsyncStorage에 저장 / 삭제
  * - 검색 실행 시 SearchScreen으로 keyword 전달
  */
@@ -40,12 +42,12 @@ export default function SearchInputScreen({ navigation }: Props) {
   /** 최근 검색어 목록 */
   const [searchRecord, setSearchRecord] = useState<SearchRecord[]>([]);
 
-  // string[]을 SearchRecord[]로 변환
+  // string[] -> SearchRecord[] 변환
   const convertToSearchRecords = (keywords: string[]): SearchRecord[] => {
     return keywords.map(keyword => ({ searchName: keyword }));
   };
 
-  // 컴포넌트 마운트 시 AsyncStorage에서 최근 검색어 불러오기
+  // 마운트 시 최근 검색어 로드
   useEffect(() => {
     const loadRecentSearches = async () => {
       try {
@@ -58,7 +60,7 @@ export default function SearchInputScreen({ navigation }: Props) {
     loadRecentSearches();
   }, []);
 
-  // 검색어 저장 (중복 제거, 최신순으로 정렬)
+  // 검색어 저장 (중복 제거, 최신순)
   const recordSearch = async (keyword: string) => {
     try {
       const updated = await addRecent(keyword);
@@ -71,26 +73,23 @@ export default function SearchInputScreen({ navigation }: Props) {
   // 검색 실행
   const submit = async (kw?: string) => {
     const keyword = (kw ?? text).trim();
-    if (!keyword) {
-      return;
-    }
+    if (!keyword) return;
 
-    // 검색어 저장
+    // 최근 검색어 저장
     await recordSearch(keyword);
 
     // 검색 결과 화면으로 이동
     navigation.navigate(RouteNames.SEARCH, { keyword });
   };
 
-  // 최근 검색어 클릭 시 검색 실행
+  // 최근 검색어 클릭 -> 검색 실행
   const handleRecentSearchClick = async (keyword: string) => {
     setText(keyword);
-    // 검색어 저장 및 검색 실행
     await recordSearch(keyword);
     navigation.navigate(RouteNames.SEARCH, { keyword });
   };
 
-  // 최근검색어 하나 제거
+  // 최근 검색어 한 개 삭제
   const removeSearchRecord = async (name: string) => {
     try {
       const updated = await removeRecent(name);
@@ -101,138 +100,127 @@ export default function SearchInputScreen({ navigation }: Props) {
   };
 
   return (
-    <SafeAreaView style={styles.safe}>
+    <SafeAreaView style={styles.safe} edges={['top']}>
       <View style={styles.container}>
-        {/* 상단 영역 */}
+        {/* ===== 상단: 뒤로가기 + 검색바 (이미지 1) ===== */}
         <View style={styles.topRow}>
           {/* 뒤로가기 */}
           <TouchableOpacity
             onPress={() => navigation.goBack()}
             style={styles.backBtn}
+            hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
           >
             <Text style={styles.backText}>‹</Text>
           </TouchableOpacity>
 
-          {/* 검색 입력창 */}
-          <View style={styles.inputWrap}>
+          {/* 검색 입력창 (연한 회색 캡슐) */}
+          <View style={styles.searchBarWrap}>
             <TextInput
               value={text}
               onChangeText={setText}
               placeholder="글을 검색해보세요"
-              placeholderTextColor="#A0A0A0"
+              placeholderTextColor={COLORS.gray400}
               returnKeyType="search"
               onSubmitEditing={() => submit()}
-              style={styles.input}
+              style={styles.searchInput}
             />
           </View>
         </View>
 
-        {/* 최근 검색어 */}
+        {/* ===== 최근 검색어 ===== */}
         <Text style={styles.sectionTitle}>최근 검색어</Text>
 
-        <View style={styles.chipWrap}>
+        {/* 칩 리스트 */}
+        <View style={styles.chipsArea}>
           {searchRecord.length === 0 ? (
-            <Text style={styles.empty}>최근 검색어가 없습니다.</Text>
+            <Text style={styles.emptyText}>최근 검색어가 없습니다.</Text>
           ) : (
-            <View style={styles.recentSearchesContainer}>
-              {searchRecord.map((value, index) => {
-                return (
-                  <RecentSearches
-                    key={index.toString()}
-                    index={index}
-                    removeSearchRecord={removeSearchRecord}
-                    recordSearch={handleRecentSearchClick}
-                    setSearch={setText}
-                    item={value}
-                  />
-                );
-              })}
+            <View style={styles.recentContainer}>
+              {searchRecord.map((value, index) => (
+                <RecentSearches
+                  key={index.toString()}
+                  index={index}
+                  removeSearchRecord={removeSearchRecord}
+                  recordSearch={handleRecentSearchClick}
+                  setSearch={setText}
+                  item={value}
+                />
+              ))}
             </View>
           )}
-        </View>
-
-        {/* 하단 버튼 */}
-        <View style={styles.bottom}>
-          <TouchableOpacity
-            style={[
-              styles.nextBtn,
-              text.trim() === '' && styles.nextBtnDisabled,
-            ]}
-            disabled={text.trim() === ''}
-            onPress={() => submit()}
-          >
-            <Text style={styles.nextText}>다음</Text>
-          </TouchableOpacity>
         </View>
       </View>
     </SafeAreaView>
   );
 }
 
+/* =========================
+   스타일 (자세한 주석)
+========================= */
 const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: 'white' },
-  container: { flex: 1, paddingHorizontal: 16 },
+  safe: {
+    flex: 1, // 화면 전체 높이 채움
+    backgroundColor: COLORS.white, // 전체 배경 흰색
+  },
+
+  container: {
+    flex: 1, // 내부 영역 채움
+    paddingHorizontal: scaleWidth(20), // 좌우 여백(시안처럼 넉넉하게)
+  },
 
   topRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingTop: 10,
-    paddingBottom: 8,
+    flexDirection: 'row', // 뒤로 + 검색바를 가로로 배치
+    alignItems: 'center', // 수직 중앙 정렬
+    height: scaleWidth(52), // 상단 영역 높이(이미지 1 느낌)
   },
-  backBtn: { paddingRight: 6, paddingVertical: 4 },
-  backText: { fontSize: 24 },
 
-  inputWrap: {
-    flex: 1,
-    backgroundColor: '#F3F3F3',
-    borderRadius: 20,
-    paddingHorizontal: 12,
-    height: 40,
-    justifyContent: 'center',
+  backBtn: {
+    paddingRight: scaleWidth(10), // 뒤로 버튼과 검색바 사이 간격
+    paddingVertical: scaleWidth(6), // 터치 영역 확보
   },
-  input: { fontSize: 14, padding: 0 },
+
+  backText: {
+    fontSize: scaleWidth(26), // iOS 느낌의 얇은 chevron 크기
+    color: COLORS.black, // 아이콘 색
+    lineHeight: scaleWidth(28), // 위아래 흔들림 방지
+  },
+
+  searchBarWrap: {
+    flex: 1, // 검색바가 남는 공간 전부 차지
+    height: scaleWidth(40), // 검색바 높이(시안)
+    borderRadius: scaleWidth(20), // 캡슐 형태
+    backgroundColor: COLORS.gray100, // 연한 회색 배경
+    paddingHorizontal: scaleWidth(14), // 내부 좌우 여백
+    justifyContent: 'center', // 텍스트 수직 중앙
+  },
+
+  searchInput: {
+    fontSize: scaleWidth(14), // 입력 글자 크기
+    color: COLORS.black, // 입력 텍스트 색
+    padding: 0, // RN TextInput 기본 패딩 제거(정렬 깨짐 방지)
+  },
 
   sectionTitle: {
-    marginTop: 10,
-    marginBottom: 10,
-    fontSize: 14,
-    fontWeight: '600',
-    color: '#444',
+    marginTop: scaleWidth(12), // 검색바 아래 간격
+    marginBottom: scaleWidth(10), // 타이틀 아래 간격
+    fontSize: scaleWidth(14), // 섹션 타이틀 크기
+    fontWeight: '600', // 살짝 굵게
+    color: COLORS.gray700, // 회색 톤
   },
 
-  empty: { color: '#999' },
+  chipsArea: {
+    flex: 1, // 남는 공간 사용
+  },
 
-  chipWrap: { flexDirection: 'row', flexWrap: 'wrap' },
-  recentSearchesContainer: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: scaleWidth(10),
-    width: scaleWidth(329),
+  emptyText: {
+    fontSize: scaleWidth(13), // 안내 문구 크기
+    color: COLORS.gray400, // 연한 회색
+    marginTop: scaleWidth(6), // 살짝 띄우기
   },
-  chip: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#EFEFEF',
-    borderRadius: 18,
-    paddingHorizontal: 12,
-    height: 32,
-    marginRight: 8,
-    marginBottom: 8,
-  },
-  chipText: { fontSize: 13, color: '#333' },
-  chipX: { marginLeft: 8, paddingHorizontal: 2, paddingVertical: 2 },
-  chipXText: { fontSize: 16, color: '#777' },
 
-  bottom: { marginTop: 'auto', paddingBottom: 16 },
-  nextBtn: {
-    height: 48,
-    borderRadius: 12,
-    backgroundColor: '#DEDEDE',
-    justifyContent: 'center',
-    alignItems: 'center',
+  recentContainer: {
+    flexDirection: 'row', // 칩을 가로로 배치
+    flexWrap: 'wrap', // 화면 넘어가면 다음 줄로
+    gap: scaleWidth(10), // 칩 간격(지원 안 되면 RecentSearches 내부 margin으로 대체 가능)
   },
-  nextBtnDisabled: {
-    opacity: 0.4,
-  },
-  nextText: { fontSize: 16, fontWeight: '600' },
 });
