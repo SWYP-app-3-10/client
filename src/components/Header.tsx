@@ -24,7 +24,15 @@ const Header = ({
       {leftIcon ? (
         leftIcon
       ) : (
-        <IconButton onPress={() => goBackAction ?? navigation.goBack()}>
+        <IconButton
+          onPress={() => {
+            if (goBackAction) {
+              goBackAction(); // ✅ 함수 실행
+              return;
+            }
+            navigation.goBack(); // ✅ 기본 뒤로가기
+          }}
+        >
           <Ic_backIcon color={iconColor} />
         </IconButton>
       )}

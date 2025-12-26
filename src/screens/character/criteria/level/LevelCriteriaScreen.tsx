@@ -228,11 +228,6 @@ function LevelRow({ item, isMine }: { item: LevelCriteria; isMine: boolean }) {
 /**
  * ======================================
  * Screen
- *
- * - 현재 경험치/레벨 정보를 보여주고, 레벨별 기준 목록을 렌더링하는 화면
- * - 상단: 현재 XP 및 다음 레벨까지 필요한 XP 안내 카드
- *    ■ TODO "N" <-> "XP" 분리 필요
- * - 하단: 전체 레벨 리스트(현재 레벨에는 "내 레벨" 배지 표시)
  * ======================================
  */
 const LevelCriteriaScreen = () => {
@@ -289,6 +284,7 @@ export default LevelCriteriaScreen;
  */
 const styles = StyleSheet.create({
   listContent: {
+    marginHorizontal: scaleWidth(20),
     paddingTop: scaleWidth(32), // 리스트 상단 패딩
     paddingBottom: scaleWidth(64), // 리스트 하단 패딩
   },

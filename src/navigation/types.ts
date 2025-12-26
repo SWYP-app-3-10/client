@@ -17,34 +17,6 @@ export type OnboardingStackParamList = {
   [RouteNames.SOCIAL_LOGIN]: undefined;
 };
 
-// Mission Stack Param List
-export type MissionStackParamList = {
-  [RouteNames.MISSION]: undefined;
-};
-
-// Character Stack Param List
-export type CharacterStackParamList = {
-  [RouteNames.CHARACTER]: undefined;
-  // CHARACTER_CRITERIA와 CHARACTER_POINT_HISTORY는 FULL_SCREEN_STACK을 통해 접근
-};
-
-// Search Stack Param List
-export type SearchStackParamList = {
-  [RouteNames.SEARCH]:
-    | {
-        keyword?: string;
-        initialCategory?: NewsCategory;
-      }
-    | undefined;
-  [RouteNames.SEARCH_INPUT]: undefined;
-};
-
-// MyPage Stack Param List
-export type MyPageStackParamList = {
-  [RouteNames.MY_PAGE]: undefined;
-  // 서브 화면들 추가 예정
-};
-
 // Main Tab Param List (Bottom Tab Navigator)
 export type MainTabParamList = {
   [RouteNames.MISSION_TAB]: NavigatorScreenParams<MissionStackParamList>;
@@ -75,6 +47,39 @@ export type RootStackParamList = {
   [RouteNames.ONBOARDING]: NavigatorScreenParams<OnboardingStackParamList>;
   [RouteNames.MAIN_TAB]: NavigatorScreenParams<MainTabParamList>;
   [RouteNames.FULL_SCREEN_STACK]: NavigatorScreenParams<FullScreenStackParamList>;
+};
+
+// Mission Stack Param List
+export type MissionStackParamList = {
+  [RouteNames.MISSION]: undefined;
+};
+
+// Character Stack Param List
+export type CharacterStackParamList = {
+  [RouteNames.CHARACTER]: undefined;
+  [RouteNames.CHARACTER_CRITERIA]: undefined; // 기준 확인하기 (탭 2개 있는 화면)
+  [RouteNames.CHARACTER_POINT_HISTORY]: undefined;
+};
+
+// Search Stack Param List
+export type SearchStackParamList = {
+  [RouteNames.SEARCH]:
+    | {
+        keyword?: string;
+        initialCategory?: NewsCategory;
+      }
+    | undefined;
+  [RouteNames.SEARCH_INPUT]: undefined; // 검색어 입력 화면
+};
+
+// MyPage Stack Param List
+export type MyPageStackParamList = {
+  [RouteNames.MY_PAGE]: undefined;
+  [RouteNames.COMPONENT_SHOWCASE]: undefined;
+  [RouteNames.SETTINGS]: undefined;
+  [RouteNames.LOGIN_INFO]: undefined;
+  [RouteNames.INQUIRY]: undefined;
+  [RouteNames.TERMS_OF_SERVICE]: undefined;
 };
 
 /**
