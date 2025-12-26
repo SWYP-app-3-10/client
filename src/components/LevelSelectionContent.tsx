@@ -109,11 +109,10 @@ const LevelSelectionContent: React.FC<LevelSelectionContentProps> = ({
 };
 
 const styles = StyleSheet.create({
-  optionsContainer: {
-    width: '100%',
-  },
+  optionsContainer: {},
   option: {
     paddingVertical: scaleWidth(16.5),
+    paddingHorizontal: scaleWidth(20),
   },
   optionSelected: {
     backgroundColor: COLORS.puple[3],
