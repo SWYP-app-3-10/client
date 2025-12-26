@@ -13,7 +13,7 @@ import {
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { OnboardingStackParamList } from '../../navigation/types';
 import Spacer from '../../components/Spacer';
-import { SocialLoginButton, Button } from '../../components';
+import { SocialLoginButton } from '../../components';
 import {
   getRecentLogin,
   saveRecentLogin,
@@ -22,7 +22,6 @@ import {
 import { useShowModal } from '../../store/modalStore';
 import { useOnboardingStore } from '../../store/onboardingStore';
 import { useNotificationPermission } from '../../hooks/useNotificationPermission';
-import { clearAllAuthData } from '../../services/authService';
 
 type NavigationProp = NativeStackNavigationProp<OnboardingStackParamList>;
 
@@ -34,7 +33,6 @@ const LoginScreen = () => {
   const setOnboardingStep = useOnboardingStore(
     state => state.setOnboardingStep,
   );
-  const resetOnboarding = useOnboardingStore(state => state.resetOnboarding);
   const { checkPermission, requestPermission } = useNotificationPermission();
 
   useEffect(() => {
@@ -130,31 +128,6 @@ const LoginScreen = () => {
   const handleNaverLogin = () => handleSocialLogin('naver');
   const handleAppleLogin = () => handleSocialLogin('apple');
 
-  // 개발용: 로그인 초기화
-  const handleClearLogin = async () => {
-    Alert.alert(
-      '로그인 초기화',
-      '모든 로그인 및 온보딩 정보를 삭제하시겠습니까?',
-      [
-        {
-          text: '취소',
-          style: 'cancel',
-        },
-        {
-          text: '확인',
-          onPress: async () => {
-            await clearAllAuthData();
-            await resetOnboarding();
-            Alert.alert(
-              '완료',
-              '로그인 정보가 초기화되었습니다.\n앱을 재시작하세요.',
-            );
-          },
-        },
-      ],
-    );
-  };
-
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.content}>
@@ -163,15 +136,6 @@ const LoginScreen = () => {
           <Text>로고</Text>
         </View>
         <View style={styles.buttonContainer}>
-          {/* 개발용: 로그인 초기화 버튼 */}
-          {__DEV__ && (
-            <Button
-              title="로그인 초기화"
-              onPress={handleClearLogin}
-              variant="ghost"
-              style={styles.clearLoginButton}
-            />
-          )}
           {Platform.OS === 'ios' && (
             <SocialLoginButton
               provider="apple"
