@@ -1,6 +1,9 @@
-import React, { useState, useRef } from 'react';
-import { View, Text, StyleSheet, ScrollView } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import React, { useRef, useMemo } from 'react';
+import { View, Text, StyleSheet, ScrollView, Platform } from 'react-native';
+import {
+  SafeAreaView,
+  useSafeAreaInsets,
+} from 'react-native-safe-area-context';
 import LinearGradient from 'react-native-linear-gradient';
 import { useRoute } from '@react-navigation/native';
 import { BORDER_RADIUS, COLORS, scaleWidth } from '../../styles/global';
@@ -10,85 +13,57 @@ import ArticleContent from '../../components/ArticleContent';
 import QuizFeedback from '../../components/QuizFeedback';
 import Spacer from '../../components/Spacer';
 import { useArticles } from '../../hooks/useArticles';
+import { useScrollToQuiz } from '../../hooks/useScrollToQuiz';
+import { useQuizButton } from '../../hooks/useQuizButton';
 import { Article } from '../../data/mock/missionData';
 import { mockQuiz } from '../../data/mock/quizData';
+import { FullScreenStackRouteProp } from '../../navigation/types';
+import { RouteNames } from '../../../routes';
+
+// 플랫폼별 버튼 영역 높이 상수
+const BUTTON_WRAPPER_HEIGHT = Platform.OS === 'ios' ? 246 : 267;
 
 const ReadArticleDetailScreen = () => {
-  const route = useRoute();
+  const route =
+    useRoute<FullScreenStackRouteProp<typeof RouteNames.READ_ARTICLE_DETAIL>>();
   const { data: articles = [] } = useArticles();
+  const { bottom: safeAreaBottom } = useSafeAreaInsets();
   const scrollViewRef = useRef<ScrollView>(null);
-  const [showQuiz, setShowQuiz] = useState(false);
-  const lastShowQuizStateRef = useRef(false);
   const quizSectionRef = useRef<View>(null);
 
-  // @ts-ignore
+  // 라우트 파라미터에서 articleId 추출
   const articleId = route.params?.articleId;
-  const article = articles.find((a: Article) => a.id === articleId);
-  const quiz = mockQuiz; // TODO: articleId로 실제 퀴즈 데이터 가져오기
+  const article = useMemo(
+    () => articles.find((a: Article) => a.id === articleId),
+    [articles, articleId],
+  );
 
-  // 스크롤 이벤트 핸들러
-  const handleScroll = (event: any) => {
-    const { contentOffset, layoutMeasurement } = event.nativeEvent;
-    const scrollY = contentOffset.y;
-    const scrollViewHeight = layoutMeasurement.height;
+  // TODO: articleId로 실제 퀴즈 데이터 가져오기
+  const quiz = mockQuiz;
 
-    // 퀴즈 섹션의 실제 위치 측정
-    quizSectionRef.current?.measureLayout(
-      scrollViewRef.current as any,
-      (_x, y, _width, _height) => {
-        const quizSectionStart = y;
+  // 스크롤 감지 및 제어 커스텀 훅
+  const { showQuiz, handleScroll, scrollToQuiz, scrollToTop } = useScrollToQuiz(
+    {
+      scrollViewRef,
+      quizSectionRef,
+    },
+  );
 
-        const thresholdDown = quizSectionStart - scrollViewHeight;
+  // 버튼 상태 및 핸들러 커스텀 훅
+  const { buttonTitle, handleButtonPress } = useQuizButton({
+    showQuiz,
+    onScrollToQuiz: scrollToQuiz,
+    onScrollToTop: scrollToTop,
+  });
 
-        const hysteresisOffset = scrollViewHeight * 0.2;
-        const thresholdUp = thresholdDown - hysteresisOffset;
+  // TODO: 실제 선택한 답안 가져오기
+  const selectedAnswerId = 1;
 
-        if (scrollY + scrollViewHeight >= quizSectionStart) {
-          // 퀴즈 섹션이 화면에 보임
-          if (!lastShowQuizStateRef.current) {
-            setShowQuiz(true);
-            lastShowQuizStateRef.current = true;
-          }
-        } else if (scrollY < thresholdUp) {
-          // 퀴즈 섹션 위로 충분히 올라감
-          if (lastShowQuizStateRef.current) {
-            setShowQuiz(false);
-            lastShowQuizStateRef.current = false;
-          }
-        }
-      },
-      () => {
-        const { contentSize } = event.nativeEvent;
-        const scrollableHeight = contentSize.height - scrollViewHeight;
-        const threshold80Percent = scrollableHeight * 0.8;
-
-        if (scrollY >= threshold80Percent) {
-          if (!lastShowQuizStateRef.current) {
-            setShowQuiz(true);
-            lastShowQuizStateRef.current = true;
-          }
-        } else if (scrollY < scrollableHeight * 0.7) {
-          if (lastShowQuizStateRef.current) {
-            setShowQuiz(false);
-            lastShowQuizStateRef.current = false;
-          }
-        }
-      },
-    );
-  };
-
-  // 퀴즈 보기 버튼 클릭 시 퀴즈 섹션으로 스크롤
-  const handleQuizButtonPress = () => {
-    // 퀴즈 섹션으로 스크롤
-    setTimeout(() => {
-      scrollViewRef.current?.scrollToEnd({ animated: true });
-    }, 100);
-  };
-
-  // 글 보기 버튼 클릭 시 상단으로 스크롤
-  const handleArticleButtonPress = () => {
-    scrollViewRef.current?.scrollTo({ y: 0, animated: true });
-  };
+  // 동적 paddingBottom 계산: 버튼 영역 높이 + safeAreaBottom
+  const contentPaddingBottom = useMemo(
+    () => scaleWidth(BUTTON_WRAPPER_HEIGHT) + safeAreaBottom,
+    [safeAreaBottom],
+  );
 
   if (!article) {
     return (
@@ -101,9 +76,6 @@ const ReadArticleDetailScreen = () => {
     );
   }
 
-  // TODO: 실제 선택한 답안 가져오기
-  const selectedAnswerId = 1;
-
   return (
     <SafeAreaView style={styles.container}>
       <Header iconColor={COLORS.black} />
@@ -111,7 +83,10 @@ const ReadArticleDetailScreen = () => {
         bounces={false}
         ref={scrollViewRef}
         style={styles.scrollView}
-        contentContainerStyle={styles.content}
+        contentContainerStyle={[
+          styles.content,
+          { paddingBottom: contentPaddingBottom },
+        ]}
         showsVerticalScrollIndicator={false}
         onScroll={handleScroll}
         scrollEventThrottle={16}
@@ -130,7 +105,9 @@ const ReadArticleDetailScreen = () => {
         />
       </ScrollView>
 
-      <View style={styles.fixedButtonContainer}>
+      <View
+        style={[styles.fixedButtonContainer, { paddingBottom: safeAreaBottom }]}
+      >
         <View style={styles.buttonWrapper}>
           <LinearGradient
             colors={[COLORS.white, COLORS.transparent]}
@@ -139,10 +116,8 @@ const ReadArticleDetailScreen = () => {
             style={styles.overlayBackdrop}
           />
           <Button
-            title={showQuiz ? '글 보기' : '퀴즈 보기'}
-            onPress={
-              showQuiz ? handleArticleButtonPress : handleQuizButtonPress
-            }
+            title={buttonTitle}
+            onPress={handleButtonPress}
             variant="primary"
             style={styles.fixedButton}
           />
@@ -161,7 +136,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   content: {
-    paddingBottom: scaleWidth(246),
+    // paddingBottom은 동적으로 계산됨 (버튼 높이 + safeAreaBottom)
   },
   errorContainer: {
     flex: 1,
@@ -171,7 +146,7 @@ const styles = StyleSheet.create({
   },
   fixedButtonContainer: {
     position: 'absolute',
-    bottom: scaleWidth(31),
+    bottom: 0,
     left: 0,
     right: 0,
     alignItems: 'center',
@@ -183,7 +158,7 @@ const styles = StyleSheet.create({
     height: scaleWidth(175),
     alignItems: 'center',
     justifyContent: 'flex-end',
-    paddingBottom: scaleWidth(31),
+    paddingBottom: Platform.OS === 'ios' ? scaleWidth(10) : scaleWidth(31),
   },
   overlayBackdrop: {
     position: 'absolute',

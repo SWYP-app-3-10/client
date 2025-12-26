@@ -77,8 +77,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     flexDirection: 'row',
     borderRadius: BORDER_RADIUS[16],
-  },
-  defaultHeight: {
     height: scaleWidth(63),
   },
   // Variants
