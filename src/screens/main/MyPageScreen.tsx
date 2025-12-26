@@ -446,6 +446,7 @@ const styles = StyleSheet.create({
   profileSection: {
     flexDirection: 'row',
     alignItems: 'center',
+    paddingHorizontal: scaleWidth(20),
   },
   profileImageContainer: {
     marginRight: scaleWidth(20),
