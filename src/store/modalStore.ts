@@ -4,8 +4,12 @@ import {
   NotificationModalProps,
 } from '../components/NotificationModal';
 import { StyleProp, TextStyle } from 'react-native';
+import { ReactNode } from 'react';
 
-interface ModalState {
+export type ModalType = 'notification' | 'bottomSheet';
+
+interface NotificationModalState {
+  type: 'notification';
   visible: boolean;
   title: string;
   description?: string;
@@ -14,20 +18,33 @@ interface ModalState {
   closeButton?: boolean;
   primaryButton?: ModalButton;
   secondaryButton?: ModalButton;
-  children?: React.ReactNode;
+  children?: ReactNode;
   titleDescriptionGapSize?: number;
   descriptionColor?: string;
   titleStyle?: StyleProp<TextStyle>;
-  closeOnBackdropPress?: boolean; // 배경 클릭 시 닫기 여부 (기본값: true)
+  closeOnBackdropPress?: boolean;
 }
+
+interface BottomSheetModalState {
+  type: 'bottomSheet';
+  visible: boolean;
+  children: ReactNode;
+  closeOnBackdropPress?: boolean;
+}
+
+type ModalState = NotificationModalState | BottomSheetModalState;
 
 interface ModalStore {
   modalState: ModalState;
-  showModal: (config: Omit<ModalState, 'visible'>) => void;
+  showModal: (config: Omit<NotificationModalState, 'visible' | 'type'>) => void;
+  showBottomSheetModal: (
+    config: Omit<BottomSheetModalState, 'visible' | 'type'>,
+  ) => void;
   hideModal: () => void;
 }
 
 const defaultModalState: ModalState = {
+  type: 'notification',
   visible: false,
   title: '',
   titleStyle: undefined,
@@ -39,8 +56,17 @@ export const useModalStore = create<ModalStore>(set => ({
     set({
       modalState: {
         ...config,
+        type: 'notification',
         visible: true,
-      },
+      } as NotificationModalState,
+    }),
+  showBottomSheetModal: config =>
+    set({
+      modalState: {
+        ...config,
+        type: 'bottomSheet',
+        visible: true,
+      } as BottomSheetModalState,
     }),
   hideModal: () =>
     set(state => ({
@@ -53,6 +79,10 @@ export const useModalStore = create<ModalStore>(set => ({
 
 // 편의 훅: showModal만 필요한 경우
 export const useShowModal = () => useModalStore(state => state.showModal);
+
+// 편의 훅: showBottomSheetModal만 필요한 경우
+export const useShowBottomSheetModal = () =>
+  useModalStore(state => state.showBottomSheetModal);
 
 // 편의 훅: hideModal만 필요한 경우
 export const useHideModal = () => useModalStore(state => state.hideModal);

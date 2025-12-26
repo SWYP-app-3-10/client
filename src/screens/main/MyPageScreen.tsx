@@ -16,6 +16,7 @@ import {
   Caption_14R,
   Caption_12M,
   Body_16SB,
+  Heading_18SB,
 } from '../../styles/global';
 import { useOnboardingStore } from '../../store/onboardingStore';
 import { getRecentLogin } from '../../services/authStorageService';
@@ -28,7 +29,11 @@ import {
   MyPageStackParamList,
 } from '../../navigation/types';
 import { RouteNames } from '../../../routes';
-import { CheckIcon } from '../../icons';
+import { CheckIcon, RightArrowIcon, TriangleIcon } from '../../icons';
+import { Difficulty } from '../../store/onboardingStore';
+import { useShowBottomSheetModal, useHideModal } from '../../store/modalStore';
+import LevelSelectionContent from '../../components/LevelSelectionContent';
+import IconButton from '../../components/IconButton';
 
 // 난이도 -> 레벨 표시 텍스트
 const getLevelText = (difficulty: string | null): string => {
@@ -54,11 +59,169 @@ const categoryNameMap: Record<string, string> = {
   world: '세계',
 };
 
+// 타임라인 그룹 컴포넌트
+interface TimelineGroupProps {
+  dateGroup: {
+    date: string;
+    dayOfWeek: string;
+    count: number;
+    articles: Array<{
+      id: number;
+      title: string;
+      category: string;
+      quizResult: 'correct' | 'incorrect';
+      readDate: string;
+    }>;
+  };
+  formatDate: (dateStr: string, dayOfWeek: string) => string;
+  isLast: boolean;
+}
+
+const TimelineGroup: React.FC<TimelineGroupProps> = ({
+  dateGroup,
+  formatDate,
+  isLast,
+}) => {
+  const [contentHeight, setContentHeight] = useState(0);
+  const [showAll, setShowAll] = useState(false);
+  const dashCount = Math.ceil(
+    (contentHeight - scaleWidth(10) - scaleWidth(6)) /
+      (scaleWidth(2.5) + scaleWidth(2.5)),
+  );
+
+  const displayedArticles = showAll
+    ? dateGroup.articles
+    : dateGroup.articles.slice(0, 5);
+
+  return (
+    <View style={styles.timelineGroup}>
+      {/* 타임라인 컨테이너 */}
+      <View style={styles.timelineContainer}>
+        {/* 왼쪽 타임라인 라인 */}
+        <View style={styles.timelineLineContainer}>
+          {/* 상단 원형 마커 */}
+          <View style={styles.timelineDot} />
+          {/* 점선 - 게시글 길이에 맞춰 동적으로 생성 */}
+          <View style={styles.timelineDashedLineContainer}>
+            {Array.from({
+              length: Math.max(dashCount, 50),
+            }).map((_, index) => (
+              <View key={index} style={[styles.timelineDash]} />
+            ))}
+          </View>
+        </View>
+
+        {/* 오른쪽 컨텐츠 */}
+        <View
+          style={styles.timelineContent}
+          onLayout={event => {
+            const { height } = event.nativeEvent.layout;
+            if (dateGroup.articles.length > 5) {
+              setContentHeight(height - scaleWidth(56));
+            } else {
+              setContentHeight(height);
+            }
+          }}
+        >
+          {/* 날짜 헤더 */}
+          <View style={styles.timelineHeader}>
+            <Text style={styles.timelineDate}>
+              {formatDate(dateGroup.date, dateGroup.dayOfWeek)}
+            </Text>
+            <Text style={styles.timelineCount}>{dateGroup.count}개</Text>
+          </View>
+
+          {/* 글 카드들 */}
+          {displayedArticles.map((article, articleIndex) => (
+            <>
+              <View
+                key={article.id}
+                style={[
+                  styles.articleCard,
+                  articleIndex === displayedArticles.length - 1 &&
+                    styles.articleCardLast,
+                ]}
+              >
+                <View style={styles.articleContent}>
+                  <Text style={styles.articleTitle} numberOfLines={2}>
+                    {article.title}
+                  </Text>
+                  <View style={styles.articleFooter}>
+                    <View style={styles.categoryTag}>
+                      <Text style={styles.categoryTagText}>
+                        {article.category}
+                      </Text>
+                    </View>
+                    <View
+                      style={[
+                        styles.quizBadge,
+                        article.quizResult === 'correct'
+                          ? styles.quizBadgeCorrect
+                          : styles.quizBadgeIncorrect,
+                      ]}
+                    >
+                      <Text
+                        style={[
+                          styles.quizBadgeText,
+                          article.quizResult === 'correct'
+                            ? styles.quizBadgeTextCorrect
+                            : styles.quizBadgeTextIncorrect,
+                        ]}
+                      >
+                        Q - {article.quizResult === 'correct' ? '정답' : '오답'}
+                      </Text>
+                    </View>
+                  </View>
+                </View>
+                <RightArrowIcon color={COLORS.gray700} />
+              </View>
+              {articleIndex !== displayedArticles.length - 1 && (
+                <Spacer num={16} />
+              )}
+            </>
+          ))}
+
+          {/* 전체 보기 버튼 */}
+          {dateGroup.articles.length > 5 &&
+            (!showAll ? (
+              <>
+                <Spacer num={16} />
+                <Button
+                  variant="ghost"
+                  textStyle={styles.viewAllText}
+                  height={40}
+                  onPress={() => setShowAll(true)}
+                  title="전체 보기"
+                />
+              </>
+            ) : (
+              <>
+                <Spacer num={16} />
+                <Button
+                  variant="ghost"
+                  textStyle={styles.viewAllText}
+                  height={40}
+                  onPress={() => setShowAll(false)}
+                  title="요약 보기"
+                />
+              </>
+            ))}
+        </View>
+      </View>
+
+      {!isLast && <Spacer num={24} />}
+    </View>
+  );
+};
+
 const MyPageScreen = () => {
   const interests = useOnboardingStore(state => state.interests);
   const difficulty = useOnboardingStore(state => state.difficulty);
+  const setDifficulty = useOnboardingStore(state => state.setDifficulty);
   const [recentLogin, setRecentLogin] = useState<any>(null);
   const [selectedWeek, setSelectedWeek] = useState(0); // 현재 선택된 주 (0 = 현재 주)
+  const showBottomSheetModal = useShowBottomSheetModal();
+  const hideModal = useHideModal();
   const navigation =
     useNavigation<MainTabNavigationProp<MyPageStackParamList>>();
   // 사용자 정보 로드
@@ -109,6 +272,25 @@ const MyPageScreen = () => {
   // 읽은 글 데이터 (현재는 mock 데이터 사용)
   const readArticles = readArticlesMock;
 
+  // 다음 주에 데이터가 있는지 확인
+  const hasNextWeekData = useMemo(() => {
+    const today = new Date();
+    const nextWeekDate = new Date(today);
+    nextWeekDate.setDate(today.getDate() + (selectedWeek + 1) * 7);
+
+    const dayOfWeek = nextWeekDate.getDay();
+    const startDate = new Date(nextWeekDate);
+    startDate.setDate(nextWeekDate.getDate() - dayOfWeek);
+    const endDate = new Date(startDate);
+    endDate.setDate(startDate.getDate() + 6);
+
+    // 해당 주 범위에 데이터가 있는지 확인
+    return readArticles.some(dateGroup => {
+      const articleDate = new Date(dateGroup.date);
+      return articleDate >= startDate && articleDate <= endDate;
+    });
+  }, [selectedWeek, readArticles]);
+
   // 날짜 포맷팅 (YYYY-MM-DD -> MM.DD 요일)
   const formatDate = (dateStr: string, dayOfWeek: string) => {
     const [_year, month, day] = dateStr.split('-');
@@ -118,6 +300,7 @@ const MyPageScreen = () => {
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
       <ScrollView
+        bounces={false}
         style={styles.scrollView}
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
@@ -179,7 +362,7 @@ const MyPageScreen = () => {
           </View>
         </View>
 
-        <Spacer num={24} />
+        <Spacer num={32} />
 
         {/* 나의 레벨 섹션 */}
         <View style={styles.section}>
@@ -188,8 +371,15 @@ const MyPageScreen = () => {
           <TouchableOpacity
             style={styles.levelButton}
             onPress={() => {
-              // TODO: 레벨 선택 모달 표시
-              console.log('레벨 선택');
+              showBottomSheetModal({
+                children: React.createElement(LevelSelectionContent, {
+                  selectedLevel: difficulty,
+                  onSelect: (level: Difficulty) => {
+                    setDifficulty(level);
+                    hideModal();
+                  },
+                }),
+              });
             }}
           >
             <Text style={styles.levelText}>{getLevelText(difficulty)}</Text>
@@ -200,83 +390,40 @@ const MyPageScreen = () => {
         <Spacer num={32} />
 
         {/* 읽은 글 섹션 */}
-        <View style={styles.section}>
+        <View style={styles.readArticleSection}>
+          <Spacer num={32} />
           <Text style={styles.sectionTitle}>읽은 글</Text>
-          <Spacer num={16} />
+          <Spacer num={6} />
 
           {/* 날짜 선택기 */}
           <View style={styles.dateSelector}>
-            <TouchableOpacity onPress={() => setSelectedWeek(prev => prev - 1)}>
-              <Text style={styles.dateArrow}>‹</Text>
-            </TouchableOpacity>
+            <IconButton onPress={() => setSelectedWeek(prev => prev - 1)}>
+              <TriangleIcon color={COLORS.gray600} />
+            </IconButton>
             <Text style={styles.dateRange}>{currentWeekRange}</Text>
-            <TouchableOpacity onPress={() => setSelectedWeek(prev => prev + 1)}>
-              <Text style={styles.dateArrow}>›</Text>
-            </TouchableOpacity>
+            <IconButton
+              onPress={() => setSelectedWeek(prev => prev + 1)}
+              disabled={!hasNextWeekData}
+            >
+              <TriangleIcon
+                color={hasNextWeekData ? COLORS.gray600 : COLORS.gray200}
+                style={{ transform: [{ rotate: '180deg' }] }}
+              />
+            </IconButton>
           </View>
 
-          <Spacer num={20} />
+          <Spacer num={24} />
 
           {/* 타임라인 */}
           {readArticles.map((dateGroup, groupIndex) => (
-            <View key={groupIndex} style={styles.timelineGroup}>
-              {/* 날짜 헤더 */}
-              <View style={styles.timelineHeader}>
-                <View style={styles.timelineDot} />
-                <Text style={styles.timelineDate}>
-                  {formatDate(dateGroup.date, dateGroup.dayOfWeek)}
-                </Text>
-                <Text style={styles.timelineCount}>{dateGroup.count}개</Text>
-              </View>
-
-              {/* 글 카드들 */}
-              {dateGroup.articles.slice(0, 5).map(article => (
-                <View key={article.id} style={styles.articleCard}>
-                  <Text style={styles.articleTitle} numberOfLines={2}>
-                    {article.title}
-                  </Text>
-                  <View style={styles.articleFooter}>
-                    <View style={styles.categoryTag}>
-                      <Text style={styles.categoryTagText}>
-                        {article.category}
-                      </Text>
-                    </View>
-                    <View
-                      style={[
-                        styles.quizBadge,
-                        article.quizResult === 'correct'
-                          ? styles.quizBadgeCorrect
-                          : styles.quizBadgeIncorrect,
-                      ]}
-                    >
-                      <Text
-                        style={[
-                          styles.quizBadgeText,
-                          article.quizResult === 'correct'
-                            ? styles.quizBadgeTextCorrect
-                            : styles.quizBadgeTextIncorrect,
-                        ]}
-                      >
-                        Q - {article.quizResult === 'correct' ? '정답' : '오답'}
-                      </Text>
-                    </View>
-                  </View>
-                </View>
-              ))}
-
-              {/* 전체 보기 버튼 */}
-              {dateGroup.articles.length > 5 && (
-                <TouchableOpacity style={styles.viewAllButton}>
-                  <Text style={styles.viewAllText}>전체 보기</Text>
-                </TouchableOpacity>
-              )}
-
-              {groupIndex < readArticles.length - 1 && <Spacer num={24} />}
-            </View>
+            <TimelineGroup
+              key={groupIndex}
+              dateGroup={dateGroup}
+              formatDate={formatDate}
+              isLast={groupIndex === readArticles.length - 1}
+            />
           ))}
         </View>
-
-        <Spacer num={40} />
       </ScrollView>
     </SafeAreaView>
   );
@@ -286,7 +433,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: COLORS.white,
-    paddingHorizontal: scaleWidth(20),
   },
   backButton: {
     width: scaleWidth(50),
@@ -322,8 +468,13 @@ const styles = StyleSheet.create({
     ...Body_16M,
     color: COLORS.gray700,
   },
+  readArticleSection: {
+    backgroundColor: COLORS.gray100,
+    paddingHorizontal: scaleWidth(20),
+    paddingBottom: scaleWidth(40),
+  },
   section: {
-    marginBottom: scaleWidth(24),
+    paddingHorizontal: scaleWidth(20),
   },
   sectionHeader: {
     flexDirection: 'row',
@@ -376,97 +527,118 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
-    gap: scaleWidth(16),
   },
-  dateArrow: {
-    ...Heading_18EB_Round,
-    color: COLORS.black,
-    fontSize: scaleWidth(24),
-  },
+
   dateRange: {
-    ...Body_16M,
+    ...Heading_18SB,
     color: COLORS.black,
   },
-  timelineGroup: {
-    marginBottom: scaleWidth(24),
-  },
-  timelineHeader: {
-    flexDirection: 'row',
+  timelineGroup: {},
+  timelineContainer: {},
+  timelineLineContainer: {
     alignItems: 'center',
-    marginBottom: scaleWidth(16),
+    position: 'absolute',
+    top: scaleWidth(5),
+    left: scaleWidth(5),
   },
   timelineDot: {
-    width: scaleWidth(8),
-    height: scaleWidth(8),
-    borderRadius: scaleWidth(4),
-    backgroundColor: COLORS.gray400,
-    marginRight: scaleWidth(8),
+    width: scaleWidth(10),
+    height: scaleWidth(10),
+    borderRadius: BORDER_RADIUS[99],
+    backgroundColor: COLORS.gray800,
+    position: 'relative',
+  },
+  timelineDashedLineContainer: {
+    flex: 1,
+    alignItems: 'center',
+    position: 'absolute',
+    top: scaleWidth(6),
+  },
+  timelineDash: {
+    width: scaleWidth(1),
+    height: scaleWidth(2.5),
+    backgroundColor: COLORS.gray800,
+    marginBottom: scaleWidth(2.5),
+  },
+  timelineContent: {
+    flex: 1,
+    position: 'relative',
+    marginLeft: scaleWidth(25),
+  },
+  timelineHeader: {
+    marginBottom: scaleWidth(12),
+    gap: scaleWidth(10),
   },
   timelineDate: {
-    ...Body_16M,
-    color: COLORS.black,
-    marginRight: scaleWidth(8),
-  },
-  timelineCount: {
     ...Caption_14R,
     color: COLORS.gray700,
   },
+  timelineCount: {
+    ...Body_16SB,
+    color: COLORS.black,
+  },
   articleCard: {
-    padding: scaleWidth(16),
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingVertical: scaleWidth(16),
+    paddingHorizontal: scaleWidth(20),
     borderRadius: BORDER_RADIUS[16],
     backgroundColor: COLORS.white,
     borderWidth: scaleWidth(1),
     borderColor: COLORS.gray300,
-    marginBottom: scaleWidth(12),
+    gap: scaleWidth(19),
+  },
+  articleCardLast: {
+    marginBottom: 0,
+  },
+  articleContent: {
+    flex: 1,
   },
   articleTitle: {
     ...Body_16M,
     color: COLORS.black,
-    marginBottom: scaleWidth(12),
-    lineHeight: scaleWidth(24),
+    marginBottom: scaleWidth(16),
   },
   articleFooter: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
     alignItems: 'center',
+    gap: scaleWidth(6),
   },
   categoryTag: {
-    paddingHorizontal: scaleWidth(8),
-    paddingVertical: scaleWidth(4),
-    borderRadius: BORDER_RADIUS[8],
+    paddingHorizontal: scaleWidth(10),
+    paddingVertical: scaleWidth(6),
+    borderRadius: BORDER_RADIUS[30],
     backgroundColor: COLORS.gray100,
   },
   categoryTagText: {
-    ...Caption_12M,
+    ...Caption_14R,
     color: COLORS.gray700,
   },
   quizBadge: {
-    paddingHorizontal: scaleWidth(12),
+    paddingHorizontal: scaleWidth(10),
     paddingVertical: scaleWidth(6),
-    borderRadius: BORDER_RADIUS[8],
+    borderRadius: BORDER_RADIUS[30],
   },
   quizBadgeCorrect: {
-    backgroundColor: COLORS.blue[5],
+    backgroundColor: COLORS.blue[3],
   },
   quizBadgeIncorrect: {
-    backgroundColor: COLORS.red.main,
+    backgroundColor: COLORS.red[3],
   },
   quizBadgeText: {
     ...Caption_12M,
   },
   quizBadgeTextCorrect: {
-    color: COLORS.blue[6],
+    color: COLORS.blue.correct,
   },
   quizBadgeTextIncorrect: {
     color: COLORS.red.main,
   },
-  viewAllButton: {
-    alignItems: 'center',
-    paddingVertical: scaleWidth(12),
-  },
+
   viewAllText: {
     ...Body_16M,
-    color: COLORS.gray700,
+    color: COLORS.gray800,
   },
 });
 

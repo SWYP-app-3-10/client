@@ -32,6 +32,7 @@ export const BORDER_RADIUS: Record<number, number> = {
   30: scaleWidth(30),
   10: scaleWidth(10),
   12: scaleWidth(12),
+  2: scaleWidth(2),
 };
 
 // 컬러 팔레트
@@ -57,7 +58,13 @@ export const COLORS = {
     completed: '#BFABFF',
   },
   red: { main: '#ff7E6a', 3: '#FFEDEA' },
-  blue: { main: '#4d8cff', 3: '#E1EEFF', 5: '#E8F4FF', 6: '#00b1fc' },
+  blue: {
+    main: '#4d8cff',
+    3: '#E1EEFF',
+    5: '#E8F4FF',
+    6: '#00b1fc',
+    correct: '#4d8cff',
+  },
   yellow: {
     1: '#fff0ba',
     light: '#FFE682',

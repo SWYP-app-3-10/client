@@ -29,6 +29,7 @@ export interface ButtonProps
   children?: React.ReactNode;
   hitslop?: number;
   style?: StyleProp<ViewStyle>;
+  height?: number;
 }
 
 const Button: React.FC<ButtonProps> = ({
@@ -40,11 +41,13 @@ const Button: React.FC<ButtonProps> = ({
   textStyle,
   children,
   hitslop,
+  height,
 }) => {
   const buttonStyles = [
     styles.button,
     styles[variant],
     disabled && styles.disabled,
+    height ? { height: scaleWidth(height) } : styles.defaultHeight,
     style,
   ];
 
@@ -73,8 +76,10 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     flexDirection: 'row',
-    height: scaleWidth(63),
     borderRadius: BORDER_RADIUS[16],
+  },
+  defaultHeight: {
+    height: scaleWidth(63),
   },
   // Variants
   primary: {

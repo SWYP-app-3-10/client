@@ -35,7 +35,7 @@ export const readArticlesMock: ReadArticlesByDate[] = [
         title:
           '검찰청 폐지 후 들어설 중수청, 검사 0.8% 만 근무 희망 검찰청 폐지 후 검찰청 폐지 후',
         category: '경제',
-        quizResult: 'correct',
+        quizResult: 'incorrect',
         readDate: '2024-12-03',
       },
       {
@@ -59,23 +59,16 @@ export const readArticlesMock: ReadArticlesByDate[] = [
         title:
           '검찰청 폐지 후 들어설 중수청, 검사 0.8% 만 근무 희망 검찰청 폐지 후 검찰청 폐지 후',
         category: '경제',
-        quizResult: 'incorrect',
+        quizResult: 'correct',
         readDate: '2024-12-03',
       },
-    ],
-  },
-  {
-    date: '2024-12-04',
-    dayOfWeek: '목요일',
-    count: 4,
-    articles: [
       {
         id: 6,
         title:
           '검찰청 폐지 후 들어설 중수청, 검사 0.8% 만 근무 희망 검찰청 폐지 후 검찰청 폐지 후',
         category: '경제',
         quizResult: 'correct',
-        readDate: '2024-12-04',
+        readDate: '2024-12-03',
       },
       {
         id: 7,
@@ -83,23 +76,46 @@ export const readArticlesMock: ReadArticlesByDate[] = [
           '검찰청 폐지 후 들어설 중수청, 검사 0.8% 만 근무 희망 검찰청 폐지 후 검찰청 폐지 후',
         category: '경제',
         quizResult: 'correct',
-        readDate: '2024-12-04',
+        readDate: '2024-12-03',
       },
+    ],
+  },
+  {
+    date: '2024-12-01',
+    dayOfWeek: '월요일',
+    count: 4,
+    articles: [
       {
         id: 8,
         title:
           '검찰청 폐지 후 들어설 중수청, 검사 0.8% 만 근무 희망 검찰청 폐지 후 검찰청 폐지 후',
         category: '경제',
         quizResult: 'correct',
-        readDate: '2024-12-04',
+        readDate: '2024-12-01',
       },
       {
         id: 9,
         title:
           '검찰청 폐지 후 들어설 중수청, 검사 0.8% 만 근무 희망 검찰청 폐지 후 검찰청 폐지 후',
         category: '경제',
+        quizResult: 'correct',
+        readDate: '2024-12-01',
+      },
+      {
+        id: 10,
+        title:
+          '검찰청 폐지 후 들어설 중수청, 검사 0.8% 만 근무 희망 검찰청 폐지 후 검찰청 폐지 후',
+        category: '경제',
+        quizResult: 'correct',
+        readDate: '2024-12-01',
+      },
+      {
+        id: 11,
+        title:
+          '검찰청 폐지 후 들어설 중수청, 검사 0.8% 만 근무 희망 검찰청 폐지 후 검찰청 폐지 후',
+        category: '경제',
         quizResult: 'incorrect',
-        readDate: '2024-12-04',
+        readDate: '2024-12-01',
       },
     ],
   },
