@@ -1,6 +1,7 @@
 import React from 'react';
 import { StyleSheet, View } from 'react-native';
 import Shimmer from './Shimmer';
+import { scaleWidth } from '../../../styles/global';
 
 /**
  * SearchResultSkeleton
@@ -30,8 +31,23 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   left: { flex: 1 },
-  line1: { height: 14, borderRadius: 6, width: '72%', marginBottom: 8 },
-  line2: { height: 12, borderRadius: 6, width: '88%', marginBottom: 6 },
-  line3: { height: 11, borderRadius: 6, width: '40%' },
-  thumb: { width: 56, height: 56, borderRadius: 12, marginLeft: 12 },
+  line1: {
+    height: scaleWidth(16),
+    borderRadius: 6,
+    width: '72%',
+    marginBottom: 8,
+  },
+  line2: {
+    height: scaleWidth(16),
+    borderRadius: 6,
+    width: '88%',
+    marginBottom: 6,
+  },
+  line3: { height: scaleWidth(11), borderRadius: 6, width: '40%' },
+  thumb: {
+    width: 85,
+    height: 85,
+    borderRadius: 16,
+    marginLeft: scaleWidth(20),
+  },
 });

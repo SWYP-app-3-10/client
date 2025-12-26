@@ -1,5 +1,6 @@
 import React, { useEffect, useRef } from 'react';
 import { Animated, StyleSheet, View, ViewStyle } from 'react-native';
+import { COLORS } from '../../../styles/global';
 
 type Props = {
   /** 외부에서 크기/모양을 지정하기 위한 스타일 */
@@ -69,7 +70,7 @@ const styles = StyleSheet.create({
     top: 0,
     bottom: 0,
     width: 80,
-    backgroundColor: 'rgba(255,255,255,0.45)',
+    backgroundColor: COLORS.gray500,
     transform: [{ skewX: '-20deg' }],
   },
 });
