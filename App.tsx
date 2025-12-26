@@ -25,12 +25,12 @@ const App = () => {
       if (apps.length === 0) {
         // 초기화되지 않았다면 GoogleService-Info.plist의 값으로 초기화
         const firebaseConfig = {
-          apiKey: 'AIzaSyCvW-xajcxIsfsKoc96vnvOL1ihSn-3A0E',
-          projectId: 'neurous-d632a',
-          storageBucket: 'neurous-d632a.firebasestorage.app',
-          messagingSenderId: '424320333528',
-          appId: '1:424320333528:ios:980dd3a741185e3a48c9ad',
-          databaseURL: 'https://neurous-d632a-default-rtdb.firebaseio.com',
+          apiKey: 'AIzaSyBW0P43--sWylkopx3bXhY3JDZVd6CWc2c',
+          projectId: 'neurous-b290f',
+          storageBucket: 'neurous-b290f.firebasestorage.app',
+          messagingSenderId: '1081679299790',
+          appId: '1:1081679299790:ios:454610318b56c75388fc9f',
+          databaseURL: 'https://neurous-b290f-default-rtdb.firebaseio.com',
         };
         initializeApp(firebaseConfig);
       } else {

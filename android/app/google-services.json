@@ -1,45 +1,45 @@
 {
   "project_info": {
-    "project_number": "424320333528",
-    "project_id": "neurous-d632a",
-    "storage_bucket": "neurous-d632a.firebasestorage.app"
+    "project_number": "1081679299790",
+    "project_id": "neurous-b290f",
+    "storage_bucket": "neurous-b290f.firebasestorage.app"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:424320333528:android:51c7515f93c9c54648c9ad",
+        "mobilesdk_app_id": "1:1081679299790:android:dbf7dc463ac95b3088fc9f",
         "android_client_info": {
           "package_name": "com.neurous.app"
         }
       },
       "oauth_client": [
         {
-          "client_id": "424320333528-4kkfevhkgkcm6c2beufbdq08tf0kssr9.apps.googleusercontent.com",
+          "client_id": "1081679299790-5psm92vu72hbpdcndsq9dplvc0e4b3d1.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {
             "package_name": "com.neurous.app",
-            "certificate_hash": "7787921c16631d6cb095bffc451fbf89b7bebb55"
+            "certificate_hash": "5e8f16062ea3cd2c4a0d547876baa6f38cabf625"
           }
         },
         {
-          "client_id": "424320333528-3em9k816cropmqufki5vq4cb4nrrcrof.apps.googleusercontent.com",
+          "client_id": "1081679299790-qa7cfep4v8cvskpghucvhibvn2c27ivj.apps.googleusercontent.com",
           "client_type": 3
         }
       ],
       "api_key": [
         {
-          "current_key": "AIzaSyDInX-MEyyzAHDVcPNbnNLtZBbUufHtO3M"
+          "current_key": "AIzaSyD_I30PjMIWRkXNk7OKPS6zUgN6qxnsVi4"
         }
       ],
       "services": {
         "appinvite_service": {
           "other_platform_oauth_client": [
             {
-              "client_id": "424320333528-3em9k816cropmqufki5vq4cb4nrrcrof.apps.googleusercontent.com",
+              "client_id": "1081679299790-qa7cfep4v8cvskpghucvhibvn2c27ivj.apps.googleusercontent.com",
               "client_type": 3
             },
             {
-              "client_id": "424320333528-de3lsl1sqg407ck8nrk8jmodmhertul2.apps.googleusercontent.com",
+              "client_id": "1081679299790-po4as4ci605ich7podbelqhq5bop8iai.apps.googleusercontent.com",
               "client_type": 2,
               "ios_info": {
                 "bundle_id": "com.neurous.app"

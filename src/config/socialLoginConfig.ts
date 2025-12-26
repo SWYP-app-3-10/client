@@ -1,7 +1,7 @@
 // 구글 로그인 설정
 export const GOOGLE_CONFIG = {
   webClientId:
-    '424320333528-3em9k816cropmqufki5vq4cb4nrrcrof.apps.googleusercontent.com',
+    '1081679299790-qa7cfep4v8cvskpghucvhibvn2c27ivj.apps.googleusercontent.com',
 };
 
 // 네이버 로그인 설정
