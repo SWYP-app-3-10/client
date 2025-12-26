@@ -32,6 +32,9 @@ export type FullScreenStackParamList = {
     articleId: number;
     returnTo?: 'mission' | 'search';
   };
+  [RouteNames.READ_ARTICLE_DETAIL]: {
+    articleId: number;
+  };
   [RouteNames.QUIZ]: { articleId: number; returnTo?: 'mission' | 'search' };
   [RouteNames.AD_LOADING]: {
     articleId: number;

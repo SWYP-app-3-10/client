@@ -78,6 +78,7 @@ export const COLORS = {
   // 오버레이
   overlay: 'rgba(0, 0, 0, 0.5)',
   overlayWhite: 'rgba(255, 255, 255, 0.7)',
+  transparent: 'rgba(255, 255, 255, 0)',
   // 소셜 로그인
   kakao: '#FFD43B',
   naver: '#2DB400',

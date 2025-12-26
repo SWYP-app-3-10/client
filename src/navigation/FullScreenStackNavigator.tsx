@@ -3,6 +3,7 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { RouteNames } from '../../routes';
 import NotificationScreen from '../screens/common/NotificationScreen';
 import ArticleDetailScreen from '../screens/common/ArticleDetailScreen';
+import ReadArticleDetailScreen from '../screens/common/ReadArticleDetailScreen';
 import QuizScreen from '../screens/common/QuizScreen';
 import AdLoadingScreen from '../screens/common/AdLoadingScreen';
 import CriteriaCheckScreen from '../screens/character/criteria/CriteriaCheckScreen';
@@ -25,6 +26,11 @@ const FullScreenStackNavigator = () => {
       <Stack.Screen
         name={RouteNames.ARTICLE_DETAIL}
         component={ArticleDetailScreen}
+      />
+      {/* 읽은 글 상세 화면 */}
+      <Stack.Screen
+        name={RouteNames.READ_ARTICLE_DETAIL}
+        component={ReadArticleDetailScreen}
       />
       {/* 퀴즈 화면 */}
       <Stack.Screen name={RouteNames.QUIZ} component={QuizScreen} />

@@ -10,21 +10,17 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import {
   COLORS,
   scaleWidth,
-  Heading_20EB_Round,
   BORDER_RADIUS,
-  Heading_24EB_Round,
   Body_16M,
   Body_16SB,
 } from '../../styles/global';
 import Header from '../../components/Header';
 import Button from '../../components/Button';
+import QuizOptionCard from '../../components/QuizOptionCard';
+import QuizQuestion from '../../components/QuizQuestion';
 import Spacer from '../../components/Spacer';
 import { QuizOption } from '../../data/mock/quizData';
-import {
-  CheckIcon,
-  CircleIcon,
-  CloseIcon,
-} from '../../icons/commonIcons/commonIcons';
+import { CheckIcon } from '../../icons/commonIcons/commonIcons';
 import { useShowModal, useHideModal } from '../../store/modalStore';
 import DifficultySelectionModal, {
   Difficulty,
@@ -70,7 +66,9 @@ const QuizScreen: React.FC = () => {
   const { addPoints } = usePointStore();
   const { addExperience } = useExperienceStore();
   const handleNext = async () => {
-    if (!selectedOptionId) return;
+    if (!selectedOptionId) {
+      return;
+    }
 
     // TODO: 서버로 답안 전송
     // 예시: await submitQuizAnswer(articleId, quiz.id, selectedOptionId);
@@ -204,25 +202,7 @@ const QuizScreen: React.FC = () => {
       // 피드백 화면: 정답/오답에 따라 스타일 변경
       const correct = isCorrect(option.id);
       return (
-        <View
-          key={option.id}
-          style={[
-            styles.optionCard,
-            correct ? styles.optionCardCorrect : styles.optionCardIncorrect,
-          ]}
-        >
-          <Text style={styles.optionText}>{option.text}</Text>
-
-          {correct ? (
-            <View style={styles.correctIconContainer}>
-              <CircleIcon />
-            </View>
-          ) : (
-            <View style={styles.incorrectIconContainer}>
-              <CloseIcon color={COLORS.white} />
-            </View>
-          )}
-        </View>
+        <QuizOptionCard key={option.id} option={option} isCorrect={correct} />
       );
     }
   };
@@ -237,8 +217,7 @@ const QuizScreen: React.FC = () => {
         showsVerticalScrollIndicator={false}
       >
         {/* Q 아이콘과 문제 */}
-        <Text style={styles.qIconText}>Q</Text>
-        <Text style={styles.questionText}>{quiz.question}</Text>
+        <QuizQuestion question={quiz.question} />
 
         <Spacer num={40} />
 
@@ -256,7 +235,6 @@ const QuizScreen: React.FC = () => {
       </ScrollView>
 
       {/* 하단 버튼 */}
-      {/* <View style={styles.buttonContainer}> */}
       <Button
         title={quizState === 'question' ? '다음' : '완료'}
         onPress={quizState === 'question' ? handleNext : handleComplete}
@@ -264,7 +242,6 @@ const QuizScreen: React.FC = () => {
         style={styles.actionButton}
         disabled={quizState === 'question' && !selectedOptionId}
       />
-      {/* </View> */}
     </SafeAreaView>
   );
 };
@@ -285,16 +262,6 @@ const styles = StyleSheet.create({
   questionContainer: {
     flexDirection: 'row',
     alignItems: 'flex-start',
-  },
-  qIconText: {
-    ...Heading_24EB_Round,
-    color: COLORS.puple[5],
-    marginBottom: scaleWidth(4),
-  },
-  questionText: {
-    ...Heading_20EB_Round,
-    color: COLORS.black,
-    flex: 1,
   },
   optionCard: {
     flexDirection: 'row',

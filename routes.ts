@@ -20,6 +20,7 @@ export const RouteNames = {
 
   // 미션 - 아티클
   ARTICLE_DETAIL: 'article' as const,
+  READ_ARTICLE_DETAIL: 'read-article-detail' as const,
   QUIZ: 'quiz' as const,
 
   // 광고

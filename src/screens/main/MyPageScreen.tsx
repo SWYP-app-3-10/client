@@ -91,12 +91,14 @@ interface TimelineGroupProps {
   };
   formatDate: (dateStr: string, dayOfWeek: string) => string;
   isLast: boolean;
+  onArticlePress: (articleId: number) => void;
 }
 
 const TimelineGroup: React.FC<TimelineGroupProps> = ({
   dateGroup,
   formatDate,
   isLast,
+  onArticlePress,
 }) => {
   const [contentHeight, setContentHeight] = useState(0);
   const [showAll, setShowAll] = useState(false);
@@ -148,13 +150,15 @@ const TimelineGroup: React.FC<TimelineGroupProps> = ({
 
           {/* 글 카드들 */}
           {displayedArticles.map((article, articleIndex) => (
-            <React.Fragment key={article.id}>
-              <View
+            <>
+              <TouchableOpacity
+                key={article.id}
                 style={[
                   styles.articleCard,
                   articleIndex === displayedArticles.length - 1 &&
                     styles.articleCardLast,
                 ]}
+                onPress={() => onArticlePress(article.id)}
               >
                 <View style={styles.articleContent}>
                   <Text style={styles.articleTitle} numberOfLines={2}>
@@ -191,27 +195,38 @@ const TimelineGroup: React.FC<TimelineGroupProps> = ({
                 </View>
 
                 <RightArrowIcon color={COLORS.gray700} />
-              </View>
-
+              </TouchableOpacity>
               {articleIndex !== displayedArticles.length - 1 && (
                 <Spacer num={16} />
               )}
-            </React.Fragment>
+            </>
           ))}
 
-          {/* 전체 보기 / 요약 보기 버튼 */}
-          {dateGroup.articles.length > 5 && (
-            <>
-              <Spacer num={16} />
-              <Button
-                variant="ghost"
-                textStyle={styles.viewAllText}
-                height={40}
-                onPress={() => setShowAll(prev => !prev)}
-                title={showAll ? '요약 보기' : '전체 보기'}
-              />
-            </>
-          )}
+          {/* 전체 보기 버튼 */}
+          {dateGroup.articles.length > 5 &&
+            (!showAll ? (
+              <>
+                <Spacer num={16} />
+                <Button
+                  variant="ghost"
+                  textStyle={styles.viewAllText}
+                  onPress={() => setShowAll(true)}
+                  title="전체 보기"
+                  style={{ height: scaleWidth(40) }}
+                />
+              </>
+            ) : (
+              <>
+                <Spacer num={16} />
+                <Button
+                  variant="ghost"
+                  textStyle={styles.viewAllText}
+                  style={{ height: scaleWidth(40) }}
+                  onPress={() => setShowAll(false)}
+                  title="요약 보기"
+                />
+              </>
+            ))}
         </View>
       </View>
 
@@ -430,6 +445,14 @@ const MyPageScreen = () => {
               dateGroup={dateGroup}
               formatDate={formatDate}
               isLast={groupIndex === readArticles.length - 1}
+              onArticlePress={articleId => {
+                navigation.getParent()?.navigate(RouteNames.FULL_SCREEN_STACK, {
+                  screen: RouteNames.READ_ARTICLE_DETAIL,
+                  params: {
+                    articleId,
+                  },
+                });
+              }}
             />
           ))}
         </View>

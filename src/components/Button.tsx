@@ -37,17 +37,16 @@ const Button: React.FC<ButtonProps> = ({
   onPress,
   variant = 'primary',
   disabled = false,
-  style,
   textStyle,
   children,
   hitslop,
-  height,
+  style,
+  ...props
 }) => {
   const buttonStyles = [
     styles.button,
     styles[variant],
     disabled && styles.disabled,
-    height ? { height: scaleWidth(height) } : styles.defaultHeight,
     style,
   ];
 
@@ -65,6 +64,7 @@ const Button: React.FC<ButtonProps> = ({
       disabled={disabled}
       activeOpacity={0.7}
       hitSlop={hitslop ?? 10}
+      {...props}
     >
       {children ? children : <Text style={textStyles}>{title}</Text>}
     </TouchableOpacity>
