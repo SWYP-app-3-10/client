@@ -35,9 +35,6 @@ export const RouteNames = {
   // 검색 서브 화면
   SEARCH_INPUT: 'search-input' as const,
 
-  // 공통 컴포넌트 쇼케이스
-  COMPONENT_SHOWCASE: 'component-showcase' as const,
-
   // 캐릭터
   CHARACTER_CRITERIA: 'character-criteria' as const,
   CHARACTER_POINT_HISTORY: 'character-point-history' as const,
