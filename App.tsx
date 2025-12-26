@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { QueryClientProvider } from '@tanstack/react-query';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
-import { getApp, initializeApp, getApps } from '@react-native-firebase/app';
+import { initializeApp, getApps, getApp } from '@react-native-firebase/app';
 import SplashScreen from './src/screens/SplashScreen';
 import RootNavigator from './src/navigation/RootNavigator';
 import { queryClient } from './src/config/queryClient';
@@ -17,7 +17,6 @@ const App = () => {
   const loadPoints = usePointStore(state => state.loadPoints);
   const loadExperience = useExperienceStore(state => state.loadExperience);
 
-  // Firebase 초기화
   useEffect(() => {
     try {
       // 이미 초기화된 앱이 있는지 확인

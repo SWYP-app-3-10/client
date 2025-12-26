@@ -2,7 +2,6 @@ import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, Alert, Platform } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
-import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RouteNames } from '../../../routes';
 import { COLORS, scaleWidth } from '../../styles/global';
 import {
@@ -11,6 +10,7 @@ import {
   initializeNaverLogin,
   SocialLoginProvider,
 } from '../../services/socialLoginService';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { OnboardingStackParamList } from '../../navigation/types';
 import Spacer from '../../components/Spacer';
 import { SocialLoginButton } from '../../components';
@@ -75,7 +75,7 @@ const LoginScreen = () => {
               console.log('알림 권한이 허용되었습니다.');
             }
             await setOnboardingStep('interests');
-            navigation.navigate(RouteNames.INTERESTS);
+            navigation.navigate(RouteNames.INTERESTS, {});
           },
         },
         secondaryButton: {
@@ -88,13 +88,13 @@ const LoginScreen = () => {
           },
           onPress: async () => {
             await setOnboardingStep('interests');
-            navigation.navigate(RouteNames.INTERESTS);
+            navigation.navigate(RouteNames.INTERESTS, {});
           },
         },
       });
     } else {
       await setOnboardingStep('interests');
-      navigation.navigate(RouteNames.INTERESTS);
+      navigation.navigate(RouteNames.INTERESTS, {});
     }
   };
 
@@ -144,12 +144,12 @@ const LoginScreen = () => {
               recentLogin={recentLogin}
             />
           )}
-          <SocialLoginButton
+          {/* <SocialLoginButton
             provider="apple"
             onPress={() => navigation.navigate(RouteNames.INTERESTS)}
             loading={loading}
             recentLogin={recentLogin}
-          />
+          /> */}
           <SocialLoginButton
             provider="google"
             onPress={handleGoogleLogin}
