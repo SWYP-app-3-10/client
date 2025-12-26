@@ -6,7 +6,7 @@ import Header from '../../components/Header';
 import { COLORS, scaleWidth } from '../../styles/global';
 import RightArrow from '../../assets/svg/RightArrow.svg';
 
-// ✅ 공통 모달
+// 공통 모달
 import NotificationModal from '../../components/NotificationModal';
 
 /**
@@ -64,7 +64,7 @@ const LoginInfoScreen = () => {
         </Pressable>
       </View>
 
-      {/* ✅ 로그아웃 확인 모달 */}
+      {/* 로그아웃 확인 모달 */}
       <NotificationModal
         visible={logoutModalVisible}
         title="로그아웃"
