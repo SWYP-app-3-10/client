@@ -4,7 +4,6 @@ import { RouteNames } from '../../routes';
 import LoginScreen from '../screens/auth/LoginScreen';
 import InterestsScreen from '../screens/onboarding/InterestsScreen';
 import DifficultySettingScreen from '../screens/onboarding/DifficultySettingScreen';
-import REWARDScreen from '../screens/REWARDScreen';
 import IntroCardList from '../screens/onboarding/IntroCardList';
 import IntroFuction from '../screens/onboarding/IntroFuction';
 import IntroSearch from '../screens/onboarding/IntroSearch';
@@ -26,7 +25,7 @@ const OnboardingNavigator = () => {
         return RouteNames.INTERESTS; // 완료된 경우는 RootNavigator에서 처리
       case 'login':
       default:
-        return RouteNames.COMPONENT_SHOWCASE;
+        return RouteNames.SOCIAL_LOGIN;
     }
   };
 
@@ -47,7 +46,6 @@ const OnboardingNavigator = () => {
         name={RouteNames.DIFFICULTY_SETTING}
         component={DifficultySettingScreen}
       />
-      <Stack.Screen name={RouteNames.REWARD} component={REWARDScreen} />
     </Stack.Navigator>
   );
 };

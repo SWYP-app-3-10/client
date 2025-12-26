@@ -11,7 +11,6 @@ import { NewsCategory } from '../data/mock/searchData';
 export type OnboardingStackParamList = {
   [RouteNames.DIFFICULTY_SETTING]: undefined;
   [RouteNames.INTERESTS]: undefined;
-  [RouteNames.REWARD]: undefined;
   [RouteNames.INTRO_CARDLIST]: undefined;
   [RouteNames.INTRO_FUNCTION]: undefined;
   [RouteNames.INTRO_SEARCH]: undefined;
