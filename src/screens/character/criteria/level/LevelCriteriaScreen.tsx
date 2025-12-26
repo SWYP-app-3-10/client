@@ -91,7 +91,9 @@ function useTooltip(autoHideMs: number) {
     setVisible(prev => {
       const next = !prev;
       clearTimer();
-      if (next) openWithAutoHide();
+      if (next) {
+        openWithAutoHide();
+      }
       return next;
     });
   }, [clearTimer, openWithAutoHide]);
@@ -102,7 +104,9 @@ function useTooltip(autoHideMs: number) {
    * - 부모 영역 밖으로 나가지 않도록 clamp
    */
   const tooltipLeft = useMemo(() => {
-    if (!leftAreaWidth || !tooltipWidth) return 0;
+    if (!leftAreaWidth || !tooltipWidth) {
+      return 0;
+    }
 
     const raw = iconCenterX - tooltipWidth / 2;
     return clamp(raw, 0, leftAreaWidth - tooltipWidth);
@@ -225,6 +229,9 @@ function LevelRow({ item, isMine }: { item: LevelCriteria; isMine: boolean }) {
   );
 }
 
+// FlatList 아이템 구분선
+const ItemSeparator = () => <View style={styles.separator} />;
+
 /**
  * ======================================
  * Screen
@@ -241,7 +248,9 @@ const LevelCriteriaScreen = () => {
    */
   const needXp = useMemo(() => {
     const next = levelList.find(l => l.id === currentLevelId + 1);
-    if (!next) return 0;
+    if (!next) {
+      return 0;
+    }
     return Math.max(0, next.requiredExp - currentXp);
   }, [currentLevelId, currentXp]);
 
@@ -268,7 +277,7 @@ const LevelCriteriaScreen = () => {
       keyExtractor={item => String(item.id)}
       renderItem={renderItem}
       ListHeaderComponent={Header}
-      ItemSeparatorComponent={() => <View style={styles.separator} />}
+      ItemSeparatorComponent={ItemSeparator}
       showsVerticalScrollIndicator={false}
       contentContainerStyle={styles.listContent}
     />
