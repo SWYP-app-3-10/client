@@ -18,6 +18,39 @@ export type OnboardingStackParamList = {
   [RouteNames.SOCIAL_LOGIN]: undefined;
 };
 
+// Mission Stack Param List
+export type MissionStackParamList = {
+  [RouteNames.MISSION]: undefined;
+};
+
+// Character Stack Param List
+export type CharacterStackParamList = {
+  [RouteNames.CHARACTER]: undefined;
+  [RouteNames.CHARACTER_CRITERIA]: undefined; // 기준 확인하기 (탭 2개 있는 화면)
+  [RouteNames.CHARACTER_POINT_HISTORY]: undefined;
+};
+
+// Search Stack Param List
+export type SearchStackParamList = {
+  [RouteNames.SEARCH]:
+    | {
+        keyword?: string;
+        initialCategory?: NewsCategory;
+      }
+    | undefined;
+  [RouteNames.SEARCH_INPUT]: undefined; // 검색어 입력 화면
+};
+
+// MyPage Stack Param List
+export type MyPageStackParamList = {
+  [RouteNames.MY_PAGE]: undefined;
+  [RouteNames.COMPONENT_SHOWCASE]: undefined;
+  [RouteNames.SETTINGS]: undefined;
+  [RouteNames.LOGIN_INFO]: undefined;
+  [RouteNames.INQUIRY]: undefined;
+  [RouteNames.TERMS_OF_SERVICE]: undefined;
+};
+
 // Main Tab Param List (Bottom Tab Navigator)
 export type MainTabParamList = {
   [RouteNames.MISSION_TAB]: NavigatorScreenParams<MissionStackParamList>;

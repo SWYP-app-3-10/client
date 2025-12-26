@@ -150,9 +150,8 @@ const TimelineGroup: React.FC<TimelineGroupProps> = ({
 
           {/* 글 카드들 */}
           {displayedArticles.map((article, articleIndex) => (
-            <>
+            <React.Fragment key={article.id}>
               <TouchableOpacity
-                key={article.id}
                 style={[
                   styles.articleCard,
                   articleIndex === displayedArticles.length - 1 &&
@@ -199,7 +198,7 @@ const TimelineGroup: React.FC<TimelineGroupProps> = ({
               {articleIndex !== displayedArticles.length - 1 && (
                 <Spacer num={16} />
               )}
-            </>
+            </React.Fragment>
           ))}
 
           {/* 전체 보기 버튼 */}
@@ -263,7 +262,9 @@ const MyPageScreen = () => {
 
   // 관심분야 태그 목록
   const interestTags = useMemo(() => {
-    if (!interests) return [];
+    if (!interests) {
+      return [];
+    }
     return Object.entries(interests)
       .sort(([, a], [, b]) => (a as number) - (b as number))
       .map(([id]) => categoryNameMap[id] || id);
