@@ -1,12 +1,13 @@
-import React from 'react'; // 리액트
-import { View, Text, StyleSheet, Pressable } from 'react-native'; // RN 기본 컴포넌트
-import { SafeAreaView } from 'react-native-safe-area-context'; // SafeArea 대응
-//import { useNavigation } from '@react-navigation/native'; // 네비게이션 훅
+import React, { useState } from 'react';
+import { View, Text, StyleSheet, Pressable } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
-import Header from '../../components/Header'; // 공통 헤더
-
-import { COLORS, scaleWidth } from '../../styles/global'; // 디자인 시스템
+import Header from '../../components/Header';
+import { COLORS, scaleWidth } from '../../styles/global';
 import RightArrow from '../../assets/svg/RightArrow.svg';
+
+// ✅ 공통 모달
+import NotificationModal from '../../components/NotificationModal';
 
 /**
  * 로그인 정보 화면
@@ -14,32 +15,41 @@ import RightArrow from '../../assets/svg/RightArrow.svg';
  * - 서비스 탈퇴
  */
 const LoginInfoScreen = () => {
-  //const navigation = useNavigation<any>(); // 네비게이션 객체
+  // 로그아웃 모달 상태
+  const [logoutModalVisible, setLogoutModalVisible] = useState(false);
 
   /**
-   * 로그아웃 클릭
-   * - TODO: 실제 로그아웃 로직(토큰 삭제/스토어 초기화/로그인 화면 이동) 연결
+   * 로그아웃 클릭 → 모달 오픈
    */
   const onPressLogout = () => {
-    console.log('[LoginInfo] logout pressed'); // 디버그 로그
-    // 예) authStore.logout(); navigation.reset(...)
+    console.log('[LoginInfo] logout pressed');
+    setLogoutModalVisible(true);
   };
 
   /**
-   * 서비스 탈퇴 클릭
-   * - TODO: 확인 모달 띄우고, 서버 탈퇴 API 호출 후 로그아웃 처리
+   * 취소 버튼
    */
-  const onPressWithdraw = () => {
-    console.log('[LoginInfo] withdraw pressed'); // 디버그 로그
-    // 예) showModal({title:'탈퇴하시겠어요?', ...})
+  const onCancelLogout = () => {
+    console.log('[LoginInfo] logout canceled');
+    setLogoutModalVisible(false);
+  };
+
+  /**
+   * 확인 버튼
+   */
+  const onConfirmLogout = () => {
+    console.log('[LoginInfo] logout confirmed');
+    setLogoutModalVisible(false);
+
+    // TODO: 실제 로그아웃 로직
+    // 예) authStore.logout();
+    // navigation.reset(...)
   };
 
   return (
     <SafeAreaView style={styles.safe}>
-      {/* 상단 헤더 */}
       <Header title="로그인 정보" />
 
-      {/* 전체 컨테이너 */}
       <View style={styles.container}>
         {/* 로그아웃 */}
         <Pressable style={styles.row} onPress={onPressLogout}>
@@ -48,11 +58,30 @@ const LoginInfoScreen = () => {
         </Pressable>
 
         {/* 서비스 탈퇴 */}
-        <Pressable style={styles.row} onPress={onPressWithdraw}>
+        <Pressable style={styles.row}>
           <Text style={styles.rowTitle}>서비스 탈퇴</Text>
           <RightArrow color={COLORS.gray700} />
         </Pressable>
       </View>
+
+      {/* ✅ 로그아웃 확인 모달 */}
+      <NotificationModal
+        visible={logoutModalVisible}
+        title="로그아웃"
+        description="정말 로그아웃하시겠어요?"
+        closeButton
+        onClose={onCancelLogout}
+        closeOnBackdropPress={true}
+        secondaryButton={{
+          title: '취소',
+          onPress: onCancelLogout,
+        }}
+        primaryButton={{
+          title: '확인',
+          onPress: onConfirmLogout,
+          variant: 'primary',
+        }}
+      />
     </SafeAreaView>
   );
 };
@@ -60,32 +89,28 @@ const LoginInfoScreen = () => {
 export default LoginInfoScreen;
 
 /* =========================
-   스타일
+  스타일
 ========================= */
 const styles = StyleSheet.create({
   safe: {
-    flex: 1, // 화면 전체 차지
-    backgroundColor: COLORS.white, // 배경 흰색
+    flex: 1,
+    backgroundColor: COLORS.white,
   },
   container: {
-    paddingHorizontal: scaleWidth(20), // 좌우 패딩
-    paddingTop: scaleWidth(8), // 상단 패딩 (헤더 아래 여백)
+    paddingHorizontal: scaleWidth(20),
+    paddingTop: scaleWidth(8),
   },
   row: {
-    flexDirection: 'row', // 가로 정렬
-    justifyContent: 'space-between', // 좌우 끝 정렬
-    alignItems: 'center', // 수직 가운데 정렬
-    paddingVertical: scaleWidth(16), // 상하 패딩
-    borderBottomWidth: 1, // 하단 보더 두께
-    borderBottomColor: COLORS.gray100, // 하단 보더 색상
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingVertical: scaleWidth(16),
+    borderBottomWidth: 1,
+    borderBottomColor: COLORS.gray100,
   },
   rowTitle: {
-    fontSize: scaleWidth(16), // 제목 폰트 크기
-    color: COLORS.black, // 텍스트 색상
-    fontWeight: '500', // 폰트 두께
-  },
-  arrow: {
-    fontSize: scaleWidth(18), // 화살표 크기
-    color: COLORS.gray300, // 화살표 색상
+    fontSize: scaleWidth(16),
+    color: COLORS.black,
+    fontWeight: '500',
   },
 });
