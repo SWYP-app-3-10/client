@@ -44,7 +44,7 @@ const SettingScreen = () => {
           onPress={() => navigation.navigate(RouteNames.LOGIN_INFO)}
         >
           <Text style={styles.rowTitle}>로그인 정보</Text>
-          <RightArrow />
+          <RightArrow color={COLORS.gray700} />
         </Pressable>
 
         {/* 알림 */}
@@ -76,12 +76,12 @@ const SettingScreen = () => {
           onPress={() => navigation.navigate(RouteNames.TERMS_OF_SERVICE)}
         >
           <Text style={styles.rowTitle}>서비스 이용 약관</Text>
-          <RightArrow />
+          <RightArrow color={COLORS.gray700} />
         </Pressable>
 
         <Pressable style={styles.row}>
           <Text style={styles.rowTitle}>개인정보 처리 방침</Text>
-          <RightArrow />
+          <RightArrow color={COLORS.gray700} />
         </Pressable>
 
         {/* 도움말 */}
@@ -91,7 +91,7 @@ const SettingScreen = () => {
           onPress={() => navigation.navigate(RouteNames.INQUIRY)}
         >
           <Text style={styles.rowTitle}>문의하기</Text>
-          <RightArrow />
+          <RightArrow color={COLORS.gray700} />
         </Pressable>
       </View>
     </SafeAreaView>

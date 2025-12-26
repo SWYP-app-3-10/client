@@ -4,9 +4,9 @@ import { SafeAreaView } from 'react-native-safe-area-context'; // SafeArea 대�
 //import { useNavigation } from '@react-navigation/native'; // 네비게이션 훅
 
 import Header from '../../components/Header'; // 공통 헤더
-//import IconButton from '../../components/IconButton'; // 아이콘 버튼 (향후 확장용)
 
 import { COLORS, scaleWidth } from '../../styles/global'; // 디자인 시스템
+import RightArrow from '../../assets/svg/RightArrow.svg';
 
 /**
  * 로그인 정보 화면
@@ -44,13 +44,13 @@ const LoginInfoScreen = () => {
         {/* 로그아웃 */}
         <Pressable style={styles.row} onPress={onPressLogout}>
           <Text style={styles.rowTitle}>로그아웃</Text>
-          <Text style={styles.arrow}>›</Text>
+          <RightArrow color={COLORS.gray700} />
         </Pressable>
 
         {/* 서비스 탈퇴 */}
         <Pressable style={styles.row} onPress={onPressWithdraw}>
           <Text style={styles.rowTitle}>서비스 탈퇴</Text>
-          <Text style={styles.arrow}>›</Text>
+          <RightArrow color={COLORS.gray700} />
         </Pressable>
       </View>
     </SafeAreaView>
