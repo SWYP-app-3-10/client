@@ -81,13 +81,12 @@ const RootNavigator: React.FC = () => {
   return (
     <NavigationContainer>
       <Stack.Navigator screenOptions={{ headerShown: false }}>
-        {!isOnboardingCompleted ? (
-          // 온보딩 스택 (소셜 로그인 포함)
-          <Stack.Screen
-            name={RouteNames.ONBOARDING}
-            component={OnboardingNavigator}
-          />
-        ) : (
+        {/* 온보딩 스택 (소셜 로그인 포함) - 온보딩 완료 후에도 편집을 위해 접근 가능 */}
+        <Stack.Screen
+          name={RouteNames.ONBOARDING}
+          component={OnboardingNavigator}
+        />
+        {isOnboardingCompleted && (
           <>
             {/* 메인 스택 (온보딩 완료 후) */}
             <Stack.Screen

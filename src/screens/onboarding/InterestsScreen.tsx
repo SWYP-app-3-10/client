@@ -1,8 +1,7 @@
 import React, { useState, useCallback, useMemo, useEffect } from 'react';
 import { View, Text, StyleSheet, ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useNavigation } from '@react-navigation/native';
-import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { RouteNames } from '../../../routes';
 import {
   Body_16M,
@@ -10,7 +9,10 @@ import {
   Heading_24EB_Round,
   scaleWidth,
 } from '../../styles/global';
-import { OnboardingStackParamList } from '../../navigation/types';
+import {
+  MainTabNavigationProp,
+  OnboardingStackParamList,
+} from '../../navigation/types';
 import Spacer from '../../components/Spacer';
 import ProgressBar from '../../components/ProgressBar';
 import { Button } from '../../components';
@@ -24,8 +26,6 @@ import {
 } from '../../icons/commonIcons/commonIcons';
 import { Body_15M, Body_18M, Heading_18SB } from '../../styles/typography';
 import Header from '../../components/Header';
-
-type NavigationProp = NativeStackNavigationProp<OnboardingStackParamList>;
 
 interface Interest {
   id: string;
@@ -100,12 +100,17 @@ const InterestTag: React.FC<InterestTagProps> = ({
 };
 
 const InterestsScreen = () => {
-  const navigation = useNavigation<NavigationProp>();
+  const navigation =
+    useNavigation<MainTabNavigationProp<OnboardingStackParamList>>();
+  const route = useRoute<RouteProp<OnboardingStackParamList, 'interests'>>();
   const setOnboardingStep = useOnboardingStore(
     state => state.setOnboardingStep,
   );
   const savedInterests = useOnboardingStore(state => state.interests);
   const setInterests = useOnboardingStore(state => state.setInterests);
+
+  // 편집 모드 확인
+  const editMode = route.params?.editMode || false;
 
   // 선택 순서를 저장: Map<id, 순서(1, 2, ...)>
   const [selectedInterests, setSelectedInterests] = useState<
@@ -161,9 +166,15 @@ const InterestsScreen = () => {
   );
 
   const handleNext = useCallback(async () => {
-    await setOnboardingStep('difficulty');
-    navigation.navigate(RouteNames.DIFFICULTY_SETTING);
-  }, [navigation, setOnboardingStep]);
+    if (editMode) {
+      // 편집 모드: 뒤로가기만
+      navigation.goBack();
+    } else {
+      // 온보딩 모드: 다음 단계로
+      await setOnboardingStep('difficulty');
+      navigation.navigate(RouteNames.DIFFICULTY_SETTING);
+    }
+  }, [navigation, setOnboardingStep, editMode]);
 
   const isNextButtonActive = useMemo(
     () => selectedInterests.size >= 2,
@@ -172,15 +183,19 @@ const InterestsScreen = () => {
 
   return (
     <SafeAreaView style={styles.container} edges={['top', 'bottom']}>
-      <Header iconColor={COLORS.gray400} />
+      <Header
+        iconColor={COLORS.gray400}
+        title={editMode ? '관심분야 설정하기' : ''}
+      />
       <Spacer num={2} />
-
-      <View style={styles.header}>
-        <ProgressBar fill={1} />
-      </View>
+      {!editMode && (
+        <View style={styles.header}>
+          <ProgressBar fill={1} />
+        </View>
+      )}
 
       <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
-        <Spacer num={92} />
+        <Spacer num={editMode ? 54 : 92} />
         <Text style={styles.title}>관심분야를 선택해주세요</Text>
         <Spacer num={4} />
         <Text style={[Body_15M, { color: COLORS.gray600 }]}>
@@ -220,9 +235,9 @@ const InterestsScreen = () => {
       <View style={styles.footer}>
         <Button
           variant="primary"
-          title="다음"
+          title={editMode ? '완료' : '다음'}
           onPress={handleNext}
-          disabled={!isNextButtonActive}
+          disabled={!editMode && !isNextButtonActive}
         />
       </View>
     </SafeAreaView>

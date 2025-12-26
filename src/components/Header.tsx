@@ -1,10 +1,11 @@
 import React from 'react';
-import { Text, View } from 'react-native';
+import { Text, View, StyleSheet } from 'react-native';
 import { Ic_backIcon } from '../icons';
 
 import { useNavigation } from '@react-navigation/native';
 import IconButton from './IconButton';
-import { scaleWidth } from '../styles/global';
+import { scaleWidth, COLORS } from '../styles/global';
+import { Heading_16B } from '../styles/typography';
 
 const Header = ({
   title,
@@ -19,15 +20,7 @@ const Header = ({
 }) => {
   const navigation = useNavigation();
   return (
-    <View
-      style={{
-        flexDirection: 'row',
-        alignItems: 'center',
-        height: scaleWidth(52),
-        paddingHorizontal: scaleWidth(20),
-        marginTop: scaleWidth(8),
-      }}
-    >
+    <View style={styles.container}>
       {leftIcon ? (
         leftIcon
       ) : (
@@ -35,9 +28,35 @@ const Header = ({
           <Ic_backIcon color={iconColor} />
         </IconButton>
       )}
-      <Text>{title}</Text>
+      {title && (
+        <View style={styles.titleContainer}>
+          <Text style={styles.title}>{title}</Text>
+        </View>
+      )}
     </View>
   );
 };
+
+const styles = StyleSheet.create({
+  container: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    height: scaleWidth(52),
+    paddingHorizontal: scaleWidth(20),
+    marginTop: scaleWidth(8),
+    position: 'relative',
+  },
+  titleContainer: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  title: {
+    ...Heading_16B,
+    color: COLORS.black,
+  },
+});
 
 export default Header;
