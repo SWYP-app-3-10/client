@@ -17,34 +17,6 @@ export type OnboardingStackParamList = {
   [RouteNames.SOCIAL_LOGIN]: undefined;
 };
 
-// Mission Stack Param List
-export type MissionStackParamList = {
-  [RouteNames.MISSION]: undefined;
-};
-
-// Character Stack Param List
-export type CharacterStackParamList = {
-  [RouteNames.CHARACTER]: undefined;
-  // CHARACTER_CRITERIA와 CHARACTER_POINT_HISTORY는 FULL_SCREEN_STACK을 통해 접근
-};
-
-// Search Stack Param List
-export type SearchStackParamList = {
-  [RouteNames.SEARCH]:
-    | {
-        keyword?: string;
-        initialCategory?: NewsCategory;
-      }
-    | undefined;
-  [RouteNames.SEARCH_INPUT]: undefined;
-};
-
-// MyPage Stack Param List
-export type MyPageStackParamList = {
-  [RouteNames.MY_PAGE]: undefined;
-  // 서브 화면들 추가 예정
-};
-
 // Main Tab Param List (Bottom Tab Navigator)
 export type MainTabParamList = {
   [RouteNames.MISSION_TAB]: NavigatorScreenParams<MissionStackParamList>;
@@ -75,14 +47,6 @@ export type RootStackParamList = {
   [RouteNames.ONBOARDING]: NavigatorScreenParams<OnboardingStackParamList>;
   [RouteNames.MAIN_TAB]: NavigatorScreenParams<MainTabParamList>;
   [RouteNames.FULL_SCREEN_STACK]: NavigatorScreenParams<FullScreenStackParamList>;
-};
-
-// Main Tab Param List (Bottom Tab Navigator)
-export type MainTabParamList = {
-  [RouteNames.MISSION_TAB]: NavigatorScreenParams<MissionStackParamList>;
-  [RouteNames.CHARACTER_TAB]: NavigatorScreenParams<CharacterStackParamList>;
-  [RouteNames.SEARCH_TAB]: NavigatorScreenParams<SearchStackParamList>;
-  [RouteNames.MY_PAGE_TAB]: NavigatorScreenParams<MyPageStackParamList>;
 };
 
 // Mission Stack Param List

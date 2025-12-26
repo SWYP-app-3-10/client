@@ -22,44 +22,33 @@ import { RouteNames } from '../../../routes';
  * - 문의하기
  */
 const SettingScreen = () => {
-  const navigation = useNavigation<any>(); // 네비게이션 객체
-  const [isAlarmOn, setIsAlarmOn] = useState(false); // 알림 토글 상태
-
-  // 화살표 있는 행 클릭 시 이동
-  const goTo = (screen: string) => {
-    navigation.navigate(screen);
-  };
+  const navigation = useNavigation<any>();
+  const [isAlarmOn, setIsAlarmOn] = useState(false);
 
   return (
     <SafeAreaView style={styles.safe} edges={['top']}>
-      {/* ===== 헤더 영역 ===== */}
+      {/* ===== 헤더 ===== */}
       <View style={styles.headerWrap}>
-        {/* 공통 헤더는 그대로 사용 (title은 비워서 기본 Text 출력 방지) */}
         <Header title="" />
-
-        {/* 중앙 타이틀 오버레이 */}
         <View pointerEvents="none" style={styles.headerCenterTitleWrap}>
           <Text style={styles.headerCenterTitle}>설정</Text>
         </View>
       </View>
 
-      {/* 전체 컨테이너 */}
+      {/* ===== 컨텐츠 ===== */}
       <View style={styles.container}>
-        {/* ===== 회원 정보 ===== */}
+        {/* 회원정보 */}
         <Text style={styles.sectionLabel}>회원정보</Text>
-
         <Pressable
           style={styles.row}
-          onPress={() => goTo(RouteNames.LOGIN_INFO)} // 로그인 정보
+          onPress={() => navigation.navigate(RouteNames.LOGIN_INFO)}
         >
           <Text style={styles.rowTitle}>로그인 정보</Text>
           <RightArrow />
         </Pressable>
 
-        {/* ===== 알림 ===== */}
+        {/* 알림 */}
         <Text style={styles.sectionLabel}>알림</Text>
-
-        {/* 알림 row는 스위치를 타이틀 라인에 맞춰야 해서 전용 스타일 사용 */}
         <View style={[styles.row, styles.alarmRow]}>
           <View>
             <Text style={styles.rowTitle}>알림 설정</Text>
@@ -80,34 +69,26 @@ const SettingScreen = () => {
           />
         </View>
 
-        {/* ===== 약관 및 정책 ===== */}
+        {/* 약관 */}
         <Text style={styles.sectionLabel}>약관 및 정책</Text>
-
-        {/* 서비스 이용 약관 */}
         <Pressable
           style={[styles.row, styles.rowNoBorder]}
-          onPress={() => goTo(RouteNames.TERMS_OF_SERVICE)}
+          onPress={() => navigation.navigate(RouteNames.TERMS_OF_SERVICE)}
         >
           <Text style={styles.rowTitle}>서비스 이용 약관</Text>
           <RightArrow />
         </Pressable>
 
-        {/* 개인정보 처리 방침 */}
-        <Pressable
-          style={styles.row}
-          // onPress={() => goTo(RouteNames.PRIVACY_POLICY)}
-        >
+        <Pressable style={styles.row}>
           <Text style={styles.rowTitle}>개인정보 처리 방침</Text>
           <RightArrow />
         </Pressable>
 
-        {/* ===== 도움말 ===== */}
+        {/* 도움말 */}
         <Text style={styles.sectionLabel}>도움말</Text>
-
-        {/* 문의하기 */}
         <Pressable
           style={[styles.row, styles.rowNoBorder]}
-          onPress={() => goTo(RouteNames.INQUIRY)}
+          onPress={() => navigation.navigate(RouteNames.INQUIRY)}
         >
           <Text style={styles.rowTitle}>문의하기</Text>
           <RightArrow />

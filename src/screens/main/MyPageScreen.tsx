@@ -1,3 +1,4 @@
+// MyPageScreen.tsx
 import React, { useState, useEffect, useMemo } from 'react';
 import {
   View,
@@ -7,6 +8,7 @@ import {
   TouchableOpacity,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+
 import {
   COLORS,
   scaleWidth,
@@ -18,22 +20,36 @@ import {
   Body_16SB,
   Heading_18SB,
 } from '../../styles/global';
-import { useOnboardingStore } from '../../store/onboardingStore';
+
+import { useOnboardingStore, Difficulty } from '../../store/onboardingStore';
 import { getRecentLogin } from '../../services/authStorageService';
 import { readArticlesMock } from '../../data/mock/readArticlesData';
+
 import Spacer from '../../components/Spacer';
 import { Button } from '../../components';
-import { useNavigation } from '@react-navigation/native';
+
 import {
-  MainTabNavigationProp,
+  useNavigation,
+  CompositeNavigationProp,
+} from '@react-navigation/native';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import {
   MyPageStackParamList,
+  RootStackParamList,
 } from '../../navigation/types';
+
 import { RouteNames } from '../../../routes';
+
 import { CheckIcon, RightArrowIcon, TriangleIcon } from '../../icons';
-import { Difficulty } from '../../store/onboardingStore';
 import { useShowBottomSheetModal, useHideModal } from '../../store/modalStore';
 import LevelSelectionContent from '../../components/LevelSelectionContent';
 import IconButton from '../../components/IconButton';
+
+// ✅ MyPageStack + RootStack 합친 네비게이션 타입
+type MyPageNavigationProp = CompositeNavigationProp<
+  NativeStackNavigationProp<MyPageStackParamList>,
+  NativeStackNavigationProp<RootStackParamList>
+>;
 
 // 난이도 -> 레벨 표시 텍스트
 const getLevelText = (difficulty: string | null): string => {
@@ -84,6 +100,7 @@ const TimelineGroup: React.FC<TimelineGroupProps> = ({
 }) => {
   const [contentHeight, setContentHeight] = useState(0);
   const [showAll, setShowAll] = useState(false);
+
   const dashCount = Math.ceil(
     (contentHeight - scaleWidth(10) - scaleWidth(6)) /
       (scaleWidth(2.5) + scaleWidth(2.5)),
@@ -103,10 +120,8 @@ const TimelineGroup: React.FC<TimelineGroupProps> = ({
           <View style={styles.timelineDot} />
           {/* 점선 - 게시글 길이에 맞춰 동적으로 생성 */}
           <View style={styles.timelineDashedLineContainer}>
-            {Array.from({
-              length: Math.max(dashCount, 50),
-            }).map((_, index) => (
-              <View key={index} style={[styles.timelineDash]} />
+            {Array.from({ length: Math.max(dashCount, 50) }).map((_, index) => (
+              <View key={index} style={styles.timelineDash} />
             ))}
           </View>
         </View>
@@ -133,9 +148,8 @@ const TimelineGroup: React.FC<TimelineGroupProps> = ({
 
           {/* 글 카드들 */}
           {displayedArticles.map((article, articleIndex) => (
-            <>
+            <React.Fragment key={article.id}>
               <View
-                key={article.id}
                 style={[
                   styles.articleCard,
                   articleIndex === displayedArticles.length - 1 &&
@@ -146,12 +160,14 @@ const TimelineGroup: React.FC<TimelineGroupProps> = ({
                   <Text style={styles.articleTitle} numberOfLines={2}>
                     {article.title}
                   </Text>
+
                   <View style={styles.articleFooter}>
                     <View style={styles.categoryTag}>
                       <Text style={styles.categoryTagText}>
                         {article.category}
                       </Text>
                     </View>
+
                     <View
                       style={[
                         styles.quizBadge,
@@ -173,39 +189,29 @@ const TimelineGroup: React.FC<TimelineGroupProps> = ({
                     </View>
                   </View>
                 </View>
+
                 <RightArrowIcon color={COLORS.gray700} />
               </View>
+
               {articleIndex !== displayedArticles.length - 1 && (
                 <Spacer num={16} />
               )}
-            </>
+            </React.Fragment>
           ))}
 
-          {/* 전체 보기 버튼 */}
-          {dateGroup.articles.length > 5 &&
-            (!showAll ? (
-              <>
-                <Spacer num={16} />
-                <Button
-                  variant="ghost"
-                  textStyle={styles.viewAllText}
-                  height={40}
-                  onPress={() => setShowAll(true)}
-                  title="전체 보기"
-                />
-              </>
-            ) : (
-              <>
-                <Spacer num={16} />
-                <Button
-                  variant="ghost"
-                  textStyle={styles.viewAllText}
-                  height={40}
-                  onPress={() => setShowAll(false)}
-                  title="요약 보기"
-                />
-              </>
-            ))}
+          {/* 전체 보기 / 요약 보기 버튼 */}
+          {dateGroup.articles.length > 5 && (
+            <>
+              <Spacer num={16} />
+              <Button
+                variant="ghost"
+                textStyle={styles.viewAllText}
+                height={40}
+                onPress={() => setShowAll(prev => !prev)}
+                title={showAll ? '요약 보기' : '전체 보기'}
+              />
+            </>
+          )}
         </View>
       </View>
 
@@ -218,12 +224,16 @@ const MyPageScreen = () => {
   const interests = useOnboardingStore(state => state.interests);
   const difficulty = useOnboardingStore(state => state.difficulty);
   const setDifficulty = useOnboardingStore(state => state.setDifficulty);
+
   const [recentLogin, setRecentLogin] = useState<any>(null);
   const [selectedWeek, setSelectedWeek] = useState(0); // 현재 선택된 주 (0 = 현재 주)
+
   const showBottomSheetModal = useShowBottomSheetModal();
   const hideModal = useHideModal();
-  const navigation =
-    useNavigation<MainTabNavigationProp<MyPageStackParamList>>();
+
+  // ✅ 여기만 이렇게 바꾸면 SETTINGS/ONBOARDING 둘 다 타입 에러 안 남
+  const navigation = useNavigation<MyPageNavigationProp>();
+
   // 사용자 정보 로드
   useEffect(() => {
     const loadUserInfo = async () => {
@@ -233,28 +243,27 @@ const MyPageScreen = () => {
     loadUserInfo();
   }, []);
 
+  // 읽은 글 데이터 (현재는 mock 데이터 사용)
+  const readArticles = readArticlesMock;
+
   // 관심분야 태그 목록
   const interestTags = useMemo(() => {
-    if (!interests) {
-      return [];
-    }
-    // interests는 { [categoryId]: order } 형태
-    const sorted = Object.entries(interests)
+    if (!interests) return [];
+    return Object.entries(interests)
       .sort(([, a], [, b]) => (a as number) - (b as number))
       .map(([id]) => categoryNameMap[id] || id);
-    return sorted;
   }, [interests]);
 
   // 날짜 범위 계산 (현재 주의 시작일과 종료일)
   const currentWeekRange = useMemo(() => {
     const today = new Date();
-    // selectedWeek에 따라 주를 이동
     const targetDate = new Date(today);
     targetDate.setDate(today.getDate() + selectedWeek * 7);
 
     const dayOfWeek = targetDate.getDay();
     const startDate = new Date(targetDate);
     startDate.setDate(targetDate.getDate() - dayOfWeek);
+
     const endDate = new Date(startDate);
     endDate.setDate(startDate.getDate() + 6);
 
@@ -269,9 +278,6 @@ const MyPageScreen = () => {
     return `${formatDate(startDate)} - ${formatDate(endDate)}`;
   }, [selectedWeek]);
 
-  // 읽은 글 데이터 (현재는 mock 데이터 사용)
-  const readArticles = readArticlesMock;
-
   // 다음 주에 데이터가 있는지 확인
   const hasNextWeekData = useMemo(() => {
     const today = new Date();
@@ -281,10 +287,10 @@ const MyPageScreen = () => {
     const dayOfWeek = nextWeekDate.getDay();
     const startDate = new Date(nextWeekDate);
     startDate.setDate(nextWeekDate.getDate() - dayOfWeek);
+
     const endDate = new Date(startDate);
     endDate.setDate(startDate.getDate() + 6);
 
-    // 해당 주 범위에 데이터가 있는지 확인
     return readArticles.some(dateGroup => {
       const articleDate = new Date(dateGroup.date);
       return articleDate >= startDate && articleDate <= endDate;
@@ -305,18 +311,16 @@ const MyPageScreen = () => {
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
+        {/* 상단 설정 버튼 */}
         <Button
-          title="설정 페이지로"
+          title="설정"
           variant="primary"
-          style={styles.backButton}
-          // 여기에 설정 페이지로 이동 로직 추가
+          style={[styles.backButton, { marginHorizontal: scaleWidth(20) }]}
           onPress={() => {
-            console.log('설정 페이지로 이동');
-            // navigation.navigate(RouteNames.FULL_SCREEN_STACK, {
-            //   screen: RouteNames.SETTINGS,  // 실제 설정한 이름
-            // });
+            navigation.navigate(RouteNames.SETTINGS);
           }}
         />
+
         {/* 프로필 섹션 */}
         <View style={styles.profileSection}>
           <View style={styles.profileImageContainer}>
@@ -338,6 +342,7 @@ const MyPageScreen = () => {
         <View style={styles.section}>
           <View style={styles.sectionHeader}>
             <Text style={styles.sectionTitle}>나의 관심분야</Text>
+
             <TouchableOpacity
               onPress={() => {
                 navigation.navigate(RouteNames.ONBOARDING, {
@@ -349,10 +354,11 @@ const MyPageScreen = () => {
               <Text style={styles.editButton}>편집</Text>
             </TouchableOpacity>
           </View>
+
           <View style={styles.interestTags}>
             {interestTags.length > 0 ? (
               interestTags.map((tag, index) => (
-                <View key={index} style={styles.interestTag}>
+                <View key={`${tag}-${index}`} style={styles.interestTag}>
                   <Text style={styles.interestTagText}>{tag}</Text>
                 </View>
               ))
@@ -368,6 +374,7 @@ const MyPageScreen = () => {
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>나의 레벨</Text>
           <Spacer num={12} />
+
           <TouchableOpacity
             style={styles.levelButton}
             onPress={() => {
@@ -400,7 +407,9 @@ const MyPageScreen = () => {
             <IconButton onPress={() => setSelectedWeek(prev => prev - 1)}>
               <TriangleIcon color={COLORS.gray600} />
             </IconButton>
+
             <Text style={styles.dateRange}>{currentWeekRange}</Text>
+
             <IconButton
               onPress={() => setSelectedWeek(prev => prev + 1)}
               disabled={!hasNextWeekData}
@@ -417,7 +426,7 @@ const MyPageScreen = () => {
           {/* 타임라인 */}
           {readArticles.map((dateGroup, groupIndex) => (
             <TimelineGroup
-              key={groupIndex}
+              key={`${dateGroup.date}-${groupIndex}`}
               dateGroup={dateGroup}
               formatDate={formatDate}
               isLast={groupIndex === readArticles.length - 1}
@@ -434,15 +443,21 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: COLORS.white,
   },
+
+  // 상단 설정 버튼
   backButton: {
     width: scaleWidth(50),
     height: scaleWidth(50),
     alignSelf: 'flex-end',
   },
+
   scrollView: {
     flex: 1,
   },
+
   scrollContent: {},
+
+  // 프로필 섹션
   profileSection: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -469,11 +484,8 @@ const styles = StyleSheet.create({
     ...Body_16M,
     color: COLORS.gray700,
   },
-  readArticleSection: {
-    backgroundColor: COLORS.gray100,
-    paddingHorizontal: scaleWidth(20),
-    paddingBottom: scaleWidth(40),
-  },
+
+  // 섹션 공통
   section: {
     paddingHorizontal: scaleWidth(20),
   },
@@ -487,6 +499,8 @@ const styles = StyleSheet.create({
     ...Heading_18EB_Round,
     color: COLORS.black,
   },
+
+  // 관심분야
   editButton: {
     ...Body_16SB,
     color: COLORS.puple.main,
@@ -510,6 +524,8 @@ const styles = StyleSheet.create({
     ...Caption_14R,
     color: COLORS.gray500,
   },
+
+  // 나의 레벨
   levelButton: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -524,16 +540,26 @@ const styles = StyleSheet.create({
     ...Body_16M,
     color: COLORS.gray700,
   },
+
+  // 읽은 글 섹션
+  readArticleSection: {
+    backgroundColor: COLORS.gray100,
+    paddingHorizontal: scaleWidth(20),
+    paddingBottom: scaleWidth(40),
+  },
+
+  // 날짜 선택기
   dateSelector: {
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
   },
-
   dateRange: {
     ...Heading_18SB,
     color: COLORS.black,
   },
+
+  // 타임라인
   timelineGroup: {},
   timelineContainer: {},
   timelineLineContainer: {
@@ -578,6 +604,8 @@ const styles = StyleSheet.create({
     ...Body_16SB,
     color: COLORS.black,
   },
+
+  // 기사 카드
   articleCard: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -616,6 +644,8 @@ const styles = StyleSheet.create({
     ...Caption_14R,
     color: COLORS.gray700,
   },
+
+  // 퀴즈 배지
   quizBadge: {
     paddingHorizontal: scaleWidth(10),
     paddingVertical: scaleWidth(6),
