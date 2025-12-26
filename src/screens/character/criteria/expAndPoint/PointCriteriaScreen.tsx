@@ -189,7 +189,6 @@ const styles = StyleSheet.create({
     color: COLORS.black,
     marginBottom: scaleWidth(24),
   },
-
   // 상단 개념 설명 카드
   infoCard: {
     borderRadius: BORDER_RADIUS[16],

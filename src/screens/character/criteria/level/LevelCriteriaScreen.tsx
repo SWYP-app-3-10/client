@@ -280,6 +280,141 @@ const LevelCriteriaScreen = () => {
   );
 };
 
+/**
+ * ======================================
+ * 상단 XP 요약 카드
+ * ======================================
+ */
+function XpSummaryCard({
+  currentXp,
+  needXp,
+}: {
+  currentXp: number;
+  needXp: number;
+}) {
+  const tooltip = useTooltip(1500);
+
+  return (
+    <View style={styles.xpCard}>
+      <View style={styles.xpLeft} onLayout={tooltip.onLayoutLeftArea}>
+        <Text style={styles.xpQ}>현재 나의 경험치는?</Text>
+
+        <Pressable onPress={tooltip.toggle} style={styles.xpValueRow}>
+          <Text style={styles.xpNumber}>{currentXp}</Text>
+          <Text style={styles.xpUnit}> XP</Text>
+
+          <View style={styles.xpInfoIcon} onLayout={tooltip.onLayoutIcon}>
+            <Text style={styles.xpInfoIconText}>i</Text>
+          </View>
+        </Pressable>
+
+        {tooltip.visible && (
+          <View
+            style={[styles.tooltipWrap, { left: tooltip.tooltipLeft }]}
+            onLayout={tooltip.onLayoutTooltip}
+          >
+            <Text style={styles.tooltipText}>
+              퀴즈, 글 읽기, 출석 등 다양한 활동으로{'\n'}
+              경험치를 모을 수 있어요
+            </Text>
+            <View style={[styles.tooltipArrow, { left: tooltip.arrowLeft }]} />
+          </View>
+        )}
+
+        <Text style={styles.xpHint}>
+          다음 단계 달성을 위해서는{'\n'}
+          <Text style={styles.xpHintStrong}>{needXp}XP</Text>가 더 필요해요
+        </Text>
+      </View>
+
+      {/* 내부에 XP 아이콘 삽입 */}
+      <View style={styles.xpImg}>
+        <XpIcon width={scaleWidth(92)} height={scaleWidth(92)} />
+      </View>
+    </View>
+  );
+}
+
+/**
+ * ======================================
+ * 레벨 리스트 아이템
+ * ======================================
+ */
+function LevelRow({ item, isMine }: { item: LevelCriteria; isMine: boolean }) {
+  return (
+    <View style={styles.row}>
+      <View style={styles.thumb} />
+
+      <View style={styles.textArea}>
+        <View style={styles.rowTop}>
+          <Text style={styles.title} numberOfLines={1}>
+            {item.title}
+          </Text>
+
+          {isMine && (
+            <View style={styles.myLevelPill}>
+              <Text style={styles.myLevelText}>내 레벨</Text>
+            </View>
+          )}
+        </View>
+
+        <Text style={styles.summaryTitle}>{item.summaryTitle}</Text>
+      </View>
+    </View>
+  );
+}
+
+/**
+ * ======================================
+ * Screen
+>>>>>>> develop
+ * ======================================
+ */
+const LevelCriteriaScreen = () => {
+  // TODO: 서버 연동 시 전역 상태로 교체
+  const currentXp = 50;
+  const currentLevelId = 1;
+
+  /**
+   * 다음 레벨까지 필요한 XP 계산
+   * - 현재 XP / 레벨 변경 시에만 재계산
+   */
+  const needXp = useMemo(() => {
+    const next = levelList.find(l => l.id === currentLevelId + 1);
+    if (!next) return 0;
+    return Math.max(0, next.requiredExp - currentXp);
+  }, [currentLevelId, currentXp]);
+
+  /** FlatList 아이템 렌더 함수 */
+  const renderItem: ListRenderItem<LevelCriteria> = useCallback(
+    ({ item }) => <LevelRow item={item} isMine={item.id === currentLevelId} />,
+    [currentLevelId],
+  );
+
+  /** FlatList 헤더 */
+  const Header = useMemo(
+    () => (
+      <>
+        <XpSummaryCard currentXp={currentXp} needXp={needXp} />
+        <View style={styles.headerSpace} />
+      </>
+    ),
+    [currentXp, needXp],
+  );
+
+  return (
+    <FlatList
+      data={levelList}
+      keyExtractor={item => String(item.id)}
+      renderItem={renderItem}
+      ListHeaderComponent={Header}
+      ItemSeparatorComponent={() => <View style={styles.separator} />}
+      showsVerticalScrollIndicator={false}
+      contentContainerStyle={styles.listContent}
+    />
+  );
+};
+
 export default LevelCriteriaScreen;
 
 /**
