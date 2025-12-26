@@ -281,7 +281,7 @@ const CharacterScreen = () => {
                   <Text style={styles.statsValue}>{currentExp} XP</Text>
                 </View>
               </View>
-              <RightArrowIcon />
+              <RightArrowIcon color={COLORS.gray700} />
             </TouchableOpacity>
           </View>
 

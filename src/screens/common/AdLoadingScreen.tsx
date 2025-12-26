@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef } from 'react';
-import { View, StyleSheet, ActivityIndicator } from 'react-native';
+import { View, StyleSheet, ActivityIndicator, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRoute, useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -7,14 +7,9 @@ import { useRewardedAd, TestIds } from 'react-native-google-mobile-ads';
 import { COLORS } from '../../styles/global';
 import { FullScreenStackParamList } from '../../navigation/types';
 import { RouteNames } from '../../../routes';
-import { Alert } from 'react-native';
 import { usePointStore } from '../../store/pointStore';
 import { AD_REWARD_POINTS } from '../../config/rewards';
-
-const adUnitId = TestIds.REWARDED;
-// const adUnitId = __DEV__
-//   ? TestIds.REWARDED
-//   : 'ca-app-pub-xxxxxxxxxxxxx/yyyyyyyyyy';
+// import { REWARDED_AD_UNIT_ID } from '../../config/adConfig';
 
 type NavigationProp = NativeStackNavigationProp<FullScreenStackParamList>;
 
@@ -27,9 +22,13 @@ const AdLoadingScreen = () => {
     ?.articleId as number;
   const returnTo = (route.params as FullScreenStackParamList['ad-loading'])
     ?.returnTo;
-  const { isLoaded, isClosed, load, show, reward } = useRewardedAd(adUnitId, {
-    requestNonPersonalizedAdsOnly: true,
-  });
+  const { isLoaded, isClosed, load, show, reward } = useRewardedAd(
+    // REWARDED_AD_UNIT_ID,
+    TestIds.REWARDED,
+    {
+      requestNonPersonalizedAdsOnly: true,
+    },
+  );
 
   const [isAdShowing, setIsAdShowing] = useState(false);
   const [hasEarnedReward, setHasEarnedReward] = useState(false);

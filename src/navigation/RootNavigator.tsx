@@ -1,6 +1,7 @@
 import React, { useEffect, useRef } from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import { CommonActions } from '@react-navigation/native';
 import { RouteNames } from '../../routes';
 import OnboardingNavigator from './OnboardingNavigator';
 import MainTabNavigator from './MainTabNavigator';
@@ -12,6 +13,7 @@ import {
 } from '../store/modalStore';
 import { useIsOnboardingCompleted } from '../store/onboardingStore';
 import NotificationModal from '../components/NotificationModal';
+import BottomSheetModal from '../components/BottomSheetModal';
 import SearchStackNavigator from './SearchStackNavigator';
 import { useExperienceStore } from '../store/experienceStore';
 import { useCharacterData } from '../hooks/useCharacter';
@@ -19,7 +21,10 @@ import { LevelUpModalContent } from '../components/ArticlePointModalContent';
 
 const Stack = createNativeStackNavigator();
 
-const RootNavigator: React.FC = () => {
+// 내부 컴포넌트: 네비게이션 접근을 위해 필요
+const RootNavigatorContent: React.FC<{
+  navigationRef: React.RefObject<any>;
+}> = ({ navigationRef }) => {
   // zustand: modalState만 구독 (리렌더링 최적화)
   const modalState = useModalState();
   const hideModal = useModalStore(state => state.hideModal);
@@ -31,6 +36,25 @@ const RootNavigator: React.FC = () => {
   const { data: characterData } = useCharacterData();
   const lastCheckedExpRef = useRef<number>(0);
   const hasShownLevelUpModalRef = useRef<boolean>(false);
+  const prevOnboardingCompletedRef = useRef<boolean>(false);
+
+  // 온보딩 완료 시 메인 화면으로 자동 전환
+  useEffect(() => {
+    if (
+      isOnboardingCompleted &&
+      !prevOnboardingCompletedRef.current &&
+      navigationRef.current
+    ) {
+      // 온보딩이 완료되었고, 이전에는 완료되지 않았던 경우
+      navigationRef.current.dispatch(
+        CommonActions.reset({
+          index: 0,
+          routes: [{ name: RouteNames.MAIN_TAB }],
+        }),
+      );
+    }
+    prevOnboardingCompletedRef.current = isOnboardingCompleted;
+  }, [isOnboardingCompleted, navigationRef]);
 
   // 레벨업 체크: 경험치가 다음 레벨 경험치에 도달했는지 확인
   useEffect(() => {
@@ -79,15 +103,19 @@ const RootNavigator: React.FC = () => {
   }, [experience, characterData, isOnboardingCompleted, showModal]);
 
   return (
-    <NavigationContainer>
-      <Stack.Navigator screenOptions={{ headerShown: false }}>
-        {!isOnboardingCompleted ? (
-          // 온보딩 스택 (소셜 로그인 포함)
-          <Stack.Screen
-            name={RouteNames.ONBOARDING}
-            component={OnboardingNavigator}
-          />
-        ) : (
+    <>
+      <Stack.Navigator
+        screenOptions={{ headerShown: false }}
+        initialRouteName={
+          isOnboardingCompleted ? RouteNames.MAIN_TAB : RouteNames.ONBOARDING
+        }
+      >
+        {/* 온보딩 스택 (소셜 로그인 포함) - 온보딩 완료 후에도 편집을 위해 접근 가능 */}
+        <Stack.Screen
+          name={RouteNames.ONBOARDING}
+          component={OnboardingNavigator}
+        />
+        {isOnboardingCompleted && (
           <>
             {/* 메인 스택 (온보딩 완료 후) */}
             <Stack.Screen
@@ -107,43 +135,60 @@ const RootNavigator: React.FC = () => {
         )}
       </Stack.Navigator>
       {/* 전역 모달 */}
-      <NotificationModal
-        visible={modalState.visible}
-        title={modalState.title}
-        description={modalState.description}
-        image={modalState.image}
-        imageSize={modalState.imageSize}
-        closeButton={modalState.closeButton}
-        titleDescriptionGapSize={modalState.titleDescriptionGapSize}
-        descriptionColor={modalState.descriptionColor}
-        titleStyle={modalState.titleStyle}
-        closeOnBackdropPress={modalState.closeOnBackdropPress}
-        primaryButton={
-          modalState.primaryButton
-            ? {
-                ...modalState.primaryButton,
-                onPress: () => {
-                  modalState.primaryButton?.onPress();
-                  hideModal();
-                },
-              }
-            : undefined
-        }
-        secondaryButton={
-          modalState.secondaryButton
-            ? {
-                ...modalState.secondaryButton,
-                onPress: () => {
-                  modalState.secondaryButton?.onPress();
-                  hideModal();
-                },
-              }
-            : undefined
-        }
-        onClose={hideModal}
-      >
-        {modalState.children}
-      </NotificationModal>
+      {modalState.type === 'notification' && (
+        <NotificationModal
+          visible={modalState.visible}
+          title={modalState.title}
+          description={modalState.description}
+          image={modalState.image}
+          imageSize={modalState.imageSize}
+          closeButton={modalState.closeButton}
+          titleDescriptionGapSize={modalState.titleDescriptionGapSize}
+          descriptionColor={modalState.descriptionColor}
+          titleStyle={modalState.titleStyle}
+          closeOnBackdropPress={modalState.closeOnBackdropPress}
+          primaryButton={
+            modalState.primaryButton
+              ? {
+                  ...modalState.primaryButton,
+                  onPress: () => {
+                    modalState.primaryButton?.onPress();
+                    hideModal();
+                  },
+                }
+              : undefined
+          }
+          secondaryButton={
+            modalState.secondaryButton
+              ? {
+                  ...modalState.secondaryButton,
+                  onPress: () => {
+                    modalState.secondaryButton?.onPress();
+                    hideModal();
+                  },
+                }
+              : undefined
+          }
+          onClose={hideModal}
+        >
+          {modalState.children}
+        </NotificationModal>
+      )}
+      {modalState.type === 'bottomSheet' && (
+        <BottomSheetModal visible={modalState.visible} onClose={hideModal}>
+          {modalState.children}
+        </BottomSheetModal>
+      )}
+    </>
+  );
+};
+
+const RootNavigator: React.FC = () => {
+  const navigationRef = React.useRef<any>(null);
+
+  return (
+    <NavigationContainer ref={navigationRef}>
+      <RootNavigatorContent navigationRef={navigationRef} />
     </NavigationContainer>
   );
 };

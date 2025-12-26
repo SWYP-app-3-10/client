@@ -14,12 +14,14 @@ import { scaleWidth } from '../../styles/global';
 import Circle from '../../assets/svg/Circle.svg';
 import Info from '../../assets/svg/Info.svg';
 import RightArrow from '../../assets/svg/RightArrow.svg';
+import Triangle from '../../assets/svg/Triangle.svg';
 
 export const YoutubeIcon = createIconComponent(Youtube, ICON_SIZES.X3L);
 export const Ic_backIcon = createIconComponent(Icon_back, ICON_SIZES.XL);
 export const CircleIcon = createIconComponent(Circle, scaleWidth(14));
 export const InfoIcon = createIconComponent(Info, ICON_SIZES.L);
 export const CloseIcon = createIconComponent(Close, ICON_SIZES.XL);
+export const TriangleIcon = createIconComponent(Triangle, ICON_SIZES.X3L);
 
 //  가로, 세로 크기 다름
 export const CheckIcon = createRectangleIconComponent(
