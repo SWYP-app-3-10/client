@@ -23,6 +23,7 @@ interface NotificationModalState {
   descriptionColor?: string;
   titleStyle?: StyleProp<TextStyle>;
   closeOnBackdropPress?: boolean;
+  paddingHorizontal?: number;
 }
 
 interface BottomSheetModalState {
@@ -30,6 +31,7 @@ interface BottomSheetModalState {
   visible: boolean;
   children: ReactNode;
   closeOnBackdropPress?: boolean;
+  paddingHorizontal?: number;
 }
 
 type ModalState = NotificationModalState | BottomSheetModalState;
@@ -48,6 +50,7 @@ const defaultModalState: ModalState = {
   visible: false,
   title: '',
   titleStyle: undefined,
+  paddingHorizontal: undefined,
 };
 
 export const useModalStore = create<ModalStore>(set => ({
