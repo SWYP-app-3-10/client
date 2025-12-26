@@ -7,18 +7,18 @@
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:424320333528:android:51c7515f93c9c54648c9ad",
+        "mobilesdk_app_id": "1:424320333528:android:38338ecb462a582848c9ad",
         "android_client_info": {
           "package_name": "com.neurous.app"
         }
       },
       "oauth_client": [
         {
-          "client_id": "424320333528-4kkfevhkgkcm6c2beufbdq08tf0kssr9.apps.googleusercontent.com",
+          "client_id": "424320333528-jlh34ohos5hf6k7pftgee66of5848tm7.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {
             "package_name": "com.neurous.app",
-            "certificate_hash": "7787921c16631d6cb095bffc451fbf89b7bebb55"
+            "certificate_hash": "5e8f16062ea3cd2c4a0d547876baa6f38cabf625"
           }
         },
         {
