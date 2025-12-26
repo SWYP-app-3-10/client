@@ -4,6 +4,10 @@
 <dict>
 	<key>CADisableMinimumFrameDurationOnPhone</key>
 	<true/>
+  <key>CFBundleIconName</key>
+    <string>AppIcon</string>
+    <key>ITSAppUsesNonExemptEncryption</key>
+      <false/>
 	<key>CFBundleDevelopmentRegion</key>
 	<string>en</string>
 	<key>CFBundleDisplayName</key>
@@ -101,5 +105,6 @@
 		<string>Pretendard-ExtraBold.ttf</string>
 		<string>Pretendard-SemiBold.ttf</string>
 	</array>
+
 </dict>
 </plist>
