@@ -21,7 +21,12 @@ import SearchResultItem from './components/SearchResultItem';
 import CategoryTabs from './components/CategoryTabs';
 import { useArticleNavigation } from '../../hooks/useArticleNavigation';
 
-import { COLORS, scaleWidth } from '../../styles/global';
+import {
+  Caption_12M,
+  COLORS,
+  Heading_24EB_Round,
+  scaleWidth,
+} from '../../styles/global';
 
 /** 한 번에 추가로 보여줄 아이템 개수(페이지 단위) */
 const PAGE_SIZE = 10;
@@ -37,10 +42,8 @@ const HIT_SLOP = { top: 10, bottom: 10, left: 10, right: 10 };
  * - 로딩이 아니면 최소 여백만 제공
  */
 const SearchListFooter = ({ loading }: { loading: boolean }) => {
-  // 로딩이 아니면 여백만 주고 끝
   if (!loading) return <View style={{ height: 10 }} />;
 
-  // 로딩이면 스켈레톤을 PAGE_SIZE만큼 렌더링
   return (
     <View>
       {Array.from({ length: PAGE_SIZE }).map((_, i) => (
@@ -90,12 +93,10 @@ export default function SearchScreen({
    * - keyword: 검색 결과 화면 진입/갱신
    */
   useEffect(() => {
-    // 탐색 진입 시 초기 카테고리 파라미터가 있으면 반영
     if (route.params?.initialCategory) {
       setSelectedCategory(route.params.initialCategory);
     }
 
-    // 검색 진입/갱신 시 keyword 반영 + 페이지 초기화
     if (route.params?.keyword !== undefined) {
       setKeyword(route.params.keyword);
       setPage(1);
@@ -108,9 +109,9 @@ export default function SearchScreen({
    * - 같은 화면에서 keyword만 해제해서 탐색 모드로 복귀
    */
   const onPressBackFromSearch = () => {
-    setKeyword(undefined); // 검색 모드 해제
-    setPage(1); // 페이지 초기화
-    navigation.setParams({ keyword: undefined }); // params 정리
+    setKeyword(undefined);
+    setPage(1);
+    navigation.setParams({ keyword: undefined });
   };
 
   /**
@@ -135,7 +136,6 @@ export default function SearchScreen({
    * - 탐색 모드: selectedCategory로 필터링 (전체면 전부 노출)
    */
   const filteredAll: NewsItems[] = useMemo(() => {
-    // 검색 모드면: 카테고리 무시, keyword 포함 여부만 확인
     if (keyword) {
       const kw = keyword.toLowerCase();
       return MOCK_NEWS.filter(item =>
@@ -143,7 +143,6 @@ export default function SearchScreen({
       );
     }
 
-    // 탐색 모드면: 전체면 전부, 아니면 카테고리 매칭
     return MOCK_NEWS.filter(item => {
       if ((selectedCategory as any) === '전체') return true;
       return item.category === selectedCategory;
@@ -178,16 +177,8 @@ export default function SearchScreen({
   return (
     <SafeAreaView style={styles.safe} edges={['top']}>
       <View style={styles.container}>
-        {/* =========================
-            헤더
-            - 검색 모드: 검색바 형태
-            - 탐색 모드: 탐색/타이머/검색버튼
-        ========================= */}
-
         {isSearching ? (
-          // ===== 검색 결과 상단 =====
           <View style={styles.searchHeaderRow}>
-            {/* 왼쪽: 뒤로가기 -> 탐색 모드로 복귀 */}
             <TouchableOpacity
               onPress={onPressBackFromSearch}
               style={styles.backBtn}
@@ -196,15 +187,12 @@ export default function SearchScreen({
               <Text style={styles.backText}>‹</Text>
             </TouchableOpacity>
 
-            {/* 가운데: 검색바(표시용) */}
             <View style={styles.searchBarWrap}>
               <Text style={styles.searchBarText}>{keyword}</Text>
             </View>
           </View>
         ) : (
-          // ===== 탐색 상단 =====
           <View style={styles.exploreHeaderRow}>
-            {/* 왼쪽: 탐색 */}
             <TouchableOpacity
               onPress={onPressExplore}
               style={styles.exploreTitleBtn}
@@ -213,7 +201,6 @@ export default function SearchScreen({
               <Text style={styles.exploreTitleText}>탐색</Text>
             </TouchableOpacity>
 
-            {/* 가운데: 타이머 캡슐 */}
             <View style={styles.centerWrap}>
               <TouchableOpacity
                 onPress={onPressTimer}
@@ -225,7 +212,6 @@ export default function SearchScreen({
               </TouchableOpacity>
             </View>
 
-            {/* 오른쪽: 검색 버튼(회색 네모 임시) */}
             <TouchableOpacity
               onPress={() => navigation.navigate(RouteNames.SEARCH_INPUT)}
               style={styles.searchSquareBtn}
@@ -236,7 +222,6 @@ export default function SearchScreen({
           </View>
         )}
 
-        {/* ===== 탐색 모드에서만 카테고리 탭 노출 ===== */}
         {!isSearching && (
           <View style={styles.tabsWrap}>
             <CategoryTabs
@@ -260,7 +245,6 @@ export default function SearchScreen({
           </View>
         )}
 
-        {/* ===== 리스트 ===== */}
         <FlatList
           style={styles.list}
           data={visibleData}
@@ -285,143 +269,150 @@ export default function SearchScreen({
 }
 
 /* =========================
-   스타일 (자세한 주석)
+  스타일
 ========================= */
 const styles = StyleSheet.create({
+  // SafeAreaView 기본 배경/크기
   safe: {
-    flex: 1, // 전체 화면
-    backgroundColor: COLORS.white, // 배경 흰색
+    flex: 1,
+    backgroundColor: COLORS.white,
   },
 
+  // 화면 컨테이너
   container: {
-    flex: 1, // 내부 채우기
+    flex: 1,
   },
 
-  /* =========================
-     검색 헤더
-  ========================= */
+  // 검색 모드 헤더 행(뒤로 + 검색바)
   searchHeaderRow: {
-    flexDirection: 'row', // 뒤로 + 검색바를 가로로 배치
-    alignItems: 'center', // 수직 중앙 정렬
-    height: scaleWidth(52), // 헤더 높이
-    paddingHorizontal: scaleWidth(20), // 좌우 여백
+    flexDirection: 'row',
+    alignItems: 'center',
+    height: scaleWidth(52),
+    paddingHorizontal: scaleWidth(20),
   },
 
+  // 검색 헤더 뒤로가기 버튼 영역
   backBtn: {
-    paddingRight: scaleWidth(10), // 뒤로 버튼과 검색바 간격
-    paddingVertical: scaleWidth(6), // 터치 영역 확보
+    paddingRight: scaleWidth(10),
+    paddingVertical: scaleWidth(6),
   },
 
+  // 검색 헤더 뒤로가기 아이콘 텍스트
   backText: {
-    fontSize: scaleWidth(26), // chevron 크기
-    color: COLORS.black, // 색
-    lineHeight: scaleWidth(28), // 정렬 안정
+    fontSize: scaleWidth(26),
+    color: COLORS.black,
+    lineHeight: scaleWidth(28),
   },
 
+  // 검색바(표시용) 래퍼
   searchBarWrap: {
-    flex: 1, // 검색바가 남은 공간 전부 차지
-    height: scaleWidth(40), // 검색바 높이
-    borderRadius: scaleWidth(20), // 캡슐 형태
-    backgroundColor: COLORS.gray100, // 연한 회색 배경
-    paddingHorizontal: scaleWidth(14), // 내부 좌우 여백
-    justifyContent: 'center', // 텍스트 수직 중앙
+    flex: 1,
+    height: scaleWidth(40),
+    borderRadius: scaleWidth(20),
+    backgroundColor: COLORS.gray100,
+    paddingHorizontal: scaleWidth(14),
+    justifyContent: 'center',
   },
 
+  // 검색바 텍스트(검색어 표시)
   searchBarText: {
-    fontSize: scaleWidth(14), // 검색어 텍스트 크기
-    fontWeight: '600', // 약간 굵게
-    color: COLORS.black, // 텍스트 색
+    fontSize: scaleWidth(14),
+    fontWeight: '600',
+    color: COLORS.black,
   },
 
-  /* =========================
-    탐색 헤더
-  ========================= */
+  // 탐색 모드 헤더 행(좌=탐색, 중=타이머, 우=검색)
   exploreHeaderRow: {
-    flexDirection: 'row', // 좌/중/우를 가로로 배치
-    alignItems: 'center', // 수직 중앙
-    height: scaleWidth(52), // 헤더 높이
-    paddingHorizontal: scaleWidth(20), // 좌우 여백
+    flexDirection: 'row',
+    alignItems: 'center',
+    height: scaleWidth(52),
+    paddingHorizontal: scaleWidth(20),
   },
 
+  // "탐색" 타이틀 버튼 영역
   exploreTitleBtn: {
-    minWidth: scaleWidth(44), // 최소 터치 폭 확보
-    alignItems: 'flex-start', // 왼쪽 정렬
-    justifyContent: 'center', // 세로 중앙
+    minWidth: scaleWidth(44),
+    alignItems: 'flex-start',
+    justifyContent: 'center',
   },
 
+  // "탐색" 타이틀 텍스트
   exploreTitleText: {
-    fontSize: scaleWidth(20), // “탐색” 크게
-    fontWeight: '800', // 두껍게
-    color: COLORS.puple?.main ?? '#6C5CE7', // 퍼플 포인트 컬러
+    ...Heading_24EB_Round,
+    color: COLORS.puple?.main,
   },
 
+  // 타이머 캡슐을 가운데 고정하기 위한 래퍼
   centerWrap: {
-    flex: 1, // 가운데 영역이 남는 공간 차지
-    alignItems: 'center', // 가운데 정렬
-    justifyContent: 'center', // 수직 중앙
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
 
+  // 타이머 캡슐 버튼
   timerPill: {
-    flexDirection: 'row', // 시간 + 네모를 가로로 배치
-    alignItems: 'center', // 수직 중앙
-    height: scaleWidth(34), // 캡슐 높이
-    borderRadius: scaleWidth(999), // 완전 둥근 캡슐
-    borderWidth: 1, // 테두리 두께
-    borderColor: COLORS.gray300, // 테두리 색
-    backgroundColor: COLORS.white, // 배경
-    paddingHorizontal: scaleWidth(14), // 좌우 여백
+    flexDirection: 'row',
+    alignItems: 'center',
+    height: scaleWidth(34),
+    borderRadius: scaleWidth(999),
+    borderWidth: 1,
+    borderColor: COLORS.gray500,
+    backgroundColor: COLORS.white,
+    paddingHorizontal: scaleWidth(12),
+    paddingVertical: scaleWidth(8),
   },
 
+  // 타이머 시간 텍스트
   timerPillText: {
-    fontSize: scaleWidth(14), // 시간 텍스트 크기
-    fontWeight: '600', // 중간 굵기
-    color: COLORS.gray700, // 회색 텍스트
-    marginRight: scaleWidth(10), // 텍스트와 네모 간격
+    ...Caption_12M,
+    color: COLORS.gray700,
+    marginRight: scaleWidth(4),
   },
 
+  // 타이머 캡슐 오른쪽 네모(아이콘 자리)
   timerPillIconBox: {
-    width: scaleWidth(18), // 오른쪽 네모 폭
-    height: scaleWidth(18), // 오른쪽 네모 높이
-    borderRadius: scaleWidth(3), // 살짝 둥근 네모
-    backgroundColor: COLORS.gray300, // 회색 네모
+    width: scaleWidth(18),
+    height: scaleWidth(18),
+    borderRadius: scaleWidth(3),
+    backgroundColor: COLORS.gray300,
   },
 
+  // 우측 검색 버튼(터치 영역 포함)
   searchSquareBtn: {
-    minWidth: scaleWidth(44), // 터치 영역 확보
-    alignItems: 'flex-end', // 오른쪽 끝 정렬
-    justifyContent: 'center', // 세로 중앙
+    minWidth: scaleWidth(44),
+    alignItems: 'flex-end',
+    justifyContent: 'center',
   },
 
+  // 우측 검색 버튼(임시 회색 네모)
   searchSquare: {
-    width: scaleWidth(24), // 임시 버튼 크기
-    height: scaleWidth(24), // 임시 버튼 크기
-    borderRadius: scaleWidth(4), // 모서리 둥글게
-    backgroundColor: COLORS.gray300, // 연한 회색
+    width: scaleWidth(48),
+    height: scaleWidth(48),
+    backgroundColor: COLORS.gray300,
   },
 
-  /* =========================
-    카테고리 탭 래퍼
-  ========================= */
+  // 카테고리 탭 영역 래퍼
   tabsWrap: {
-    paddingHorizontal: 0, // CategoryTabs에서 padding 20을 주므로 여기서는 0(이중 패딩 방지)
-    paddingVertical: scaleWidth(10), // 탭 영역 위아래 여백
+    paddingHorizontal: 0,
+    paddingVertical: scaleWidth(10),
   },
 
-  /* =========================
-    리스트 영역
-  ========================= */
+  // 리스트 영역
   list: {
-    flex: 1, // 리스트가 남는 영역 차지
+    flex: 1,
   },
 
+  // 리스트 content 영역(위/아래 여백 + 아이템 간격)
   listContent: {
-    paddingTop: scaleWidth(8), // 첫 아이템 위 여백
-    paddingBottom: scaleWidth(12), // 마지막 아래 여백
+    paddingTop: scaleWidth(15),
+    paddingBottom: scaleWidth(48),
+    gap: scaleWidth(12),
   },
 
+  // 검색 결과가 없을 때 안내 텍스트
   empty: {
-    textAlign: 'center', // 가운데 정렬
-    paddingTop: scaleWidth(20), // 위 여백
-    color: COLORS.gray700, // 회색 안내 문구
+    textAlign: 'center',
+    paddingTop: scaleWidth(20),
+    color: COLORS.gray700,
   },
 });

@@ -1,7 +1,12 @@
 import React from 'react';
 import { ScrollView, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import type { NewsCategory } from '../../../data/mock/searchData';
-import { scaleWidth } from '../../../styles/global'; // 프로젝트 경로에 맞게 유지/조정
+import {
+  Body_18M,
+  BORDER_RADIUS,
+  COLORS,
+  scaleWidth,
+} from '../../../styles/global'; // 프로젝트 경로에 맞게 유지/조정
 
 type Props = {
   /** 전체 카테고리 목록 */
@@ -64,33 +69,31 @@ const styles = StyleSheet.create({
 
   /** 기본 카테고리 칩 스타일 */
   chip: {
-    minHeight: scaleWidth(43), // 탭 높이 기준(글씨 잘림 방지)
-    paddingHorizontal: scaleWidth(12), // 가로 패딩 12 (텍스트 여유)
-    paddingVertical: scaleWidth(8), // 세로 패딩 8 (텍스트 여유)
-    marginRight: scaleWidth(8), // 탭 간격
-    borderRadius: scaleWidth(999), // 알약 모양
-    backgroundColor: '#F4EEFF', // 기본 배경(연보라)
-    justifyContent: 'center', // 텍스트 수직 중앙
-    alignItems: 'center', // 텍스트 수평 중앙
+    paddingHorizontal: scaleWidth(12),
+    paddingVertical: scaleWidth(8),
+    marginRight: scaleWidth(16), // 칩 간 간격
+    borderRadius: BORDER_RADIUS[30],
+    backgroundColor: COLORS.puple[3],
+    justifyContent: 'center',
+    alignItems: 'center',
   },
 
   /** 선택된 카테고리 칩 스타일 */
   activeChip: {
-    backgroundColor: '#6D4CFF', // 선택 배경(보라)
+    backgroundColor: COLORS.puple.main, // 선택 배경(보라)
   },
 
   /** 기본 카테고리 텍스트 */
   text: {
-    fontSize: scaleWidth(13), // 텍스트 크기
-    lineHeight: scaleWidth(16),
-    color: '#6D4CFF', // 기본 텍스트(보라)
+    ...Body_18M,
+    color: COLORS.puple.main, // 기본 텍스트(보라)
     includeFontPadding: true, // 안드로이드 상하 여백
     textAlignVertical: 'center', // (안드로이드) 수직 중앙 느낌
   },
 
   /** 선택된 카테고리 텍스트 */
   activeText: {
+    ...Body_18M,
     color: 'white', // 선택 텍스트 흰색
-    fontWeight: '600', // 굵게
   },
 });
