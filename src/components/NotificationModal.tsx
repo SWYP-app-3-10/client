@@ -207,6 +207,7 @@ const styles = StyleSheet.create({
     width: '100%',
     paddingHorizontal: scaleWidth(24),
     paddingBottom: scaleWidth(24),
+    alignItems: 'center',
   },
   closeButtonContainer: {
     width: '100%',
@@ -254,6 +255,7 @@ const styles = StyleSheet.create({
     flexDirection: 'column',
   },
   button: {
+    flex: 1,
     height: scaleWidth(48),
   },
   singleButton: {
