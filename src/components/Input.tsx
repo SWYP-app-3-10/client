@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, { useState } from 'react';
 import {
   View,
   TextInput,
@@ -10,7 +10,7 @@ import {
   TextStyle,
   StyleProp,
 } from 'react-native';
-import {BORDER_RADIUS, COLORS, scaleWidth} from '../styles/global';
+import { BORDER_RADIUS, COLORS, scaleWidth } from '../styles/global';
 
 export type InputVariant = 'default' | 'outline';
 
@@ -53,7 +53,8 @@ const Input: React.FC<InputProps> = ({
           <TouchableOpacity
             onPress={onLeftIconPress}
             style={styles.leftIconContainer}
-            disabled={!onLeftIconPress}>
+            disabled={!onLeftIconPress}
+          >
             {leftIcon}
           </TouchableOpacity>
         )}

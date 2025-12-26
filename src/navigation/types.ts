@@ -77,8 +77,11 @@ export type SearchStackParamList = {
 // MyPage Stack Param List
 export type MyPageStackParamList = {
   [RouteNames.MY_PAGE]: undefined;
-  // 서브 화면들 추가 예정
-  // 예시: 'settings': undefined;
+  [RouteNames.COMPONENT_SHOWCASE]: undefined;
+  [RouteNames.SETTINGS]: undefined;
+  [RouteNames.LOGIN_INFO]: undefined;
+  [RouteNames.INQUIRY]: undefined;
+  [RouteNames.TERMS_OF_SERVICE]: undefined;
 };
 
 /**

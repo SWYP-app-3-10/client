@@ -11,7 +11,6 @@ import {
   BORDER_RADIUS,
   scaleWidth,
   Body_16SB,
-  Caption_12M,
   Heading_24EB_Round,
   Heading_18EB_Round,
   Heading_18B,
@@ -175,7 +174,6 @@ const styles = StyleSheet.create({
   content: {
     paddingTop: scaleWidth(20),
     paddingBottom: scaleWidth(50),
-    paddingHorizontal: scaleWidth(20),
   },
   // 화면 메인 타이틀
   title: {

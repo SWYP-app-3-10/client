@@ -46,6 +46,12 @@ const MyPageScreen = () => {
         title="공통 컴포넌트 쇼케이스"
         onPress={() => navigation.navigate(RouteNames.COMPONENT_SHOWCASE)}
       />
+      {/* ✅ 설정 화면으로 이동 */}
+      <Button
+        title="설정"
+        onPress={() => navigation.navigate(RouteNames.SETTINGS)}
+        style={{ marginTop: 12 }}
+      />
       {/* 개발용: 로그인 초기화 버튼 */}
       {__DEV__ && (
         <Button

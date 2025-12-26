@@ -35,10 +35,19 @@ export const RouteNames = {
   // 검색 서브 화면
   SEARCH_INPUT: 'search-input' as const,
 
+  // 공통 컴포넌트 쇼케이스
+  COMPONENT_SHOWCASE: 'component-showcase' as const,
+
   // 캐릭터
   CHARACTER_CRITERIA: 'character-criteria' as const,
   CHARACTER_POINT_HISTORY: 'character-point-history' as const,
   CHARACTER_NOTIFICATION: 'character-notification' as const,
+
+  // 마이페이지
+  SETTINGS: 'settings' as const,
+  TERMS_OF_SERVICE: 'terms-of-service' as const,
+  LOGIN_INFO: 'login-info' as const,
+  INQUIRY: 'inquiry' as const,
 
   // 전체 화면 스택 (탭바 없는 화면들)
   FULL_SCREEN_STACK: 'full-screen-stack' as const,
