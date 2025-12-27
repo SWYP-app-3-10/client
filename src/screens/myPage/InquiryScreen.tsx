@@ -138,6 +138,7 @@ const styles = StyleSheet.create({
   safe: {
     flex: 1, // 화면 전체 차지
     backgroundColor: COLORS.white, // 배경 흰색
+    paddingBottom: scaleWidth(20),
   },
   // 헤더 래퍼
   headerWrap: {

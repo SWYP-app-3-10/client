@@ -48,6 +48,7 @@ export type MyPageStackParamList = {
   [RouteNames.LOGIN_INFO]: undefined;
   [RouteNames.INQUIRY]: undefined;
   [RouteNames.TERMS_OF_SERVICE]: undefined;
+  [RouteNames.PRIVACY_POLICY]: undefined;
 };
 
 // Main Tab Param List (Bottom Tab Navigator)

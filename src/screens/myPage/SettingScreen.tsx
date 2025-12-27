@@ -79,7 +79,10 @@ const SettingScreen = () => {
           <RightArrow color={COLORS.gray700} />
         </Pressable>
 
-        <Pressable style={styles.row}>
+        <Pressable
+          style={[styles.row, styles.rowNoBorder]}
+          onPress={() => navigation.navigate(RouteNames.PRIVACY_POLICY)}
+        >
           <Text style={styles.rowTitle}>개인정보 처리 방침</Text>
           <RightArrow color={COLORS.gray700} />
         </Pressable>

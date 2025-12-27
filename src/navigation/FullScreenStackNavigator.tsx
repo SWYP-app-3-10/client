@@ -8,6 +8,11 @@ import QuizScreen from '../screens/common/QuizScreen';
 import AdLoadingScreen from '../screens/common/AdLoadingScreen';
 import CriteriaCheckScreen from '../screens/character/criteria/CriteriaCheckScreen';
 import PointHistoryScreen from '../screens/character/history/PointHistoryScreen';
+import SettingScreen from '../screens/myPage/SettingScreen';
+import LoginInfoScreen from '../screens/myPage/LoginInfoScreen';
+import InquiryScreen from '../screens/myPage/InquiryScreen';
+import TermsOfServiceScreen from '../screens/myPage/TermOfServiceScreen';
+import PrivacyPolicyScreen from '../screens/myPage/PrivacyPolicyScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -46,7 +51,19 @@ const FullScreenStackNavigator = () => {
         name={RouteNames.CHARACTER_POINT_HISTORY}
         component={PointHistoryScreen}
       />
-      {/* 추후 탭바 없는 다른 화면들 추가 가능 */}
+
+      {/* 마이페이지 서브 */}
+      <Stack.Screen name={RouteNames.SETTINGS} component={SettingScreen} />
+      <Stack.Screen name={RouteNames.LOGIN_INFO} component={LoginInfoScreen} />
+      <Stack.Screen name={RouteNames.INQUIRY} component={InquiryScreen} />
+      <Stack.Screen
+        name={RouteNames.TERMS_OF_SERVICE}
+        component={TermsOfServiceScreen}
+      />
+      <Stack.Screen
+        name={RouteNames.PRIVACY_POLICY}
+        component={PrivacyPolicyScreen}
+      />
     </Stack.Navigator>
   );
 };
