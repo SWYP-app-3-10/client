@@ -121,6 +121,7 @@
 				E235C05ADACE081382539298 /* [CP] Copy Pods Resources */,
 				EDAE963455C56553B21043E8 /* [CP-User] [RNGoogleMobileAds] Configuration */,
 				BAAF623E58F39CE1CC11B97B /* [CP-User] [RNFB] Core Configuration */,
+				D552434A2EFED1EE00C57BF3 /* Copy Hermes dSYM */,
 			);
 			buildRules = (
 			);
@@ -249,6 +250,24 @@
 			shellPath = /bin/sh;
 			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
 			showEnvVarsInLog = 0;
+		};
+		D552434A2EFED1EE00C57BF3 /* Copy Hermes dSYM */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			name = "Copy Hermes dSYM";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "# Hermes dSYM 파일을 찾아서 아카이브 폴더로 복사하는 스크립트\necho \"Searching for hermes.framework.dSYM...\"\nfind \"${PODS_ROOT}/hermes-engine\" -name \"hermes.framework.dSYM\" -print0 | xargs -0 -I {} cp -r {} \"${DWARF_DSYM_FOLDER_PATH}\"\necho \"Copied hermes.framework.dSYM to ${DWARF_DSYM_FOLDER_PATH}\"\n";
 		};
 		E235C05ADACE081382539298 /* [CP] Copy Pods Resources */ = {
 			isa = PBXShellScriptBuildPhase;
