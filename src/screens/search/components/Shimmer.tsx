@@ -1,5 +1,6 @@
 import React, { useEffect, useRef } from 'react';
 import { Animated, StyleSheet, View, ViewStyle } from 'react-native';
+import LinearGradient from 'react-native-linear-gradient';
 import { COLORS } from '../../../styles/global';
 
 type Props = {
@@ -11,27 +12,20 @@ type Props = {
  * Shimmer
  *
  * - 스켈레톤 UI에 사용되는 로딩 애니메이션 컴포넌트
- * - 회색 베이스 위에 밝은 띠가 좌 → 우로 반복 이동
+ * - 회색 베이스 위에 그라데이션 띠가 좌 → 우로 반복 이동
  * - Animated + useNativeDriver 사용
  */
 export default function Shimmer({ style }: Props) {
   /**
    * 애니메이션 진행도 (0 → 1)
-   * 반복(loop) 애니메이션에 사용
    */
   const anim = useRef(new Animated.Value(0)).current;
 
-  /**
-   * 컴포넌트 마운트 시
-   * - 좌 → 우 이동 애니메이션을 무한 반복
-   * 언마운트 시
-   * - 애니메이션 정지
-   */
   useEffect(() => {
     const loop = Animated.loop(
       Animated.timing(anim, {
         toValue: 1,
-        duration: 1100,
+        duration: 1200,
         useNativeDriver: true,
       }),
     );
@@ -41,18 +35,31 @@ export default function Shimmer({ style }: Props) {
   }, [anim]);
 
   /**
-   * 애니메이션 값(0~1)을 실제 이동 거리로 변환
-   * 밝은 띠가 컴포넌트 바깥에서 시작해 끝까지 지나가도록 설정
+   * 그라데이션 이동 거리
    */
   const translateX = anim.interpolate({
     inputRange: [0, 1],
-    outputRange: [-120, 240],
+    outputRange: [-180, 280], // 넉넉하게 이동
   });
 
   return (
     <View style={[styles.base, style]}>
-      {/* 이동하는 밝은 띠 */}
-      <Animated.View style={[styles.shine, { transform: [{ translateX }] }]} />
+      <Animated.View
+        style={[styles.shimmerWrap, { transform: [{ translateX }] }]}
+      >
+        <LinearGradient
+          colors={[
+            COLORS.gray300,
+            COLORS.gray400,
+            COLORS.gray500,
+            COLORS.gray400,
+            COLORS.gray300,
+          ]}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 0 }}
+          style={styles.gradient}
+        />
+      </Animated.View>
     </View>
   );
 }
@@ -60,17 +67,21 @@ export default function Shimmer({ style }: Props) {
 const styles = StyleSheet.create({
   /** 스켈레톤 기본 배경 */
   base: {
-    backgroundColor: '#EDEDED',
+    backgroundColor: COLORS.gray300,
     overflow: 'hidden',
   },
 
-  /** 좌 → 우로 이동하는 하이라이트 */
-  shine: {
+  /** 움직이는 그라데이션 래퍼 */
+  shimmerWrap: {
     position: 'absolute',
     top: 0,
     bottom: 0,
-    width: 80,
-    backgroundColor: COLORS.gray500,
-    transform: [{ skewX: '-20deg' }],
+    width: 160, // ✅ 띠 폭 (클수록 부드러움)
+  },
+
+  /** 실제 그라데이션 */
+  gradient: {
+    flex: 1,
+    transform: [{ skewX: '-20deg' }], // 사진처럼 사선 효과
   },
 });

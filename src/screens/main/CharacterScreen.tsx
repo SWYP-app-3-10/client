@@ -7,10 +7,10 @@ import {
   TouchableOpacity,
   StatusBar,
 } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { RouteNames } from '../../../routes';
 import { SafeAreaView } from 'react-native-safe-area-context';
-// ✅ 공통 디자인 시스템
+import { useBottomTabBarHeight } from '@react-navigation/bottom-tabs'; // 추가
 
 import {
   COLORS,
@@ -39,7 +39,6 @@ import {
   RightArrowIcon,
   ProgressBarIcon,
 } from '../../icons';
-import { useFocusEffect } from '@react-navigation/native';
 import { Body_15M } from '../../styles/typography';
 import { useCharacterData, useAttendanceData } from '../../hooks/useCharacter';
 import { useMissions } from '../../hooks/useMissions';
@@ -50,6 +49,8 @@ import { useExperienceStore } from '../../store/experienceStore';
 const CharacterScreen = () => {
   const rootNavigation =
     useNavigation<MainTabNavigationProp<CharacterStackParamList>>();
+  const tabBarHeight = useBottomTabBarHeight(); // ✅ 탭바 높이
+
   const [isScrolled, setIsScrolled] = useState(false);
   const [showTooltip, setShowTooltip] = useState(true);
   const lottieHeight = scaleWidth(882);
@@ -166,17 +167,20 @@ const CharacterScreen = () => {
 
   return (
     <>
+      {/* ✅ 상태바 투명 + 겹침 허용 → Lottie가 상태바까지 차지 */}
       <StatusBar
-        backgroundColor={isScrolled ? COLORS.white : COLORS.gray200}
-        barStyle="dark-content"
         translucent
+        backgroundColor="transparent"
+        barStyle="dark-content"
       />
+
+      {/* ✅ top SafeArea 제거 + bottom은 탭바 높이로 직접 처리 */}
       <SafeAreaView
         style={[
           styles.container,
           { backgroundColor: isScrolled ? COLORS.white : COLORS.gray200 },
         ]}
-        edges={['top']}
+        edges={['left', 'right']} // ✅ bottom 제거
       >
         <ScrollView
           bounces={false}
@@ -184,17 +188,22 @@ const CharacterScreen = () => {
           showsVerticalScrollIndicator={false}
           onScroll={handleScroll}
           scrollEventThrottle={16}
+          contentContainerStyle={[
+            styles.scrollContent,
+            { paddingBottom: tabBarHeight }, // ✅ 탭바만큼만
+          ]}
         >
           {/* 로티 영역 */}
           <View style={styles.lottieContainer}>
             <LottieView
-              source={require('../../assets/lottie/Cutebeardancing.json')}
+              source={require('../../assets/lottie/test_lottie.json')}
               style={styles.lottie}
               autoPlay
               loop
               resizeMode="cover"
             />
           </View>
+
           {/* 알림 버튼 */}
           <View style={styles.notificationButtonContainer}>
             <Button
@@ -204,6 +213,7 @@ const CharacterScreen = () => {
               onPress={handleNavigateToNotification}
             />
           </View>
+
           {/* 레벨 버튼 */}
           <View style={styles.levelButtonContainer}>
             <View style={styles.levelButton}>
@@ -319,7 +329,9 @@ const CharacterScreen = () => {
             ))}
           </View>
 
-          <Spacer num={100} />
+          {/* ✅ 기존 Spacer(100)는 탭바 padding으로 대체됨 → 제거/축소 권장
+              기능 유지가 최우선이면 두어도 되지만 여백이 다시 커질 수 있어요 */}
+          {/* <Spacer num={100} /> */}
         </ScrollView>
       </SafeAreaView>
     </>
@@ -337,6 +349,10 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: COLORS.white,
   },
+  // ✅ ScrollView content padding을 위한 스타일 (기존 기능/레이아웃에 영향 없음)
+  scrollContent: {
+    paddingBottom: 0,
+  },
   lottieContainer: {
     width: '100%',
     height: scaleWidth(882),
@@ -347,18 +363,24 @@ const styles = StyleSheet.create({
     width: '100%',
     height: '100%',
   },
+  // ✅ marginTop → 추가
   levelButtonContainer: {
+    marginTop: scaleWidth(30),
     position: 'absolute',
     top: scaleWidth(60),
     left: scaleWidth(111),
     alignItems: 'center',
   },
+  // ✅ marginTop → 추가
   tooltipContainer: {
+    marginTop: scaleWidth(30),
     position: 'absolute',
     top: scaleWidth(46),
     alignItems: 'center',
   },
+  // ✅ marginTop → 추가
   levelButton: {
+    marginTop: scaleWidth(30),
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
@@ -528,12 +550,15 @@ const styles = StyleSheet.create({
   missionCardWrapper: {
     marginBottom: scaleWidth(16),
   },
+  // ✅ marginTop → 추가
   notificationButtonContainer: {
+    marginTop: scaleWidth(30),
     position: 'absolute',
     top: scaleWidth(0),
     right: scaleWidth(0),
   },
   notificationButton: {
+    marginTop: scaleWidth(8),
     marginHorizontal: scaleWidth(20),
     width: scaleWidth(50),
     height: scaleWidth(50),
