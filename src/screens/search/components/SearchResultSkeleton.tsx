@@ -34,25 +34,24 @@ const styles = StyleSheet.create({
     paddingTop: scaleWidth(12),
     paddingBottom: scaleWidth(16),
     alignItems: 'center',
+    gap: 12,
   },
   left: { flex: 1 },
 
   line1: {
     height: LINE_H,
     borderRadius: LINE_H / 2,
-    width: '88%',
     marginBottom: scaleWidth(10),
   },
   line2: {
     height: LINE_H,
     borderRadius: LINE_H / 2,
-    width: '88%',
     marginBottom: scaleWidth(10),
   },
   line3: {
     height: LINE_H,
     borderRadius: LINE_H / 2,
-    width: '40%',
+    width: '60%',
   },
 
   thumb: {
