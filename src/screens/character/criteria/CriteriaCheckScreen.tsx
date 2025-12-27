@@ -90,7 +90,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: COLORS.white,
-    //paddingHorizontal: scaleWidth(20),
+    paddingBottom: scaleWidth(48),
   },
 
   // 헤더 래퍼
