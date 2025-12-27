@@ -45,6 +45,7 @@ export const RouteNames = {
   TERMS_OF_SERVICE: 'terms-of-service' as const,
   LOGIN_INFO: 'login-info' as const,
   INQUIRY: 'inquiry' as const,
+  PRIVACY_POLICY: 'PrivacyPolicy' as const,
 
   // 전체 화면 스택 (탭바 없는 화면들)
   FULL_SCREEN_STACK: 'full-screen-stack' as const,
