@@ -22,6 +22,14 @@
           }
         },
         {
+          "client_id": "424320333528-v5i3k9h9servc8rkbsq35jenjp329f4g.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.neurous.app",
+            "certificate_hash": "ec6532da1daf55fea9635150420a2c2bb66b5856"
+          }
+        },
+        {
           "client_id": "424320333528-3em9k816cropmqufki5vq4cb4nrrcrof.apps.googleusercontent.com",
           "client_type": 3
         }

@@ -47,11 +47,12 @@ export const initializeGoogleSignIn = () => {
 // 구글 로그인
 export const signInWithGoogle = async (): Promise<SocialLoginResult> => {
   try {
-    const signInResult = await GoogleSignin.signIn();
-    const signInData = (signInResult as any).data;
-    const idToken = signInData?.idToken;
+    await GoogleSignin.signIn();
+    const tokens = await GoogleSignin.getTokens();
+    const idToken = tokens.idToken;
 
     if (!idToken) {
+      console.error('Google ID Token이 없습니다. tokens:', tokens);
       throw new Error('Google ID Token이 없습니다.');
     }
 
