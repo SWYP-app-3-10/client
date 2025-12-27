@@ -534,7 +534,7 @@ const styles = StyleSheet.create({
     right: scaleWidth(0),
   },
   notificationButton: {
-    margin: scaleWidth(20),
+    marginHorizontal: scaleWidth(20),
     width: scaleWidth(50),
     height: scaleWidth(50),
     borderRadius: BORDER_RADIUS[16],
