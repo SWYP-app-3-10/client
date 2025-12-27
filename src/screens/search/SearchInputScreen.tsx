@@ -155,7 +155,7 @@ export default function SearchInputScreen({ navigation }: Props) {
 }
 
 /* =========================
-   스타일 (자세한 주석)
+  스타일 (자세한 주석)
 ========================= */
 const styles = StyleSheet.create({
   safe: {

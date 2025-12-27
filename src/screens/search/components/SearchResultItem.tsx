@@ -4,6 +4,7 @@ import type { NewsItems } from '../../../data/mock/searchData';
 import {
   Body_16M,
   BORDER_RADIUS,
+  Caption_14R,
   COLORS,
   scaleWidth,
 } from '../../../styles/global';
@@ -74,13 +75,13 @@ const styles = StyleSheet.create({
   sub: {
     ...Body_16M,
     color: COLORS.black,
-    marginBottom: 6,
   },
 
   /** 읽기 시간 등 메타 정보 */
   meta: {
-    fontSize: 11,
-    color: '#6D4CFF',
+    ...Caption_14R,
+    color: COLORS.gray700,
+    marginTop: scaleWidth(8),
   },
 
   /** 썸네일 영역 (이미지 적용 예정) */

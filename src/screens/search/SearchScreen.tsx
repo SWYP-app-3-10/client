@@ -262,6 +262,13 @@ export default function SearchScreen({
           ListEmptyComponent={
             <Text style={styles.empty}>검색 결과가 없습니다.</Text>
           }
+          /* ✅ 항상 상단에 스켈레톤 2개 고정(원래 리스트 위) */
+          ListHeaderComponent={
+            <View>
+              <SearchResultSkeleton />
+              <SearchResultSkeleton />
+            </View>
+          }
         />
       </View>
     </SafeAreaView>

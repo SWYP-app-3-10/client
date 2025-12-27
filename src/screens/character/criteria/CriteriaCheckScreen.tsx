@@ -33,16 +33,8 @@ const CriteriaCheckScreen = () => {
 
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
-      {/* 헤더 영역 */}
-      <View style={styles.headerWrap}>
-        {/* 공통 헤더는 그대로 사용 (title은 비워서 기본 Text 출력 방지) */}
-        <Header title="" />
-
-        {/* 중앙 타이틀 오버레이 */}
-        <View pointerEvents="none" style={styles.headerCenterTitleWrap}>
-          <Text style={styles.headerCenterTitle}>기준 확인하기</Text>
-        </View>
-      </View>
+      {/* 공통 헤더 */}
+      <Header title="기준 확인하기" />
 
       {/* 세그먼트 탭 */}
       <View style={styles.segmentWrap}>
