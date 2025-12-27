@@ -45,7 +45,7 @@ import { useShowBottomSheetModal, useHideModal } from '../../store/modalStore';
 import LevelSelectionContent from '../../components/LevelSelectionContent';
 import IconButton from '../../components/IconButton';
 
-// ✅ MyPageStack + RootStack 합친 네비게이션 타입
+// MyPageStack + RootStack 합친 네비게이션 타입
 type MyPageNavigationProp = CompositeNavigationProp<
   NativeStackNavigationProp<MyPageStackParamList>,
   NativeStackNavigationProp<RootStackParamList>
@@ -332,7 +332,9 @@ const MyPageScreen = () => {
           variant="primary"
           style={[styles.backButton, { marginHorizontal: scaleWidth(20) }]}
           onPress={() => {
-            navigation.navigate(RouteNames.SETTINGS);
+            navigation.getParent()?.navigate(RouteNames.FULL_SCREEN_STACK, {
+              screen: RouteNames.SETTINGS,
+            });
           }}
         />
 

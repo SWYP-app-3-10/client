@@ -1,9 +1,10 @@
 {
   "extends": "@react-native/typescript-config/tsconfig.json",
   "compilerOptions": {
+    "jsx": "react-native",
     "typeRoots": ["./node_modules/@types", "./src/types"],
-    //"types": [] // develop에는 없었음. react 사용 위해 주석 처리.
-    "esModuleInterop": true, // develop에는 없었음.
+
+    "esModuleInterop": true
   },
   "include": ["src/**/*", "declarations.d.ts", "__tests__/**/*"]
 }
