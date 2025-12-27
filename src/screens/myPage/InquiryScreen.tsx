@@ -169,7 +169,7 @@ const styles = StyleSheet.create({
   scrollContent: {
     paddingHorizontal: scaleWidth(20), // 좌우 패딩
     paddingTop: scaleWidth(25), // 상단 여백
-    paddingBottom: scaleWidth(50), // 하단 여백
+    paddingBottom: scaleWidth(10), // 하단 여백
   },
   title: {
     ...Heading_20EB_Round,

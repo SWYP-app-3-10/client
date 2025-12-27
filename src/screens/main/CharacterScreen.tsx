@@ -198,7 +198,7 @@ const CharacterScreen = () => {
           {/* 알림 버튼 */}
           <View style={styles.notificationButtonContainer}>
             <Button
-              title=""
+              title="알림"
               variant="primary"
               style={styles.notificationButton}
               onPress={handleNavigateToNotification}
@@ -534,6 +534,7 @@ const styles = StyleSheet.create({
     right: scaleWidth(0),
   },
   notificationButton: {
+    marginHorizontal: scaleWidth(20),
     width: scaleWidth(50),
     height: scaleWidth(50),
     borderRadius: BORDER_RADIUS[16],
