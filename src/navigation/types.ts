@@ -44,7 +44,6 @@ export type SearchStackParamList = {
 // MyPage Stack Param List
 export type MyPageStackParamList = {
   [RouteNames.MY_PAGE]: undefined;
-  [RouteNames.COMPONENT_SHOWCASE]: undefined;
   [RouteNames.SETTINGS]: undefined;
   [RouteNames.LOGIN_INFO]: undefined;
   [RouteNames.INQUIRY]: undefined;

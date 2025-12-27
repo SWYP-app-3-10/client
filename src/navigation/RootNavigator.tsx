@@ -175,7 +175,11 @@ const RootNavigatorContent: React.FC<{
         </NotificationModal>
       )}
       {modalState.type === 'bottomSheet' && (
-        <BottomSheetModal visible={modalState.visible} onClose={hideModal}>
+        <BottomSheetModal
+          visible={modalState.visible}
+          onClose={hideModal}
+          paddingHorizontal={modalState.paddingHorizontal}
+        >
           {modalState.children}
         </BottomSheetModal>
       )}

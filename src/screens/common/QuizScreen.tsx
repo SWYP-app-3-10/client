@@ -117,54 +117,52 @@ const QuizScreen: React.FC = () => {
       children: (
         <DifficultySelectionModal
           initialDifficulty={selectedDifficulty}
-          onSelect={setSelectedDifficulty}
+          onSelect={difficulty => {
+            setSelectedDifficulty(difficulty);
+            // 난이도 선택 시 모달 닫고 원래 화면으로 이동
+            setTimeout(() => {
+              hideModal();
+              // 원래 화면으로 이동 (스택 초기화)
+              navigation.dispatch(
+                CommonActions.reset({
+                  index: 0,
+                  routes: [
+                    {
+                      name: RouteNames.MAIN_TAB,
+                      state: {
+                        routes: [
+                          {
+                            name:
+                              returnTo === 'search'
+                                ? RouteNames.SEARCH_TAB
+                                : RouteNames.MISSION_TAB,
+                            state: {
+                              routes: [
+                                {
+                                  name:
+                                    returnTo === 'search'
+                                      ? RouteNames.SEARCH
+                                      : RouteNames.MISSION,
+                                },
+                              ],
+                            },
+                          },
+                        ],
+                      },
+                    },
+                  ],
+                }),
+              );
+            }, 2000);
+            // TODO: 서버로 난이도 전송
+            console.log('난이도 전송:', {
+              articleId,
+              difficulty,
+            });
+          }}
         />
       ),
     });
-
-    // 5초 후 자동으로 모달 닫고 원래 화면으로 이동
-    timeoutRef.current = setTimeout(() => {
-      hideModal();
-      // TODO: 서버로 난이도 전송
-      if (selectedDifficulty) {
-        console.log('난이도 전송:', {
-          articleId,
-          difficulty: selectedDifficulty,
-        });
-      }
-
-      // 원래 화면으로 이동 (스택 초기화)
-      navigation.dispatch(
-        CommonActions.reset({
-          index: 0,
-          routes: [
-            {
-              name: RouteNames.MAIN_TAB,
-              state: {
-                routes: [
-                  {
-                    name:
-                      returnTo === 'search'
-                        ? RouteNames.SEARCH_TAB
-                        : RouteNames.MISSION_TAB,
-                    state: {
-                      routes: [
-                        {
-                          name:
-                            returnTo === 'search'
-                              ? RouteNames.SEARCH
-                              : RouteNames.MISSION,
-                        },
-                      ],
-                    },
-                  },
-                ],
-              },
-            },
-          ],
-        }),
-      );
-    }, 3000);
   };
 
   const isCorrect = (optionId: number) => {

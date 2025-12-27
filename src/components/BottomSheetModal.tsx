@@ -16,12 +16,14 @@ interface BottomSheetModalProps {
   visible: boolean;
   onClose: () => void;
   children: React.ReactNode;
+  paddingHorizontal?: number;
 }
 
 const BottomSheetModal: React.FC<BottomSheetModalProps> = ({
   visible,
   onClose,
   children,
+  paddingHorizontal,
 }) => {
   const { bottom } = useSafeAreaInsets();
   return (
@@ -36,7 +38,13 @@ const BottomSheetModal: React.FC<BottomSheetModalProps> = ({
               </View>
 
               {/* Content */}
-              <View style={styles.content}>{children}</View>
+              <View
+                style={{
+                  paddingHorizontal: paddingHorizontal ?? scaleWidth(20),
+                }}
+              >
+                {children}
+              </View>
             </SafeAreaView>
           </View>
         </TouchableWithoutFeedback>

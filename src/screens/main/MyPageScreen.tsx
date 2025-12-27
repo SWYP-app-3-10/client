@@ -245,7 +245,6 @@ const MyPageScreen = () => {
   const showBottomSheetModal = useShowBottomSheetModal();
   const hideModal = useHideModal();
 
-  // ✅ 여기만 이렇게 바꾸면 SETTINGS/ONBOARDING 둘 다 타입 에러 안 남
   const navigation = useNavigation<MyPageNavigationProp>();
 
   // 사용자 정보 로드
@@ -402,6 +401,7 @@ const MyPageScreen = () => {
                     hideModal();
                   },
                 }),
+                paddingHorizontal: 0,
               });
             }}
           >

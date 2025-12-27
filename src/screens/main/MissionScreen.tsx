@@ -279,14 +279,14 @@ const MissionScreen = () => {
         showsVerticalScrollIndicator={false}
       >
         {/* 개발용: 로그인 초기화 버튼 */}
-        {__DEV__ && (
-          <Button
-            title="로그인 초기화"
-            onPress={handleClearLogin}
-            variant="ghost"
-            style={missionScreenStyles.clearLoginButton}
-          />
-        )}
+        {/* {__DEV__ && ( */}
+        <Button
+          title="로그인 초기화"
+          onPress={handleClearLogin}
+          variant="ghost"
+          style={missionScreenStyles.clearLoginButton}
+        />
+        {/* )} */}
         {/* 헤더 */}
         <Button
           title="알림 페이지로"
