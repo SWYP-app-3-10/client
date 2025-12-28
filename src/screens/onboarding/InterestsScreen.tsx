@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useMemo, useEffect } from 'react';
-import { View, Text, StyleSheet, ScrollView } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { RouteNames } from '../../../routes';
@@ -167,23 +167,29 @@ const InterestsScreen = () => {
       .sort((a, b) => a[1] - b[1]) // 순서대로 정렬
       .map(([category]) => category); // InterestCategory만 추출
 
-    // 서버 API 호출 (옵션)
+    // 서버 API 호출
     if (USE_SERVER_API_FOR_INTERESTS) {
       try {
         // userId 가져오기 (사용자 정보에서)
         const userInfo = await getUserInfo();
         if (!userInfo || !userInfo.userId) {
-          console.warn('[관심분야 업데이트] userId를 찾을 수 없습니다.');
-          console.warn('[관심분야 업데이트] userInfo:', userInfo);
-          // userId가 없어도 로컬 저장은 계속 진행
-        } else {
-          console.log('[관심분야 업데이트] API 호출 시작');
-          await updateUserInterests(userInfo.userId, interestsArray);
-          console.log('[관심분야 업데이트] API 호출 성공');
+          Alert.alert(
+            '오류',
+            '사용자 정보를 찾을 수 없습니다. 다시 로그인해주세요.',
+          );
+          return; // 로컬 저장 중단
         }
+
+        console.log('[관심분야 업데이트] API 호출 시작');
+        await updateUserInterests(userInfo.userId, interestsArray);
+        console.log('[관심분야 업데이트] API 호출 성공');
       } catch (error) {
         console.error('[관심분야 업데이트] 서버 업데이트 실패:', error);
-        // 서버 업데이트 실패해도 로컬 저장은 계속 진행
+        Alert.alert(
+          '업데이트 실패',
+          '관심분야 업데이트에 실패했습니다. 네트워크를 확인하고 다시 시도해주세요.',
+        );
+        return; // 서버 업데이트 실패 시 로컬 저장 중단
       }
     } else {
       console.log(

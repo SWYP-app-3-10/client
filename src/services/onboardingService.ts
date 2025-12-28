@@ -4,6 +4,7 @@
  */
 
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { LevelCategory } from '../types/interests';
 
 const ONBOARDING_COMPLETED_KEY = '@onboarding_completed';
 const ONBOARDING_STEP_KEY = '@onboarding_step';
@@ -11,14 +12,13 @@ const INTERESTS_KEY = '@onboarding_interests';
 const DIFFICULTY_KEY = '@onboarding_difficulty';
 
 export type OnboardingStep = 'login' | 'interests' | 'difficulty' | 'completed';
-export type Difficulty = 'beginner' | 'intermediate' | 'advanced';
 export type InterestsData = Record<string, number>;
 
 export interface OnboardingData {
   isCompleted: boolean;
   step: OnboardingStep;
   interests: InterestsData | null;
-  difficulty: Difficulty | null;
+  difficulty: LevelCategory | null;
 }
 
 /**
@@ -45,7 +45,7 @@ export const getOnboardingStatus = async (): Promise<OnboardingData> => {
     const interestsStr = await AsyncStorage.getItem(INTERESTS_KEY);
     const difficulty = (await AsyncStorage.getItem(
       DIFFICULTY_KEY,
-    )) as Difficulty | null;
+    )) as LevelCategory | null;
 
     const interests: InterestsData | null = interestsStr
       ? JSON.parse(interestsStr)
@@ -147,14 +147,16 @@ export const saveInterests = async (
  * 난이도 저장
  * 나중에 서버 API로 교체 가능
  */
-export const saveDifficulty = async (difficulty: Difficulty): Promise<void> => {
+export const saveDifficulty = async (
+  difficulty: LevelCategory,
+): Promise<void> => {
   try {
     // TODO: 서버 API로 난이도 저장
     // 예시:
     // await api.put('/user/onboarding/difficulty', { difficulty });
 
     // 현재는 로컬 스토리지에 저장
-    await AsyncStorage.setItem(DIFFICULTY_KEY, difficulty);
+    await AsyncStorage.setItem(DIFFICULTY_KEY, JSON.stringify(difficulty));
   } catch (error) {
     console.error('난이도 저장 실패:', error);
     throw error;
