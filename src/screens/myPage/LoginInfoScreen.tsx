@@ -74,19 +74,19 @@ const LoginInfoScreen = () => {
 
   /** 서비스 탈퇴 클릭 */
   const onPressWithdraw = () => {
-    console.log('[LoginInfo] withdraw pressed');
+    console.log('[LoginInfo] 서비스 탈퇴 pressed');
     setWithdrawModalVisible(true);
   };
 
   /** 서비스 탈퇴 취소 */
   const onCancelWithdraw = () => {
-    console.log('[LoginInfo] withdraw canceled');
+    console.log('[LoginInfo] 서비스 탈퇴 취소 pressed');
     setWithdrawModalVisible(false);
   };
 
   /** 서비스 탈퇴 확인 */
   const onConfirmWithdraw = useCallback(async () => {
-    console.log('[LoginInfo] withdraw confirmed');
+    console.log('[LoginInfo] 서비스 탈퇴 확인 pressed');
     setWithdrawModalVisible(false);
 
     try {
