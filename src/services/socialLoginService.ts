@@ -16,6 +16,8 @@ import {
   signInWithCredential,
   signOut,
 } from '@react-native-firebase/auth';
+import { loginWithProvider } from '../api/authApi';
+import { saveAuthToken, saveRefreshToken, saveUserInfo } from './authService';
 // 소셜 로그인 타입
 export type SocialLoginProvider = 'google' | 'kakao' | 'naver' | 'apple';
 
@@ -64,6 +66,57 @@ export const signInWithGoogle = async (): Promise<SocialLoginResult> => {
     );
     const firebaseUser = userCredential.user;
 
+    // 서버 API 호출 (필수)
+
+    try {
+      const loginResponse = await loginWithProvider('google', {
+        accessToken: tokens.accessToken,
+      });
+      if (loginResponse.data) {
+        if (loginResponse.data.accessToken) {
+          await saveAuthToken(loginResponse.data.accessToken);
+        }
+
+        if (loginResponse.data.refreshToken) {
+          await saveRefreshToken(loginResponse.data.refreshToken);
+        }
+
+        // userInfo 저장 (provider, loginTime 포함)
+        if (loginResponse.data.userInfo) {
+          await saveUserInfo({
+            ...loginResponse.data.userInfo,
+            provider: 'google',
+            loginTime: Date.now(),
+          });
+        }
+      } else if (loginResponse.token) {
+        await saveAuthToken(loginResponse.token);
+        if (loginResponse.refreshToken) {
+          await saveRefreshToken(loginResponse.refreshToken);
+        }
+        if (loginResponse.user) {
+          await saveUserInfo({
+            userId: parseInt(loginResponse.user.id, 10) || 0,
+            name: loginResponse.user.name,
+            email: loginResponse.user.email,
+            profileImage: loginResponse.user.profileImage,
+          });
+        }
+      } else {
+        console.warn('서버에서 토큰을 받지 못했습니다.');
+        console.warn('서버 응답:', JSON.stringify(loginResponse, null, 2));
+        console.warn('서버 응답 필드:', Object.keys(loginResponse).join(', '));
+      }
+    } catch (apiError) {
+      console.error('서버 로그인 API 호출 실패:', apiError);
+      // 서버 API 실패 시 에러 반환 (토큰 없이는 이후 API 호출 불가)
+      return {
+        success: false,
+        provider: 'google',
+        error: '서버 로그인에 실패했습니다. 다시 시도해주세요.',
+      };
+    }
+
     return {
       success: true,
       provider: 'google',
@@ -103,22 +156,73 @@ export const signInWithKakao = async (): Promise<SocialLoginResult> => {
     const profile = await getKakaoProfile();
     const profileData = profile as any;
 
+    const userInfo = {
+      id: profileData.id?.toString() || '',
+      email: profileData.kakaoAccount?.email || undefined,
+      name:
+        profileData.kakaoAccount?.profile?.nickname ||
+        profileData.nickname ||
+        undefined,
+      profileImage:
+        profileData.kakaoAccount?.profile?.profileImageUrl ||
+        profileData.profileImageUrl ||
+        undefined,
+    };
+
+    // 서버 API 호출
+    try {
+      const loginResponse = await loginWithProvider('kakao', {
+        accessToken: token.accessToken,
+      });
+      if (loginResponse.data) {
+        if (loginResponse.data.accessToken) {
+          await saveAuthToken(loginResponse.data.accessToken);
+        }
+
+        if (loginResponse.data.refreshToken) {
+          await saveRefreshToken(loginResponse.data.refreshToken);
+        }
+
+        if (loginResponse.data.userInfo) {
+          await saveUserInfo({
+            ...loginResponse.data.userInfo,
+            provider: 'google',
+            loginTime: Date.now(),
+          });
+        }
+      } else if (loginResponse.token) {
+        await saveAuthToken(loginResponse.token);
+        if (loginResponse.refreshToken) {
+          await saveRefreshToken(loginResponse.refreshToken);
+        }
+        if (loginResponse.user) {
+          await saveUserInfo({
+            userId: parseInt(loginResponse.user.id, 10) || 0,
+            name: loginResponse.user.name,
+            email: loginResponse.user.email,
+            profileImage: loginResponse.user.profileImage,
+          });
+        }
+      } else {
+        console.warn('서버에서 토큰을 받지 못했습니다.');
+        console.warn('서버 응답:', JSON.stringify(loginResponse, null, 2));
+        console.warn('서버 응답 필드:', Object.keys(loginResponse).join(', '));
+      }
+    } catch (apiError) {
+      console.error('서버 로그인 API 호출 실패:', apiError);
+      // 서버 API 실패 시 에러 반환
+      return {
+        success: false,
+        provider: 'kakao',
+        error: '서버 로그인에 실패했습니다. 다시 시도해주세요.',
+      };
+    }
+
     return {
       success: true,
       provider: 'kakao',
       accessToken: token.accessToken,
-      userInfo: {
-        id: profileData.id?.toString() || '',
-        email: profileData.kakaoAccount?.email || undefined,
-        name:
-          profileData.kakaoAccount?.profile?.nickname ||
-          profileData.nickname ||
-          undefined,
-        profileImage:
-          profileData.kakaoAccount?.profile?.profileImageUrl ||
-          profileData.profileImageUrl ||
-          undefined,
-      },
+      userInfo,
     };
   } catch (error: any) {
     return {
@@ -171,16 +275,75 @@ export const signInWithNaver = async (): Promise<SocialLoginResult> => {
       result.successResponse.accessToken,
     );
 
+    const userInfo = {
+      id: profileResult.response?.id || '',
+      email: profileResult.response?.email || undefined,
+      name: profileResult.response?.name || undefined,
+      profileImage: profileResult.response?.profile_image || undefined,
+    };
+
+    // 서버 API 호출
+    try {
+      const loginResponse = await loginWithProvider('naver', {
+        accessToken: result.successResponse.accessToken,
+        // email: userInfo.email,
+        // name: userInfo.name,
+        // profileImage: userInfo.profileImage,
+      });
+      // 서버에서 받은 데이터 저장
+      if (loginResponse.data) {
+        // accessToken 저장
+        if (loginResponse.data.accessToken) {
+          await saveAuthToken(loginResponse.data.accessToken);
+        }
+
+        // refreshToken 저장
+        if (loginResponse.data.refreshToken) {
+          await saveRefreshToken(loginResponse.data.refreshToken);
+        }
+
+        // userInfo 저장
+        if (loginResponse.data.userInfo) {
+          await saveUserInfo(loginResponse.data.userInfo);
+          await saveUserInfo({
+            ...loginResponse.data.userInfo,
+            provider: 'naver',
+            loginTime: Date.now(),
+          });
+        }
+      } else if (loginResponse.token) {
+        await saveAuthToken(loginResponse.token);
+        if (loginResponse.refreshToken) {
+          await saveRefreshToken(loginResponse.refreshToken);
+        }
+        if (loginResponse.user) {
+          await saveUserInfo({
+            userId: parseInt(loginResponse.user.id, 10) || 0,
+            name: loginResponse.user.name,
+            email: loginResponse.user.email,
+            profileImage: loginResponse.user.profileImage,
+          });
+        }
+      } else {
+        console.warn('서버에서 토큰을 받지 못했습니다.');
+        console.warn('서버 응답:', JSON.stringify(loginResponse, null, 2));
+        console.warn('서버 응답 필드:', Object.keys(loginResponse).join(', '));
+      }
+    } catch (apiError) {
+      console.error('서버 로그인 API 호출 실패:', apiError);
+      // 서버 API 실패 시 에러 반환
+      return {
+        success: false,
+        provider: 'naver',
+        error: '서버 로그인에 실패했습니다. 다시 시도해주세요.',
+      };
+    }
+
     return {
       success: true,
       provider: 'naver',
       accessToken: result.successResponse.accessToken,
-      userInfo: {
-        id: profileResult.response?.id || '',
-        email: profileResult.response?.email || undefined,
-        name: profileResult.response?.name || undefined,
-        profileImage: profileResult.response?.profile_image || undefined,
-      },
+      userInfo,
     };
   } catch (error: any) {
     return {
@@ -272,20 +435,78 @@ export const signInWithApple = async (): Promise<SocialLoginResult> => {
     );
     const firebaseUser = userCredential.user;
 
+    const userInfo = {
+      id: firebaseUser.uid,
+      email: firebaseUser.email || appleAuthRequestResponse.email || undefined,
+      name:
+        firebaseUser.displayName ||
+        appleAuthRequestResponse.fullName?.givenName ||
+        undefined,
+      profileImage: undefined,
+    };
+
+    // 서버 API 호출
+    try {
+      const loginResponse = await loginWithProvider('apple', {
+        accessToken: identityToken,
+        // email: userInfo.email,
+        // name: userInfo.name,
+        // profileImage: userInfo.profileImage,
+      });
+      // 서버에서 받은 데이터 저장
+      if (loginResponse.data) {
+        // accessToken 저장
+        if (loginResponse.data.accessToken) {
+          await saveAuthToken(loginResponse.data.accessToken);
+        }
+
+        // refreshToken 저장
+        if (loginResponse.data.refreshToken) {
+          await saveRefreshToken(loginResponse.data.refreshToken);
+        }
+
+        // userInfo 저장
+        if (loginResponse.data.userInfo) {
+          await saveUserInfo(loginResponse.data.userInfo);
+          await saveUserInfo({
+            ...loginResponse.data.userInfo,
+            provider: 'apple',
+            loginTime: Date.now(),
+          });
+        }
+      } else if (loginResponse.token) {
+        await saveAuthToken(loginResponse.token);
+        if (loginResponse.refreshToken) {
+          await saveRefreshToken(loginResponse.refreshToken);
+        }
+        if (loginResponse.user) {
+          await saveUserInfo({
+            userId: parseInt(loginResponse.user.id, 10) || 0,
+            name: loginResponse.user.name,
+            email: loginResponse.user.email,
+            profileImage: loginResponse.user.profileImage,
+          });
+        }
+      } else {
+        console.warn('서버에서 토큰을 받지 못했습니다.');
+        console.warn('서버 응답:', JSON.stringify(loginResponse, null, 2));
+        console.warn('서버 응답 필드:', Object.keys(loginResponse).join(', '));
+      }
+    } catch (apiError) {
+      console.error('서버 로그인 API 호출 실패:', apiError);
+      // 서버 API 실패 시 에러 반환
+      return {
+        success: false,
+        provider: 'apple',
+        error: '서버 로그인에 실패했습니다. 다시 시도해주세요.',
+      };
+    }
+
     return {
       success: true,
       provider: 'apple',
       accessToken: identityToken,
-      userInfo: {
-        id: firebaseUser.uid,
-        email:
-          firebaseUser.email || appleAuthRequestResponse.email || undefined,
-        name:
-          firebaseUser.displayName ||
-          appleAuthRequestResponse.fullName?.givenName ||
-          undefined,
-        profileImage: undefined,
-      },
+      userInfo,
     };
   } catch (err: any) {
     console.error('애플 로그인 에러:', err);
