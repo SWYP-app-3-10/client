@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { View, Text, StyleSheet, Switch, Pressable } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { View, Text, StyleSheet, Switch, Pressable, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 
@@ -14,6 +14,9 @@ import {
 } from '../../styles/global';
 import { RouteNames } from '../../../routes';
 
+import { useShowModal } from '../../store/modalStore';
+import { useNotificationPermission } from '../../hooks/useNotificationPermission';
+
 /**
  * 설정 화면
  * - 로그인 정보
@@ -24,6 +27,97 @@ import { RouteNames } from '../../../routes';
 const SettingScreen = () => {
   const navigation = useNavigation<any>();
   const [isAlarmOn, setIsAlarmOn] = useState(false);
+
+  const showModal = useShowModal();
+  const { checkPermission, requestPermission } = useNotificationPermission();
+
+  useEffect(() => {
+    /**
+     * 초기 진입 시 권한 상태를 보고 토글 상태를 맞춰둠
+     * - checkPermission()이 "모달을 띄워야 하는 상태(권한 미허용/미결정 등)"면 true를 반환
+     * - 즉, shouldShowModal=true => 아직 권한이 확정적으로 허용된 상태가 아니므로 토글 OFF
+     * - shouldShowModal=false => 이미 허용된 상태로 보고 토글 ON
+     */
+    const syncAlarmToggle = async () => {
+      try {
+        const shouldShowModal = await checkPermission();
+        setIsAlarmOn(!shouldShowModal);
+      } catch (e) {
+        // 실패 시 기존 값 유지
+      }
+    };
+
+    syncAlarmToggle();
+  }, [checkPermission]);
+
+  /**
+   * "알림 설정" row 탭 시 동작
+   * 1) 앱 모달(안내) -> 2) OS 권한 팝업 -> 3) 결과에 따라 토글 반영
+   */
+  const handlePressAlarmRow = async () => {
+    // 이미 ON 상태면: UX 상 "행 탭"으로 OFF 처리만 해도 충분 (권한 자체를 끄는 건 OS 설정에서)
+    if (isAlarmOn) {
+      setIsAlarmOn(false);
+      return;
+    }
+
+    try {
+      const shouldShowModal = await checkPermission();
+
+      if (shouldShowModal) {
+        showModal({
+          image: <></>,
+          title: '알림을 받으시겠어요?',
+          description:
+            '알림을 켜두면, 하루 두 번 문해력 루틴을 \n잊지 않고 챙길 수 있어요!',
+          primaryButton: {
+            title: '알림 받을래요',
+            onPress: async () => {
+              const granted = await requestPermission();
+
+              // 권한 결과에 따라 토글 반영
+              setIsAlarmOn(!!granted);
+
+              if (!granted) {
+                Alert.alert(
+                  '알림이 꺼져 있어요',
+                  '기기 설정에서 알림 권한을 허용하면 사용할 수 있어요.',
+                );
+              }
+            },
+            textStyle: {
+              ...Heading_16B,
+              color: COLORS.white,
+            },
+          },
+          secondaryButton: {
+            title: '괜찮아요',
+            variant: 'outline',
+            textStyle: {
+              ...Heading_16B,
+              color: COLORS.gray700,
+            },
+            style: {
+              borderColor: COLORS.gray300,
+              height: scaleWidth(48),
+            },
+            onPress: async () => {
+              // 사용자가 거절하면 토글 OFF 유지
+              setIsAlarmOn(false);
+            },
+          },
+        });
+      } else {
+        // 이미 권한이 허용된 상태로 판단되면 바로 토글 ON
+        setIsAlarmOn(true);
+      }
+    } catch (error: any) {
+      Alert.alert(
+        '오류',
+        error?.message || '알림 설정 중 오류가 발생했습니다.',
+      );
+    }
+  };
 
   return (
     <SafeAreaView style={styles.safe} edges={['top']}>
@@ -46,10 +140,16 @@ const SettingScreen = () => {
           <Text style={styles.rowTitle}>로그인 정보</Text>
           <RightArrow color={COLORS.gray700} />
         </Pressable>
+        <View style={styles.divider} />
 
         {/* 알림 */}
         <Text style={styles.sectionLabel}>알림</Text>
-        <View style={[styles.row, styles.alarmRow]}>
+
+        {/* row 자체를 누르면 모달 -> OS 권한 -> 토글 반영 */}
+        <Pressable
+          style={[styles.row, styles.alarmRow]}
+          onPress={handlePressAlarmRow}
+        >
           <View>
             <Text style={styles.rowTitle}>알림 설정</Text>
             <Text style={styles.rowDesc}>
@@ -57,22 +157,28 @@ const SettingScreen = () => {
             </Text>
           </View>
 
+          {/* 스위치는 표시/반영만 담당 (row 탭으로만 흐름 제어) */}
           <Switch
             style={[styles.alarmSwitch, styles.switchLarge]}
             value={isAlarmOn}
-            onValueChange={setIsAlarmOn}
+            onValueChange={() => {
+              // 스위치 직접 조작은 row 탭 UX와 충돌할 수 있어 막아둠 (최소 수정 유지)
+              handlePressAlarmRow();
+            }}
             trackColor={{
               false: COLORS.gray300,
               true: COLORS.puple.main,
             }}
             thumbColor={COLORS.white}
           />
-        </View>
+        </Pressable>
+
+        <View style={styles.divider} />
 
         {/* 약관 */}
         <Text style={styles.sectionLabel}>약관 및 정책</Text>
         <Pressable
-          style={[styles.row, styles.rowNoBorder]}
+          style={styles.row}
           onPress={() => navigation.navigate(RouteNames.TERMS_OF_SERVICE)}
         >
           <Text style={styles.rowTitle}>서비스 이용 약관</Text>
@@ -80,17 +186,18 @@ const SettingScreen = () => {
         </Pressable>
 
         <Pressable
-          style={[styles.row, styles.rowNoBorder]}
+          style={styles.row}
           onPress={() => navigation.navigate(RouteNames.PRIVACY_POLICY)}
         >
           <Text style={styles.rowTitle}>개인정보 처리 방침</Text>
           <RightArrow color={COLORS.gray700} />
         </Pressable>
+        <View style={styles.divider} />
 
         {/* 도움말 */}
         <Text style={styles.sectionLabel}>도움말</Text>
         <Pressable
-          style={[styles.row, styles.rowNoBorder]}
+          style={styles.row}
           onPress={() => navigation.navigate(RouteNames.INQUIRY)}
         >
           <Text style={styles.rowTitle}>문의하기</Text>
@@ -112,12 +219,10 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.white,
   },
 
-  // 헤더 래퍼 (중앙 타이틀 오버레이 기준)
   headerWrap: {
     position: 'relative',
   },
 
-  // 헤더 중앙 타이틀 오버레이 래퍼
   headerCenterTitleWrap: {
     position: 'absolute',
     left: 0,
@@ -128,7 +233,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
 
-  // 헤더 중앙 타이틀 텍스트
   headerCenterTitle: {
     ...Heading_16B,
     color: COLORS.black,
@@ -139,7 +243,6 @@ const styles = StyleSheet.create({
     paddingTop: scaleWidth(5),
   },
 
-  // 섹션 라벨
   sectionLabel: {
     ...Caption_14R,
     color: COLORS.gray700,
@@ -147,48 +250,41 @@ const styles = StyleSheet.create({
     marginBottom: scaleWidth(12),
   },
 
-  // 설정 row (기본: 구분선 있음)
+  // row는 레이아웃만 담당
   row: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingVertical: scaleWidth(16),
-    borderBottomWidth: 1,
-    borderBottomColor: COLORS.gray200,
+    paddingVertical: scaleWidth(12),
   },
 
-  // 알림 row 전용 (스위치가 타이틀 라인에 오도록 + 아래 패딩 24)
+  // 구분선 전용 스타일
+  divider: {
+    height: 1,
+    backgroundColor: COLORS.gray200,
+    marginTop: scaleWidth(12),
+  },
+
   alarmRow: {
     alignItems: 'flex-start',
     paddingTop: scaleWidth(16),
-    paddingBottom: scaleWidth(24),
   },
 
-  // 알림 스위치 전용 (상단 정렬)
   alarmSwitch: {
     alignSelf: 'flex-start',
   },
 
-  // 아래 구분선 제거용 row
-  rowNoBorder: {
-    borderBottomWidth: 0,
-  },
-
-  // row 제목
   rowTitle: {
     ...Body_16SB,
     color: COLORS.black,
   },
 
-  // 아침 8시 저녁 6시.. 텍스트
   rowDesc: {
     ...Caption_14R,
     color: COLORS.gray700,
     marginTop: scaleWidth(4),
   },
 
-  // 토글 크기 조절 (56 x 34 비율)
-  // TODO 커스텀 컴포넌트로 변경해야 함. 현재 사용 중인 RN 기본 스위치는 크기/모양 변경이 제한적임
   switchLarge: {
     transform: [{ scaleX: 1.1 }, { scaleY: 1.1 }],
   },
