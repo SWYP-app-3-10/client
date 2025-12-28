@@ -282,7 +282,7 @@ const styles = StyleSheet.create({
   rowDesc: {
     ...Caption_14R,
     color: COLORS.gray700,
-    marginTop: scaleWidth(4),
+    marginTop: scaleWidth(8),
   },
 
   switchLarge: {
