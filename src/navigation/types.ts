@@ -77,6 +77,8 @@ export type FullScreenStackParamList = {
   [RouteNames.CHARACTER_CRITERIA]: undefined;
   [RouteNames.CHARACTER_POINT_HISTORY]: undefined;
   // 추후 탭바 없는 다른 화면들 추가 가능
+  [RouteNames.SEARCH_INPUT]: undefined;
+  [RouteNames.SEARCH_RESULT]: { keyword: string };
 };
 
 // Root Stack Param List (최상위 네비게이터)

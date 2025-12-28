@@ -13,6 +13,8 @@ import LoginInfoScreen from '../screens/myPage/LoginInfoScreen';
 import InquiryScreen from '../screens/myPage/InquiryScreen';
 import TermsOfServiceScreen from '../screens/myPage/TermOfServiceScreen';
 import PrivacyPolicyScreen from '../screens/myPage/PrivacyPolicyScreen';
+import SearchInputScreen from '../screens/search/SearchInputScreen';
+import SearchResultScreen from '../screens/search/SearchResultScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -50,6 +52,15 @@ const FullScreenStackNavigator = () => {
       <Stack.Screen
         name={RouteNames.CHARACTER_POINT_HISTORY}
         component={PointHistoryScreen}
+      />
+      {/* 탐색페이지 서브 */}
+      <Stack.Screen
+        name={RouteNames.SEARCH_INPUT}
+        component={SearchInputScreen}
+      />
+      <Stack.Screen
+        name={RouteNames.SEARCH_RESULT}
+        component={SearchResultScreen}
       />
 
       {/* 마이페이지 서브 */}

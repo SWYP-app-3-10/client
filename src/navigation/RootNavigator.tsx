@@ -1,27 +1,37 @@
 import React, { useEffect, useRef } from 'react';
-import { NavigationContainer } from '@react-navigation/native';
+import { NavigationContainer, CommonActions } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import { CommonActions } from '@react-navigation/native';
+
 import { RouteNames } from '../../routes';
+
 import OnboardingNavigator from './OnboardingNavigator';
 import MainTabNavigator from './MainTabNavigator';
 import FullScreenStackNavigator from './FullScreenStackNavigator';
+import SearchStackNavigator from './SearchStackNavigator';
+
 import {
   useModalState,
   useModalStore,
   useShowModal,
 } from '../store/modalStore';
 import { useIsOnboardingCompleted } from '../store/onboardingStore';
+
 import NotificationModal from '../components/NotificationModal';
 import BottomSheetModal from '../components/BottomSheetModal';
-import SearchStackNavigator from './SearchStackNavigator';
+
 import { useExperienceStore } from '../store/experienceStore';
 import { useCharacterData } from '../hooks/useCharacter';
 import { LevelUpModalContent } from '../components/ArticlePointModalContent';
 
 const Stack = createNativeStackNavigator();
 
-// 내부 컴포넌트: 네비게이션 접근을 위해 필요
+/**
+ * RootNavigatorContent
+ * - NavigationContainer 밖으로 navigationRef를 전달받아 reset 같은 액션을 수행
+ * - 전역 모달(Notification / BottomSheet) 렌더링
+ * - 온보딩 완료 시 MAIN_TAB으로 reset
+ * - 경험치/레벨 데이터 기반 레벨업 모달 표시
+ */
 const RootNavigatorContent: React.FC<{
   navigationRef: React.RefObject<any>;
 }> = ({ navigationRef }) => {
@@ -29,11 +39,15 @@ const RootNavigatorContent: React.FC<{
   const modalState = useModalState();
   const hideModal = useModalStore(state => state.hideModal);
   const showModal = useShowModal();
+
   // zustand: 온보딩 완료 상태만 구독 (리렌더링 최적화)
   const isOnboardingCompleted = useIsOnboardingCompleted();
+
   // 경험치와 레벨 데이터 감시
   const { experience } = useExperienceStore();
   const { data: characterData } = useCharacterData();
+
+  // ref: 마지막 경험치 / 레벨업 모달 노출 여부 / 온보딩 완료 이전 상태
   const lastCheckedExpRef = useRef<number>(0);
   const hasShownLevelUpModalRef = useRef<boolean>(false);
   const prevOnboardingCompletedRef = useRef<boolean>(false);
@@ -45,7 +59,6 @@ const RootNavigatorContent: React.FC<{
       !prevOnboardingCompletedRef.current &&
       navigationRef.current
     ) {
-      // 온보딩이 완료되었고, 이전에는 완료되지 않았던 경우
       navigationRef.current.dispatch(
         CommonActions.reset({
           index: 0,
@@ -73,19 +86,18 @@ const RootNavigatorContent: React.FC<{
       currentExp >= nextLevelExp &&
       !hasShownLevelUpModalRef.current
     ) {
-      // 레벨업 모달 표시
       const newLevel = characterData.currentLevel + 1;
+
+      // 레벨업 모달 표시
       showModal({
         title: '축하해요! 레벨 업!',
         titleDescriptionGapSize: 4,
         description: '조금씩 생각이 자라나고 있어요.',
-        children: React.createElement(LevelUpModalContent, {
-          newLevel,
-        }),
+        children: React.createElement(LevelUpModalContent, { newLevel }),
         primaryButton: {
           title: '확인',
           onPress: () => {
-            // 모달 닫기
+            // 버튼 눌렀을 때 추가 동작이 필요하면 여기에
           },
         },
       });
@@ -115,6 +127,7 @@ const RootNavigatorContent: React.FC<{
           name={RouteNames.ONBOARDING}
           component={OnboardingNavigator}
         />
+
         {isOnboardingCompleted && (
           <>
             {/* 메인 스택 (온보딩 완료 후) */}
@@ -122,11 +135,14 @@ const RootNavigatorContent: React.FC<{
               name={RouteNames.MAIN_TAB}
               component={MainTabNavigator}
             />
+
+            {/* (옵션) 탭 외부에서 SEARCH_TAB로 직접 진입이 필요한 경우만 유지 */}
             <Stack.Screen
               name={RouteNames.SEARCH_TAB}
               component={SearchStackNavigator}
             />
-            {/* 전체 화면 스택 (탭바 없는 화면들: 알림, 설정 등) */}
+
+            {/* 전체 화면 스택 (탭바 없는 화면들: 알림, 설정, 검색/검색결과 등) */}
             <Stack.Screen
               name={RouteNames.FULL_SCREEN_STACK}
               component={FullScreenStackNavigator}
@@ -134,6 +150,7 @@ const RootNavigatorContent: React.FC<{
           </>
         )}
       </Stack.Navigator>
+
       {/* 전역 모달 */}
       {modalState.type === 'notification' && (
         <NotificationModal
@@ -174,6 +191,7 @@ const RootNavigatorContent: React.FC<{
           {modalState.children}
         </NotificationModal>
       )}
+
       {modalState.type === 'bottomSheet' && (
         <BottomSheetModal
           visible={modalState.visible}
@@ -187,6 +205,10 @@ const RootNavigatorContent: React.FC<{
   );
 };
 
+/**
+ * RootNavigator
+ * - NavigationContainer + navigationRef 연결
+ */
 const RootNavigator: React.FC = () => {
   const navigationRef = React.useRef<any>(null);
 

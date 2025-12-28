@@ -4,7 +4,12 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation, CommonActions } from '@react-navigation/native';
 
 import Header from '../../components/Header';
-import { Body_16SB, COLORS, scaleWidth } from '../../styles/global';
+import {
+  Body_16SB,
+  COLORS,
+  Heading_16B,
+  scaleWidth,
+} from '../../styles/global';
 import RightArrow from '../../assets/svg/RightArrow.svg';
 
 // 공통 모달
@@ -24,6 +29,9 @@ const LoginInfoScreen = () => {
 
   // 로그아웃 모달 상태
   const [logoutModalVisible, setLogoutModalVisible] = useState(false);
+
+  // 서비스 탈퇴 모달 상태
+  const [withdrawModalVisible, setWithdrawModalVisible] = useState(false);
 
   const resetOnboarding = useOnboardingStore(state => state.resetOnboarding);
 
@@ -64,6 +72,48 @@ const LoginInfoScreen = () => {
     }
   }, [navigation, resetOnboarding]);
 
+  /** 서비스 탈퇴 클릭 */
+  const onPressWithdraw = () => {
+    console.log('[LoginInfo] withdraw pressed');
+    setWithdrawModalVisible(true);
+  };
+
+  /** 서비스 탈퇴 취소 */
+  const onCancelWithdraw = () => {
+    console.log('[LoginInfo] withdraw canceled');
+    setWithdrawModalVisible(false);
+  };
+
+  /** 서비스 탈퇴 확인 */
+  const onConfirmWithdraw = useCallback(async () => {
+    console.log('[LoginInfo] withdraw confirmed');
+    setWithdrawModalVisible(false);
+
+    try {
+      // TODO: 서버 탈퇴 API 연동 시 여기서 호출
+      // 예) await withdrawUser();
+
+      // 1) 로컬 인증/유저데이터 초기화
+      await clearAllAuthData();
+
+      // 2) 온보딩 스토어/스토리지 초기화 (currentStep -> login)
+      await resetOnboarding();
+
+      // 3) 네비게이션 스택 리셋 -> 온보딩으로 이동
+      navigation.dispatch(
+        CommonActions.reset({
+          index: 0,
+          routes: [{ name: RouteNames.ONBOARDING }],
+        }),
+      );
+    } catch (e: any) {
+      Alert.alert(
+        '오류',
+        e?.message || '서비스 탈퇴 처리 중 오류가 발생했습니다.',
+      );
+    }
+  }, [navigation, resetOnboarding]);
+
   return (
     <SafeAreaView style={styles.safe}>
       <Header title="로그인 정보" />
@@ -78,7 +128,7 @@ const LoginInfoScreen = () => {
       </Pressable>
 
       {/* 서비스 탈퇴 (divider 없음) */}
-      <Pressable style={styles.row}>
+      <Pressable style={styles.row} onPress={onPressWithdraw}>
         <Text style={styles.rowTitle}>서비스 탈퇴</Text>
         <RightArrow color={COLORS.gray700} />
       </Pressable>
@@ -94,11 +144,44 @@ const LoginInfoScreen = () => {
         secondaryButton={{
           title: '취소',
           onPress: onCancelLogout,
+          variant: 'outline',
+          textStyle: { color: COLORS.gray700, ...Body_16SB },
+          style: {
+            borderColor: COLORS.gray300,
+            height: scaleWidth(48),
+          },
         }}
         primaryButton={{
           title: '확인',
           onPress: onConfirmLogout,
           variant: 'primary',
+          textStyle: { ...Heading_16B },
+        }}
+      />
+
+      {/* 서비스 탈퇴 확인 모달 */}
+      <NotificationModal
+        visible={withdrawModalVisible}
+        title="서비스 탈퇴"
+        description={'정말 탈퇴하시겠어요?'}
+        closeButton
+        onClose={onCancelWithdraw}
+        closeOnBackdropPress={true}
+        secondaryButton={{
+          title: '취소',
+          onPress: onCancelWithdraw,
+          variant: 'outline',
+          textStyle: { color: COLORS.gray700, ...Body_16SB },
+          style: {
+            borderColor: COLORS.gray300,
+            height: scaleWidth(48),
+          },
+        }}
+        primaryButton={{
+          title: '확인',
+          onPress: onConfirmWithdraw,
+          variant: 'primary',
+          textStyle: { ...Heading_16B },
         }}
       />
     </SafeAreaView>

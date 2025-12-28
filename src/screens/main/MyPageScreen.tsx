@@ -468,11 +468,11 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: COLORS.white,
+    paddingTop: scaleWidth(8),
   },
 
   // 상단 설정 버튼
   backButton: {
-    marginTop: scaleWidth(8),
     width: scaleWidth(50),
     height: scaleWidth(50),
     alignSelf: 'flex-end',

@@ -65,13 +65,13 @@ const styles = StyleSheet.create({
     paddingTop: scaleWidth(2), // 위 여백
     paddingBottom: 0, // 아래 여백
     alignItems: 'center', // 세로 가운데 정렬(스크롤 컨테이너)
+    gap: scaleWidth(12), // 칩 간격 12
   },
 
   /** 기본 카테고리 칩 스타일 */
   chip: {
     paddingHorizontal: scaleWidth(12),
     paddingVertical: scaleWidth(8),
-    marginRight: scaleWidth(16), // 칩 간 간격
     borderRadius: BORDER_RADIUS[30],
     backgroundColor: COLORS.puple[3],
     justifyContent: 'center',
