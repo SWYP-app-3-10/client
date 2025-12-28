@@ -16,7 +16,6 @@ import Spacer from '../../components/Spacer';
 import { SocialLoginButton } from '../../components';
 import {
   getRecentLogin,
-  saveRecentLogin,
   RecentLoginInfo,
 } from '../../services/authStorageService';
 import { useShowModal } from '../../store/modalStore';
@@ -104,14 +103,6 @@ const LoginScreen = () => {
       const result = await signInWithSocial(provider);
 
       if (result.success && result.userInfo) {
-        await saveRecentLogin({
-          provider: result.provider,
-          userId: result.userInfo.id,
-          name: result.userInfo.name,
-          profileImage: result.userInfo.profileImage,
-          loginTime: Date.now(),
-        });
-
         await handleNotificationModal();
       } else {
         Alert.alert('로그인 실패', result.error || '로그인에 실패했습니다.');

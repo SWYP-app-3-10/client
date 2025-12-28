@@ -3,7 +3,10 @@
  * 서버 연결 여부를 제어하는 설정
  */
 
-// 서버 API 사용 여부 (서버가 준비되면 true로 변경)
+// 관심분야 업데이트 API 서버 사용 여부
+export const USE_SERVER_API_FOR_INTERESTS = true;
+
+// 다른 API 서버 사용 여부 (서버가 준비되면 true로 변경)
 export const USE_SERVER_API = false; // TODO: 서버 준비되면 true로 변경
 
 // 더미 데이터 사용 여부 (서버가 없을 때)
