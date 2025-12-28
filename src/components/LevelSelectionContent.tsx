@@ -9,6 +9,7 @@ import {
 } from '../styles/global';
 import { CheckIcon } from '../icons';
 import { Difficulty } from '../store/onboardingStore';
+import { LevelCategory } from '../types/interests';
 
 interface LevelOption {
   value: Difficulty;
@@ -24,19 +25,19 @@ interface LevelSelectionContentProps {
 
 const LEVEL_OPTIONS: LevelOption[] = [
   {
-    value: 'beginner',
+    value: LevelCategory.BEGINNER,
     label: '초급',
     description: '유지',
     time: '1분',
   },
   {
-    value: 'intermediate',
+    value: LevelCategory.INTERMEDIATE,
     label: '중급',
     description: '2배 증가',
     time: '2분',
   },
   {
-    value: 'advanced',
+    value: LevelCategory.ADVANCED,
     label: '고급',
     description: '4배 증가',
     time: '4분',

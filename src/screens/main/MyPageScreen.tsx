@@ -54,18 +54,22 @@ type MyPageNavigationProp = CompositeNavigationProp<
 // 난이도 -> 레벨 표시 텍스트
 const getLevelText = (difficulty: string | null): string => {
   switch (difficulty) {
-    case 'beginner':
+    case LevelCategory.BEGINNER:
       return '초급';
-    case 'intermediate':
+    case LevelCategory.INTERMEDIATE:
       return '중급';
-    case 'advanced':
+    case LevelCategory.ADVANCED:
       return '고급';
     default:
       return '초급';
   }
 };
 
-import { InterestCategory, InterestCategoryNames } from '../../types/interests';
+import {
+  InterestCategory,
+  InterestCategoryNames,
+  LevelCategory,
+} from '../../types/interests';
 
 // 카테고리 ID -> 이름 매핑 (ENUM 사용)
 const categoryNameMap: Record<string, string> = {

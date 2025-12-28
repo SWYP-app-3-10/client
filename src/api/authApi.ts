@@ -66,7 +66,6 @@ export const loginWithProvider = async (
       '[로그인 API] 응답 성공:',
       JSON.stringify(response.data, null, 2),
     );
-    console.log('[로그인 API] 응답에 token이 있는지:', !!response.data.token);
 
     return response.data;
   } catch (error: any) {
@@ -74,7 +73,6 @@ export const loginWithProvider = async (
     throw error;
   }
 };
-
 /**
  * 토큰 갱신 API 호출
  * @param refreshTokenValue 갱신 토큰

@@ -1,5 +1,5 @@
 import React, { useState, useCallback } from 'react';
-import { View, Text, StyleSheet, ScrollView } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { BORDER_RADIUS, COLORS, scaleWidth } from '../../styles/global';
 import {
@@ -19,21 +19,25 @@ import {
 import Spacer from '../../components/Spacer';
 import Button from '../../components/Button';
 import Header from '../../components/Header';
+import { USE_SERVER_API_FOR_LEVEL } from '../../config/apiConfig';
+import { getUserInfo } from '../../services/authService';
+import { LevelCategory } from '../../types/interests';
+import { updateUserLevel } from '../../api/userApi';
 
 const DIFFICULTY_INFO = {
-  beginner: {
+  [LevelCategory.BEGINNER]: {
     label: '초급',
     time: '1분',
     description:
       '록히드 마틴이 F-35 전투기 관련 총 11억 4천만 달러 규모의 대형 계약을 추가로 확보하면서 글로벌 방산 산업에 다시 한 번 강한 신호를 보냈다. 이번 계약은 단순한 무기 판매를 넘어, 미·중·러를 축으로 한 패권 경쟁이 얼마나 구조적으로 고착화되고 있는지를 보여주는 상징적 사건이다. ',
   },
-  intermediate: {
+  [LevelCategory.INTERMEDIATE]: {
     label: '중급',
     time: '2분',
     description:
       '록히드 마틴이 F-35 전투기 관련 총 11억 4천만 달러 규모의 대형 계약을 추가로 확보하면서 글로벌 방산 산업에 다시 한 번 강한 신호를 보냈다. 이번 계약은 단순한 무기 판매를 넘어, 미·중·러를 축으로 한 패권 경쟁이 얼마나 구조적으로 고착화되고 있는지를 보여주는 상징적 사건이다. ',
   },
-  advanced: {
+  [LevelCategory.ADVANCED]: {
     label: '고급',
     time: '4분',
     description:
@@ -59,10 +63,23 @@ const DifficultySettingScreen = () => {
 
   const handleNext = async () => {
     // 온보딩 완료 처리 및 메인 화면으로 이동
+    if (USE_SERVER_API_FOR_LEVEL) {
+      const userInfo = await getUserInfo();
+      if (!userInfo || !userInfo.userId) {
+        Alert.alert(
+          '오류',
+          '사용자 정보를 찾을 수 없습니다. 다시 로그인해주세요.',
+        );
+        return;
+      }
+      console.log('[난이도 업데이트] API 호출 시작');
+      await updateUserLevel(userInfo.userId, selectedDifficulty);
+      console.log('[난이도 업데이트] API 호출 성공');
+    }
     await completeOnboarding();
   };
 
-  const selectedInfo = DIFFICULTY_INFO[selectedDifficulty];
+  const selectedInfo = DIFFICULTY_INFO[selectedDifficulty as LevelCategory];
 
   return (
     <SafeAreaView style={styles.container} edges={['top', 'bottom']}>

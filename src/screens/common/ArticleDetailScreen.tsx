@@ -41,14 +41,15 @@ import { useOnboardingStore, Difficulty } from '../../store/onboardingStore';
 import { useShowModal } from '../../store/modalStore';
 import { ARTICLE_READ_EXPERIENCE } from '../../config/rewards';
 import { useExperienceStore } from '../../store/experienceStore';
+import { LevelCategory } from '../../types/interests';
 
 type NavigationProp = NativeStackNavigationProp<FullScreenStackParamList>;
 
 // 난이도별 읽기 시간 (초)
 const READING_TIME_BY_DIFFICULTY: Record<Difficulty, number> = {
-  beginner: 50, // 초급: 50초
-  intermediate: 90, // 중급: 90초
-  advanced: 190, // 고급: 3분 10초 (190초)
+  [LevelCategory.BEGINNER]: 50, // 초급: 50초
+  [LevelCategory.INTERMEDIATE]: 90, // 중급: 90초
+  [LevelCategory.ADVANCED]: 190, // 고급: 3분 10초 (190초)
 };
 
 const ArticleDetailScreen = () => {
