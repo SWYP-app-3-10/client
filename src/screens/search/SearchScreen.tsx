@@ -9,16 +9,18 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { RouteProp, useNavigation } from '@react-navigation/native';
-import {
+import { RouteNames } from '../../../routes';
+
+import type {
   MainTabNavigationProp,
   SearchStackParamList,
 } from '../../navigation/types';
-import { RouteNames } from '../../../routes';
 
 import SearchResultSkeleton from './components/SearchResultSkeleton';
-import { MOCK_NEWS, NewsCategory, NewsItems } from '../../data/mock/searchData';
-import SearchResultItem from './components/SearchResultItem';
 import CategoryTabs from './components/CategoryTabs';
+import SearchResultItem from './components/SearchResultItem';
+
+import { MOCK_NEWS, NewsCategory, NewsItems } from '../../data/mock/searchData';
 import { useArticleNavigation } from '../../hooks/useArticleNavigation';
 
 import {
@@ -56,15 +58,14 @@ const SearchListFooter = ({ loading }: { loading: boolean }) => {
 /**
  * SearchScreen
  *
- * - 탐색(카테고리 기반) + 검색 결과 화면
- * - keyword가 있으면 "검색 모드", 없으면 "탐색 모드"
- * - 검색 모드에서는 카테고리 무시하고 keyword 기준으로만 필터링
- * - 탐색 탭에서는 "전체" 포함
+ * - ✅ "탐색" 화면(탭바 있음)
+ * - 카테고리 기반 필터링 + 리스트 렌더링
+ * - 검색 버튼 누르면 (탭바 없는) SearchInputScreen으로 이동
  */
 export default function SearchScreen({
   route,
 }: {
-  route: RouteProp<SearchStackParamList, 'search'>;
+  route: RouteProp<SearchStackParamList, typeof RouteNames.SEARCH>;
 }) {
   /** 현재 선택된 카테고리(탐색 모드에서 사용) */
   const [selectedCategory, setSelectedCategory] = useState<NewsCategory>(
@@ -75,44 +76,22 @@ export default function SearchScreen({
   const navigation =
     useNavigation<MainTabNavigationProp<SearchStackParamList>>();
 
-  /** 검색 키워드(있으면 검색 모드) */
-  const [keyword, setKeyword] = useState<string | undefined>();
-
   /** 현재 페이지 */
   const [page, setPage] = useState(1);
 
   /** 추가 로딩 중 여부 */
   const [isLoadingMore, setIsLoadingMore] = useState(false);
 
-  /** 검색 모드 여부 */
-  const isSearching = !!keyword;
-
   /**
    * 라우트 파라미터 반영
    * - initialCategory: 탐색 모드 진입 시 초기 카테고리 지정
-   * - keyword: 검색 결과 화면 진입/갱신
    */
   useEffect(() => {
     if (route.params?.initialCategory) {
       setSelectedCategory(route.params.initialCategory);
-    }
-
-    if (route.params?.keyword !== undefined) {
-      setKeyword(route.params.keyword);
       setPage(1);
     }
-  }, [route.params?.initialCategory, route.params?.keyword]);
-
-  /**
-   * 검색 모드에서 뒤로가기
-   * - goBack() 쓰면 탭 구조에 따라 다른 탭으로 튈 수 있어
-   * - 같은 화면에서 keyword만 해제해서 탐색 모드로 복귀
-   */
-  const onPressBackFromSearch = () => {
-    setKeyword(undefined);
-    setPage(1);
-    navigation.setParams({ keyword: undefined });
-  };
+  }, [route.params?.initialCategory]);
 
   /**
    * 탐색 상단 "탐색" 버튼 동작
@@ -131,23 +110,15 @@ export default function SearchScreen({
   };
 
   /**
-   * 데이터 필터링
-   * - 검색 모드: keyword로만 필터링 (카테고리 무시)
-   * - 탐색 모드: selectedCategory로 필터링 (전체면 전부 노출)
+   * 데이터 필터링 (탐색 모드)
+   * - selectedCategory로 필터링 (전체면 전부 노출)
    */
   const filteredAll: NewsItems[] = useMemo(() => {
-    if (keyword) {
-      const kw = keyword.toLowerCase();
-      return MOCK_NEWS.filter(item =>
-        (item.title + item.subtitle + item.content).toLowerCase().includes(kw),
-      );
-    }
-
     return MOCK_NEWS.filter(item => {
       if ((selectedCategory as any) === '전체') return true;
       return item.category === selectedCategory;
     });
-  }, [selectedCategory, keyword]);
+  }, [selectedCategory]);
 
   /**
    * 현재 page에 맞춰 화면에 보여줄 데이터만 슬라이스
@@ -174,77 +145,69 @@ export default function SearchScreen({
   /** 기사 클릭 처리 */
   const { handleArticlePress } = useArticleNavigation({ returnTo: 'search' });
 
+  /** ✅ 탭바 없는 검색 입력 화면으로 이동 */
+  const goToSearchInput = () => {
+    navigation.navigate(RouteNames.FULL_SCREEN_STACK, {
+      screen: RouteNames.SEARCH_INPUT,
+    });
+  };
+
   return (
-    <SafeAreaView style={styles.safe} edges={['top']}>
+    <SafeAreaView style={styles.safe} edges={['top', 'bottom']}>
       <View style={styles.container}>
-        {isSearching ? (
-          <View style={styles.searchHeaderRow}>
+        {/* 탐색 모드 헤더 */}
+        <View style={styles.exploreHeaderRow}>
+          <TouchableOpacity
+            onPress={onPressExplore}
+            style={styles.exploreTitleBtn}
+            hitSlop={HIT_SLOP}
+          >
+            <Text style={styles.exploreTitleText}>탐색</Text>
+          </TouchableOpacity>
+
+          <View style={styles.centerWrap}>
             <TouchableOpacity
-              onPress={onPressBackFromSearch}
-              style={styles.backBtn}
+              onPress={onPressTimer}
+              style={styles.timerPill}
               hitSlop={HIT_SLOP}
             >
-              <Text style={styles.backText}>‹</Text>
-            </TouchableOpacity>
-
-            <View style={styles.searchBarWrap}>
-              <Text style={styles.searchBarText}>{keyword}</Text>
-            </View>
-          </View>
-        ) : (
-          <View style={styles.exploreHeaderRow}>
-            <TouchableOpacity
-              onPress={onPressExplore}
-              style={styles.exploreTitleBtn}
-              hitSlop={HIT_SLOP}
-            >
-              <Text style={styles.exploreTitleText}>탐색</Text>
-            </TouchableOpacity>
-
-            <View style={styles.centerWrap}>
-              <TouchableOpacity
-                onPress={onPressTimer}
-                style={styles.timerPill}
-                hitSlop={HIT_SLOP}
-              >
-                <Text style={styles.timerPillText}>16:41</Text>
-                <View style={styles.timerPillIconBox} />
-              </TouchableOpacity>
-            </View>
-
-            <TouchableOpacity
-              onPress={() => navigation.navigate(RouteNames.SEARCH_INPUT)}
-              style={styles.searchSquareBtn}
-              hitSlop={HIT_SLOP}
-            >
-              <View style={styles.searchSquare} />
+              <Text style={styles.timerPillText}>16:41</Text>
+              <View style={styles.timerPillIconBox} />
             </TouchableOpacity>
           </View>
-        )}
 
-        {!isSearching && (
-          <View style={styles.tabsWrap}>
-            <CategoryTabs
-              categories={
-                [
-                  '전체',
-                  '정치',
-                  '경제',
-                  '사회',
-                  '생활/문화',
-                  'IT/과학',
-                  '세계',
-                ] as any
-              }
-              selected={selectedCategory as any}
-              onSelect={(cat: any) => {
-                setSelectedCategory(cat);
-                setPage(1);
-              }}
-            />
-          </View>
-        )}
+          <TouchableOpacity
+            onPress={goToSearchInput}
+            style={styles.searchSquareBtn}
+            hitSlop={HIT_SLOP}
+          >
+            <View style={styles.searchSquare} />
+          </TouchableOpacity>
+        </View>
 
+        {/* 카테고리 탭 */}
+        <View style={styles.tabsWrap}>
+          <CategoryTabs
+            categories={
+              [
+                '전체',
+                '정치',
+                '경제',
+                '사회',
+                '생활/문화',
+                'IT/과학',
+                '세계',
+              ] as any
+            }
+            selected={selectedCategory as any}
+            onSelect={(cat: any) => {
+              setSelectedCategory(cat);
+              setPage(1);
+            }}
+          />
+        </View>
+
+        {/* 리스트 */}
         <FlatList
           style={styles.list}
           data={visibleData}
@@ -252,7 +215,14 @@ export default function SearchScreen({
           renderItem={({ item }) => (
             <SearchResultItem
               item={item}
-              onPress={() => handleArticlePress(Number(item.id))}
+              onPress={() => {
+                const parsed = Number(item.id);
+                if (Number.isNaN(parsed)) {
+                  console.warn('[SearchScreen] invalid article id:', item.id);
+                  return;
+                }
+                handleArticlePress(parsed);
+              }}
             />
           )}
           contentContainerStyle={styles.listContent}
@@ -290,50 +260,13 @@ const styles = StyleSheet.create({
     flex: 1,
   },
 
-  // 검색 모드 헤더 행(뒤로 + 검색바)
-  searchHeaderRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    height: scaleWidth(52),
-    paddingHorizontal: scaleWidth(20),
-  },
-
-  // 검색 헤더 뒤로가기 버튼 영역
-  backBtn: {
-    paddingRight: scaleWidth(10),
-    paddingVertical: scaleWidth(6),
-  },
-
-  // 검색 헤더 뒤로가기 아이콘 텍스트
-  backText: {
-    fontSize: scaleWidth(26),
-    color: COLORS.black,
-    lineHeight: scaleWidth(28),
-  },
-
-  // 검색바(표시용) 래퍼
-  searchBarWrap: {
-    flex: 1,
-    height: scaleWidth(40),
-    borderRadius: scaleWidth(20),
-    backgroundColor: COLORS.gray100,
-    paddingHorizontal: scaleWidth(14),
-    justifyContent: 'center',
-  },
-
-  // 검색바 텍스트(검색어 표시)
-  searchBarText: {
-    fontSize: scaleWidth(14),
-    fontWeight: '600',
-    color: COLORS.black,
-  },
-
   // 탐색 모드 헤더 행(좌=탐색, 중=타이머, 우=검색)
   exploreHeaderRow: {
     flexDirection: 'row',
     alignItems: 'center',
     height: scaleWidth(52),
     paddingHorizontal: scaleWidth(20),
+    paddingTop: scaleWidth(8),
   },
 
   // "탐색" 타이틀 버튼 영역

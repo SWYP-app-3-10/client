@@ -3,7 +3,7 @@ import { View, Text, StyleSheet, Alert, Platform } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import { RouteNames } from '../../../routes';
-import { COLORS, scaleWidth } from '../../styles/global';
+import { COLORS, Heading_16B, scaleWidth } from '../../styles/global';
 import {
   signInWithSocial,
   initializeGoogleSignIn,
@@ -68,6 +68,7 @@ const LoginScreen = () => {
           '알림을 켜두면, 하루 두 번 문해력 루틴을 \n잊지 않고 챙길 수 있어요!',
         primaryButton: {
           title: '알림 받을래요',
+          textStyle: { ...Heading_16B, color: COLORS.white },
           onPress: async () => {
             const granted = await requestPermission();
             if (granted) {
@@ -80,7 +81,7 @@ const LoginScreen = () => {
         secondaryButton: {
           title: '괜찮아요',
           variant: 'outline',
-          textStyle: { color: COLORS.gray700 },
+          textStyle: { color: COLORS.gray700, ...Heading_16B },
           style: {
             borderColor: COLORS.gray300,
             height: scaleWidth(48),

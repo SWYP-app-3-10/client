@@ -178,6 +178,7 @@ const NotificationModal: React.FC<NotificationModalProps> = ({
                       style={
                         secondaryButton ? styles.button : styles.singleButton
                       }
+                      textStyle={primaryButton.textStyle}
                     />
                   </View>
                 </>

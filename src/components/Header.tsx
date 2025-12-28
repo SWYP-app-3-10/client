@@ -13,32 +13,40 @@ const Header = ({
   goBackAction,
   iconColor,
 }: {
-  title?: string;
+  title?: React.ReactNode; // ReactNode 허용
   leftIcon?: React.ReactNode;
   goBackAction?: () => void;
   iconColor?: string;
 }) => {
   const navigation = useNavigation();
+
   return (
     <View style={styles.container}>
+      {/* 왼쪽 아이콘 영역 */}
       {leftIcon ? (
         leftIcon
       ) : (
         <IconButton
           onPress={() => {
             if (goBackAction) {
-              goBackAction(); // ✅ 함수 실행
+              goBackAction();
               return;
             }
-            navigation.goBack(); // ✅ 기본 뒤로가기
+            navigation.goBack();
           }}
         >
-          <Ic_backIcon color={iconColor} />
+          <Ic_backIcon color={iconColor ?? COLORS.black} />
         </IconButton>
       )}
+
+      {/* 가운데 타이틀 / 커스텀 컴포넌트 */}
       {title && (
         <View style={styles.titleContainer}>
-          <Text style={styles.title}>{title}</Text>
+          {typeof title === 'string' ? (
+            <Text style={styles.title}>{title}</Text>
+          ) : (
+            title // 검색바 같은 ReactNode 그대로 렌더
+          )}
         </View>
       )}
     </View>
@@ -56,8 +64,8 @@ const styles = StyleSheet.create({
   },
   titleContainer: {
     position: 'absolute',
-    left: 0,
-    right: 0,
+    left: scaleWidth(60),
+    right: scaleWidth(20),
     alignItems: 'center',
     justifyContent: 'center',
   },

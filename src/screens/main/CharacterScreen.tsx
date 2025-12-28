@@ -49,7 +49,7 @@ import { useExperienceStore } from '../../store/experienceStore';
 const CharacterScreen = () => {
   const rootNavigation =
     useNavigation<MainTabNavigationProp<CharacterStackParamList>>();
-  const tabBarHeight = useBottomTabBarHeight(); // ✅ 탭바 높이
+  const tabBarHeight = useBottomTabBarHeight(); // 탭바 높이
 
   const [isScrolled, setIsScrolled] = useState(false);
   const [showTooltip, setShowTooltip] = useState(true);
@@ -196,7 +196,7 @@ const CharacterScreen = () => {
           {/* 로티 영역 */}
           <View style={styles.lottieContainer}>
             <LottieView
-              source={require('../../assets/lottie/test_lottie.json')}
+              source={require('../../assets/lottie/Lv2..json')}
               style={styles.lottie}
               autoPlay
               loop
