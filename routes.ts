@@ -34,6 +34,7 @@ export const RouteNames = {
 
   // 검색 서브 화면
   SEARCH_INPUT: 'search-input' as const,
+  SEARCH_RESULT: 'search-result' as const,
 
   // 캐릭터
   CHARACTER_CRITERIA: 'character-criteria' as const,

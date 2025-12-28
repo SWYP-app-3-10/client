@@ -55,7 +55,8 @@ const SettingScreen = () => {
    * 1) 앱 모달(안내) -> 2) OS 권한 팝업 -> 3) 결과에 따라 토글 반영
    */
   const handlePressAlarmRow = async () => {
-    // 이미 ON 상태면: UX 상 "행 탭"으로 OFF 처리만 해도 충분 (권한 자체를 끄는 건 OS 설정에서)
+    // 이미 ON 상태면: UX 상 "행 탭"으로 OFF 처리만 해도 충분
+    // (권한 자체를 끄는 건 OS 설정에서)
     if (isAlarmOn) {
       setIsAlarmOn(false);
       return;
@@ -70,8 +71,11 @@ const SettingScreen = () => {
           title: '알림을 받으시겠어요?',
           description:
             '알림을 켜두면, 하루 두 번 문해력 루틴을 \n잊지 않고 챙길 수 있어요!',
+
+          // ✅ LoginScreen 알림 모달과 동일한 스타일
           primaryButton: {
             title: '알림 받을래요',
+            textStyle: { ...Heading_16B, color: COLORS.white },
             onPress: async () => {
               const granted = await requestPermission();
 
@@ -85,18 +89,13 @@ const SettingScreen = () => {
                 );
               }
             },
-            textStyle: {
-              ...Heading_16B,
-              color: COLORS.white,
-            },
           },
+
+          // ✅ LoginScreen 알림 모달과 동일한 스타일
           secondaryButton: {
             title: '괜찮아요',
             variant: 'outline',
-            textStyle: {
-              ...Heading_16B,
-              color: COLORS.gray700,
-            },
+            textStyle: { color: COLORS.gray700, ...Heading_16B },
             style: {
               borderColor: COLORS.gray300,
               height: scaleWidth(48),
@@ -157,14 +156,11 @@ const SettingScreen = () => {
             </Text>
           </View>
 
-          {/* 스위치는 표시/반영만 담당 (row 탭으로만 흐름 제어) */}
+          {/* 스위치는 표시/반영만 담당 */}
           <Switch
             style={[styles.alarmSwitch, styles.switchLarge]}
             value={isAlarmOn}
-            onValueChange={() => {
-              // 스위치 직접 조작은 row 탭 UX와 충돌할 수 있어 막아둠 (최소 수정 유지)
-              handlePressAlarmRow();
-            }}
+            onValueChange={handlePressAlarmRow}
             trackColor={{
               false: COLORS.gray300,
               true: COLORS.puple.main,
