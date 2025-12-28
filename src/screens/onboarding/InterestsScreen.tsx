@@ -26,20 +26,10 @@ import {
 } from '../../icons/commonIcons/commonIcons';
 import { Body_15M, Body_18M, Heading_18SB } from '../../styles/typography';
 import Header from '../../components/Header';
-
-interface Interest {
-  id: string;
-  name: string;
-}
-
-const INTERESTS: Interest[] = [
-  { id: 'politics', name: '정치' },
-  { id: 'economy', name: '경제' },
-  { id: 'society', name: '사회' },
-  { id: 'lifestyle', name: '생활/문화' },
-  { id: 'it', name: 'IT/과학' },
-  { id: 'world', name: '세계' },
-];
+import { Interest, INTERESTS, InterestCategory } from '../../types/interests';
+import { updateUserInterests } from '../../api/userApi';
+import { USE_SERVER_API_FOR_INTERESTS } from '../../config/apiConfig';
+import { getUserInfo } from '../../services/authService';
 
 const FIRST_ROW_INTERESTS = INTERESTS.slice(0, 3);
 const SECOND_ROW_INTERESTS = INTERESTS.slice(3, 6);
@@ -48,7 +38,7 @@ interface InterestTagProps {
   interest: Interest;
   priority: number | null;
   isSelected: boolean;
-  onPress: (id: string) => void;
+  onPress: (id: InterestCategory) => void;
   isFirstRow?: boolean;
 }
 
@@ -112,21 +102,27 @@ const InterestsScreen = () => {
   // 편집 모드 확인
   const editMode = route.params?.editMode || false;
 
-  // 선택 순서를 저장: Map<id, 순서(1, 2, ...)>
+  // 선택 순서를 저장: Map<InterestCategory, 순서(1, 2, ...)>
   const [selectedInterests, setSelectedInterests] = useState<
-    Map<string, number>
+    Map<InterestCategory, number>
   >(new Map());
 
   // 저장된 관심분야가 로드되면 state에 반영
   useEffect(() => {
     if (savedInterests) {
-      const interestsMap = new Map(Object.entries(savedInterests));
+      const interestsMap = new Map<InterestCategory, number>();
+      Object.entries(savedInterests).forEach(([key, value]) => {
+        // 기존 데이터 호환성을 위해 string을 InterestCategory로 변환
+        if (Object.values(InterestCategory).includes(key as InterestCategory)) {
+          interestsMap.set(key as InterestCategory, value);
+        }
+      });
       setSelectedInterests(interestsMap);
     }
   }, [savedInterests]);
 
   const toggleInterest = useCallback(
-    (id: string) => {
+    (id: InterestCategory) => {
       setSelectedInterests(prev => {
         const newSelected = new Map(prev);
         if (newSelected.has(id)) {
@@ -159,13 +155,42 @@ const InterestsScreen = () => {
   );
 
   const getPriority = useCallback(
-    (id: string): number | null => {
+    (id: InterestCategory): number | null => {
       return selectedInterests.get(id) || null;
     },
     [selectedInterests],
   );
 
   const handleNext = useCallback(async () => {
+    // 선택된 관심분야를 순서대로 배열로 변환
+    const interestsArray = Array.from(selectedInterests.entries())
+      .sort((a, b) => a[1] - b[1]) // 순서대로 정렬
+      .map(([category]) => category); // InterestCategory만 추출
+
+    // 서버 API 호출 (옵션)
+    if (USE_SERVER_API_FOR_INTERESTS) {
+      try {
+        // userId 가져오기 (사용자 정보에서)
+        const userInfo = await getUserInfo();
+        if (!userInfo || !userInfo.userId) {
+          console.warn('[관심분야 업데이트] userId를 찾을 수 없습니다.');
+          console.warn('[관심분야 업데이트] userInfo:', userInfo);
+          // userId가 없어도 로컬 저장은 계속 진행
+        } else {
+          console.log('[관심분야 업데이트] API 호출 시작');
+          await updateUserInterests(userInfo.userId, interestsArray);
+          console.log('[관심분야 업데이트] API 호출 성공');
+        }
+      } catch (error) {
+        console.error('[관심분야 업데이트] 서버 업데이트 실패:', error);
+        // 서버 업데이트 실패해도 로컬 저장은 계속 진행
+      }
+    } else {
+      console.log(
+        '[관심분야 업데이트] USE_SERVER_API_FOR_INTERESTS가 false입니다.',
+      );
+    }
+
     if (editMode) {
       // 편집 모드: 뒤로가기만
       navigation.goBack();
@@ -174,7 +199,7 @@ const InterestsScreen = () => {
       await setOnboardingStep('difficulty');
       navigation.navigate(RouteNames.DIFFICULTY_SETTING);
     }
-  }, [navigation, setOnboardingStep, editMode]);
+  }, [navigation, setOnboardingStep, editMode, selectedInterests]);
 
   const isNextButtonActive = useMemo(
     () => selectedInterests.size >= 2,

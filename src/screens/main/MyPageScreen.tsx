@@ -65,14 +65,18 @@ const getLevelText = (difficulty: string | null): string => {
   }
 };
 
-// 카테고리 ID -> 이름 매핑
+import { InterestCategory, InterestCategoryNames } from '../../types/interests';
+
+// 카테고리 ID -> 이름 매핑 (ENUM 사용)
 const categoryNameMap: Record<string, string> = {
-  politics: '정치',
-  economy: '경제',
-  society: '사회',
-  lifestyle: '생활/문화',
-  it: 'IT/과학',
-  world: '세계',
+  [InterestCategory.POLITICS]: InterestCategoryNames[InterestCategory.POLITICS],
+  [InterestCategory.ECONOMY]: InterestCategoryNames[InterestCategory.ECONOMY],
+  [InterestCategory.SOCIETY]: InterestCategoryNames[InterestCategory.SOCIETY],
+  [InterestCategory.LIFE_CULTURE]:
+    InterestCategoryNames[InterestCategory.LIFE_CULTURE],
+  [InterestCategory.IT_SCIENCE]:
+    InterestCategoryNames[InterestCategory.IT_SCIENCE],
+  [InterestCategory.WORLD]: InterestCategoryNames[InterestCategory.WORLD],
 };
 
 // 타임라인 그룹 컴포넌트
