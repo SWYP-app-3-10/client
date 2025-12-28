@@ -480,6 +480,7 @@ const styles = StyleSheet.create({
 
   // 상단 설정 버튼
   backButton: {
+    marginTop: scaleWidth(8),
     width: scaleWidth(50),
     height: scaleWidth(50),
     alignSelf: 'flex-end',
