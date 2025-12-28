@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
-import { Text, StyleSheet, Pressable } from 'react-native';
+import React, { useState, useCallback } from 'react';
+import { Text, StyleSheet, Pressable, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useNavigation, CommonActions } from '@react-navigation/native';
 
 import Header from '../../components/Header';
 import { Body_16SB, COLORS, scaleWidth } from '../../styles/global';
@@ -9,14 +10,22 @@ import RightArrow from '../../assets/svg/RightArrow.svg';
 // 공통 모달
 import NotificationModal from '../../components/NotificationModal';
 
+import { RouteNames } from '../../../routes';
+import { clearAllAuthData } from '../../services/authService';
+import { useOnboardingStore } from '../../store/onboardingStore';
+
 /**
  * 로그인 정보 화면
  * - 로그아웃
  * - 서비스 탈퇴
  */
 const LoginInfoScreen = () => {
+  const navigation = useNavigation<any>();
+
   // 로그아웃 모달 상태
   const [logoutModalVisible, setLogoutModalVisible] = useState(false);
+
+  const resetOnboarding = useOnboardingStore(state => state.resetOnboarding);
 
   /** 로그아웃 클릭 */
   const onPressLogout = () => {
@@ -31,12 +40,29 @@ const LoginInfoScreen = () => {
   };
 
   /** 확인 */
-  const onConfirmLogout = () => {
+  const onConfirmLogout = useCallback(async () => {
     console.log('[LoginInfo] logout confirmed');
     setLogoutModalVisible(false);
 
-    // TODO: 실제 로그아웃 로직
-  };
+    try {
+      // 1) 로컬 인증/유저데이터 초기화
+      await clearAllAuthData();
+
+      // 2) 온보딩 스토어/스토리지 초기화 (currentStep -> login)
+      await resetOnboarding();
+
+      // 3) 네비게이션 스택 리셋 -> 온보딩으로 이동
+      //    (OnboardingNavigator가 currentStep 기반으로 SOCIAL_LOGIN을 초기 라우트로 선택)
+      navigation.dispatch(
+        CommonActions.reset({
+          index: 0,
+          routes: [{ name: RouteNames.ONBOARDING }],
+        }),
+      );
+    } catch (e: any) {
+      Alert.alert('오류', e?.message || '로그아웃 중 오류가 발생했습니다.');
+    }
+  }, [navigation, resetOnboarding]);
 
   return (
     <SafeAreaView style={styles.safe}>
