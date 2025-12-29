@@ -3,7 +3,7 @@ import { View, Text, Pressable, FlatList, StyleSheet } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import Header from '../../components/Header'; // ✅ 공통 헤더 컴포넌트
+import Header from '../../components/Header';
 
 import {
   notificationMock,
