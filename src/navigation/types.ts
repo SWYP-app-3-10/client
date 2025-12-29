@@ -61,7 +61,10 @@ export type MainTabParamList = {
 
 // FullScreen Stack Param List (탭바 없는 전체 화면들)
 export type FullScreenStackParamList = {
+  [RouteNames.CHARACTER_CRITERIA]: undefined;
   [RouteNames.CHARACTER_NOTIFICATION]: undefined;
+  [RouteNames.CHARACTER_POINT_HISTORY]: undefined;
+
   [RouteNames.ARTICLE_DETAIL]: {
     articleId: number;
     returnTo?: 'mission' | 'search';
@@ -74,11 +77,17 @@ export type FullScreenStackParamList = {
     articleId: number;
     returnTo?: 'mission' | 'search';
   };
-  [RouteNames.CHARACTER_CRITERIA]: undefined;
-  [RouteNames.CHARACTER_POINT_HISTORY]: undefined;
-  // 추후 탭바 없는 다른 화면들 추가 가능
+
+  // 탭바 없는 검색 화면들
   [RouteNames.SEARCH_INPUT]: undefined;
   [RouteNames.SEARCH_RESULT]: { keyword: string };
+
+  // 탭바 없는 마이페이지 서브(FullScreenStack에서 쓰고 있으므로 포함)
+  [RouteNames.SETTINGS]: undefined;
+  [RouteNames.LOGIN_INFO]: undefined;
+  [RouteNames.INQUIRY]: undefined;
+  [RouteNames.TERMS_OF_SERVICE]: undefined;
+  [RouteNames.PRIVACY_POLICY]: undefined;
 };
 
 // Root Stack Param List (최상위 네비게이터)

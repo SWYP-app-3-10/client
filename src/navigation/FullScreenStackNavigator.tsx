@@ -1,22 +1,28 @@
 import React from 'react';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { RouteNames } from '../../routes';
+
 import NotificationScreen from '../screens/common/NotificationScreen';
 import ArticleDetailScreen from '../screens/common/ArticleDetailScreen';
 import ReadArticleDetailScreen from '../screens/common/ReadArticleDetailScreen';
 import QuizScreen from '../screens/common/QuizScreen';
 import AdLoadingScreen from '../screens/common/AdLoadingScreen';
-import CriteriaCheckScreen from '../screens/character/criteria/CriteriaCheckScreen';
-import PointHistoryScreen from '../screens/character/history/PointHistoryScreen';
+
 import SettingScreen from '../screens/myPage/SettingScreen';
 import LoginInfoScreen from '../screens/myPage/LoginInfoScreen';
 import InquiryScreen from '../screens/myPage/InquiryScreen';
 import TermsOfServiceScreen from '../screens/myPage/TermOfServiceScreen';
 import PrivacyPolicyScreen from '../screens/myPage/PrivacyPolicyScreen';
+
 import SearchInputScreen from '../screens/search/SearchInputScreen';
 import SearchResultScreen from '../screens/search/SearchResultScreen';
 
-const Stack = createNativeStackNavigator();
+import PointHistoryScreen from '../screens/character/history/PointHistoryScreen';
+
+import { FullScreenStackParamList } from './types';
+import CriteriaCheckScreen from '../screens/character/criteria/CriteriaCheckScreen';
+
+const Stack = createNativeStackNavigator<FullScreenStackParamList>();
 
 /**
  * 탭바가 없는 전체 화면 스택 네비게이터
@@ -43,16 +49,7 @@ const FullScreenStackNavigator = () => {
       <Stack.Screen name={RouteNames.QUIZ} component={QuizScreen} />
       {/* 광고 로딩 화면 */}
       <Stack.Screen name={RouteNames.AD_LOADING} component={AdLoadingScreen} />
-      {/* 레벨 기준 확인 화면 */}
-      <Stack.Screen
-        name={RouteNames.CHARACTER_CRITERIA}
-        component={CriteriaCheckScreen}
-      />
-      {/* 포인트/경험치 내역 화면 */}
-      <Stack.Screen
-        name={RouteNames.CHARACTER_POINT_HISTORY}
-        component={PointHistoryScreen}
-      />
+
       {/* 탐색페이지 서브 */}
       <Stack.Screen
         name={RouteNames.SEARCH_INPUT}
@@ -61,6 +58,16 @@ const FullScreenStackNavigator = () => {
       <Stack.Screen
         name={RouteNames.SEARCH_RESULT}
         component={SearchResultScreen}
+      />
+
+      {/* 캐릭터페이지 서브 */}
+      <Stack.Screen
+        name={RouteNames.CHARACTER_CRITERIA}
+        component={CriteriaCheckScreen}
+      />
+      <Stack.Screen
+        name={RouteNames.CHARACTER_POINT_HISTORY}
+        component={PointHistoryScreen}
       />
 
       {/* 마이페이지 서브 */}

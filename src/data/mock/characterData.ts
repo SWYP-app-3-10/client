@@ -1,11 +1,12 @@
 /**
  * 캐릭터 관련 화면(레벨/내역/알림)에서 공통으로 쓰는 Mock 데이터
+ * - 날짜는 ISO 8601 문자열 사용 (서버 연동 기준)
  */
 
 export type LevelCriteria = {
   id: number;
   title: string; // 화면에 보여줄 레벨 이름
-  requiredExp: number; // (예시) 해당 레벨 기준 누적 경험치
+  requiredExp: number; // 해당 레벨 기준 누적 경험치
   summary: string; // 한 줄 설명
 };
 
@@ -17,15 +18,20 @@ export type LevelDetail = {
   tips: string[]; // 안내 문구
 };
 
+/**
+ * 포인트 / 경험치 히스토리 아이템
+ * ⚠️ createdAt은 반드시 ISO 8601 문자열
+ */
 export type PointHistoryItem = {
   id: string;
   title: string; // 내역 제목
-  createdAt: string;
-  xpDelta: number; // +/-
-  ptDelta: number; // +/-
+  createdAt: string; // ISO 8601 (ex: 2025-12-08T00:00:00Z)
+  xpDelta: number; // +/- 경험치
+  ptDelta: number; // +/- 포인트
 };
 
-/** 레벨 목록(기준 확인 리스트) */
+/* ================= 레벨 목록 ================= */
+
 export const levelList: LevelCriteria[] = [
   {
     id: 1,
@@ -59,7 +65,8 @@ export const levelList: LevelCriteria[] = [
   },
 ];
 
-/** 레벨 상세(경험치/포인트 기준) */
+/* ================= 레벨 상세 ================= */
+
 export const levelDetailMap: Record<number, LevelDetail> = {
   1: {
     levelId: 1,
@@ -118,41 +125,56 @@ export const levelDetailMap: Record<number, LevelDetail> = {
   },
 };
 
-/** 포인트/경험치 내역 */
+/* ================= 포인트 / 경험치 히스토리 (ISO 날짜) ================= */
+
 export const pointHistoryMock: PointHistoryItem[] = [
   {
     id: 'h1',
     title: '미션을 달성해서 경험치와 포인트를 받았어요!',
-    createdAt: '2025년 12월 08일',
+    createdAt: '2025-12-08T09:00:00Z',
     xpDelta: 40,
-    ptDelta: +40,
+    ptDelta: 40,
   },
   {
     id: 'h2',
     title: '글을 읽어서 경험치를 받았어요!',
-    createdAt: '2025년 12월 07일',
+    createdAt: '2025-12-07T09:00:00Z',
     xpDelta: 0,
-    ptDelta: +30,
+    ptDelta: 30,
   },
   {
     id: 'h3',
-    title: '미션을 달성해서 경험치와 포인트를 받았어요!',
-    createdAt: '2025년 12월 06일',
-    xpDelta: +20,
+    title: '미션을 달성해서 경험치를 받았어요!',
+    createdAt: '2025-12-06T09:00:00Z',
+    xpDelta: 20,
     ptDelta: 0,
   },
   {
     id: 'h4',
     title: '포인트 차감 케이스 테스트',
-    createdAt: '2025년 12월 05일',
+    createdAt: '2025-12-05T09:00:00Z',
     xpDelta: 0,
     ptDelta: -20,
   },
   {
     id: 'h5',
-    title: '미션을 달성해서 경험치와 포인트를 받았어요!',
-    createdAt: '2025년 12월 04일',
-    xpDelta: +40,
-    ptDelta: +40,
+    title: '받은 내역 테스트1 12/4 09:00',
+    createdAt: '2025-12-04T09:00:00Z',
+    xpDelta: 40,
+    ptDelta: 40,
+  },
+  {
+    id: 'h6',
+    title: '받은 내역 테스트2 12/4 09:20 -> 최신순 확인',
+    createdAt: '2025-12-04T09:20:00Z',
+    xpDelta: 40,
+    ptDelta: 30,
+  },
+  {
+    id: 'h7',
+    title: '받은 내역 테스트3 12/4 09:10',
+    createdAt: '2025-12-04T09:10:00Z',
+    xpDelta: 40,
+    ptDelta: 30,
   },
 ];
