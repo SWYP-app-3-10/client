@@ -1,6 +1,5 @@
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useState, useCallback } from 'react';
 import { View, Text, Pressable, FlatList, StyleSheet } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
 import {
   pointHistoryMock,
   PointHistoryItem,
@@ -8,72 +7,138 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import BottomSheetModal from '../../../components/BottomSheetModal';
-import { Caption_14R, COLORS, Heading_18SB } from '../../../styles/global';
+import {
+  Caption_14R,
+  COLORS,
+  Heading_18SB,
+  scaleWidth,
+  BORDER_RADIUS,
+  Body_16M,
+} from '../../../styles/global';
+import Header from '../../../components/Header';
 
 /**
  * PointHistoryScreen
  *
- * - "받은 내역"만 보여주는 화면
- * - 리스트 시안(1번) 형태:
- *   1) 첫 줄: 아이콘 + XP/P, 우측 날짜
- *   2) 둘째 줄: "자세히 보기"
- * - 아이템 클릭 시 바텀시트 노출
+ * - 리스트는 "날짜별 합산"으로 1일 = 1아이템만 노출
+ *   예) 12/04에 2개가 있으면 → 80XP 70P, 12월 04일 (1개만 표시)
+ * - 레이아웃/스타일은 기존 유지
+ * - 바텀시트는 해당 날짜의 상세 항목 리스트만 표시 (상단 합산 요약 제거)
  */
 const PointHistoryScreen = () => {
-  const navigation = useNavigation<any>();
-
   /** 바텀시트 상태 */
   const [sheetVisible, setSheetVisible] = useState(false);
-  const [selectedItem, setSelectedItem] = useState<PointHistoryItem | null>(
-    null,
-  );
+  const [selectedDayKey, setSelectedDayKey] = useState<string | null>(null);
 
-  const openSheet = (item: PointHistoryItem) => {
-    setSelectedItem(item);
+  const openSheet = (day: string) => {
+    setSelectedDayKey(day);
     setSheetVisible(true);
   };
 
   const closeSheet = () => {
     setSheetVisible(false);
-    setSelectedItem(null);
+    setSelectedDayKey(null);
   };
 
-  /** 받은 내역만 필터링 (획득만) */
-  const earnedList = useMemo(() => {
-    return pointHistoryMock.filter(it => it.xpDelta > 0 || it.ptDelta > 0);
+  /** ISO → "12월 08일" */
+  const toShortDate = useCallback((iso: string) => {
+    const d = new Date(iso);
+    if (Number.isNaN(d.getTime())) return iso;
+
+    const mm = String(d.getMonth() + 1).padStart(2, '0');
+    const dd = String(d.getDate()).padStart(2, '0');
+    return `${mm}월 ${dd}일`;
   }, []);
 
-  /** 미션 달성 여부 (XP + P 모두 받은 경우) */
-  const isMissionEarned = (item: PointHistoryItem) =>
-    item.xpDelta > 0 && item.ptDelta > 0;
+  /** ISO에서 날짜 키(yyyy-mm-dd)만 뽑기 */
+  const dayKey = useCallback((iso: string) => {
+    const d = new Date(iso);
+    if (Number.isNaN(d.getTime())) return iso;
 
-  /** 바텀시트 상세 정보 (화면단 구성) */
-  const getDetailRows = (item: PointHistoryItem) => {
-    if (!isMissionEarned(item)) return [];
+    const yyyy = d.getFullYear();
+    const mm = String(d.getMonth() + 1).padStart(2, '0');
+    const dd = String(d.getDate()).padStart(2, '0');
+    return `${yyyy}-${mm}-${dd}`;
+  }, []);
 
-    return [
-      { label: '적립 유형', value: '미션 달성' },
-      { label: '보상', value: `${item.xpDelta} XP / ${item.ptDelta} P` },
-      { label: '지급일', value: item.createdAt },
-    ];
+  /** 받은 내역만 필터링 + 최신순 정렬(원본) */
+  const earnedRawList = useMemo(() => {
+    return pointHistoryMock
+      .filter(it => it.xpDelta > 0 || it.ptDelta > 0)
+      .sort(
+        (a, b) =>
+          new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
+      );
+  }, []);
+
+  /** 날짜별 합산 리스트(FlatList용) */
+  type DaySummaryItem = {
+    id: string; // dayKey
+    dayKey: string;
+    createdAt: string; // 날짜 표시용 대표 ISO
+    xpSum: number;
+    ptSum: number;
   };
 
-  /** "2025년 12월 08일" -> "12월 08일" */
-  const toShortDate = (createdAt: string) => {
-    const match = createdAt.match(/(\d{1,2})월\s*(\d{1,2})일/);
-    if (!match) return createdAt;
-    const mm = match[1].padStart(2, '0');
-    const dd = match[2].padStart(2, '0');
-    return `${mm}월 ${dd}일`;
-  };
+  const earnedList: DaySummaryItem[] = useMemo(() => {
+    const map = new Map<
+      string,
+      { xpSum: number; ptSum: number; latestIso: string }
+    >();
 
-  /** 리스트 아이템 (✅ 1번 시안 레이아웃) */
-  const renderItem = ({ item }: { item: PointHistoryItem }) => {
-    const hasXp = item.xpDelta > 0;
-    const hasPt = item.ptDelta > 0;
+    for (const it of earnedRawList) {
+      const key = dayKey(it.createdAt);
+      const xp = Math.max(0, it.xpDelta);
+      const pt = Math.max(0, it.ptDelta);
+
+      const prev = map.get(key);
+      if (!prev) {
+        map.set(key, { xpSum: xp, ptSum: pt, latestIso: it.createdAt });
+        continue;
+      }
+
+      prev.xpSum += xp;
+      prev.ptSum += pt;
+
+      if (
+        new Date(it.createdAt).getTime() > new Date(prev.latestIso).getTime()
+      ) {
+        prev.latestIso = it.createdAt;
+      }
+    }
+
+    const list: DaySummaryItem[] = Array.from(map.entries()).map(
+      ([key, v]) => ({
+        id: key,
+        dayKey: key,
+        createdAt: v.latestIso,
+        xpSum: v.xpSum,
+        ptSum: v.ptSum,
+      }),
+    );
+
+    // 최신 날짜가 위로
+    list.sort((a, b) => (a.dayKey < b.dayKey ? 1 : -1));
+
+    return list;
+  }, [earnedRawList, dayKey]);
+
+  /** 선택한 날짜의 상세(원본 항목들) */
+  const bundledItems = useMemo(() => {
+    if (!selectedDayKey) return [];
+    return earnedRawList.filter(it => dayKey(it.createdAt) === selectedDayKey);
+  }, [selectedDayKey, earnedRawList, dayKey]);
+
+  /** 리스트 아이템(날짜 합산 1일 1아이템 / 레이아웃 유지) */
+  const renderItem = ({ item }: { item: DaySummaryItem }) => {
+    const hasXp = item.xpSum > 0;
+    const hasPt = item.ptSum > 0;
 
     return (
-      <Pressable style={styles.rowPressable} onPress={() => openSheet(item)}>
+      <Pressable
+        style={styles.rowPressable}
+        onPress={() => openSheet(item.dayKey)}
+      >
         <View style={styles.row}>
           {/* 1줄: 아이콘 + XP/P  |  우측 날짜 */}
           <View style={styles.line1}>
@@ -83,12 +148,12 @@ const PointHistoryScreen = () => {
               <View style={styles.badgeLine}>
                 {hasXp && (
                   <Text style={[styles.badgeText, styles.badgeXp]}>
-                    {item.xpDelta} XP
+                    {item.xpSum} XP
                   </Text>
                 )}
                 {hasPt && (
                   <Text style={[styles.badgeText, styles.badgePt]}>
-                    {item.ptDelta} P
+                    {item.ptSum} P
                   </Text>
                 )}
               </View>
@@ -97,78 +162,67 @@ const PointHistoryScreen = () => {
             <Text style={styles.shortDate}>{toShortDate(item.createdAt)}</Text>
           </View>
 
-          {/* 2줄: 자세히 보기 (아이콘 자리만큼 들여쓰기) */}
+          {/* 2줄: 자세히 보기 */}
           <Text style={styles.detailHint}>자세히 보기</Text>
         </View>
       </Pressable>
     );
   };
 
-  /** 바텀시트 콘텐츠 */
-  const SheetContent = () => {
-    if (!selectedItem) return null;
+  /** 바텀시트 내부 항목(해당 날짜 상세) */
+  const renderSheetItem = ({ item }: { item: PointHistoryItem }) => {
+    const hasXp = item.xpDelta > 0;
+    const hasPt = item.ptDelta > 0;
 
-    const detailRows = getDetailRows(selectedItem);
+    return (
+      <View style={styles.sheetItem}>
+        <View style={styles.sheetItemTop}>
+          <View style={styles.sheetBadgeLine}>
+            {hasXp && (
+              <Text style={[styles.sheetBadgeText, styles.badgeXp]}>
+                {item.xpDelta} XP
+              </Text>
+            )}
+            {hasPt && (
+              <Text style={[styles.sheetBadgeText, styles.badgePt]}>
+                {item.ptDelta} P
+              </Text>
+            )}
+          </View>
+
+          <Text style={styles.sheetRightDate}>
+            {toShortDate(item.createdAt)}
+          </Text>
+        </View>
+
+        <Text style={styles.sheetItemTitle} numberOfLines={2}>
+          {item.title}
+        </Text>
+      </View>
+    );
+  };
+
+  /** 바텀시트 콘텐츠: ✅ 상단 합산 요약 제거, 상세 리스트만 */
+  const SheetContent = () => {
+    if (!selectedDayKey) return null;
 
     return (
       <View style={styles.sheetContainer}>
-        {/* 요약 */}
-        <View style={styles.sheetHeader}>
-          <View style={styles.sheetBadgeLine}>
-            {selectedItem.xpDelta > 0 && (
-              <Text style={[styles.sheetBadgeText, styles.badgeXp]}>
-                {selectedItem.xpDelta} XP
-              </Text>
-            )}
-            {selectedItem.ptDelta > 0 && (
-              <Text style={[styles.sheetBadgeText, styles.badgePt]}>
-                {selectedItem.ptDelta} P
-              </Text>
-            )}
-          </View>
-
-          <Text style={styles.sheetTitle} numberOfLines={2}>
-            {selectedItem.title}
-          </Text>
-
-          <Text style={styles.sheetDate}>{selectedItem.createdAt}</Text>
-        </View>
-
-        {/* 상세 */}
-        {detailRows.length > 0 && (
-          <View style={styles.sheetList}>
-            {detailRows.map((row, idx) => (
-              <View
-                key={`${row.label}-${idx}`}
-                style={[
-                  styles.sheetRow,
-                  idx !== detailRows.length - 1 && styles.sheetRowBorder,
-                ]}
-              >
-                <Text style={styles.sheetRowLabel}>{row.label}</Text>
-                <Text style={styles.sheetRowValue}>{row.value}</Text>
-              </View>
-            ))}
-          </View>
-        )}
+        <FlatList
+          data={bundledItems}
+          keyExtractor={it => it.id}
+          renderItem={renderSheetItem}
+          ItemSeparatorComponent={() => <View style={styles.sheetSeparator} />}
+          contentContainerStyle={styles.sheetListContent}
+        />
       </View>
     );
   };
 
   return (
     <SafeAreaView style={styles.container} edges={['top', 'left', 'right']}>
-      {/* 헤더 */}
-      <View style={styles.header}>
-        <Pressable onPress={() => navigation.goBack()} style={styles.backBtn}>
-          <Text style={styles.back}>←</Text>
-        </Pressable>
+      <Header title="받은 내역 확인하기" />
 
-        <Text style={styles.headerTitle}>받은 내역 확인하기</Text>
-
-        <View style={{ width: 32 }} />
-      </View>
-
-      {/* 리스트 */}
       <FlatList
         data={earnedList}
         keyExtractor={item => item.id}
@@ -177,7 +231,6 @@ const PointHistoryScreen = () => {
         ItemSeparatorComponent={() => <View style={styles.separator} />}
       />
 
-      {/* 바텀시트 */}
       <BottomSheetModal visible={sheetVisible} onClose={closeSheet}>
         <SheetContent />
       </BottomSheetModal>
@@ -187,77 +240,59 @@ const PointHistoryScreen = () => {
 
 export default PointHistoryScreen;
 
-const ICON_SIZE = 26;
-const ICON_GAP = 10;
+const ICON_SIZE = scaleWidth(26);
+const ICON_GAP = scaleWidth(10);
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: COLORS.white,
   },
 
-  /* 헤더 */
-  header: {
-    height: 52,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 16,
-  },
-  backBtn: { width: 32, height: 32, justifyContent: 'center' },
-  back: { fontSize: 20 },
-  headerTitle: { fontSize: 16, fontWeight: '700' },
-
-  /* 리스트 */
+  /* ================= 리스트 ================= */
   listContent: {
-    paddingHorizontal: 20,
-    paddingBottom: 48,
+    paddingHorizontal: scaleWidth(20),
+    paddingBottom: scaleWidth(48),
   },
   separator: {
-    height: 1,
+    height: scaleWidth(1),
     backgroundColor: COLORS.gray200,
   },
-
   rowPressable: {
-    borderRadius: 12,
+    borderRadius: BORDER_RADIUS[12],
   },
 
   /* 아이템 */
   row: {
-    paddingVertical: 24, // 시안처럼 좀 더 컴팩트
-    gap: 12,
+    paddingVertical: scaleWidth(24),
+    gap: scaleWidth(12),
   },
-
   line1: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     minHeight: ICON_SIZE,
   },
-
   leftGroup: {
     flexDirection: 'row',
     alignItems: 'center',
   },
-
   icon: {
     width: ICON_SIZE,
     height: ICON_SIZE,
-    borderRadius: 4,
+    borderRadius: BORDER_RADIUS[4],
     backgroundColor: COLORS.gray200,
     marginRight: ICON_GAP,
   },
-
   badgeLine: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 12,
+    gap: scaleWidth(12),
   },
-
   badgeText: {
     ...Heading_18SB,
   },
-
+  // 시안 컬러: XP(블루), P(옐로)
   badgeXp: { color: COLORS.blue[6] },
   badgePt: { color: COLORS.yellow.main },
 
@@ -265,63 +300,45 @@ const styles = StyleSheet.create({
     ...Caption_14R,
     color: COLORS.gray600,
   },
-
   detailHint: {
     ...Caption_14R,
     color: COLORS.gray800,
   },
 
-  /* 바텀시트 */
-  sheetContainer: { paddingBottom: 16 },
-  sheetHeader: { paddingBottom: 16 },
-
+  /* ================= 바텀시트 ================= */
+  sheetContainer: {
+    paddingBottom: scaleWidth(12),
+  },
+  sheetListContent: {
+    paddingBottom: scaleWidth(48),
+  },
+  sheetSeparator: {
+    height: scaleWidth(1),
+    backgroundColor: COLORS.gray200,
+  },
+  sheetItem: {
+    paddingVertical: scaleWidth(18),
+  },
+  sheetItemTop: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
   sheetBadgeLine: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 12,
+    gap: scaleWidth(12),
   },
   sheetBadgeText: {
-    fontSize: 16,
-    fontWeight: '900',
+    ...Heading_18SB,
   },
-  sheetTitle: {
-    marginTop: 10,
-    fontSize: 14,
-    fontWeight: '700',
-    color: '#111827',
-    lineHeight: 20,
+  sheetRightDate: {
+    ...Caption_14R,
+    color: COLORS.gray600,
   },
-  sheetDate: {
-    marginTop: 10,
-    fontSize: 12,
-    fontWeight: '600',
-    color: '#98A2B3',
-  },
-
-  sheetList: {
-    borderTopWidth: 1,
-    borderTopColor: '#EEF2F7',
-    paddingTop: 12,
-  },
-  sheetRow: {
-    paddingVertical: 12,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    gap: 12,
-  },
-  sheetRowBorder: {
-    borderBottomWidth: 1,
-    borderBottomColor: '#EEF2F7',
-  },
-  sheetRowLabel: {
-    fontSize: 13,
-    fontWeight: '700',
-    color: '#111827',
-  },
-  sheetRowValue: {
-    fontSize: 13,
-    fontWeight: '600',
-    color: '#98A2B3',
+  sheetItemTitle: {
+    marginTop: scaleWidth(10),
+    ...Body_16M,
+    color: COLORS.black,
   },
 });
