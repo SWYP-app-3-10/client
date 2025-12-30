@@ -34,7 +34,6 @@ const NotificationScreen = () => {
     if (navigation.canGoBack?.()) {
       navigation.goBack();
     } else {
-      navigation.popToTop?.();
     }
   };
 

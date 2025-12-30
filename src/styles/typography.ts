@@ -2,14 +2,17 @@ import { StyleSheet, TextStyle } from 'react-native';
 import { scaleWidth } from './global';
 
 const getFontFamily = (weight: number): string => {
-  if (weight == 800) {
+  // 모든 플랫폼에서 정확한 폰트 이름 사용 (영어/숫자/한글 모두 동일한 굵기 보장)
+  if (weight === 800) {
     return 'Pretendard-ExtraBold';
-  } else if (weight == 700) {
+  } else if (weight === 700) {
     return 'Pretendard-Bold';
-  } else if (weight == 600) {
+  } else if (weight === 600) {
     return 'Pretendard-SemiBold';
-  } else if (weight == 500) {
+  } else if (weight === 500) {
     return 'Pretendard-Medium';
+  } else if (weight === 400) {
+    return 'Pretendard-Regular';
   } else {
     return 'Pretendard-Regular';
   }
@@ -36,7 +39,6 @@ const createTextStyle = (
   return {
     fontFamily: getFontFamily(weight),
     fontSize,
-    fontWeight: weight.toString() as TextStyle['fontWeight'],
     lineHeight: getLineHeight(size, lineHeightPercent),
     letterSpacing: getLetterSpacing(size, letterSpacingPercent),
   };
@@ -44,7 +46,12 @@ const createTextStyle = (
 
 const TYPOGRAPHY = StyleSheet.create({
   // ========== Heading Styles ==========
-  Heading_24EB_Round: createTextStyle(24, 800, 150, 0),
+  Heading_24EB_Round: {
+    fontFamily: 'Pretendard-ExtraBold',
+    fontSize: scaleWidth(24),
+    lineHeight: getLineHeight(24, 150),
+    letterSpacing: getLetterSpacing(24, 0),
+  },
   Heading_20EB_Round: createTextStyle(20, 800, 150, 0),
   Heading_18B: createTextStyle(18, 700, 150, 0),
   Heading_18EB_Round: createTextStyle(18, 800, 150, 0),

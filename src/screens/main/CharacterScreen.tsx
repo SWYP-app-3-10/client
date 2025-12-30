@@ -43,7 +43,7 @@ import {
   RightArrowIcon,
   ProgressBarIcon,
 } from '../../icons';
-import { Body_15M } from '../../styles/typography';
+import { Body_15M, Heading_16B } from '../../styles/typography';
 import { useCharacterData, useAttendanceData } from '../../hooks/useCharacter';
 import { useMissions } from '../../hooks/useMissions';
 import { usePointStore } from '../../store/pointStore';
@@ -487,7 +487,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   statsLabel: {
-    ...Body_16M,
+    ...Heading_16B,
     color: COLORS.black,
   },
   statsValueContainer: {
@@ -496,7 +496,7 @@ const styles = StyleSheet.create({
     gap: scaleWidth(8),
   },
   statsValue: {
-    ...Body_16M,
+    ...Heading_16B,
     color: COLORS.black,
   },
   attendanceSection: {
