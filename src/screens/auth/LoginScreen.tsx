@@ -3,7 +3,12 @@ import { View, Text, StyleSheet, Alert, Platform } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import { RouteNames } from '../../../routes';
-import { COLORS, Heading_16B, scaleWidth } from '../../styles/global';
+import {
+  Body_16SB,
+  COLORS,
+  Heading_16B,
+  scaleWidth,
+} from '../../styles/global';
 import {
   signInWithSocial,
   initializeGoogleSignIn,
@@ -123,10 +128,14 @@ const LoginScreen = () => {
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.content}>
-        <Spacer num={252} />
+        <Spacer num={163} />
         <View style={styles.logoContainer}>
           <Text>로고</Text>
         </View>
+        <Spacer num={16} />
+        <Text style={styles.logoText}>
+          일상의 틈, 언제든 시작하는 문해력 미션
+        </Text>
         <View style={styles.buttonContainer}>
           {Platform.OS === 'ios' && (
             <SocialLoginButton
@@ -173,17 +182,20 @@ const styles = StyleSheet.create({
   },
   content: {
     flex: 1,
-    justifyContent: 'center',
     alignItems: 'center',
     paddingHorizontal: scaleWidth(20),
   },
   logoContainer: {
-    width: scaleWidth(300),
+    width: scaleWidth(140),
     height: scaleWidth(140),
     borderWidth: 1,
     backgroundColor: COLORS.gray300,
     justifyContent: 'center',
     alignItems: 'center',
+  },
+  logoText: {
+    ...Body_16SB,
+    color: COLORS.puple.main,
   },
   buttonContainer: {
     width: '100%',
