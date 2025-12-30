@@ -40,10 +40,16 @@ export interface RefreshTokenRequest {
 }
 
 export interface RefreshTokenResponse {
-  success: boolean;
+  status: number;
+  message?: string;
+  data?: {
+    accessToken?: string;
+    refreshToken?: string;
+  };
+  // 하위 호환성을 위한 필드
+  success?: boolean;
   token?: string;
   refreshToken?: string;
-  message?: string;
 }
 
 /**

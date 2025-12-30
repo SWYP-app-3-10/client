@@ -11,6 +11,7 @@ import {
   mockArticles,
 } from '../data/mock/missionData';
 import { USE_SERVER_API_FOR_MISSION } from '../config/apiConfig';
+import { getUserInfo } from '../services/authService';
 
 // API 응답 시뮬레이션을 위한 딜레이 함수 (개발용)
 const delay = (ms: number) =>
@@ -21,20 +22,24 @@ const delay = (ms: number) =>
  * @returns Promise<Mission[]>
  */
 export const fetchMissions = async (): Promise<Mission[]> => {
+  const userInfo = await getUserInfo();
+  if (!userInfo) {
+    throw new Error('User info not found');
+  }
   try {
     // 서버 API 호출
     if (USE_SERVER_API_FOR_MISSION) {
-      const response = await client.get<Mission[]>('/api/content/today');
+      const response = await client.get<Mission[]>(
+        `/api/content/today/userId=${userInfo.userId}`,
+      );
       return response.data;
     } else {
-      await delay(200);
-      return mockMissions;
+      throw new Error('Server API is not enabled');
     }
   } catch (error) {
     console.error('미션 목록 조회 실패, 더미 데이터 사용:', error);
     // 서버 연결 실패 시 자동으로 더미 데이터 반환
-    await delay(200);
-    return mockMissions;
+    throw error;
   }
 };
 

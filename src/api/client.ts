@@ -136,7 +136,7 @@ client.interceptors.response.use(
 
         // 토큰 재발급 API 호출
         const refreshResponse = await refreshToken(refreshTokenValue);
-        const newAccessToken = refreshResponse.token;
+        const newAccessToken = refreshResponse.data?.accessToken;
 
         if (!newAccessToken) {
           throw new Error('토큰 재발급 응답에 accessToken이 없습니다');
@@ -144,7 +144,7 @@ client.interceptors.response.use(
 
         // 새 토큰 저장
         await saveAuthToken(newAccessToken);
-        const newRefreshToken = refreshResponse.refreshToken;
+        const newRefreshToken = refreshResponse.data?.refreshToken;
         if (newRefreshToken) {
           await saveRefreshToken(newRefreshToken);
         }
@@ -187,14 +187,10 @@ client.interceptors.response.use(
         }
         isRefreshing = false;
 
-        // refresh API가 실패하면 원래 403 에러를 반환 (refresh 실패로 인한 추가 에러 숨김)
-        // 단, 500 에러는 서버 문제이므로 원래 에러 대신 refresh 에러 반환
         if (refreshError.response?.status === 500) {
-          // 서버 오류는 refresh 에러를 그대로 반환
           return Promise.reject(refreshError);
         }
 
-        // 그 외의 경우 원래 403 에러 반환
         return Promise.reject(error);
       }
     }
