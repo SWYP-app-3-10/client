@@ -23,7 +23,7 @@ interface LevelSelectionContentProps {
   onSelect: (level: Difficulty) => void;
 }
 
-const LEVEL_OPTIONS: LevelOption[] = [
+export const LEVEL_OPTIONS: LevelOption[] = [
   {
     value: LevelCategory.BEGINNER,
     label: '초급',

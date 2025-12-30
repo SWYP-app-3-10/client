@@ -24,6 +24,20 @@ import { getUserInfo } from '../../services/authService';
 import { LevelCategory } from '../../types/interests';
 import { updateUserLevel } from '../../api/userApi';
 
+// Difficulty를 LevelCategory로 변환
+const difficultyToLevelCategory = (difficulty: Difficulty): LevelCategory => {
+  switch (difficulty) {
+    case 'beginner':
+      return LevelCategory.BEGINNER;
+    case 'intermediate':
+      return LevelCategory.INTERMEDIATE;
+    case 'advanced':
+      return LevelCategory.ADVANCED;
+    default:
+      return LevelCategory.BEGINNER;
+  }
+};
+
 const DIFFICULTY_INFO = {
   [LevelCategory.BEGINNER]: {
     label: '초급',
@@ -73,13 +87,17 @@ const DifficultySettingScreen = () => {
         return;
       }
       console.log('[난이도 업데이트] API 호출 시작');
-      await updateUserLevel(userInfo.userId, selectedDifficulty);
+      await updateUserLevel(
+        userInfo.userId,
+        difficultyToLevelCategory(selectedDifficulty),
+      );
       console.log('[난이도 업데이트] API 호출 성공');
     }
     await completeOnboarding();
   };
 
-  const selectedInfo = DIFFICULTY_INFO[selectedDifficulty as LevelCategory];
+  const selectedInfo =
+    DIFFICULTY_INFO[difficultyToLevelCategory(selectedDifficulty)];
 
   return (
     <SafeAreaView style={styles.container} edges={['top', 'bottom']}>
