@@ -46,6 +46,11 @@ import { RouteNames } from '../../../routes';
 import {
   AlarmIcon,
   Check_2Icon,
+  Level_1_Profile,
+  Level_2_Profile,
+  Level_3_Profile,
+  Level_4_Profile,
+  Level_5_Profile,
   RightArrowIcon,
   TriangleIcon,
 } from '../../icons';
@@ -57,6 +62,7 @@ import {
   InterestCategoryNames,
   LevelCategory,
 } from '../../types/interests';
+import { useCharacterData } from '../../hooks/useCharacter';
 
 // MyPageStack + RootStack 합친 네비게이션 타입
 type MyPageNavigationProp = CompositeNavigationProp<
@@ -261,7 +267,24 @@ const MyPageScreen = () => {
   const hideModal = useHideModal();
 
   const navigation = useNavigation<MyPageNavigationProp>();
-
+  const { data: characterData } = useCharacterData();
+  const currentLevel = characterData?.currentLevel ?? 1;
+  const ProfileImage = useMemo(() => {
+    switch (currentLevel) {
+      case 1:
+        return <Level_1_Profile />;
+      case 2:
+        return <Level_2_Profile />;
+      case 3:
+        return <Level_3_Profile />;
+      case 4:
+        return <Level_4_Profile />;
+      case 5:
+        return <Level_5_Profile />;
+      default:
+        return <Level_1_Profile />;
+    }
+  }, [currentLevel]);
   // 사용자 정보 로드
   useEffect(() => {
     const loadUserInfo = async () => {
@@ -358,9 +381,7 @@ const MyPageScreen = () => {
 
         {/* 프로필 섹션 */}
         <View style={styles.profileSection}>
-          <View style={styles.profileImageContainer}>
-            <View style={styles.profileImagePlaceholder} />
-          </View>
+          <View style={styles.profileImageContainer}>{ProfileImage}</View>
           <View style={styles.profileInfo}>
             <Text style={styles.userId}>
               {recentLogin?.name || '뇌세포123456'}
@@ -504,13 +525,16 @@ const styles = StyleSheet.create({
   },
   profileImageContainer: {
     marginRight: scaleWidth(16),
-  },
-  profileImagePlaceholder: {
     width: scaleWidth(90),
     height: scaleWidth(90),
     borderRadius: BORDER_RADIUS[99],
-    backgroundColor: COLORS.placeholder,
+    backgroundColor: COLORS.gray100,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: scaleWidth(1),
+    borderColor: COLORS.gray200,
   },
+
   profileInfo: {
     flex: 1,
   },

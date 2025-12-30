@@ -13,6 +13,12 @@ import level_3_tooltip from '../../assets/png/level3_tooltip.png';
 import level_4_tooltip from '../../assets/png/level4_tooltip.png';
 import level_5_tooltip from '../../assets/png/level5_tooltip.png';
 
+import level1 from '../../assets/png/level1.png';
+import level2 from '../../assets/png/level2.png';
+import level3 from '../../assets/png/level3.png';
+import level4 from '../../assets/png/level4.png';
+import level5 from '../../assets/png/level5.png';
+
 export const Tooltip_RecentIcon = createImageIconComponent(
   Tooltip_Recent,
   scaleWidth(163),
@@ -48,6 +54,31 @@ export const LockIcon = createImageIconComponent(
   Lock,
   scaleWidth(40),
   scaleWidth(47),
+);
+export const Level_1_Profile = createImageIconComponent(
+  level1,
+  scaleWidth(55.36),
+  scaleWidth(49.8),
+);
+export const Level_2_Profile = createImageIconComponent(
+  level2,
+  scaleWidth(58.25),
+  scaleWidth(50.86),
+);
+export const Level_3_Profile = createImageIconComponent(
+  level3,
+  scaleWidth(64.02),
+  scaleWidth(65.92),
+);
+export const Level_4_Profile = createImageIconComponent(
+  level4,
+  scaleWidth(56.99),
+  scaleWidth(64.56),
+);
+export const Level_5_Profile = createImageIconComponent(
+  level5,
+  scaleWidth(63.86),
+  scaleWidth(68.07),
 );
 export const Check_3DIcon = createImageIconComponent(
   Check_3D,
