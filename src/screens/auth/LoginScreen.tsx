@@ -138,14 +138,6 @@ const LoginScreen = () => {
           일상의 틈, 언제든 시작하는 문해력 미션
         </Text>
         <View style={styles.buttonContainer}>
-          {Platform.OS === 'ios' && (
-            <SocialLoginButton
-              provider="apple"
-              onPress={handleAppleLogin}
-              loading={loading}
-              recentLogin={recentLogin}
-            />
-          )}
           {/* <SocialLoginButton
             provider="apple"
             onPress={() => navigation.navigate(RouteNames.INTERESTS)}
@@ -153,14 +145,14 @@ const LoginScreen = () => {
             recentLogin={recentLogin}
           /> */}
           <SocialLoginButton
-            provider="google"
-            onPress={handleGoogleLogin}
+            provider="kakao"
+            onPress={handleKakaoLogin}
             loading={loading}
             recentLogin={recentLogin}
           />
           <SocialLoginButton
-            provider="kakao"
-            onPress={handleKakaoLogin}
+            provider="google"
+            onPress={handleGoogleLogin}
             loading={loading}
             recentLogin={recentLogin}
           />
@@ -170,6 +162,14 @@ const LoginScreen = () => {
             loading={loading}
             recentLogin={recentLogin}
           />
+          {Platform.OS === 'ios' && (
+            <SocialLoginButton
+              provider="apple"
+              onPress={handleAppleLogin}
+              loading={loading}
+              recentLogin={recentLogin}
+            />
+          )}
         </View>
       </View>
     </SafeAreaView>

@@ -51,9 +51,7 @@ const CharacterScreen = () => {
     useNavigation<MainTabNavigationProp<CharacterStackParamList>>();
   const tabBarHeight = useBottomTabBarHeight(); // 탭바 높이
 
-  const [isScrolled, setIsScrolled] = useState(false);
   const [showTooltip, setShowTooltip] = useState(true);
-  const lottieHeight = scaleWidth(882);
 
   // React Query hooks
   const {
@@ -115,15 +113,6 @@ const CharacterScreen = () => {
     }, []),
   );
 
-  // 스크롤 핸들러 메모이제이션
-  const handleScroll = useCallback(
-    (event: any) => {
-      const scrollY = event.nativeEvent.contentOffset.y;
-      setIsScrolled(scrollY > lottieHeight - 100); // 로티 영역을 거의 지나면 true
-    },
-    [lottieHeight],
-  );
-
   // 네비게이션 핸들러들 메모이제이션
   const handleNavigateToNotification = useCallback(() => {
     rootNavigation.navigate(RouteNames.FULL_SCREEN_STACK, {
@@ -167,173 +156,149 @@ const CharacterScreen = () => {
 
   return (
     <>
-      {/* ✅ 상태바 투명 + 겹침 허용 → Lottie가 상태바까지 차지 */}
-      <StatusBar
-        translucent
-        backgroundColor="transparent"
-        barStyle="dark-content"
-      />
+      <StatusBar translucent backgroundColor="transparent" />
 
-      {/* ✅ top SafeArea 제거 + bottom은 탭바 높이로 직접 처리 */}
-      <SafeAreaView
-        style={[
-          styles.container,
-          { backgroundColor: isScrolled ? COLORS.white : COLORS.gray200 },
-        ]}
-        edges={['left', 'right']} // ✅ bottom 제거
+      <ScrollView
+        bounces={false}
+        style={styles.scrollView}
+        showsVerticalScrollIndicator={false}
+        scrollEventThrottle={16}
+        contentContainerStyle={{ paddingBottom: tabBarHeight }}
       >
-        <ScrollView
-          bounces={false}
-          style={styles.scrollView}
-          showsVerticalScrollIndicator={false}
-          onScroll={handleScroll}
-          scrollEventThrottle={16}
-          contentContainerStyle={[
-            styles.scrollContent,
-            { paddingBottom: tabBarHeight }, // ✅ 탭바만큼만
-          ]}
-        >
-          {/* 로티 영역 */}
-          <View style={styles.lottieContainer}>
-            <LottieView
-              source={require('../../assets/lottie/Lv2..json')}
-              style={styles.lottie}
-              autoPlay
-              loop
-              resizeMode="cover"
-            />
+        {/* 로티 영역 */}
+        <View style={styles.lottieContainer}>
+          <LottieView
+            source={require('../../assets/lottie/Lv2..json')}
+            style={styles.lottie}
+            autoPlay
+            loop
+            resizeMode="cover"
+          />
+        </View>
+
+        {/* 알림 버튼 */}
+        <View style={styles.notificationButtonContainer}>
+          <Button
+            title="알림"
+            variant="primary"
+            style={styles.notificationButton}
+            onPress={handleNavigateToNotification}
+          />
+        </View>
+
+        {/* 레벨 버튼 */}
+        <View style={styles.levelButtonContainer}>
+          <View style={styles.levelButton}>
+            <Text style={styles.levelButtonText}>
+              {currentLevelData?.title || 'Lv. 1 아메바'}
+            </Text>
+            <InfoIcon />
           </View>
-
-          {/* 알림 버튼 */}
-          <View style={styles.notificationButtonContainer}>
-            <Button
-              title="알림"
-              variant="primary"
-              style={styles.notificationButton}
-              onPress={handleNavigateToNotification}
-            />
-          </View>
-
-          {/* 레벨 버튼 */}
-          <View style={styles.levelButtonContainer}>
-            <View style={styles.levelButton}>
-              <Text style={styles.levelButtonText}>
-                {currentLevelData?.title || 'Lv. 1 아메바'}
-              </Text>
-              <InfoIcon />
+          {/* 툴팁 */}
+          {showTooltip && (
+            <View style={styles.tooltipContainer}>
+              <Level_1_Tooltip />
             </View>
-            {/* 툴팁 */}
-            {showTooltip && (
-              <View style={styles.tooltipContainer}>
-                <Level_1_Tooltip />
+          )}
+        </View>
+
+        <Spacer num={24} />
+
+        {/* 레벨 진행 카드 */}
+        <View style={styles.levelCard}>
+          <View style={styles.levelCardHeader}>
+            <Text style={styles.levelCardTitle}>Lv. {currentLevel}</Text>
+            <TouchableOpacity onPress={handleNavigateToCriteria}>
+              <View style={styles.levelCriteriaLinkWrapper}>
+                <Text style={styles.levelCriteriaLink}>레벨 기준 확인하기</Text>
               </View>
-            )}
-          </View>
-
-          <Spacer num={24} />
-
-          {/* 레벨 진행 카드 */}
-          <View style={styles.levelCard}>
-            <View style={styles.levelCardHeader}>
-              <Text style={styles.levelCardTitle}>Lv. {currentLevel}</Text>
-              <TouchableOpacity onPress={handleNavigateToCriteria}>
-                <View style={styles.levelCriteriaLinkWrapper}>
-                  <Text style={styles.levelCriteriaLink}>
-                    레벨 기준 확인하기
-                  </Text>
-                </View>
-              </TouchableOpacity>
-            </View>
-
-            {/* 경험치 진행 바 */}
-            <View style={styles.progressBarWrapper}>
-              <View style={styles.progressBarContainer}>
-                <View
-                  style={[
-                    styles.progressBarIconWrapper,
-                    {
-                      width: `${progressPercentageValue}%`,
-                    },
-                  ]}
-                >
-                  <View style={styles.progressBarIconContainer}>
-                    <ProgressBarIcon />
-                  </View>
-                </View>
-              </View>
-              <View style={styles.progressTextContainer}>
-                <Text style={styles.progressText}>
-                  경험치 {currentExp}/{nextLevelExp}
-                </Text>
-                <Text style={styles.progressPercentage}>
-                  {progressPercentageValue}%
-                </Text>
-              </View>
-            </View>
-
-            <View style={styles.divider} />
-
-            {/* 포인트/경험치 정보 */}
-            <TouchableOpacity
-              style={styles.statsRowContainer}
-              onPress={handleNavigateToPointHistory}
-            >
-              <View style={styles.statsRowContainerWrapper}>
-                <View style={styles.statsRow}>
-                  <Text style={styles.statsLabel}>포인트</Text>
-                  <View style={styles.statsValueContainer}>
-                    <Text style={styles.statsValue}>{currentPoints} P</Text>
-                  </View>
-                </View>
-
-                <View style={styles.statsRow}>
-                  <Text style={styles.statsLabel}>경험치</Text>
-                  <Text style={styles.statsValue}>{currentExp} XP</Text>
-                </View>
-              </View>
-              <RightArrowIcon color={COLORS.gray700} />
             </TouchableOpacity>
           </View>
 
-          <Spacer num={24} />
-
-          {/* 주간 출석 기록 */}
-          <View style={styles.attendanceSection}>
-            <Text style={styles.sectionTitle}>주간 출석 기록</Text>
-            <Spacer num={16} />
-            <View style={styles.attendanceDays}>
-              {attendanceData.map((item, index) => (
-                <View key={index} style={styles.attendanceDay}>
-                  <Text style={styles.attendanceDayText}>{item.day}</Text>
-                  <View style={[styles.attendanceCircle]}>
-                    {item.attended && <Check_3DIcon />}
-                  </View>
+          {/* 경험치 진행 바 */}
+          <View style={styles.progressBarWrapper}>
+            <View style={styles.progressBarContainer}>
+              <View
+                style={[
+                  styles.progressBarIconWrapper,
+                  {
+                    width: `${progressPercentageValue}%`,
+                  },
+                ]}
+              >
+                <View style={styles.progressBarIconContainer}>
+                  <ProgressBarIcon />
                 </View>
-              ))}
+              </View>
+            </View>
+            <View style={styles.progressTextContainer}>
+              <Text style={styles.progressText}>
+                경험치 {currentExp}/{nextLevelExp}
+              </Text>
+              <Text style={styles.progressPercentage}>
+                {progressPercentageValue}%
+              </Text>
             </View>
           </View>
 
-          <Spacer num={24} />
+          <View style={styles.divider} />
 
-          {/* 오늘의 미션 */}
-          <View style={styles.missionSection}>
-            <Text style={styles.sectionTitle}>오늘의 미션</Text>
-            <Text style={styles.sectionDescription}>
-              진행 중인 미션을 완료하면 새로운 미션이 열려요!
-            </Text>
-            <Spacer num={16} />
-            {missions.map(mission => (
-              <View key={mission.id} style={styles.missionCardWrapper}>
-                <MissionCard mission={mission} myPage={true} />
+          {/* 포인트/경험치 정보 */}
+          <TouchableOpacity
+            style={styles.statsRowContainer}
+            onPress={handleNavigateToPointHistory}
+          >
+            <View style={styles.statsRowContainerWrapper}>
+              <View style={styles.statsRow}>
+                <Text style={styles.statsLabel}>포인트</Text>
+                <View style={styles.statsValueContainer}>
+                  <Text style={styles.statsValue}>{currentPoints} P</Text>
+                </View>
+              </View>
+
+              <View style={styles.statsRow}>
+                <Text style={styles.statsLabel}>경험치</Text>
+                <Text style={styles.statsValue}>{currentExp} XP</Text>
+              </View>
+            </View>
+            <RightArrowIcon color={COLORS.gray700} />
+          </TouchableOpacity>
+        </View>
+
+        <Spacer num={24} />
+
+        {/* 주간 출석 기록 */}
+        <View style={styles.attendanceSection}>
+          <Text style={styles.sectionTitle}>주간 출석 기록</Text>
+          <Spacer num={16} />
+          <View style={styles.attendanceDays}>
+            {attendanceData.map((item, index) => (
+              <View key={index} style={styles.attendanceDay}>
+                <Text style={styles.attendanceDayText}>{item.day}</Text>
+                <View style={[styles.attendanceCircle]}>
+                  {item.attended && <Check_3DIcon />}
+                </View>
               </View>
             ))}
           </View>
+        </View>
 
-          {/* ✅ 기존 Spacer(100)는 탭바 padding으로 대체됨 → 제거/축소 권장
-              기능 유지가 최우선이면 두어도 되지만 여백이 다시 커질 수 있어요 */}
-          {/* <Spacer num={100} /> */}
-        </ScrollView>
-      </SafeAreaView>
+        <Spacer num={24} />
+
+        {/* 오늘의 미션 */}
+        <View style={styles.missionSection}>
+          <Text style={styles.sectionTitle}>오늘의 미션</Text>
+          <Text style={styles.sectionDescription}>
+            진행 중인 미션을 완료하면 새로운 미션이 열려요!
+          </Text>
+          <Spacer num={16} />
+          {missions.map(mission => (
+            <View key={mission.id} style={styles.missionCardWrapper}>
+              <MissionCard mission={mission} myPage={true} />
+            </View>
+          ))}
+        </View>
+      </ScrollView>
     </>
   );
 };
@@ -349,10 +314,9 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: COLORS.white,
   },
-  // ✅ ScrollView content padding을 위한 스타일 (기존 기능/레이아웃에 영향 없음)
-  scrollContent: {
-    paddingBottom: 0,
-  },
+  // scrollContent: {
+  //   paddingBottom: 0,
+  // },
   lottieContainer: {
     width: '100%',
     height: scaleWidth(882),
@@ -363,7 +327,6 @@ const styles = StyleSheet.create({
     width: '100%',
     height: '100%',
   },
-  // ✅ marginTop → 추가
   levelButtonContainer: {
     marginTop: scaleWidth(30),
     position: 'absolute',
@@ -371,14 +334,13 @@ const styles = StyleSheet.create({
     left: scaleWidth(111),
     alignItems: 'center',
   },
-  // ✅ marginTop → 추가
   tooltipContainer: {
     marginTop: scaleWidth(30),
+
     position: 'absolute',
     top: scaleWidth(46),
     alignItems: 'center',
   },
-  // ✅ marginTop → 추가
   levelButton: {
     marginTop: scaleWidth(30),
     flexDirection: 'row',
@@ -388,7 +350,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: scaleWidth(16),
     height: scaleWidth(42),
     borderRadius: BORDER_RADIUS[99],
-    gap: scaleWidth(14),
+    gap: scaleWidth(2),
     borderWidth: scaleWidth(3),
     borderColor: COLORS.white,
   },
@@ -550,16 +512,15 @@ const styles = StyleSheet.create({
   missionCardWrapper: {
     marginBottom: scaleWidth(16),
   },
-  // ✅ marginTop → 추가
   notificationButtonContainer: {
     marginTop: scaleWidth(30),
+
     position: 'absolute',
-    top: scaleWidth(0),
-    right: scaleWidth(0),
+    top: scaleWidth(20),
+    right: scaleWidth(20),
   },
   notificationButton: {
-    marginTop: scaleWidth(8),
-    marginHorizontal: scaleWidth(20),
+    marginTop: scaleWidth(30),
     width: scaleWidth(50),
     height: scaleWidth(50),
     borderRadius: BORDER_RADIUS[16],
