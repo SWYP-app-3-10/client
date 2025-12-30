@@ -117,7 +117,7 @@ const NotificationModal: React.FC<NotificationModalProps> = ({
               style={[
                 styles.modalContent,
                 {
-                  paddingTop: closeButton ? scaleWidth(23) : scaleWidth(40),
+                  paddingTop: closeButton ? scaleWidth(23) : scaleWidth(48),
                 },
               ]}
             >

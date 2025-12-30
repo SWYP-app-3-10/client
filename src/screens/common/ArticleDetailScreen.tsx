@@ -78,7 +78,11 @@ const ArticleDetailScreen = () => {
   // 화면 포커스 상태 추적
   useFocusEffect(
     useCallback(() => {
-      // 화면이 포커스될 때
+      // 화면이 포커스될 때 - 기존 타이머 정리 및 상태 리셋
+      if (timerRef.current) {
+        clearTimeout(timerRef.current);
+        timerRef.current = null;
+      }
       isScreenFocusedRef.current = true;
       hasEarnedExperienceRef.current = false;
       setHasEarnedExperience(false);
@@ -95,8 +99,13 @@ const ArticleDetailScreen = () => {
     }, []),
   );
 
-  // articleId가 변경되면 경험치 획득 상태 리셋
+  // articleId가 변경되면 경험치 획득 상태 리셋 및 타이머 정리
   useEffect(() => {
+    // 기존 타이머 정리
+    if (timerRef.current) {
+      clearTimeout(timerRef.current);
+      timerRef.current = null;
+    }
     hasEarnedExperienceRef.current = false;
     setHasEarnedExperience(false);
     isScreenFocusedRef.current = isFocused;
@@ -124,8 +133,13 @@ const ArticleDetailScreen = () => {
       timerRef.current = null;
     }
 
-    // article이 없거나 이미 경험치를 획득했으면 타이머 설정하지 않음
-    if (!article || hasEarnedExperienceRef.current) {
+    // article이 없거나 이미 경험치를 획득했거나 화면이 포커스되지 않았으면 타이머 설정하지 않음
+    if (
+      !article ||
+      hasEarnedExperienceRef.current ||
+      !isFocused ||
+      !isScreenFocusedRef.current
+    ) {
       return;
     }
 

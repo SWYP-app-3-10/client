@@ -11,6 +11,7 @@ import {
   ArticlePointModalContent,
   ArticlePointModalContentGet,
 } from '../components/ArticlePointModalContent';
+import { COLORS, Heading_16B } from '../styles/global';
 
 type ReturnTo = 'mission' | 'search';
 
@@ -42,10 +43,12 @@ export const useArticleNavigation = ({
         showModal({
           title: '새로운 글을 읽으시겠어요?',
           description: `사용 가능 포인트: ${points}p`,
+          descriptionColor: COLORS.gray600,
           closeButton: true,
           children: React.createElement(ArticlePointModalContent),
           primaryButton: {
             title: '새 글 읽기',
+            textStyle: Heading_16B,
             onPress: async () => {
               // 중복 호출 방지
               if (isProcessingRef.current) {
