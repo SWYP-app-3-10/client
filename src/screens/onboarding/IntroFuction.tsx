@@ -14,10 +14,9 @@ import {
 import { OnboardingStackParamList } from '../../navigation/types';
 import Header from '../../components/Header';
 import Spacer from '../../components/Spacer';
-import FastImage from 'react-native-fast-image';
 import ActivityIndicator from '../../components/ActivityIndicator';
 import { Body_15M } from '../../styles/typography';
-
+import { Intro_Fuction } from '../../icons/commonIcons/simpleImages';
 type NavigationProp = NativeStackNavigationProp<OnboardingStackParamList>;
 
 const IntroFuction = () => {
@@ -29,12 +28,13 @@ const IntroFuction = () => {
         <Header />
         <View style={{ paddingHorizontal: scaleWidth(20) }}>
           <Text style={[Heading_24EB_Round, { color: COLORS.black }]}>
-            캐릭터를 통해
-            {'\n'}나의 성장을 확인할 수 있어요
+            레벨업하며 성장하는
+            {'\n'}캐릭터를 확인해보세요
           </Text>
           <Spacer num={20} />
           <Text style={[Body_15M, { color: COLORS.gray600 }]}>
-            미션 화면에서 나의 관심분야 글을 확인할 수 있어요
+            활동을 통해 경험치를 모으면 레벨이 오르고 새 {'\n'}로운 캐릭터를
+            만날 수 있어요
           </Text>
           <Spacer num={47} />
         </View>
@@ -44,17 +44,7 @@ const IntroFuction = () => {
             paddingHorizontal: scaleWidth(41),
           }}
         >
-          <FastImage
-            source={{ uri: '' }}
-            aria-label="카드리스트"
-            resizeMode="contain"
-            style={{
-              borderWidth: 1,
-              height: scaleWidth(353),
-              borderColor: COLORS.gray400,
-              borderRadius: BORDER_RADIUS[20],
-            }}
-          />
+          <Intro_Fuction />
           <Spacer num={69} />
           <ActivityIndicator activeIndex={1} />
         </View>

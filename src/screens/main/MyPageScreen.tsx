@@ -21,8 +21,11 @@ import {
   Heading_18SB,
 } from '../../styles/global';
 
-import { useOnboardingStore, Difficulty } from '../../store/onboardingStore';
-import { getRecentLogin } from '../../services/authStorageService';
+import { useOnboardingStore } from '../../store/onboardingStore';
+import {
+  getRecentLogin,
+  RecentLoginInfo,
+} from '../../services/authStorageService';
 import { readArticlesMock } from '../../data/mock/readArticlesData';
 
 import Spacer from '../../components/Spacer';
@@ -40,10 +43,20 @@ import {
 
 import { RouteNames } from '../../../routes';
 
-import { CheckIcon, RightArrowIcon, TriangleIcon } from '../../icons';
+import {
+  AlarmIcon,
+  Check_2Icon,
+  RightArrowIcon,
+  TriangleIcon,
+} from '../../icons';
 import { useShowBottomSheetModal, useHideModal } from '../../store/modalStore';
 import LevelSelectionContent from '../../components/LevelSelectionContent';
 import IconButton from '../../components/IconButton';
+import {
+  InterestCategory,
+  InterestCategoryNames,
+  LevelCategory,
+} from '../../types/interests';
 
 // MyPageStack + RootStack 합친 네비게이션 타입
 type MyPageNavigationProp = CompositeNavigationProp<
@@ -52,7 +65,7 @@ type MyPageNavigationProp = CompositeNavigationProp<
 >;
 
 // 난이도 -> 레벨 표시 텍스트
-const getLevelText = (difficulty: string | null): string => {
+const getLevelText = (difficulty: LevelCategory | null): string => {
   switch (difficulty) {
     case LevelCategory.BEGINNER:
       return '초급';
@@ -64,12 +77,6 @@ const getLevelText = (difficulty: string | null): string => {
       return '초급';
   }
 };
-
-import {
-  InterestCategory,
-  InterestCategoryNames,
-  LevelCategory,
-} from '../../types/interests';
 
 // 카테고리 ID -> 이름 매핑 (ENUM 사용)
 const categoryNameMap: Record<string, string> = {
@@ -112,7 +119,7 @@ const TimelineGroup: React.FC<TimelineGroupProps> = ({
   const [showAll, setShowAll] = useState(false);
 
   const dashCount = Math.ceil(
-    (contentHeight - scaleWidth(10) - scaleWidth(6)) /
+    (contentHeight - scaleWidth(10) - scaleWidth(6) + scaleWidth(6)) /
       (scaleWidth(2.5) + scaleWidth(2.5)),
   );
 
@@ -247,7 +254,7 @@ const MyPageScreen = () => {
   const difficulty = useOnboardingStore(state => state.difficulty);
   const setDifficulty = useOnboardingStore(state => state.setDifficulty);
 
-  const [recentLogin, setRecentLogin] = useState<any>(null);
+  const [recentLogin, setRecentLogin] = useState<RecentLoginInfo | null>(null);
   const [selectedWeek, setSelectedWeek] = useState(0); // 현재 선택된 주 (0 = 현재 주)
 
   const showBottomSheetModal = useShowBottomSheetModal();
@@ -328,23 +335,26 @@ const MyPageScreen = () => {
 
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
-      <ScrollView
-        bounces={false}
-        style={styles.scrollView}
-        contentContainerStyle={styles.scrollContent}
-        showsVerticalScrollIndicator={false}
-      >
-        {/* 상단 설정 버튼 */}
-        <Button
-          title="설정"
-          variant="primary"
-          style={[styles.backButton, { marginHorizontal: scaleWidth(20) }]}
-          onPress={() => {
-            navigation.getParent()?.navigate(RouteNames.FULL_SCREEN_STACK, {
-              screen: RouteNames.SETTINGS,
-            });
+      <ScrollView bounces={false} showsVerticalScrollIndicator={false}>
+        <View
+          style={{
+            paddingHorizontal: scaleWidth(20),
+            height: scaleWidth(52),
+            alignItems: 'flex-end',
+            justifyContent: 'center',
           }}
-        />
+        >
+          <IconButton
+            onPress={() => {
+              navigation.getParent()?.navigate(RouteNames.FULL_SCREEN_STACK, {
+                screen: RouteNames.SETTINGS,
+              });
+            }}
+          >
+            <AlarmIcon />
+          </IconButton>
+        </View>
+        <Spacer num={20} />
 
         {/* 프로필 섹션 */}
         <View style={styles.profileSection}>
@@ -356,12 +366,12 @@ const MyPageScreen = () => {
               {recentLogin?.name || '뇌세포123456'}
             </Text>
             <Text style={styles.userEmail}>
-              {recentLogin?.userId || 'abcdef@naver.com'}
+              {recentLogin?.userEmail || 'abcdef@naver.com'}
             </Text>
           </View>
         </View>
 
-        <Spacer num={32} />
+        <Spacer num={41} />
 
         {/* 나의 관심분야 섹션 */}
         <View style={styles.section}>
@@ -393,12 +403,12 @@ const MyPageScreen = () => {
           </View>
         </View>
 
-        <Spacer num={32} />
+        <Spacer num={33} />
 
-        {/* 나의 레벨 섹션 */}
+        {/* 나의 난이도 섹션 */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>나의 레벨</Text>
-          <Spacer num={12} />
+          <Text style={styles.sectionTitle}>나의 난이도</Text>
+          <Spacer num={16} />
 
           <TouchableOpacity
             style={styles.levelButton}
@@ -406,7 +416,7 @@ const MyPageScreen = () => {
               showBottomSheetModal({
                 children: React.createElement(LevelSelectionContent, {
                   selectedLevel: difficulty,
-                  onSelect: (level: Difficulty) => {
+                  onSelect: (level: LevelCategory) => {
                     setDifficulty(level);
                     hideModal();
                   },
@@ -416,7 +426,7 @@ const MyPageScreen = () => {
             }}
           >
             <Text style={styles.levelText}>{getLevelText(difficulty)}</Text>
-            <CheckIcon color={COLORS.gray600} />
+            <Check_2Icon />
           </TouchableOpacity>
         </View>
 
@@ -486,12 +496,6 @@ const styles = StyleSheet.create({
     alignSelf: 'flex-end',
   },
 
-  scrollView: {
-    flex: 1,
-  },
-
-  scrollContent: {},
-
   // 프로필 섹션
   profileSection: {
     flexDirection: 'row',
@@ -499,7 +503,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: scaleWidth(20),
   },
   profileImageContainer: {
-    marginRight: scaleWidth(20),
+    marginRight: scaleWidth(16),
   },
   profileImagePlaceholder: {
     width: scaleWidth(90),
@@ -513,7 +517,6 @@ const styles = StyleSheet.create({
   userId: {
     ...Heading_18EB_Round,
     color: COLORS.black,
-    marginBottom: scaleWidth(4),
   },
   userEmail: {
     ...Body_16M,
@@ -537,23 +540,23 @@ const styles = StyleSheet.create({
 
   // 관심분야
   editButton: {
-    ...Body_16SB,
+    ...Body_16M,
     color: COLORS.puple.main,
   },
   interestTags: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: scaleWidth(8),
+    gap: scaleWidth(12),
   },
   interestTag: {
-    paddingHorizontal: scaleWidth(16),
+    paddingHorizontal: scaleWidth(12),
     paddingVertical: scaleWidth(8),
-    borderRadius: BORDER_RADIUS[16],
+    borderRadius: BORDER_RADIUS[99],
     backgroundColor: COLORS.gray100,
   },
   interestTagText: {
     ...Body_16M,
-    color: COLORS.black,
+    color: COLORS.gray700,
   },
   emptyText: {
     ...Caption_14R,
@@ -565,7 +568,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    borderRadius: BORDER_RADIUS[16],
+    borderRadius: BORDER_RADIUS[99],
     backgroundColor: COLORS.gray100,
     width: scaleWidth(71),
     height: scaleWidth(40),

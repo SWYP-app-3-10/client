@@ -11,24 +11,26 @@ import {
   ScrollView,
   Dimensions,
   ActivityIndicator,
-  Alert,
   StyleSheet,
+  BackHandler,
+  Platform,
+  NativeSyntheticEvent,
+  NativeScrollEvent,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {
   COLORS,
   scaleWidth,
-  Heading_20EB_Round,
-  Body_16R,
+  Heading_24EB_Round,
   BORDER_RADIUS,
+  Body_16M,
+  Heading_20EB_Round,
 } from '../../styles/global';
 import Spacer from '../../components/Spacer';
 import { useMissions } from '../../hooks/useMissions';
 import { useArticles } from '../../hooks/useArticles';
-import { clearAllAuthData } from '../../services/authService';
-import { useOnboardingStore } from '../../store/onboardingStore';
-import { Button, MissionCard, ArticleCard } from '../../components';
+import { MissionCard, ArticleCard } from '../../components';
 import { useNavigation } from '@react-navigation/native';
 import { useArticleNavigation } from '../../hooks/useArticleNavigation';
 import {
@@ -37,7 +39,7 @@ import {
 } from '../../navigation/types';
 import { RouteNames } from '../../../routes';
 import { Article } from '../../data/mock/missionData';
-import { useShowModal } from '../../store/modalStore';
+import { useShowModal, useShowToastModal } from '../../store/modalStore';
 import { usePointStore } from '../../store/pointStore';
 import { ExperienceModalContent } from '../../components/ArticlePointModalContent';
 
@@ -46,11 +48,18 @@ import {
   DAILY_ATTENDANCE_POINT,
 } from '../../config/rewards';
 import { useExperienceStore } from '../../store/experienceStore';
+import IconButton from '../../components/IconButton';
+import { AlarmIcon } from '../../icons';
 
-// 상수
-const SCROLL_INITIAL_DELAY = 100;
+const { width: SCREEN_WIDTH } = Dimensions.get('window');
+const WIDTH_EDGE = scaleWidth(353); // 처음과 마지막 카드 너비
+const WIDTH_MID = scaleWidth(348); // 중간 카드 너비
+const GAP = scaleWidth(10); // 카드 사이 간격
 const SCROLL_EVENT_THROTTLE = 16;
-const DAILY_MISSION_ENTRY_KEY = '@daily_mission_entry'; // 날짜 기반으로 매일 체크
+const DAILY_MISSION_ENTRY_KEY = '@daily_mission_entry';
+
+// 첫 번째 카드를 중앙에 배치하기 위한 좌우 여백
+const SIDE_SPACING = (SCREEN_WIDTH - WIDTH_EDGE) / 2;
 
 export {
   QUIZ_CORRECT_EXPERIENCE,
@@ -60,42 +69,66 @@ export {
 } from '../../config/rewards';
 
 const MissionScreen = () => {
-  const screenWidth = Dimensions.get('window').width;
   const scrollViewRef = useRef<ScrollView>(null);
   const [currentIndex, setCurrentIndex] = useState(0);
-  const resetOnboarding = useOnboardingStore(state => state.resetOnboarding);
   const navigation =
     useNavigation<MainTabNavigationProp<MissionStackParamList>>();
   const { handleArticlePress } = useArticleNavigation({ returnTo: 'mission' });
+
   const showModal = useShowModal();
+  const showToastModal = useShowToastModal();
   const { addPoints } = usePointStore();
   const { addExperience } = useExperienceStore();
   const hasCheckedDailyEntryRef = useRef(false);
 
-  // 개발용: 로그인 정보 초기화
-  const handleClearLogin = useCallback(async () => {
-    Alert.alert(
-      '로그인 초기화',
-      '모든 로그인 및 온보딩 정보를 삭제하시겠습니까?',
-      [
-        {
-          text: '취소',
-          style: 'cancel',
-        },
-        {
-          text: '확인',
-          onPress: async () => {
-            await clearAllAuthData();
-            await resetOnboarding();
-            Alert.alert(
-              '완료',
-              '로그인 정보가 초기화되었습니다.\n앱을 재시작하세요.',
-            );
-          },
-        },
-      ],
-    );
-  }, [resetOnboarding]);
+  // 데이터 로딩
+  const {
+    data: missions = [],
+    isLoading: missionsLoading,
+    error: missionsError,
+  } = useMissions();
+  const {
+    data: articles = [],
+    isLoading: articlesLoading,
+    error: articlesError,
+  } = useArticles();
+
+  /**
+   * 각 카드가 화면 중앙에 오기 위한 스크롤 위치(Offset) 수동 계산
+   */
+  const snapOffsets = useMemo(() => {
+    const offsets: number[] = [];
+    let currentPos = 0;
+
+    missions.forEach((_, index) => {
+      const isEdge = index === 0 || index === missions.length - 1;
+      const cardWidth = isEdge ? WIDTH_EDGE : WIDTH_MID;
+
+      const offset = currentPos;
+      offsets.push(offset);
+
+      currentPos += cardWidth + GAP;
+    });
+    return offsets;
+  }, [missions]);
+
+  // 스크롤 시 인덱스 업데이트
+  const handleScroll = useCallback(
+    (event: NativeSyntheticEvent<NativeScrollEvent>) => {
+      const scrollPosition = event.nativeEvent.contentOffset.x;
+
+      // 현재 스크롤 위치에서 가장 가까운 오프셋의 인덱스 찾기
+      const index = snapOffsets.findIndex((offset, i) => {
+        const nextOffset = snapOffsets[i + 1] || Infinity;
+        return scrollPosition < (offset + nextOffset) / 2;
+      });
+
+      if (index !== -1 && index !== currentIndex) {
+        setCurrentIndex(index);
+      }
+    },
+    [snapOffsets, currentIndex],
+  );
 
   const handleNavigateToNotification = useCallback(() => {
     navigation.navigate(RouteNames.FULL_SCREEN_STACK, {
@@ -103,7 +136,6 @@ const MissionScreen = () => {
     });
   }, [navigation]);
 
-  // 기사 클릭 처리 (커스텀 훅 사용)
   const handleArticlePressWrapper = useCallback(
     (article: Article) => {
       handleArticlePress(article.id);
@@ -111,136 +143,61 @@ const MissionScreen = () => {
     [handleArticlePress],
   );
 
-  // React Query hooks
-  const {
-    data: missions = [],
-    isLoading: missionsLoading,
-    error: missionsError,
-  } = useMissions();
-
-  const {
-    data: articles = [],
-    isLoading: articlesLoading,
-    error: articlesError,
-  } = useArticles();
-
-  const circularMissions = useMemo(() => {
-    if (missions.length === 0) {
-      return [];
-    }
-    return [missions[missions.length - 1], ...missions, missions[0]];
-  }, [missions]);
-
-  // 매일 첫 진입 시 포인트 획득 모달 표시
+  // 안드로이드 뒤로가기 종료 처리
   useEffect(() => {
-    // 중복 실행 방지
-    if (hasCheckedDailyEntryRef.current) {
-      return;
-    }
+    if (Platform.OS !== 'android') return;
+    const backAction = () => {
+      showToastModal({
+        message: "'뒤로' 버튼을 한번 더 누르시면 종료됩니다.",
+        duration: 2000,
+      });
+      return true;
+    };
+    const backHandler = BackHandler.addEventListener(
+      'hardwareBackPress',
+      backAction,
+    );
+    return () => backHandler.remove();
+  }, [showToastModal]);
 
+  // 일일 출석 체크
+  useEffect(() => {
+    if (hasCheckedDailyEntryRef.current) return;
     const checkDailyEntry = async () => {
       try {
-        // 오늘 날짜 (YYYY-MM-DD 형식)
         const today = new Date().toISOString().split('T')[0];
         const lastEntryDate = await AsyncStorage.getItem(
           DAILY_MISSION_ENTRY_KEY,
         );
-
-        // 오늘 아직 모달을 보지 않았다면
         if (lastEntryDate !== today) {
-          // 먼저 날짜 저장하여 중복 방지
           await AsyncStorage.setItem(DAILY_MISSION_ENTRY_KEY, today);
           hasCheckedDailyEntryRef.current = true;
-
-          // 포인트와 경험치 추가
           await Promise.all([
             addPoints(DAILY_ATTENDANCE_POINT),
             addExperience(DAILY_ATTENDANCE_EXPERIENCE),
           ]);
-
-          // 모달 표시
           showModal({
             title: '포인트 & 경험치 획득!',
+            titleStyle: {
+              ...Heading_20EB_Round,
+            },
+            titleDescriptionGapSize: scaleWidth(20),
             children: React.createElement(ExperienceModalContent, {
               point: true,
               daily: true,
             }),
-            primaryButton: {
-              title: '확인',
-              onPress: () => {
-                // 모달 닫기는 자동으로 처리됨
-              },
-            },
+            primaryButton: { title: '확인', onPress: () => {} },
           });
         } else {
-          // 이미 오늘 체크했으면 ref만 설정
           hasCheckedDailyEntryRef.current = true;
         }
       } catch (error) {
         console.error('일일 진입 체크 실패:', error);
-        hasCheckedDailyEntryRef.current = false; // 에러 시 다시 시도 가능하도록
       }
     };
-
     checkDailyEntry();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []); // 의존성 배열 비워서 한 번만 실행
-  // AsyncStorage.clear();
-  // 초기 위치를 첫 번째 실제 아이템으로 설정
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      scrollViewRef.current?.scrollTo({
-        x: screenWidth,
-        animated: false,
-      });
-    }, SCROLL_INITIAL_DELAY);
+  }, [addExperience, addPoints, showModal]);
 
-    return () => clearTimeout(timer);
-  }, [screenWidth]);
-
-  const handleScroll = useCallback(
-    (event: any) => {
-      const scrollPosition = event.nativeEvent.contentOffset.x;
-      const index = Math.round(scrollPosition / screenWidth);
-
-      // 복제본을 제외한 실제 인덱스 계산
-      if (index === 0) {
-        setCurrentIndex(missions.length - 1);
-      } else if (index === circularMissions.length - 1) {
-        setCurrentIndex(0);
-      } else {
-        setCurrentIndex(index - 1);
-      }
-    },
-    [screenWidth, missions.length, circularMissions.length],
-  );
-
-  const handleMomentumScrollEnd = useCallback(
-    (event: any) => {
-      const scrollPosition = event.nativeEvent.contentOffset.x;
-      const index = Math.round(scrollPosition / screenWidth);
-
-      // 첫 번째 복제본에 도달하면 마지막 실제 아이템으로 점프
-      if (index === 0 && missions.length > 0) {
-        scrollViewRef.current?.scrollTo({
-          x: screenWidth * missions.length,
-          animated: false,
-        });
-        setCurrentIndex(missions.length - 1);
-      }
-      // 마지막 복제본에 도달하면 첫 번째 실제 아이템으로 점프
-      else if (index === circularMissions.length - 1 && missions.length > 0) {
-        scrollViewRef.current?.scrollTo({
-          x: screenWidth,
-          animated: false,
-        });
-        setCurrentIndex(0);
-      }
-    },
-    [screenWidth, missions.length, circularMissions.length],
-  );
-
-  // 로딩 상태
   if (missionsLoading || articlesLoading) {
     return (
       <SafeAreaView style={missionScreenStyles.container}>
@@ -251,84 +208,71 @@ const MissionScreen = () => {
     );
   }
 
-  // 에러 상태
-  if (missionsError || articlesError) {
+  if (missionsError || articlesError || missions.length === 0) {
     return (
       <SafeAreaView style={missionScreenStyles.container}>
         <View style={missionScreenStyles.errorContainer}>
-          <Text>데이터를 불러오는 중 오류가 발생했습니다.</Text>
+          <Text>데이터를 불러오는 중 오류가 발생했거나 데이터가 없습니다.</Text>
         </View>
       </SafeAreaView>
     );
   }
 
-  // 데이터가 없을 때
-  if (missions.length === 0) {
-    return (
-      <SafeAreaView style={missionScreenStyles.container}>
-        <View style={missionScreenStyles.errorContainer} />
-      </SafeAreaView>
-    );
-  }
-
   return (
-    <SafeAreaView style={missionScreenStyles.container}>
+    <SafeAreaView style={missionScreenStyles.container} edges={['top']}>
       <ScrollView
-        style={missionScreenStyles.scrollView}
-        contentContainerStyle={missionScreenStyles.scrollContent}
+        contentContainerStyle={{ flex: 1 }}
         showsVerticalScrollIndicator={false}
       >
-        {/* 개발용: 로그인 초기화 버튼 */}
-        {/* {__DEV__ && ( */}
-        <Button
-          title="로그인 초기화"
-          onPress={handleClearLogin}
-          variant="ghost"
-          style={missionScreenStyles.clearLoginButton}
-        />
-        {/* )} */}
         {/* 헤더 */}
-        <Button
-          title="알림 페이지로"
-          variant="primary"
-          style={missionScreenStyles.notificationButton}
-          onPress={handleNavigateToNotification}
-        />
+        <View style={missionScreenStyles.notificationButtonContainer}>
+          <View style={missionScreenStyles.notificationButton} />
+          <IconButton onPress={handleNavigateToNotification}>
+            <AlarmIcon />
+          </IconButton>
+        </View>
         <View style={missionScreenStyles.header}>
           <View style={missionScreenStyles.headerLeft}>
             <Text style={missionScreenStyles.headerTitle}>오늘의 미션</Text>
             <Text style={missionScreenStyles.headerDescription}>
-              오늘의 미션을 통해 새로운 지식을 탐험하고
-              {'\n'}문해력을 키워보세요!
+              오늘의 미션을 통해 새로운 지식을 탐험하고{'\n'}문해력을
+              키워보세요!
             </Text>
           </View>
         </View>
 
         <Spacer num={24} />
 
-        {/* 미션 진행 카드 캐러셀 */}
+        {/* 미션 진행 카드 캐러셀 (무한스크롤 제거 버전) */}
         <View>
           <ScrollView
             ref={scrollViewRef}
             horizontal
-            pagingEnabled
             showsHorizontalScrollIndicator={false}
             onScroll={handleScroll}
-            onMomentumScrollEnd={handleMomentumScrollEnd}
             scrollEventThrottle={SCROLL_EVENT_THROTTLE}
             decelerationRate="fast"
+            snapToOffsets={snapOffsets}
+            snapToAlignment="start"
+            disableIntervalMomentum={true}
+            contentContainerStyle={{
+              paddingHorizontal: SIDE_SPACING,
+            }}
           >
-            {circularMissions.map((mission, index) => (
-              <View
-                key={`${mission.id}-${index}`}
-                style={[
-                  missionScreenStyles.missionCardContainer,
-                  { width: screenWidth },
-                ]}
-              >
-                <MissionCard mission={mission} />
-              </View>
-            ))}
+            {missions.map((mission, index) => {
+              const isEdge = index === 0 || index === missions.length - 1;
+              return (
+                <View
+                  key={mission.id}
+                  style={{
+                    width: isEdge ? WIDTH_EDGE : WIDTH_MID,
+                    marginRight: index === missions.length - 1 ? 0 : GAP,
+                  }}
+                >
+                  <MissionCard mission={mission} />
+                </View>
+              );
+            })}
           </ScrollView>
         </View>
 
@@ -336,7 +280,7 @@ const MissionScreen = () => {
 
         {/* 캐러셀 인디케이터 */}
         <View style={missionScreenStyles.carouselIndicators}>
-          {missions.map((_mission: unknown, index: number) => (
+          {missions.map((_, index) => (
             <View
               key={index}
               style={[
@@ -369,45 +313,39 @@ export const missionScreenStyles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: COLORS.white,
+    paddingTop: scaleWidth(8),
   },
-  scrollView: {
-    flex: 1,
-  },
-  scrollContent: {
-    paddingTop: scaleWidth(20),
-    paddingBottom: scaleWidth(100), // 하단 네비게이션 바 공간
+  notificationButtonContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: scaleWidth(20),
+    height: scaleWidth(52),
   },
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'flex-start',
     paddingHorizontal: scaleWidth(20),
+    paddingTop: scaleWidth(32),
   },
   headerLeft: {
     flex: 1,
     paddingRight: scaleWidth(12),
   },
-  clearLoginButton: {
-    paddingHorizontal: scaleWidth(8),
-    paddingVertical: scaleWidth(4),
-  },
   notificationButton: {
-    width: scaleWidth(50),
-    height: scaleWidth(50),
-    alignSelf: 'flex-end',
+    width: scaleWidth(112),
+    height: scaleWidth(52),
+    backgroundColor: COLORS.placeholder,
   },
   headerTitle: {
-    ...Heading_20EB_Round,
+    ...Heading_24EB_Round,
     color: COLORS.black,
     marginBottom: scaleWidth(4),
   },
   headerDescription: {
-    ...Body_16R,
-    color: COLORS.gray700,
-    lineHeight: scaleWidth(24),
-  },
-  missionCardContainer: {
-    paddingHorizontal: scaleWidth(20),
+    ...Body_16M,
+    color: COLORS.gray600,
   },
   carouselIndicators: {
     flexDirection: 'row',
@@ -428,6 +366,8 @@ export const missionScreenStyles = StyleSheet.create({
   },
   articleList: {
     gap: scaleWidth(24),
+    paddingHorizontal: scaleWidth(20),
+    paddingBottom: scaleWidth(50),
   },
   loadingContainer: {
     flex: 1,

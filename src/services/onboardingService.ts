@@ -43,9 +43,10 @@ export const getOnboardingStatus = async (): Promise<OnboardingData> => {
       ONBOARDING_STEP_KEY,
     )) as OnboardingStep | null;
     const interestsStr = await AsyncStorage.getItem(INTERESTS_KEY);
-    const difficulty = (await AsyncStorage.getItem(
-      DIFFICULTY_KEY,
-    )) as LevelCategory | null;
+    const difficultyStr = await AsyncStorage.getItem(DIFFICULTY_KEY);
+    const difficulty: LevelCategory | null = difficultyStr
+      ? (JSON.parse(difficultyStr) as LevelCategory)
+      : null;
 
     const interests: InterestsData | null = interestsStr
       ? JSON.parse(interestsStr)

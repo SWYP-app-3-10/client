@@ -117,7 +117,8 @@ const SettingScreen = () => {
           title: '알림을 받으시겠어요?',
           description:
             '알림을 켜두면, 하루 두 번 문해력 루틴을 \n잊지 않고 챙길 수 있어요!',
-
+          descriptionColor: COLORS.gray600,
+          // ✅ LoginScreen 알림 모달과 동일한 스타일
           primaryButton: {
             title: '알림 받을래요',
             textStyle: { ...Heading_16B, color: COLORS.white },

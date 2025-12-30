@@ -5,9 +5,11 @@ import {
   COLORS,
   scaleWidth,
   BORDER_RADIUS,
-  Heading_18B,
-  Body_16M,
   Caption_12SB,
+  Caption_14R,
+  Heading_16EB_Round,
+  Body_16SB,
+  Body_16M,
 } from '../styles/global';
 import Spacer from './Spacer';
 import { Mission } from '../data/mock/missionData';
@@ -51,11 +53,17 @@ const MissionCard = React.memo(
               <Text
                 style={[
                   styles.progressStatus,
-                  myPage && [
-                    isCompleted
-                      ? { color: COLORS.gray800 }
-                      : { color: COLORS.puple.main },
-                  ],
+                  myPage
+                    ? [
+                        isCompleted
+                          ? { color: COLORS.gray800 }
+                          : { color: COLORS.puple.main },
+                      ]
+                    : [
+                        isCompleted
+                          ? { color: COLORS.puple[2] }
+                          : { color: COLORS.white },
+                      ],
                 ]}
               >
                 {mission.status}
@@ -70,6 +78,7 @@ const MissionCard = React.memo(
             <View
               style={[
                 styles.progressBarContainer,
+                isNotStarted && styles.progressBarContainerNotStarted,
                 isCompleted && styles.progressBarContainerCompleted,
                 myPage && styles.progressBarContainerMyPageCompleted,
               ]}
@@ -124,9 +133,7 @@ const MissionCard = React.memo(
             >
               {cardContent}
             </View>
-            {/* 보더는 opacity 적용 안 됨 */}
             <View style={styles.missionCardWhiteBorder} />
-            {/* 자물쇠 아이콘은 opacity 적용 안 됨 */}
             {isNotStarted && (
               <View style={styles.lockIconOverlay}>
                 <LockIcon />
@@ -149,7 +156,6 @@ const MissionCard = React.memo(
                 {cardContent}
               </LinearGradient>
             </View>
-            {/* 자물쇠 아이콘은 opacity 적용 안 됨 */}
             {isNotStarted && (
               <View style={styles.lockIconOverlay}>
                 <LockIcon />
@@ -166,8 +172,8 @@ MissionCard.displayName = 'MissionCard';
 
 const styles = StyleSheet.create({
   missionCard: {
+    width: scaleWidth(348),
     borderRadius: BORDER_RADIUS[20],
-
     position: 'relative',
   },
   missionCardGradient: {
@@ -178,7 +184,7 @@ const styles = StyleSheet.create({
   missionCardWhite: {
     borderRadius: BORDER_RADIUS[16],
     paddingHorizontal: scaleWidth(20),
-    paddingVertical: scaleWidth(24),
+    paddingVertical: scaleWidth(16),
     backgroundColor: COLORS.white,
   },
   missionCardWhiteBorder: {
@@ -193,7 +199,7 @@ const styles = StyleSheet.create({
     pointerEvents: 'none',
   },
   missionCardTitle: {
-    ...Heading_18B,
+    ...Heading_16EB_Round,
     color: COLORS.white,
   },
   missionCardTitleCompleted: {
@@ -227,20 +233,19 @@ const styles = StyleSheet.create({
   progressStatusContainer: {
     backgroundColor: COLORS.puple[5],
     borderRadius: BORDER_RADIUS[30],
-    width: scaleWidth(50),
+    paddingHorizontal: scaleWidth(8),
     height: scaleWidth(26),
     justifyContent: 'center',
     alignItems: 'center',
   },
   progressStatus: {
     ...Caption_12SB,
-    color: COLORS.white,
   },
   progressTextContainer: {
     justifyContent: 'center',
   },
   progressText: {
-    ...Body_16M,
+    ...Caption_14R,
     color: COLORS.white,
     textAlign: 'center',
   },
@@ -248,9 +253,11 @@ const styles = StyleSheet.create({
     color: COLORS.puple.completed, // 완료 상태 진행률 텍스트 색상
   },
   missionCardTitleMyPage: {
+    ...Body_16SB,
     color: COLORS.black,
   },
   progressTextMyPage: {
+    ...Body_16M,
     color: COLORS.black,
   },
   progressStatusContainerMyPageInProgress: {
@@ -261,6 +268,9 @@ const styles = StyleSheet.create({
   },
   progressStatusMyPage: {
     color: COLORS.puple.main,
+  },
+  progressBarContainerNotStarted: {
+    backgroundColor: COLORS.white,
   },
   progressBarContainerCompleted: {
     backgroundColor: COLORS.gray400,

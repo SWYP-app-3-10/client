@@ -6,7 +6,7 @@ import {
 import { StyleProp, TextStyle } from 'react-native';
 import { ReactNode } from 'react';
 
-export type ModalType = 'notification' | 'bottomSheet';
+export type ModalType = 'notification' | 'bottomSheet' | 'toast';
 
 interface NotificationModalState {
   type: 'notification';
@@ -34,7 +34,18 @@ interface BottomSheetModalState {
   paddingHorizontal?: number;
 }
 
-type ModalState = NotificationModalState | BottomSheetModalState;
+interface ToastModalState {
+  type: 'toast';
+  visible: boolean;
+  message: string;
+  duration?: number;
+  onClose?: () => void;
+}
+
+type ModalState =
+  | NotificationModalState
+  | BottomSheetModalState
+  | ToastModalState;
 
 interface ModalStore {
   modalState: ModalState;
@@ -42,6 +53,7 @@ interface ModalStore {
   showBottomSheetModal: (
     config: Omit<BottomSheetModalState, 'visible' | 'type'>,
   ) => void;
+  showToastModal: (config: Omit<ToastModalState, 'visible' | 'type'>) => void;
   hideModal: () => void;
 }
 
@@ -71,6 +83,14 @@ export const useModalStore = create<ModalStore>(set => ({
         visible: true,
       } as BottomSheetModalState,
     }),
+  showToastModal: config =>
+    set({
+      modalState: {
+        ...config,
+        type: 'toast',
+        visible: true,
+      } as ToastModalState,
+    }),
   hideModal: () =>
     set(state => ({
       modalState: {
@@ -86,6 +106,10 @@ export const useShowModal = () => useModalStore(state => state.showModal);
 // 편의 훅: showBottomSheetModal만 필요한 경우
 export const useShowBottomSheetModal = () =>
   useModalStore(state => state.showBottomSheetModal);
+
+// 편의 훅: showToastModal만 필요한 경우
+export const useShowToastModal = () =>
+  useModalStore(state => state.showToastModal);
 
 // 편의 훅: hideModal만 필요한 경우
 export const useHideModal = () => useModalStore(state => state.hideModal);

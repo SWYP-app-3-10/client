@@ -13,9 +13,9 @@ import {
 } from '../../styles/global';
 import { OnboardingStackParamList } from '../../navigation/types';
 import Spacer from '../../components/Spacer';
-import FastImage from 'react-native-fast-image';
 import ActivityIndicator from '../../components/ActivityIndicator';
 import { Body_15M } from '../../styles/typography';
+import { Intro_CardList } from '../../icons/commonIcons/simpleImages';
 
 type NavigationProp = NativeStackNavigationProp<OnboardingStackParamList>;
 
@@ -28,11 +28,13 @@ const IntroCardList = () => {
         <View style={{ paddingHorizontal: scaleWidth(20) }}>
           <Spacer num={48} />
           <Text style={[Heading_24EB_Round, { color: COLORS.black }]}>
-            관심 있는 분야의 글을{'\n'}맞춤으로 추천받아요
+            미션을 확인하고 관심 있는
+            {'\n'}분야의 글을 읽어보세요
           </Text>
           <Spacer num={20} />
           <Text style={[Body_15M, { color: COLORS.gray600 }]}>
-            미션 화면에서 나의 관심분야 글을 확인할 수 있어요
+            관심 있는 분야의 글을 추천받고, 오늘의 미션을
+            {'\n'}수행하며 경험치와 포인트를 모아보세요
           </Text>
           <Spacer num={47} />
         </View>
@@ -41,17 +43,7 @@ const IntroCardList = () => {
             paddingHorizontal: scaleWidth(41),
           }}
         >
-          <FastImage
-            source={{ uri: '' }}
-            aria-label="카드리스트"
-            resizeMode="contain"
-            style={{
-              borderWidth: 1,
-              height: scaleWidth(353),
-              borderColor: COLORS.gray400,
-              borderRadius: BORDER_RADIUS[20],
-            }}
-          />
+          <Intro_CardList />
           <Spacer num={69} />
 
           <ActivityIndicator activeIndex={0} />

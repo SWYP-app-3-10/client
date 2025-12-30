@@ -51,6 +51,7 @@ export const COLORS = {
   // 메인
   puple: {
     main: '#6F44F5',
+    2: '#EDECFC',
     3: '#F6F4FE',
     5: '#9b7bFF',
     light: '#845DFF',
@@ -106,10 +107,12 @@ export {
   Heading_18EB_Round,
   Heading_18SB,
   Heading_16B,
+  Heading_16EB_Round,
   Body_18M,
   Body_16SB,
   Body_16M,
   Body_16R,
+  Body_15M,
   Caption_14R,
   Caption_12SB,
   Caption_12M,

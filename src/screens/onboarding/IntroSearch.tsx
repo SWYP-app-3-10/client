@@ -14,10 +14,9 @@ import {
 import { OnboardingStackParamList } from '../../navigation/types';
 import Header from '../../components/Header';
 import Spacer from '../../components/Spacer';
-import FastImage from 'react-native-fast-image';
 import ActivityIndicator from '../../components/ActivityIndicator';
 import { Body_15M } from '../../styles/typography';
-
+import { Intro_Search } from '../../icons/commonIcons/simpleImages';
 type NavigationProp = NativeStackNavigationProp<OnboardingStackParamList>;
 
 const IntroSearch = () => {
@@ -29,12 +28,13 @@ const IntroSearch = () => {
       <View style={{ flex: 1 }}>
         <View style={{ paddingHorizontal: scaleWidth(20) }}>
           <Text style={[Heading_24EB_Round, { color: COLORS.black }]}>
-            더 다양한 분야의
-            {'\n'}글을 읽어볼 수 있어요
+            다양한 주제의 글을 탐색하며
+            {'\n'}낯선 글에 도전해보세요
           </Text>
           <Spacer num={20} />
           <Text style={[Body_15M, { color: COLORS.gray600 }]}>
-            미션 화면에서 나의 관심분야 글을 확인할 수 있어요
+            관심 있는 주제부터 새로운 분야까지,
+            {'\n'}다양한 글을 탐색해보세요
           </Text>
           <Spacer num={86} />
         </View>
@@ -44,17 +44,7 @@ const IntroSearch = () => {
             paddingHorizontal: scaleWidth(41),
           }}
         >
-          <FastImage
-            source={{ uri: '' }}
-            aria-label="카드리스트"
-            resizeMode="contain"
-            style={{
-              borderWidth: 1,
-              height: scaleWidth(276),
-              borderColor: COLORS.gray400,
-              borderRadius: BORDER_RADIUS[20],
-            }}
-          />
+          <Intro_Search />
           <Spacer num={124} />
           <ActivityIndicator activeIndex={2} />
         </View>

@@ -24,18 +24,23 @@ const Header = ({
   const navigation = useNavigation();
 
   const renderLeft = () => {
-    if (leftIcon) return leftIcon;
+    if (leftIcon) {
+      return leftIcon;
+    }
+
+    const handleGoBack = () => {
+      if (goBackAction) {
+        goBackAction();
+        return;
+      }
+
+      if (navigation.canGoBack?.()) {
+        navigation.goBack();
+      }
+    };
 
     return (
-      <IconButton
-        onPress={() => {
-          if (goBackAction) {
-            goBackAction();
-            return;
-          }
-          navigation.goBack();
-        }}
-      >
+      <IconButton onPress={handleGoBack}>
         <Ic_backIcon color={iconColor ?? COLORS.black} />
       </IconButton>
     );

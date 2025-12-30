@@ -13,22 +13,22 @@ import {
   saveDifficulty as saveDifficultyService,
   resetOnboarding as resetOnboardingService,
   type OnboardingStep,
-  type Difficulty,
   type InterestsData,
 } from '../services/onboardingService';
+import { LevelCategory } from '../types/interests';
 
 // 타입 재export (외부에서 사용 가능하도록)
-export type { OnboardingStep, Difficulty, InterestsData };
+export type { OnboardingStep, InterestsData };
 
 interface OnboardingStore {
   isOnboardingCompleted: boolean;
   currentStep: OnboardingStep;
   interests: InterestsData | null;
-  difficulty: Difficulty | null;
+  difficulty: LevelCategory | null;
   completeOnboarding: () => Promise<void>;
   setOnboardingStep: (step: OnboardingStep) => Promise<void>;
   setInterests: (interests: InterestsData) => Promise<void>;
-  setDifficulty: (difficulty: Difficulty) => Promise<void>;
+  setDifficulty: (difficulty: LevelCategory) => Promise<void>;
   resetOnboarding: () => Promise<void>;
   loadOnboardingStatus: () => Promise<void>;
 }
@@ -63,7 +63,7 @@ export const useOnboardingStore = create<OnboardingStore>(set => ({
       console.error('관심분야 저장 실패:', error);
     }
   },
-  setDifficulty: async (difficulty: Difficulty) => {
+  setDifficulty: async (difficulty: LevelCategory) => {
     try {
       await saveDifficultyService(difficulty);
       set({ difficulty });

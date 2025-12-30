@@ -1,16 +1,13 @@
 import React from 'react';
-import { View, Text, StyleSheet, ActivityIndicator } from 'react-native';
-import { AppleButton } from '@invertase/react-native-apple-authentication';
+import { View, Text, StyleSheet } from 'react-native';
 import Button from './Button';
-import {
-  COLORS,
-  scaleWidth,
-  BORDER_RADIUS,
-  Heading_18EB_Round,
-} from '../styles/global';
-import { Tooltip_RecentIcon } from '../icons';
+import { COLORS, scaleWidth, BORDER_RADIUS } from '../styles/global';
+import { AppleIcon, GoogleIcon, Tooltip_RecentIcon } from '../icons';
+import { KakaoIcon } from '../icons/commonIcons/commonIcons';
+import { NaverIcon } from '../icons/commonIcons/commonIcons';
 import { SocialLoginProvider } from '../services/socialLoginService';
 import { RecentLoginInfo } from '../services/authStorageService';
+import Spacer from './Spacer';
 
 interface SocialLoginButtonProps {
   provider: SocialLoginProvider;
@@ -26,21 +23,24 @@ const SocialLoginButton: React.FC<SocialLoginButtonProps> = ({
   recentLogin,
 }) => {
   const showTooltip = recentLogin?.provider === provider;
-  const isLoading = loading === provider;
 
   const renderButton = () => {
     switch (provider) {
       case 'apple':
         return (
-          <>
-            <AppleButton
-              buttonType={AppleButton.Type.SIGN_IN}
-              buttonStyle={AppleButton.Style.BLACK}
-              cornerRadius={BORDER_RADIUS[16]}
-              style={styles.appleButton}
-              onPress={onPress}
-            />
-          </>
+          <Button
+            variant="outline"
+            style={styles.appleButton}
+            onPress={onPress}
+            disabled={loading !== null}
+          >
+            <AppleIcon />
+            <Spacer horizontal num={8} />
+
+            <Text style={[styles.socialButtonText, { color: COLORS.white }]}>
+              애플 계정으로 로그인
+            </Text>
+          </Button>
         );
       case 'google':
         return (
@@ -50,13 +50,9 @@ const SocialLoginButton: React.FC<SocialLoginButtonProps> = ({
             onPress={onPress}
             disabled={loading !== null}
           >
-            {isLoading ? (
-              <ActivityIndicator color={COLORS.black} />
-            ) : (
-              <Text style={styles.socialButtonText}>
-                Google 계정으로 로그인
-              </Text>
-            )}
+            <GoogleIcon />
+            <Spacer horizontal num={8} />
+            <Text style={styles.socialButtonText}>구글 계정으로 로그인</Text>
           </Button>
         );
       case 'kakao':
@@ -67,13 +63,11 @@ const SocialLoginButton: React.FC<SocialLoginButtonProps> = ({
             onPress={onPress}
             disabled={loading !== null}
           >
-            {isLoading ? (
-              <ActivityIndicator color={COLORS.black} />
-            ) : (
-              <Text style={[styles.socialButtonText, styles.kakaoButtonText]}>
-                카카오로 시작하기
-              </Text>
-            )}
+            <KakaoIcon />
+            <Spacer horizontal num={8} />
+            <Text style={[styles.socialButtonText, styles.kakaoButtonText]}>
+              카카오 계정으로 로그인
+            </Text>
           </Button>
         );
       case 'naver':
@@ -84,13 +78,11 @@ const SocialLoginButton: React.FC<SocialLoginButtonProps> = ({
             onPress={onPress}
             disabled={loading !== null}
           >
-            {isLoading ? (
-              <ActivityIndicator color={COLORS.white} />
-            ) : (
-              <Text style={[styles.socialButtonText, styles.naverButtonText]}>
-                Naver로 시작하기
-              </Text>
-            )}
+            <NaverIcon />
+            <Spacer horizontal num={8} />
+            <Text style={[styles.socialButtonText, styles.naverButtonText]}>
+              Naver 계정으로 로그인
+            </Text>
           </Button>
         );
       default:
@@ -136,9 +128,10 @@ const styles = StyleSheet.create({
   appleButton: {
     width: '100%',
     height: scaleWidth(56),
+    backgroundColor: COLORS.black,
   },
   outlineButton: {
-    borderColor: COLORS.black,
+    borderColor: '#747775',
   },
   kakaoButton: {
     backgroundColor: COLORS.kakao,
@@ -147,7 +140,9 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.naver,
   },
   socialButtonText: {
-    ...Heading_18EB_Round,
+    fontFamily: 'Roboto-Medium',
+    fontSize: 16,
+    lineHeight: 16 * 1.5, // 150% (16 * 1.5 = 24)
   },
   kakaoButtonText: {
     color: COLORS.black,

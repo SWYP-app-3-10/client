@@ -40,10 +40,16 @@ export interface RefreshTokenRequest {
 }
 
 export interface RefreshTokenResponse {
-  success: boolean;
+  status: number;
+  message?: string;
+  data?: {
+    accessToken?: string;
+    refreshToken?: string;
+  };
+  // 하위 호환성을 위한 필드
+  success?: boolean;
   token?: string;
   refreshToken?: string;
-  message?: string;
 }
 
 /**
@@ -81,25 +87,44 @@ export const refreshToken = async (
   refreshTokenValue: string,
 ): Promise<RefreshTokenResponse> => {
   try {
-    console.log('[토큰 갱신 API] 요청 시작');
+    if (__DEV__) {
+      console.log('[토큰 갱신 API] 요청 시작');
+    }
     const response = await client.post<RefreshTokenResponse>(
       '/api/auth/refresh',
       { refreshToken: refreshTokenValue },
     );
 
-    console.log(
-      '[토큰 갱신 API] 응답 성공:',
-      JSON.stringify(response.data, null, 2),
-    );
+    if (__DEV__) {
+      console.log(
+        '[토큰 갱신 API] 응답 성공:',
+        JSON.stringify(response.data, null, 2),
+      );
+    }
 
     return response.data;
   } catch (error: any) {
-    console.error('[토큰 갱신 API] 에러:', error);
-    if (error.response) {
-      console.error('[토큰 갱신 API] 서버 응답:', {
-        status: error.response.status,
-        data: error.response.data,
-      });
+    if (__DEV__) {
+      console.error('[토큰 갱신 API] 에러:', error);
+
+      if (error.response) {
+        console.error('[토큰 갱신 API] 서버 응답:', {
+          status: error.response.status,
+          statusText: error.response.statusText,
+          data: error.response.data,
+        });
+
+        // 500 에러에 대한 상세 정보
+        if (error.response.status === 500) {
+          console.error(
+            '[토큰 갱신 API] 서버 내부 오류 (500) - 서버 측 문제입니다',
+          );
+        }
+      } else if (error.request) {
+        console.error(
+          '[토큰 갱신 API] 네트워크 오류 - 서버에 연결할 수 없습니다',
+        );
+      }
     }
     throw error;
   }
