@@ -92,10 +92,29 @@ export const useScrollToQuiz = ({
    * 퀴즈 섹션으로 스크롤
    */
   const scrollToQuiz = useCallback(() => {
-    setTimeout(() => {
-      scrollViewRef.current?.scrollToEnd({ animated: true });
-    }, SCROLL_TO_END_DELAY);
-  }, [scrollViewRef]);
+    if (!quizSectionRef.current || !scrollViewRef.current) {
+      return;
+    }
+
+    // 퀴즈 섹션의 위치 측정
+    quizSectionRef.current.measureLayout(
+      scrollViewRef.current as any,
+      (_x, y, _width, _height) => {
+        setTimeout(() => {
+          scrollViewRef.current?.scrollTo({
+            y: y,
+            animated: true,
+          });
+        }, SCROLL_TO_END_DELAY);
+      },
+      // measureLayout 실패 시 fallback: scrollToEnd 사용
+      () => {
+        setTimeout(() => {
+          scrollViewRef.current?.scrollToEnd({ animated: true });
+        }, SCROLL_TO_END_DELAY);
+      },
+    );
+  }, [scrollViewRef, quizSectionRef]);
 
   /**
    * 상단으로 스크롤
