@@ -11,6 +11,7 @@ import {
   Heading_16B,
   Caption_14R,
   Body_16SB,
+  Heading_18EB_Round,
 } from '../../styles/global';
 import { RouteNames } from '../../../routes';
 
@@ -69,9 +70,10 @@ const SettingScreen = () => {
         showModal({
           image: <></>,
           title: '알림을 받으시겠어요?',
+          // titleStyle: { ...Heading_18EB_Round },
           description:
             '알림을 켜두면, 하루 두 번 문해력 루틴을 \n잊지 않고 챙길 수 있어요!',
-
+          descriptionStyle: { ...Caption_14R, color: COLORS.gray600 },
           // ✅ LoginScreen 알림 모달과 동일한 스타일
           primaryButton: {
             title: '알림 받을래요',
