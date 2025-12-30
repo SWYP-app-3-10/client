@@ -78,7 +78,7 @@ const TYPOGRAPHY = StyleSheet.create({
   Heading_18EB_Round: createTextStyle(18, 800, 150, 0),
   Heading_18SB: createTextStyle(18, 600, 150, 0),
   Heading_16B: createTextStyle(16, 700, 150, 0),
-
+  Heading_16EB_Round: createTextStyle(16, 800, 150, 0),
   // ========== Body Styles ==========
   Body_18M: createTextStyle(18, 500, 150, 0),
   Body_16SB: createTextStyle(16, 600, 150, 0),
@@ -99,6 +99,7 @@ export const Heading_18B = TYPOGRAPHY.Heading_18B;
 export const Heading_18EB_Round = TYPOGRAPHY.Heading_18EB_Round;
 export const Heading_18SB = TYPOGRAPHY.Heading_18SB;
 export const Heading_16B = TYPOGRAPHY.Heading_16B;
+export const Heading_16EB_Round = TYPOGRAPHY.Heading_16EB_Round;
 
 export const Body_18M = TYPOGRAPHY.Body_18M;
 export const Body_16SB = TYPOGRAPHY.Body_16SB;
