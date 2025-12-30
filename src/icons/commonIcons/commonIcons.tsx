@@ -19,6 +19,7 @@ import Google from '../../assets/svg/Google.svg';
 import Kakao from '../../assets/svg/Kakao.svg';
 import Naver from '../../assets/svg/Naver.svg';
 import Alarm from '../../assets/svg/Alarm.svg';
+import Check_2 from '../../assets/svg/check_2.svg';
 
 export const Ic_backIcon = createIconComponent(Icon_back, ICON_SIZES.XL);
 export const CircleIcon = createIconComponent(Circle, scaleWidth(14));
@@ -37,6 +38,11 @@ export const CheckIcon = createRectangleIconComponent(
   scaleWidth(12),
   scaleWidth(9),
 );
+export const Check_2Icon = createRectangleIconComponent(
+  Check_2,
+  scaleWidth(10),
+  scaleWidth(6),
+);
 export const FirstIcon = createRectangleIconComponent(
   First,
   scaleWidth(55),
@@ -52,4 +58,8 @@ export const ThirdIcon = createRectangleIconComponent(
   scaleWidth(58),
   scaleWidth(44),
 );
-export const RightArrowIcon = createIconComponent(RightArrow, scaleWidth(10));
+export const RightArrowIcon = createRectangleIconComponent(
+  RightArrow,
+  scaleWidth(7),
+  scaleWidth(12),
+);

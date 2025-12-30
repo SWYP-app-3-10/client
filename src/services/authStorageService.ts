@@ -5,6 +5,7 @@ export interface RecentLoginInfo {
   provider: SocialLoginProvider;
   userId: number;
   name?: string;
+  userEmail?: string;
   profileImage?: string;
   loginTime: number; // timestamp
 }
@@ -22,6 +23,7 @@ export const getRecentLogin = async (): Promise<RecentLoginInfo | null> => {
       provider: userInfo.provider as SocialLoginProvider,
       userId: userInfo.userId,
       name: userInfo.name,
+      userEmail: userInfo.email,
       profileImage: userInfo.profileImage,
       loginTime: userInfo.loginTime,
     };

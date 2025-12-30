@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, StyleSheet, ActivityIndicator } from 'react-native';
+import { View, Text, StyleSheet } from 'react-native';
 import Button from './Button';
 import { COLORS, scaleWidth, BORDER_RADIUS } from '../styles/global';
 import { AppleIcon, GoogleIcon, Tooltip_RecentIcon } from '../icons';
@@ -23,33 +23,23 @@ const SocialLoginButton: React.FC<SocialLoginButtonProps> = ({
   recentLogin,
 }) => {
   const showTooltip = recentLogin?.provider === provider;
-  const isLoading = loading === provider;
 
   const renderButton = () => {
     switch (provider) {
       case 'apple':
         return (
-          // <>
-          //   <AppleButton
-          //     buttonType={AppleButton.Type.SIGN_IN}
-          //     buttonStyle={AppleButton.Style.BLACK}
-          //     cornerRadius={BORDER_RADIUS[16]}
-          //     style={styles.appleButton}
-          //     onPress={onPress}
-          //   />
-          // </>
           <Button
             variant="outline"
-            style={styles.outlineButton}
+            style={styles.appleButton}
             onPress={onPress}
             disabled={loading !== null}
           >
             <AppleIcon />
-            {isLoading ? (
-              <ActivityIndicator color={COLORS.black} />
-            ) : (
-              <Text style={styles.socialButtonText}>애플 계정으로 로그인</Text>
-            )}
+            <Spacer horizontal num={8} />
+
+            <Text style={[styles.socialButtonText, { color: COLORS.white }]}>
+              애플 계정으로 로그인
+            </Text>
           </Button>
         );
       case 'google':
@@ -62,11 +52,7 @@ const SocialLoginButton: React.FC<SocialLoginButtonProps> = ({
           >
             <GoogleIcon />
             <Spacer horizontal num={8} />
-            {isLoading ? (
-              <ActivityIndicator color={COLORS.black} />
-            ) : (
-              <Text style={styles.socialButtonText}>구글 계정으로 로그인</Text>
-            )}
+            <Text style={styles.socialButtonText}>구글 계정으로 로그인</Text>
           </Button>
         );
       case 'kakao':
@@ -79,13 +65,9 @@ const SocialLoginButton: React.FC<SocialLoginButtonProps> = ({
           >
             <KakaoIcon />
             <Spacer horizontal num={8} />
-            {isLoading ? (
-              <ActivityIndicator color={COLORS.black} />
-            ) : (
-              <Text style={[styles.socialButtonText, styles.kakaoButtonText]}>
-                카카오 계정으로 로그인
-              </Text>
-            )}
+            <Text style={[styles.socialButtonText, styles.kakaoButtonText]}>
+              카카오 계정으로 로그인
+            </Text>
           </Button>
         );
       case 'naver':
@@ -98,13 +80,9 @@ const SocialLoginButton: React.FC<SocialLoginButtonProps> = ({
           >
             <NaverIcon />
             <Spacer horizontal num={8} />
-            {isLoading ? (
-              <ActivityIndicator color={COLORS.white} />
-            ) : (
-              <Text style={[styles.socialButtonText, styles.naverButtonText]}>
-                Naver 계정으로 로그인
-              </Text>
-            )}
+            <Text style={[styles.socialButtonText, styles.naverButtonText]}>
+              Naver 계정으로 로그인
+            </Text>
           </Button>
         );
       default:
@@ -150,6 +128,7 @@ const styles = StyleSheet.create({
   appleButton: {
     width: '100%',
     height: scaleWidth(56),
+    backgroundColor: COLORS.black,
   },
   outlineButton: {
     borderColor: '#747775',

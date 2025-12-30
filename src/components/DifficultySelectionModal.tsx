@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
-import { COLORS, scaleWidth, BORDER_RADIUS, Body_16M } from '../styles/global';
+import { COLORS, scaleWidth, BORDER_RADIUS, Body_16SB } from '../styles/global';
 import { CheckIcon } from '../icons/commonIcons/commonIcons';
 import Spacer from './Spacer';
 
@@ -43,7 +43,14 @@ const DifficultySelectionModal: React.FC<DifficultySelectionModalProps> = ({
               style={[styles.option, isSelected && styles.optionSelected]}
               onPress={() => handleSelect(option.value)}
             >
-              <Text style={styles.optionText}>{option.label}</Text>
+              <Text
+                style={[
+                  styles.optionText,
+                  isSelected && styles.optionTextSelected,
+                ]}
+              >
+                {option.label}
+              </Text>
               <View
                 style={[
                   styles.checkContainer,
@@ -54,7 +61,7 @@ const DifficultySelectionModal: React.FC<DifficultySelectionModalProps> = ({
                   },
                 ]}
               >
-                <CheckIcon color={isSelected ? COLORS.white : COLORS.gray500} />
+                <CheckIcon color={isSelected ? COLORS.white : COLORS.gray100} />
               </View>
             </TouchableOpacity>
             {index < difficultyOptions.length - 1 && <Spacer num={12} />}
@@ -74,9 +81,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     width: '100%',
-    height: scaleWidth(68),
-    paddingHorizontal: scaleWidth(24),
-    borderRadius: BORDER_RADIUS[16],
+    height: scaleWidth(52),
+    paddingHorizontal: scaleWidth(32),
+    borderRadius: BORDER_RADIUS[12],
     backgroundColor: COLORS.gray100,
   },
   optionSelected: {
@@ -85,8 +92,11 @@ const styles = StyleSheet.create({
     borderWidth: 1,
   },
   optionText: {
-    ...Body_16M,
-    color: COLORS.black,
+    ...Body_16SB,
+    color: COLORS.gray700,
+  },
+  optionTextSelected: {
+    color: COLORS.puple.main,
   },
   checkContainer: {
     width: scaleWidth(28),

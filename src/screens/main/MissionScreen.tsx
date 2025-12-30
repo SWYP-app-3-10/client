@@ -25,6 +25,7 @@ import {
   Heading_24EB_Round,
   BORDER_RADIUS,
   Body_16M,
+  Heading_20EB_Round,
 } from '../../styles/global';
 import Spacer from '../../components/Spacer';
 import { useMissions } from '../../hooks/useMissions';
@@ -177,6 +178,10 @@ const MissionScreen = () => {
           ]);
           showModal({
             title: '포인트 & 경험치 획득!',
+            titleStyle: {
+              ...Heading_20EB_Round,
+            },
+            titleDescriptionGapSize: scaleWidth(20),
             children: React.createElement(ExperienceModalContent, {
               point: true,
               daily: true,
@@ -216,7 +221,7 @@ const MissionScreen = () => {
   return (
     <SafeAreaView style={missionScreenStyles.container} edges={['top']}>
       <ScrollView
-        contentContainerStyle={missionScreenStyles.scrollContent}
+        contentContainerStyle={{ flex: 1 }}
         showsVerticalScrollIndicator={false}
       >
         {/* 헤더 */}
@@ -308,16 +313,14 @@ export const missionScreenStyles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: COLORS.white,
+    paddingTop: scaleWidth(8),
   },
   notificationButtonContainer: {
     flexDirection: 'row',
-    paddingTop: scaleWidth(8),
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingHorizontal: scaleWidth(20),
-  },
-  scrollContent: {
-    paddingTop: scaleWidth(20),
+    height: scaleWidth(52),
   },
   header: {
     flexDirection: 'row',

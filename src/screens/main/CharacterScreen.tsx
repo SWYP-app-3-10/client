@@ -24,6 +24,7 @@ import {
   Heading_18EB_Round,
 } from '../../styles/global';
 import { Button, MissionCard } from '../../components';
+import IconButton from '../../components/IconButton';
 import {
   CharacterStackParamList,
   MainTabNavigationProp,
@@ -41,6 +42,7 @@ import {
   Level_5_Tooltip,
   RightArrowIcon,
   ProgressBarIcon,
+  AlarmIcon,
 } from '../../icons';
 import { Body_15M, Heading_16B } from '../../styles/typography';
 import { useCharacterData, useAttendanceData } from '../../hooks/useCharacter';
@@ -208,15 +210,10 @@ const CharacterScreen = () => {
             resizeMode="cover"
           />
         </View>
-
-        {/* 알림 버튼 */}
         <View style={styles.notificationButtonContainer}>
-          <Button
-            title="알림"
-            variant="primary"
-            style={styles.notificationButton}
-            onPress={handleNavigateToNotification}
-          />
+          <IconButton onPress={handleNavigateToNotification}>
+            <AlarmIcon />
+          </IconButton>
         </View>
 
         {/* 레벨 버튼 */}
@@ -550,9 +547,8 @@ const styles = StyleSheet.create({
   },
   notificationButtonContainer: {
     marginTop: scaleWidth(30),
-
     position: 'absolute',
-    top: scaleWidth(20),
+    top: scaleWidth(40),
     right: scaleWidth(20),
   },
   notificationButton: {

@@ -8,8 +8,8 @@ import { BORDER_RADIUS, COLORS, scaleWidth } from '../../styles/global';
 import {
   useCompleteOnboarding,
   useOnboardingStore,
-  Difficulty,
 } from '../../store/onboardingStore';
+import { LevelCategory } from '../../types/interests';
 import { ProgressBar } from '../../components';
 import {
   Body_15M,
@@ -24,22 +24,7 @@ import Button from '../../components/Button';
 import Header from '../../components/Header';
 import { USE_SERVER_API_FOR_LEVEL } from '../../config/apiConfig';
 import { getUserInfo } from '../../services/authService';
-import { LevelCategory } from '../../types/interests';
 import { updateUserLevel } from '../../api/userApi';
-
-// Difficulty를 LevelCategory로 변환
-const difficultyToLevelCategory = (difficulty: Difficulty): LevelCategory => {
-  switch (difficulty) {
-    case 'beginner':
-      return LevelCategory.BEGINNER;
-    case 'intermediate':
-      return LevelCategory.INTERMEDIATE;
-    case 'advanced':
-      return LevelCategory.ADVANCED;
-    default:
-      return LevelCategory.BEGINNER;
-  }
-};
 
 const DIFFICULTY_INFO = {
   [LevelCategory.BEGINNER]: {
@@ -65,14 +50,14 @@ const DIFFICULTY_INFO = {
 const DifficultySettingScreen = () => {
   const savedDifficulty = useOnboardingStore(state => state.difficulty);
   const setDifficulty = useOnboardingStore(state => state.setDifficulty);
-  const [selectedDifficulty, setSelectedDifficulty] = useState<Difficulty>(
-    savedDifficulty || 'beginner',
+  const [selectedDifficulty, setSelectedDifficulty] = useState<LevelCategory>(
+    savedDifficulty || LevelCategory.BEGINNER,
   );
   const completeOnboarding = useCompleteOnboarding();
 
   // 난이도 변경 시 저장
   const handleDifficultyChange = useCallback(
-    (difficulty: Difficulty) => {
+    (difficulty: LevelCategory) => {
       setSelectedDifficulty(difficulty);
       setDifficulty(difficulty);
     },
@@ -91,17 +76,13 @@ const DifficultySettingScreen = () => {
         return;
       }
       console.log('[난이도 업데이트] API 호출 시작');
-      await updateUserLevel(
-        userInfo.userId,
-        difficultyToLevelCategory(selectedDifficulty),
-      );
+      await updateUserLevel(userInfo.userId, selectedDifficulty);
       console.log('[난이도 업데이트] API 호출 성공');
     }
     await completeOnboarding();
   };
   const { bottom } = useSafeAreaInsets();
-  const selectedInfo =
-    DIFFICULTY_INFO[difficultyToLevelCategory(selectedDifficulty)];
+  const selectedInfo = DIFFICULTY_INFO[selectedDifficulty];
 
   return (
     <SafeAreaView style={styles.container} edges={['top', 'bottom']}>
@@ -131,15 +112,15 @@ const DifficultySettingScreen = () => {
             title="초급"
             style={[
               styles.difficultyButton,
-              selectedDifficulty === 'beginner' &&
+              selectedDifficulty === LevelCategory.BEGINNER &&
                 styles.difficultyButtonSelected,
             ]}
-            onPress={() => handleDifficultyChange('beginner')}
+            onPress={() => handleDifficultyChange(LevelCategory.BEGINNER)}
           >
             <Text
               style={[
                 styles.difficultyButtonText,
-                selectedDifficulty === 'beginner' &&
+                selectedDifficulty === LevelCategory.BEGINNER &&
                   styles.difficultyButtonTextSelected,
               ]}
             >
@@ -151,15 +132,15 @@ const DifficultySettingScreen = () => {
             title="중급"
             style={[
               styles.difficultyButton,
-              selectedDifficulty === 'intermediate' &&
+              selectedDifficulty === LevelCategory.INTERMEDIATE &&
                 styles.difficultyButtonSelected,
             ]}
-            onPress={() => handleDifficultyChange('intermediate')}
+            onPress={() => handleDifficultyChange(LevelCategory.INTERMEDIATE)}
           >
             <Text
               style={[
                 styles.difficultyButtonText,
-                selectedDifficulty === 'intermediate' &&
+                selectedDifficulty === LevelCategory.INTERMEDIATE &&
                   styles.difficultyButtonTextSelected,
               ]}
             >
@@ -171,15 +152,15 @@ const DifficultySettingScreen = () => {
             title="고급"
             style={[
               styles.difficultyButton,
-              selectedDifficulty === 'advanced' &&
+              selectedDifficulty === LevelCategory.ADVANCED &&
                 styles.difficultyButtonSelected,
             ]}
-            onPress={() => handleDifficultyChange('advanced')}
+            onPress={() => handleDifficultyChange(LevelCategory.ADVANCED)}
           >
             <Text
               style={[
                 styles.difficultyButtonText,
-                selectedDifficulty === 'advanced' &&
+                selectedDifficulty === LevelCategory.ADVANCED &&
                   styles.difficultyButtonTextSelected,
               ]}
             >

@@ -8,19 +8,18 @@ import {
   Heading_18B,
 } from '../styles/global';
 import { CheckIcon } from '../icons';
-import { Difficulty } from '../store/onboardingStore';
 import { LevelCategory } from '../types/interests';
 
 interface LevelOption {
-  value: Difficulty;
+  value: LevelCategory;
   label: string;
   description: string;
   time: string;
 }
 
 interface LevelSelectionContentProps {
-  selectedLevel: Difficulty | null;
-  onSelect: (level: Difficulty) => void;
+  selectedLevel: LevelCategory | null;
+  onSelect: (level: LevelCategory) => void;
 }
 
 export const LEVEL_OPTIONS: LevelOption[] = [
@@ -48,7 +47,7 @@ const LevelSelectionContent: React.FC<LevelSelectionContentProps> = ({
   selectedLevel,
   onSelect,
 }) => {
-  const handleSelect = (level: Difficulty) => {
+  const handleSelect = (level: LevelCategory) => {
     onSelect(level);
   };
 

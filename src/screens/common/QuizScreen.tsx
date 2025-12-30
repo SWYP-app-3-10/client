@@ -13,6 +13,8 @@ import {
   BORDER_RADIUS,
   Body_16M,
   Body_16SB,
+  Heading_18EB_Round,
+  Heading_20EB_Round,
 } from '../../styles/global';
 import Header from '../../components/Header';
 import Button from '../../components/Button';
@@ -85,6 +87,9 @@ const QuizScreen: React.FC = () => {
 
     showModal({
       title: '포인트 & 경험치 획득!',
+      titleStyle: {
+        ...Heading_20EB_Round,
+      },
       titleDescriptionGapSize: scaleWidth(20),
       children: React.createElement(ExperienceModalContent, {
         point: true,
@@ -110,9 +115,12 @@ const QuizScreen: React.FC = () => {
     // 난이도 선택 모달 표시
     showModal({
       title: '이번 글의 난이도는\n 어떠셨나요?',
-      description: '콘텐츠의 난이도에 반영해드려요!',
-      titleDescriptionGapSize: scaleWidth(8),
+      titleStyle: {
+        ...Heading_18EB_Round,
+      },
+      description: '글의 난이도에 반영해드려요!',
       descriptionColor: COLORS.gray600,
+      titleDescriptionGapSize: scaleWidth(8),
       closeOnBackdropPress: false,
       children: (
         <DifficultySelectionModal

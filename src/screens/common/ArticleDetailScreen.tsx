@@ -1,10 +1,4 @@
-import React, {
-  useEffect,
-  useRef,
-  useState,
-  useMemo,
-  useCallback,
-} from 'react';
+import React, { useEffect, useRef, useMemo, useCallback } from 'react';
 import {
   View,
   Text,
@@ -37,7 +31,7 @@ import { ExperienceModalContent } from '../../components/ArticlePointModalConten
 import { RouteNames } from '../../../routes';
 import { FullScreenStackParamList } from '../../navigation/types';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { useOnboardingStore, Difficulty } from '../../store/onboardingStore';
+import { useOnboardingStore } from '../../store/onboardingStore';
 import { useShowModal } from '../../store/modalStore';
 import { ARTICLE_READ_EXPERIENCE } from '../../config/rewards';
 import { useExperienceStore } from '../../store/experienceStore';
@@ -46,7 +40,7 @@ import { LevelCategory } from '../../types/interests';
 type NavigationProp = NativeStackNavigationProp<FullScreenStackParamList>;
 
 // 난이도별 읽기 시간 (초)
-const READING_TIME_BY_DIFFICULTY: Record<Difficulty, number> = {
+const READING_TIME_BY_DIFFICULTY: Record<LevelCategory, number> = {
   [LevelCategory.BEGINNER]: 50, // 초급: 50초
   [LevelCategory.INTERMEDIATE]: 90, // 중급: 90초
   [LevelCategory.ADVANCED]: 190, // 고급: 3분 10초 (190초)
@@ -63,7 +57,6 @@ const ArticleDetailScreen = () => {
   const hasEarnedExperienceRef = useRef(false);
   const isScreenFocusedRef = useRef(true);
   const isFocused = useIsFocused();
-  const [, setHasEarnedExperience] = useState(false);
 
   // @ts-ignore - route params 타입은 나중에 추가
   const articleId = route.params?.articleId;
@@ -71,9 +64,21 @@ const ArticleDetailScreen = () => {
 
   // 난이도에 따른 읽기 시간 설정
   const readingTime = useMemo(() => {
-    return difficulty && difficulty in READING_TIME_BY_DIFFICULTY
-      ? READING_TIME_BY_DIFFICULTY[difficulty]
-      : READING_TIME_BY_DIFFICULTY.beginner; // 기본값: 초급
+    if (!difficulty) {
+      return READING_TIME_BY_DIFFICULTY[LevelCategory.BEGINNER];
+    }
+    // difficulty가 문자열이면 LevelCategory enum 값으로 변환
+    const levelCategory =
+      typeof difficulty === 'string'
+        ? (difficulty.toUpperCase() as LevelCategory)
+        : difficulty;
+    const time = READING_TIME_BY_DIFFICULTY[levelCategory];
+    if (__DEV__) {
+      console.log('[ArticleDetailScreen] difficulty:', difficulty);
+      console.log('[ArticleDetailScreen] levelCategory:', levelCategory);
+      console.log('[ArticleDetailScreen] readingTime:', time);
+    }
+    return time || READING_TIME_BY_DIFFICULTY[LevelCategory.BEGINNER];
   }, [difficulty]);
   // 화면 포커스 상태 추적
   useFocusEffect(
@@ -85,7 +90,6 @@ const ArticleDetailScreen = () => {
       }
       isScreenFocusedRef.current = true;
       hasEarnedExperienceRef.current = false;
-      setHasEarnedExperience(false);
 
       return () => {
         // 화면이 포커스를 잃을 때 (다른 화면으로 이동)
@@ -107,7 +111,6 @@ const ArticleDetailScreen = () => {
       timerRef.current = null;
     }
     hasEarnedExperienceRef.current = false;
-    setHasEarnedExperience(false);
     isScreenFocusedRef.current = isFocused;
   }, [articleId, isFocused]);
 
@@ -168,7 +171,6 @@ const ArticleDetailScreen = () => {
 
       // ref를 먼저 true로 설정하여 중복 실행 방지
       hasEarnedExperienceRef.current = true;
-      setHasEarnedExperience(true);
 
       try {
         // 경험치 추가 (useMutation이 자동으로 캐시 무효화 처리)
@@ -185,6 +187,10 @@ const ArticleDetailScreen = () => {
         // 경험치 획득 모달 표시
         showModal({
           title: '경험치 획득!',
+          titleStyle: {
+            ...Heading_20EB_Round,
+          },
+          titleDescriptionGapSize: scaleWidth(20),
           children: React.createElement(ExperienceModalContent),
           primaryButton: {
             title: '확인',
@@ -198,7 +204,6 @@ const ArticleDetailScreen = () => {
         // 에러 발생 시 ref를 다시 false로 설정하여 재시도 가능하게
         if (isScreenFocusedRef.current && isFocused) {
           hasEarnedExperienceRef.current = false;
-          setHasEarnedExperience(false);
         }
       }
     };

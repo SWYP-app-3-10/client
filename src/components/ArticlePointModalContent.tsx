@@ -14,9 +14,9 @@ import {
 import {
   COLORS,
   scaleWidth,
-  Body_16M,
   BORDER_RADIUS,
   Heading_20EB_Round,
+  Body_16SB,
 } from '../styles/global';
 import { levelDetailMap } from '../data/mock/characterData';
 
@@ -110,25 +110,24 @@ const styles = StyleSheet.create({
   modalContentTextWrap: {
     justifyContent: 'center',
     alignItems: 'center',
-
-    width: scaleWidth(111),
+    paddingHorizontal: scaleWidth(12),
     height: scaleWidth(36),
     borderRadius: BORDER_RADIUS[30],
   },
   modalContentText: {
-    ...Body_16M,
+    ...Body_16SB,
     color: COLORS.gray700,
   },
   pointText: {
-    ...Body_16M,
+    ...Body_16SB,
     color: COLORS.puple.main,
   },
   getExperienceText: {
-    ...Body_16M,
+    ...Body_16SB,
     color: COLORS.blue[6],
   },
   getPointText: {
-    ...Body_16M,
+    ...Body_16SB,
     color: COLORS.yellow.medium,
   },
   modalContent: {
