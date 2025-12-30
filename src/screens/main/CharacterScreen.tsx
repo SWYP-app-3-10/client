@@ -17,7 +17,6 @@ import {
   scaleWidth,
   BORDER_RADIUS,
   Heading_20EB_Round,
-  Body_16M,
   Body_16R,
   Caption_14R,
   Heading_24EB_Round,

@@ -11,7 +11,6 @@ import {
   ScrollView,
   Dimensions,
   ActivityIndicator,
-  Alert,
   StyleSheet,
   BackHandler,
   Platform,
@@ -21,16 +20,14 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import {
   COLORS,
   scaleWidth,
-  Heading_20EB_Round,
-  Body_16R,
+  Heading_24EB_Round,
   BORDER_RADIUS,
+  Body_16M,
 } from '../../styles/global';
 import Spacer from '../../components/Spacer';
 import { useMissions } from '../../hooks/useMissions';
 import { useArticles } from '../../hooks/useArticles';
-import { clearAllAuthData } from '../../services/authService';
-import { useOnboardingStore } from '../../store/onboardingStore';
-import { Button, MissionCard, ArticleCard } from '../../components';
+import { MissionCard, ArticleCard } from '../../components';
 import { useNavigation } from '@react-navigation/native';
 import { useArticleNavigation } from '../../hooks/useArticleNavigation';
 import {
@@ -48,6 +45,8 @@ import {
   DAILY_ATTENDANCE_POINT,
 } from '../../config/rewards';
 import { useExperienceStore } from '../../store/experienceStore';
+import IconButton from '../../components/IconButton';
+import { AlarmIcon } from '../../icons';
 
 // 상수
 const SCROLL_INITIAL_DELAY = 100;
@@ -65,7 +64,6 @@ const MissionScreen = () => {
   const screenWidth = Dimensions.get('window').width;
   const scrollViewRef = useRef<ScrollView>(null);
   const [currentIndex, setCurrentIndex] = useState(0);
-  const resetOnboarding = useOnboardingStore(state => state.resetOnboarding);
   const navigation =
     useNavigation<MainTabNavigationProp<MissionStackParamList>>();
   const { handleArticlePress } = useArticleNavigation({ returnTo: 'mission' });
@@ -74,31 +72,6 @@ const MissionScreen = () => {
   const { addPoints } = usePointStore();
   const { addExperience } = useExperienceStore();
   const hasCheckedDailyEntryRef = useRef(false);
-
-  // 개발용: 로그인 정보 초기화
-  const handleClearLogin = useCallback(async () => {
-    Alert.alert(
-      '로그인 초기화',
-      '모든 로그인 및 온보딩 정보를 삭제하시겠습니까?',
-      [
-        {
-          text: '취소',
-          style: 'cancel',
-        },
-        {
-          text: '확인',
-          onPress: async () => {
-            await clearAllAuthData();
-            await resetOnboarding();
-            Alert.alert(
-              '완료',
-              '로그인 정보가 초기화되었습니다.\n앱을 재시작하세요.',
-            );
-          },
-        },
-      ],
-    );
-  }, [resetOnboarding]);
 
   const handleNavigateToNotification = useCallback(() => {
     navigation.navigate(RouteNames.FULL_SCREEN_STACK, {
@@ -300,28 +273,18 @@ const MissionScreen = () => {
   }
 
   return (
-    <SafeAreaView style={missionScreenStyles.container}>
+    <SafeAreaView style={missionScreenStyles.container} edges={['top']}>
       <ScrollView
-        style={missionScreenStyles.scrollView}
         contentContainerStyle={missionScreenStyles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
-        {/* 개발용: 로그인 초기화 버튼 */}
-        {/* {__DEV__ && ( */}
-        <Button
-          title="로그인 초기화"
-          onPress={handleClearLogin}
-          variant="ghost"
-          style={missionScreenStyles.clearLoginButton}
-        />
-        {/* )} */}
         {/* 헤더 */}
-        <Button
-          title="알림 페이지로"
-          variant="primary"
-          style={missionScreenStyles.notificationButton}
-          onPress={handleNavigateToNotification}
-        />
+        <View style={missionScreenStyles.notificationButtonContainer}>
+          <View style={missionScreenStyles.notificationButton} />
+          <IconButton onPress={handleNavigateToNotification}>
+            <AlarmIcon />
+          </IconButton>
+        </View>
         <View style={missionScreenStyles.header}>
           <View style={missionScreenStyles.headerLeft}>
             <Text style={missionScreenStyles.headerTitle}>오늘의 미션</Text>
@@ -398,18 +361,22 @@ export const missionScreenStyles = StyleSheet.create({
     flex: 1,
     backgroundColor: COLORS.white,
   },
-  scrollView: {
-    flex: 1,
+  notificationButtonContainer: {
+    flexDirection: 'row',
+    paddingTop: scaleWidth(8),
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: scaleWidth(20),
   },
   scrollContent: {
     paddingTop: scaleWidth(20),
-    paddingBottom: scaleWidth(100), // 하단 네비게이션 바 공간
   },
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'flex-start',
     paddingHorizontal: scaleWidth(20),
+    paddingTop: scaleWidth(32),
   },
   headerLeft: {
     flex: 1,
@@ -420,19 +387,18 @@ export const missionScreenStyles = StyleSheet.create({
     paddingVertical: scaleWidth(4),
   },
   notificationButton: {
-    width: scaleWidth(50),
-    height: scaleWidth(50),
-    alignSelf: 'flex-end',
+    width: scaleWidth(112),
+    height: scaleWidth(52),
+    backgroundColor: COLORS.placeholder,
   },
   headerTitle: {
-    ...Heading_20EB_Round,
+    ...Heading_24EB_Round,
     color: COLORS.black,
     marginBottom: scaleWidth(4),
   },
   headerDescription: {
-    ...Body_16R,
-    color: COLORS.gray700,
-    lineHeight: scaleWidth(24),
+    ...Body_16M,
+    color: COLORS.gray600,
   },
   missionCardContainer: {
     paddingHorizontal: scaleWidth(20),
@@ -456,6 +422,8 @@ export const missionScreenStyles = StyleSheet.create({
   },
   articleList: {
     gap: scaleWidth(24),
+    paddingHorizontal: scaleWidth(20),
+    paddingBottom: scaleWidth(50),
   },
   loadingContainer: {
     flex: 1,

@@ -18,6 +18,7 @@ import Apple from '../../assets/svg/Apple.svg';
 import Google from '../../assets/svg/Google.svg';
 import Kakao from '../../assets/svg/Kakao.svg';
 import Naver from '../../assets/svg/Naver.svg';
+import Alarm from '../../assets/svg/Alarm.svg';
 
 export const Ic_backIcon = createIconComponent(Icon_back, ICON_SIZES.XL);
 export const CircleIcon = createIconComponent(Circle, scaleWidth(14));
@@ -28,6 +29,7 @@ export const AppleIcon = createIconComponent(Apple, ICON_SIZES.M);
 export const GoogleIcon = createIconComponent(Google, ICON_SIZES.M);
 export const KakaoIcon = createIconComponent(Kakao, ICON_SIZES.M);
 export const NaverIcon = createIconComponent(Naver, ICON_SIZES.M);
+export const AlarmIcon = createIconComponent(Alarm, scaleWidth(28));
 
 //  가로, 세로 크기 다름
 export const CheckIcon = createRectangleIconComponent(

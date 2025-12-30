@@ -5,9 +5,9 @@ import {
   COLORS,
   scaleWidth,
   BORDER_RADIUS,
-  Heading_18B,
-  Body_16M,
   Caption_12SB,
+  Caption_14R,
+  Heading_16EB_Round,
 } from '../styles/global';
 import Spacer from './Spacer';
 import { Mission } from '../data/mock/missionData';
@@ -51,11 +51,17 @@ const MissionCard = React.memo(
               <Text
                 style={[
                   styles.progressStatus,
-                  myPage && [
-                    isCompleted
-                      ? { color: COLORS.gray800 }
-                      : { color: COLORS.puple.main },
-                  ],
+                  myPage
+                    ? [
+                        isCompleted
+                          ? { color: COLORS.gray800 }
+                          : { color: COLORS.puple.main },
+                      ]
+                    : [
+                        isCompleted
+                          ? { color: COLORS.puple[2] }
+                          : { color: COLORS.white },
+                      ],
                 ]}
               >
                 {mission.status}
@@ -70,6 +76,7 @@ const MissionCard = React.memo(
             <View
               style={[
                 styles.progressBarContainer,
+                isNotStarted && styles.progressBarContainerNotStarted,
                 isCompleted && styles.progressBarContainerCompleted,
                 myPage && styles.progressBarContainerMyPageCompleted,
               ]}
@@ -124,9 +131,7 @@ const MissionCard = React.memo(
             >
               {cardContent}
             </View>
-            {/* 보더는 opacity 적용 안 됨 */}
             <View style={styles.missionCardWhiteBorder} />
-            {/* 자물쇠 아이콘은 opacity 적용 안 됨 */}
             {isNotStarted && (
               <View style={styles.lockIconOverlay}>
                 <LockIcon />
@@ -149,7 +154,6 @@ const MissionCard = React.memo(
                 {cardContent}
               </LinearGradient>
             </View>
-            {/* 자물쇠 아이콘은 opacity 적용 안 됨 */}
             {isNotStarted && (
               <View style={styles.lockIconOverlay}>
                 <LockIcon />
@@ -166,8 +170,8 @@ MissionCard.displayName = 'MissionCard';
 
 const styles = StyleSheet.create({
   missionCard: {
+    width: scaleWidth(348),
     borderRadius: BORDER_RADIUS[20],
-
     position: 'relative',
   },
   missionCardGradient: {
@@ -193,7 +197,7 @@ const styles = StyleSheet.create({
     pointerEvents: 'none',
   },
   missionCardTitle: {
-    ...Heading_18B,
+    ...Heading_16EB_Round,
     color: COLORS.white,
   },
   missionCardTitleCompleted: {
@@ -234,13 +238,12 @@ const styles = StyleSheet.create({
   },
   progressStatus: {
     ...Caption_12SB,
-    color: COLORS.white,
   },
   progressTextContainer: {
     justifyContent: 'center',
   },
   progressText: {
-    ...Body_16M,
+    ...Caption_14R,
     color: COLORS.white,
     textAlign: 'center',
   },
@@ -261,6 +264,9 @@ const styles = StyleSheet.create({
   },
   progressStatusMyPage: {
     color: COLORS.puple.main,
+  },
+  progressBarContainerNotStarted: {
+    backgroundColor: COLORS.white,
   },
   progressBarContainerCompleted: {
     backgroundColor: COLORS.gray400,
