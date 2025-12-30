@@ -6,6 +6,7 @@ import { useNavigation, CommonActions } from '@react-navigation/native';
 import Header from '../../components/Header';
 import {
   Body_16SB,
+  Caption_14R,
   COLORS,
   Heading_16B,
   scaleWidth,
@@ -33,34 +34,31 @@ const LoginInfoScreen = () => {
   // 서비스 탈퇴 모달 상태
   const [withdrawModalVisible, setWithdrawModalVisible] = useState(false);
 
+  // 온보딩 상태 초기화
   const resetOnboarding = useOnboardingStore(state => state.resetOnboarding);
 
   /** 로그아웃 클릭 */
   const onPressLogout = () => {
-    console.log('[LoginInfo] logout pressed');
     setLogoutModalVisible(true);
   };
 
-  /** 취소 */
+  /** 로그아웃 취소 */
   const onCancelLogout = () => {
-    console.log('[LoginInfo] logout canceled');
     setLogoutModalVisible(false);
   };
 
-  /** 확인 */
+  /** 로그아웃 확인 */
   const onConfirmLogout = useCallback(async () => {
-    console.log('[LoginInfo] logout confirmed');
     setLogoutModalVisible(false);
 
     try {
-      // 1) 로컬 인증/유저데이터 초기화
+      // 1) 로컬 인증/유저 데이터 초기화
       await clearAllAuthData();
 
-      // 2) 온보딩 스토어/스토리지 초기화 (currentStep -> login)
+      // 2) 온보딩 상태 초기화
       await resetOnboarding();
 
-      // 3) 네비게이션 스택 리셋 -> 온보딩으로 이동
-      //    (OnboardingNavigator가 currentStep 기반으로 SOCIAL_LOGIN을 초기 라우트로 선택)
+      // 3) 네비게이션 스택 리셋 → 온보딩 이동
       navigation.dispatch(
         CommonActions.reset({
           index: 0,
@@ -74,32 +72,29 @@ const LoginInfoScreen = () => {
 
   /** 서비스 탈퇴 클릭 */
   const onPressWithdraw = () => {
-    console.log('[LoginInfo] 서비스 탈퇴 pressed');
     setWithdrawModalVisible(true);
   };
 
   /** 서비스 탈퇴 취소 */
   const onCancelWithdraw = () => {
-    console.log('[LoginInfo] 서비스 탈퇴 취소 pressed');
     setWithdrawModalVisible(false);
   };
 
   /** 서비스 탈퇴 확인 */
   const onConfirmWithdraw = useCallback(async () => {
-    console.log('[LoginInfo] 서비스 탈퇴 확인 pressed');
     setWithdrawModalVisible(false);
 
     try {
-      // TODO: 서버 탈퇴 API 연동 시 여기서 호출
-      // 예) await withdrawUser();
+      // TODO: 서버 탈퇴 API 연동
+      // await withdrawUser();
 
-      // 1) 로컬 인증/유저데이터 초기화
+      // 1) 로컬 인증/유저 데이터 초기화
       await clearAllAuthData();
 
-      // 2) 온보딩 스토어/스토리지 초기화 (currentStep -> login)
+      // 2) 온보딩 상태 초기화
       await resetOnboarding();
 
-      // 3) 네비게이션 스택 리셋 -> 온보딩으로 이동
+      // 3) 네비게이션 스택 리셋 → 온보딩 이동
       navigation.dispatch(
         CommonActions.reset({
           index: 0,
@@ -118,7 +113,7 @@ const LoginInfoScreen = () => {
     <SafeAreaView style={styles.safe}>
       <Header title="로그인 정보" />
 
-      {/* 로그아웃 (divider 있음) */}
+      {/* 로그아웃 */}
       <Pressable
         style={[styles.row, styles.rowWithDivider]}
         onPress={onPressLogout}
@@ -127,20 +122,18 @@ const LoginInfoScreen = () => {
         <RightArrow color={COLORS.gray700} />
       </Pressable>
 
-      {/* 서비스 탈퇴 (divider 없음) */}
+      {/* 서비스 탈퇴 */}
       <Pressable style={styles.row} onPress={onPressWithdraw}>
         <Text style={styles.rowTitle}>서비스 탈퇴</Text>
         <RightArrow color={COLORS.gray700} />
       </Pressable>
 
-      {/* 로그아웃 확인 모달 */}
+      {/* 로그아웃 확인 모달 (두 줄 고정) */}
       <NotificationModal
         visible={logoutModalVisible}
-        title="로그아웃"
-        description="정말 로그아웃하시겠어요?"
-        closeButton
+        title="정말 로그아웃하시겠어요?"
+        closeOnBackdropPress
         onClose={onCancelLogout}
-        closeOnBackdropPress={true}
         secondaryButton={{
           title: '취소',
           onPress: onCancelLogout,
@@ -152,21 +145,24 @@ const LoginInfoScreen = () => {
           },
         }}
         primaryButton={{
-          title: '확인',
+          title: '로그아웃',
           onPress: onConfirmLogout,
           variant: 'primary',
           textStyle: { ...Heading_16B },
         }}
-      />
+      >
+        <Text style={styles.modalDesc}>
+          로그아웃해도 계정 정보와{'\n'}
+          포인트, 레벨은 그대로 유지돼요.
+        </Text>
+      </NotificationModal>
 
-      {/* 서비스 탈퇴 확인 모달 */}
+      {/* 서비스 탈퇴 확인 모달 (두 줄 고정) */}
       <NotificationModal
         visible={withdrawModalVisible}
-        title="서비스 탈퇴"
-        description={'정말 탈퇴하시겠어요?'}
-        closeButton
+        title="정말 탈퇴하시겠어요?"
+        closeOnBackdropPress
         onClose={onCancelWithdraw}
-        closeOnBackdropPress={true}
         secondaryButton={{
           title: '취소',
           onPress: onCancelWithdraw,
@@ -178,12 +174,17 @@ const LoginInfoScreen = () => {
           },
         }}
         primaryButton={{
-          title: '확인',
+          title: '탈퇴',
           onPress: onConfirmWithdraw,
           variant: 'primary',
           textStyle: { ...Heading_16B },
         }}
-      />
+      >
+        <Text style={styles.modalDesc}>
+          탈퇴하면 계정정보와 보유 중인 포인트,{'\n'}
+          현재 레벨이 모두 삭제되며 복구할 수 없어요.
+        </Text>
+      </NotificationModal>
     </SafeAreaView>
   );
 };
@@ -198,6 +199,7 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: COLORS.white,
   },
+
   row: {
     height: scaleWidth(64),
     flexDirection: 'row',
@@ -205,14 +207,23 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     padding: scaleWidth(20),
   },
-  // 로그아웃 아래에만 divider
+
   rowWithDivider: {
     borderBottomWidth: 1,
     borderBottomColor: COLORS.gray100,
   },
+
   rowTitle: {
     ...Body_16SB,
     color: COLORS.black,
     fontWeight: '500',
+  },
+
+  // 로그아웃 / 탈퇴 모달 공통 설명 텍스트 (두 줄 고정)
+  modalDesc: {
+    ...Caption_14R,
+    color: COLORS.gray700,
+    textAlign: 'center',
+    lineHeight: scaleWidth(20),
   },
 });

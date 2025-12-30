@@ -142,7 +142,7 @@ export default function SearchResultScreen() {
 }
 
 /* =========================
-  스타일 (기존 SearchScreen 스타일 유지 톤)
+  스타일
 ========================= */
 const styles = StyleSheet.create({
   safe: {

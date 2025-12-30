@@ -23,7 +23,7 @@ import Header from '../../../components/Header';
  * - 리스트는 "날짜별 합산"으로 1일 = 1아이템만 노출
  *   예) 12/04에 2개가 있으면 → 80XP 70P, 12월 04일 (1개만 표시)
  * - 레이아웃/스타일은 기존 유지
- * - 바텀시트는 해당 날짜의 상세 항목 리스트만 표시 (상단 합산 요약 제거)
+ * - 바텀시트는 해당 날짜의 상세 항목 리스트만 표시
  */
 const PointHistoryScreen = () => {
   /** 바텀시트 상태 */
@@ -202,7 +202,7 @@ const PointHistoryScreen = () => {
     );
   };
 
-  /** 바텀시트 콘텐츠: ✅ 상단 합산 요약 제거, 상세 리스트만 */
+  /** 바텀시트 콘텐츠: 상단 합산 요약 제거, 상세 리스트만 */
   const SheetContent = () => {
     if (!selectedDayKey) return null;
 

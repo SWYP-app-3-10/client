@@ -10,7 +10,6 @@ import { scaleWidth, COLORS } from '../../styles/global';
 
 /**
  * 서비스 이용 약관 화면 (현재는 빈 화면)
- * - 나중에: WebView/Markdown/ScrollView로 약관 텍스트 붙이면 됨
  */
 const TermsOfServiceScreen = () => {
   const navigation = useNavigation<any>();
@@ -33,9 +32,6 @@ const TermsOfServiceScreen = () => {
 
 export default TermsOfServiceScreen;
 
-/* =========================
-  스타일
-========================= */
 const styles = StyleSheet.create({
   safe: {
     flex: 1,
@@ -43,8 +39,8 @@ const styles = StyleSheet.create({
   },
   container: {
     flex: 1,
-    paddingHorizontal: scaleWidth(20), // 좌우 패딩
-    paddingTop: scaleWidth(16), // 상단 패딩
+    paddingHorizontal: scaleWidth(20),
+    paddingTop: scaleWidth(16),
   },
   placeholder: {
     color: COLORS.gray500,
