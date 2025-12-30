@@ -34,8 +34,8 @@ export const AlarmIcon = createIconComponent(Alarm, scaleWidth(28));
 //  가로, 세로 크기 다름
 export const CheckIcon = createRectangleIconComponent(
   Check,
-  scaleWidth(9.29),
-  scaleWidth(7.44),
+  scaleWidth(12),
+  scaleWidth(9),
 );
 export const FirstIcon = createRectangleIconComponent(
   First,

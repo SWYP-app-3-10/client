@@ -8,6 +8,8 @@ import {
   Caption_12SB,
   Caption_14R,
   Heading_16EB_Round,
+  Body_16SB,
+  Body_16M,
 } from '../styles/global';
 import Spacer from './Spacer';
 import { Mission } from '../data/mock/missionData';
@@ -182,7 +184,7 @@ const styles = StyleSheet.create({
   missionCardWhite: {
     borderRadius: BORDER_RADIUS[16],
     paddingHorizontal: scaleWidth(20),
-    paddingVertical: scaleWidth(24),
+    paddingVertical: scaleWidth(16),
     backgroundColor: COLORS.white,
   },
   missionCardWhiteBorder: {
@@ -231,7 +233,7 @@ const styles = StyleSheet.create({
   progressStatusContainer: {
     backgroundColor: COLORS.puple[5],
     borderRadius: BORDER_RADIUS[30],
-    width: scaleWidth(50),
+    paddingHorizontal: scaleWidth(8),
     height: scaleWidth(26),
     justifyContent: 'center',
     alignItems: 'center',
@@ -251,9 +253,11 @@ const styles = StyleSheet.create({
     color: COLORS.puple.completed, // 완료 상태 진행률 텍스트 색상
   },
   missionCardTitleMyPage: {
+    ...Body_16SB,
     color: COLORS.black,
   },
   progressTextMyPage: {
+    ...Body_16M,
     color: COLORS.black,
   },
   progressStatusContainerMyPageInProgress: {

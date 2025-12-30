@@ -224,7 +224,7 @@ const QuizScreen: React.FC = () => {
           return (
             <View key={option.id}>
               {renderOption(option)}
-              {index !== quiz.options.length - 1 && <Spacer num={12} />}
+              {index !== quiz.options.length - 1 && <Spacer num={16} />}
             </View>
           );
         })}

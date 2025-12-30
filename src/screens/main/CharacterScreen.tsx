@@ -307,7 +307,7 @@ const CharacterScreen = () => {
         {/* 주간 출석 기록 */}
         <View style={styles.attendanceSection}>
           <Text style={styles.sectionTitle}>주간 출석 기록</Text>
-          <Spacer num={16} />
+          <Spacer num={12} />
           <View style={styles.attendanceDays}>
             {attendanceData.map((item, index) => (
               <View key={index} style={styles.attendanceDay}>
@@ -328,7 +328,7 @@ const CharacterScreen = () => {
           <Text style={styles.sectionDescription}>
             진행 중인 미션을 완료하면 새로운 미션이 열려요!
           </Text>
-          <Spacer num={16} />
+          <Spacer num={32} />
           {missions.map(mission => (
             <View key={mission.id} style={styles.missionCardWrapper}>
               <MissionCard mission={mission} myPage={true} />
@@ -499,10 +499,9 @@ const styles = StyleSheet.create({
     color: COLORS.black,
   },
   attendanceSection: {
-    paddingHorizontal: scaleWidth(20),
     position: 'absolute',
     width: scaleWidth(359),
-    height: scaleWidth(161),
+    height: scaleWidth(118),
     top: scaleWidth(757),
     left: scaleWidth(20),
   },
@@ -518,7 +517,7 @@ const styles = StyleSheet.create({
   attendanceDays: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    gap: scaleWidth(8),
+    gap: scaleWidth(15.83),
     backgroundColor: COLORS.gray100,
     borderRadius: BORDER_RADIUS[16],
     paddingVertical: scaleWidth(30),
