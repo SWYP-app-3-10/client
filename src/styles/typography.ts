@@ -2,13 +2,13 @@ import { StyleSheet, TextStyle } from 'react-native';
 import { scaleWidth } from './global';
 
 const getFontFamily = (weight: number): string => {
-  if (weight >= 800) {
+  if (weight == 800) {
     return 'Pretendard-ExtraBold';
-  } else if (weight >= 700) {
+  } else if (weight == 700) {
     return 'Pretendard-Bold';
-  } else if (weight >= 600) {
+  } else if (weight == 600) {
     return 'Pretendard-SemiBold';
-  } else if (weight >= 500) {
+  } else if (weight == 500) {
     return 'Pretendard-Medium';
   } else {
     return 'Pretendard-Regular';
