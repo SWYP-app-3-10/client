@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet, ActivityIndicator } from 'react-native';
 import Button from './Button';
-import { COLORS, scaleWidth, BORDER_RADIUS, Body_16M } from '../styles/global';
+import { COLORS, scaleWidth, BORDER_RADIUS } from '../styles/global';
 import { AppleIcon, GoogleIcon, Tooltip_RecentIcon } from '../icons';
 import { KakaoIcon } from '../icons/commonIcons/commonIcons';
 import { NaverIcon } from '../icons/commonIcons/commonIcons';
@@ -161,7 +161,9 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.naver,
   },
   socialButtonText: {
-    ...Body_16M,
+    fontFamily: 'Roboto-Medium',
+    fontSize: 16,
+    lineHeight: 16 * 1.5, // 150% (16 * 1.5 = 24)
   },
   kakaoButtonText: {
     color: COLORS.black,
