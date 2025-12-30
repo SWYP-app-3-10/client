@@ -1,6 +1,9 @@
 import React, { useState, useCallback } from 'react';
 import { View, Text, StyleSheet, ScrollView, Alert } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import {
+  SafeAreaView,
+  useSafeAreaInsets,
+} from 'react-native-safe-area-context';
 import { BORDER_RADIUS, COLORS, scaleWidth } from '../../styles/global';
 import {
   useCompleteOnboarding,
@@ -43,19 +46,20 @@ const DIFFICULTY_INFO = {
     label: '초급',
     time: '1분',
     description:
-      '록히드 마틴이 F-35 전투기 관련 총 11억 4천만 달러 규모의 대형 계약을 추가로 확보하면서 글로벌 방산 산업에 다시 한 번 강한 신호를 보냈다. 이번 계약은 단순한 무기 판매를 넘어, 미·중·러를 축으로 한 패권 경쟁이 얼마나 구조적으로 고착화되고 있는지를 보여주는 상징적 사건이다. ',
+      '인공지능 기술은 산업과 일상생활에서 빠르게 확산되고 있다. 많은 나라가 인공지능 안전과 신뢰를 높이기 위한 법과 기준을 준비 중이다. 예를 들어 새로운 법의 시행령이 검토되면서 안전과 산업 발전의 균형을 맞추려는 움직임이 있다. 일부 지역에서는 인공지능 서비스의 위험과 책임을 명확히 규정하려는 논의도 진행되고 있다. 이런 움직임은 기술 발전과 사회적 영향 모두를 고려한 것이다.',
   },
   [LevelCategory.INTERMEDIATE]: {
     label: '중급',
     time: '2분',
-    description:
-      '록히드 마틴이 F-35 전투기 관련 총 11억 4천만 달러 규모의 대형 계약을 추가로 확보하면서 글로벌 방산 산업에 다시 한 번 강한 신호를 보냈다. 이번 계약은 단순한 무기 판매를 넘어, 미·중·러를 축으로 한 패권 경쟁이 얼마나 구조적으로 고착화되고 있는지를 보여주는 상징적 사건이다. ',
+    description: `인공지능 기술은 의료, 금융, 일상 서비스 등 여러 분야에서 활용이 늘고 있다. 이런 기술적 성장에 맞춰 각국 정부와 기관은 안전과 책임에 관한 규제 체계를 마련하려 한다. 한국에서도 인공지능 기본법의 시행령이 논의되며 신뢰와 안전 기준을 마련하려는 움직임이 있다. 이 법에는 고위험 인공지능의 책임 범위와 투명성 의무 등이 포함될 전망이다.\n
+해외에서도 인공지능 규제 논의가 활발하다. 일부 국가는 감시 기능이 있는 서비스에 대한 안전 조치를 강화하고 있으며, 다른 곳에서는 기술 혁신과 안전 사이의 균형을 고민한다. 이런 논의는 인공지능이 사회에 미치는 영향을 줄이려는 시도로 볼 수 있다. 문제 해결을 위해 법과 기술 기준을 함께 정비하는 과정이 계속되고 있다.`,
   },
   [LevelCategory.ADVANCED]: {
     label: '고급',
     time: '4분',
-    description:
-      '록히드 마틴이 F-35 전투기 관련 총 11억 4천만 달러 규모의 대형 계약을 추가로 확보하면서 글로벌 방산 산업에 다시 한 번 강한 신호를 보냈다. 이번 계약은 단순한 무기 판매를 넘어, 미·중·러를 축으로 한 패권 경쟁이 얼마나 구조적으로 고착화되고 있는지를 보여주는 상징적 사건이다. ',
+    description: `인공지능 기술은 빠르게 발전하면서 산업, 의료, 금융 등 다양한 분야에 적용되고 있다. 이런 기술적 확산은 효율성을 높이는 동시에 새로운 위험과 책임 문제를 불러왔다. 많은 정부와 기관은 인공지능의 활용과 안전을 균형 있게 관리하기 위한 법적·정책적 틀을 마련하고 있다. 한국에서는 인공지능 기본법의 시행령이 준비되며 신뢰 기반의 규제와 산업 육성을 동시에 고려하는 방향으로 논의가 진행되고 있다. 이 법은 기술의 책임과 투명성, 안전 기준을 정하는 데 초점을 맞춘다.\n
+해외에서도 비슷한 흐름이 보인다. 일부 국가는 인공지능의 위험 요소를 줄이기 위한 규제를 도입하고 있으며, 다른 국가들은 혁신을 저해하지 않는 범위에서 조합된 규제 방안을 모색하고 있다. 이러한 논의는 기술 발전을 주도하는 기업과 정부가 함께 참여하는 과정이다. 규제의 방향은 공공 안전, 개인정보 보호, 책임 명확화 등 다양한 요소를 포함하고 있다.\n
+기술 발전과 규제 논의는 서로 긴밀하게 맞물려 있다. 기술이 사회 전반에 영향을 미치는 만큼, 법적 틀과 운영 체계도 함께 진화해야 한다. 다양한 국가의 사례는 규제의 범위와 방식이 서로 다르다는 점을 보여 준다. 예를 들어 일부 지역에서는 위험이 큰 응용 분야에 특별한 기준을 적용하고, 다른 곳에서는 기본적인 운영 규칙을 법으로 정한다. 이런 조치는 인공지능이 안전하고 신뢰할 수 있도록 관리하려는 의도를 반영한다.`,
   },
 };
 const DifficultySettingScreen = () => {
@@ -95,7 +99,7 @@ const DifficultySettingScreen = () => {
     }
     await completeOnboarding();
   };
-
+  const { bottom } = useSafeAreaInsets();
   const selectedInfo =
     DIFFICULTY_INFO[difficultyToLevelCategory(selectedDifficulty)];
 
@@ -108,7 +112,11 @@ const DifficultySettingScreen = () => {
         <ProgressBar fill={2} />
       </View>
 
-      <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
+      <ScrollView
+        style={styles.content}
+        contentContainerStyle={{ paddingBottom: bottom }}
+        showsVerticalScrollIndicator={false}
+      >
         <Spacer num={92} />
         <Text style={styles.title}>난이도를 선택해주세요</Text>
         <Spacer num={4} />

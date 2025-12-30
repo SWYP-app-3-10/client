@@ -9,8 +9,8 @@ export const USE_SERVER_API_FOR_INTERESTS = false;
 
 // 난이도 설정 API 서버 사용 여부
 export const USE_SERVER_API_FOR_LEVEL = false;
-// 난이도 설정 API 서버 사용 여부
-export const USE_SERVER_API_FOR_MISSION = true;
+// 미션 API 서버 사용 여부
+export const USE_SERVER_API_FOR_MISSION = false;
 
 // 다른 API 서버 사용 여부 (서버가 준비되면 true로 변경)
 export const USE_SERVER_API = false;

@@ -18,6 +18,7 @@ import { useIsOnboardingCompleted } from '../store/onboardingStore';
 
 import NotificationModal from '../components/NotificationModal';
 import BottomSheetModal from '../components/BottomSheetModal';
+import ToastModal from '../components/ToastModal';
 
 import { useExperienceStore } from '../store/experienceStore';
 import { useCharacterData } from '../hooks/useCharacter';
@@ -200,6 +201,18 @@ const RootNavigatorContent: React.FC<{
         >
           {modalState.children}
         </BottomSheetModal>
+      )}
+
+      {modalState.type === 'toast' && (
+        <ToastModal
+          visible={modalState.visible}
+          message={modalState.message}
+          duration={modalState.duration}
+          onClose={() => {
+            modalState.onClose?.();
+            hideModal();
+          }}
+        />
       )}
     </>
   );

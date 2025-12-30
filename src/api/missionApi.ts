@@ -22,24 +22,30 @@ const delay = (ms: number) =>
  * @returns Promise<Mission[]>
  */
 export const fetchMissions = async (): Promise<Mission[]> => {
-  const userInfo = await getUserInfo();
-  if (!userInfo) {
-    throw new Error('User info not found');
+  // 더미 데이터 우선 사용
+  if (USE_MOCK_DATA || !USE_SERVER_API_FOR_MISSION) {
+    await delay(200);
+    return mockMissions;
   }
+
+  // 서버 API 호출 시도
   try {
-    // 서버 API 호출
-    if (USE_SERVER_API_FOR_MISSION) {
-      const response = await client.get<Mission[]>(
-        `/api/content/today/userId=${userInfo.userId}`,
-      );
-      return response.data;
-    } else {
-      throw new Error('Server API is not enabled');
+    const userInfo = await getUserInfo();
+    if (!userInfo) {
+      console.warn('사용자 정보가 없어 더미 데이터 사용');
+      await delay(200);
+      return mockMissions;
     }
+
+    const response = await client.get<Mission[]>(
+      `/api/content/today/userId=${userInfo.userId}`,
+    );
+    return response.data;
   } catch (error) {
     console.error('미션 목록 조회 실패, 더미 데이터 사용:', error);
     // 서버 연결 실패 시 자동으로 더미 데이터 반환
-    throw error;
+    await delay(200);
+    return mockMissions;
   }
 };
 
@@ -53,6 +59,10 @@ export const fetchArticles = async (): Promise<Article[]> => {
     await delay(200);
     return mockArticles;
   }
+
+  // 서버 API 호출 (현재는 더미 데이터만 사용)
+  await delay(200);
+  return mockArticles;
 
   // try {
   //   // 서버 API 호출
@@ -111,6 +121,15 @@ export const updateMissionProgress = async (
     const updatedMission = { ...mission, current };
     return updatedMission;
   }
+
+  // 서버 API 호출 (현재는 더미 데이터만 사용)
+  await delay(200);
+  const mission = mockMissions.find(m => m.id === missionId);
+  if (!mission) {
+    throw new Error('Mission not found');
+  }
+  const updatedMission = { ...mission, current };
+  return updatedMission;
 
   // try {
   //   // 서버 API 호출

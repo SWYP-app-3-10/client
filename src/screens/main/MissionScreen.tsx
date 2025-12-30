@@ -13,6 +13,8 @@ import {
   ActivityIndicator,
   Alert,
   StyleSheet,
+  BackHandler,
+  Platform,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -37,7 +39,7 @@ import {
 } from '../../navigation/types';
 import { RouteNames } from '../../../routes';
 import { Article } from '../../data/mock/missionData';
-import { useShowModal } from '../../store/modalStore';
+import { useShowModal, useShowToastModal } from '../../store/modalStore';
 import { usePointStore } from '../../store/pointStore';
 import { ExperienceModalContent } from '../../components/ArticlePointModalContent';
 
@@ -68,6 +70,7 @@ const MissionScreen = () => {
     useNavigation<MainTabNavigationProp<MissionStackParamList>>();
   const { handleArticlePress } = useArticleNavigation({ returnTo: 'mission' });
   const showModal = useShowModal();
+  const showToastModal = useShowToastModal();
   const { addPoints } = usePointStore();
   const { addExperience } = useExperienceStore();
   const hasCheckedDailyEntryRef = useRef(false);
@@ -130,6 +133,31 @@ const MissionScreen = () => {
     }
     return [missions[missions.length - 1], ...missions, missions[0]];
   }, [missions]);
+
+  // 안드로이드 뒤로가기 시 앱 종료 모달 표시
+  useEffect(() => {
+    if (Platform.OS !== 'android') {
+      return;
+    }
+
+    const backAction = () => {
+      showToastModal({
+        message: "'뒤로' 버튼을 한번 더 누르시면 종료됩니다.",
+        duration: 2000,
+      });
+
+      return true;
+    };
+
+    const backHandler = BackHandler.addEventListener(
+      'hardwareBackPress',
+      backAction,
+    );
+
+    return () => {
+      backHandler.remove();
+    };
+  }, [showToastModal]);
 
   // 매일 첫 진입 시 포인트 획득 모달 표시
   useEffect(() => {

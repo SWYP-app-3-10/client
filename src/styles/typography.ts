@@ -1,4 +1,4 @@
-import { StyleSheet, TextStyle } from 'react-native';
+import { StyleSheet, TextStyle, Platform } from 'react-native';
 import { scaleWidth } from './global';
 
 const getFontFamily = (weight: number): string => {
@@ -16,6 +16,24 @@ const getFontFamily = (weight: number): string => {
   } else {
     return 'Pretendard-Regular';
   }
+};
+
+const getFontWeight = (weight: number): TextStyle['fontWeight'] => {
+  // iOS에서 폰트 두께를 명시적으로 지정
+  if (Platform.OS === 'ios') {
+    if (weight === 800) {
+      return '800';
+    } else if (weight === 700) {
+      return '700';
+    } else if (weight === 600) {
+      return '600';
+    } else if (weight === 500) {
+      return '500';
+    } else {
+      return '400';
+    }
+  }
+  return undefined;
 };
 
 const getLineHeight = (fontSize: number, lineHeightPercent: number): number => {
@@ -36,8 +54,10 @@ const createTextStyle = (
   letterSpacingPercent: number = 0,
 ): TextStyle => {
   const fontSize = scaleWidth(size);
+  const fontWeight = getFontWeight(weight);
   return {
     fontFamily: getFontFamily(weight),
+    ...(fontWeight && { fontWeight }),
     fontSize,
     lineHeight: getLineHeight(size, lineHeightPercent),
     letterSpacing: getLetterSpacing(size, letterSpacingPercent),
@@ -48,6 +68,7 @@ const TYPOGRAPHY = StyleSheet.create({
   // ========== Heading Styles ==========
   Heading_24EB_Round: {
     fontFamily: 'Pretendard-ExtraBold',
+    ...(Platform.OS === 'ios' && { fontWeight: '800' }),
     fontSize: scaleWidth(24),
     lineHeight: getLineHeight(24, 150),
     letterSpacing: getLetterSpacing(24, 0),
