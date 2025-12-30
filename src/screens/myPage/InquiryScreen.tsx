@@ -8,6 +8,7 @@ import {
   ScrollView,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useNavigation } from '@react-navigation/native';
 
 import Header from '../../components/Header';
 import Input from '../../components/Input';
@@ -21,7 +22,9 @@ import {
   Heading_20EB_Round,
   Body_16M,
   Heading_18SB,
-} from '../../styles/global'; // 디자인 시스템
+} from '../../styles/global';
+
+import { useShowToast } from '../../store/toastStore';
 
 /**
  * 문의하기 화면
@@ -31,6 +34,11 @@ import {
  * - textarea는 Input의 containerStyle로 높이만 확장 (공통 컴포넌트 유지)
  */
 const InquiryScreen = () => {
+  const navigation = useNavigation<any>();
+
+  // 토스트 요청 함수
+  const showToast = useShowToast();
+
   const [content, setContent] = useState(''); // 문의 내용
   const [email, setEmail] = useState(''); // 답변 받을 이메일
 
@@ -48,6 +56,12 @@ const InquiryScreen = () => {
    */
   const onPressSubmit = () => {
     console.log('[Inquiry] submit', { content, email }); // 임시 로그
+
+    // 설정 화면에서 토스트가 뜨도록 store에 메시지 저장
+    showToast('전달이 완료되었어요');
+
+    // 이전 화면(설정 화면)으로 돌아가기
+    navigation.goBack();
   };
 
   return (

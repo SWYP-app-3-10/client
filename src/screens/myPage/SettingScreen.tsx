@@ -1,10 +1,12 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { View, Text, StyleSheet, Switch, Pressable, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useFocusEffect } from '@react-navigation/native'; // ✅ useFocusEffect 추가
 
 import Header from '../../components/Header';
 import RightArrow from '../../assets/svg/RightArrow.svg';
+import Toast from '../../components/Toast'; // ✅ 추가
+
 import {
   COLORS,
   scaleWidth,
@@ -17,33 +19,72 @@ import { RouteNames } from '../../../routes';
 import { useShowModal } from '../../store/modalStore';
 import { useNotificationPermission } from '../../hooks/useNotificationPermission';
 
+// ✅ 추가: Toast store
+import { useToastMessage, useClearToast } from '../../store/toastStore'; // 경로 맞게
+
 /**
- * 설정 화면
- * - 로그인 정보
- * - 알림 설정 (토글)
- * - 약관 및 정책
- * - 문의하기
+ * SettingScreen
+ *
+ * 역할
+ * - 설정 섹션(회원정보/알림/약관/도움말) 메뉴 진입
+ * - 알림 토글은 "권한 상태"를 기반으로 UI를 동기화
+ *
+ * 알림 토글 UX 정책
+ * - 토글 ON 시: 안내 모달 → OS 권한 요청 → 결과에 따라 토글 반영
+ * - 토글 OFF 시: 앱 내부에서 OFF 처리만(권한 자체 OFF는 OS 설정에서)
  */
 const SettingScreen = () => {
   const navigation = useNavigation<any>();
+
+  // 화면에 표시되는 알림 토글 상태
   const [isAlarmOn, setIsAlarmOn] = useState(false);
 
+  // ✅ 추가: 토스트 로컬 상태(컴포넌트에서 표시 제어)
+  const [toastVisible, setToastVisible] = useState(false);
+  const [toastMessage, setToastMessage] = useState('');
+
+  // ✅ 추가: toastStore에서 메시지 읽기/초기화
+  const storedToastMessage = useToastMessage();
+  const clearToast = useClearToast();
+
+  // 공통 모달 호출(Store 기반)
   const showModal = useShowModal();
+
+  // 권한 상태 확인/요청 훅
   const { checkPermission, requestPermission } = useNotificationPermission();
+
+  // ✅ 추가: 화면 포커스 시, store에 메시지가 있으면 토스트로 표시 후 제거
+  useFocusEffect(
+    useCallback(() => {
+      if (storedToastMessage) {
+        setToastMessage(storedToastMessage);
+        setToastVisible(true);
+
+        // ✅ 중복 표시 방지
+        clearToast();
+      }
+    }, [storedToastMessage, clearToast]),
+  );
+
+  // ✅ 추가: 토스트 종료 콜백
+  const handleHideToast = useCallback(() => {
+    setToastVisible(false);
+  }, []);
 
   useEffect(() => {
     /**
-     * 초기 진입 시 권한 상태를 보고 토글 상태를 맞춰둠
-     * - checkPermission()이 "모달을 띄워야 하는 상태(권한 미허용/미결정 등)"면 true를 반환
-     * - 즉, shouldShowModal=true => 아직 권한이 확정적으로 허용된 상태가 아니므로 토글 OFF
-     * - shouldShowModal=false => 이미 허용된 상태로 보고 토글 ON
+     * 초기 진입 시, OS 알림 권한 상태를 조회하여 토글 UI를 동기화
+     *
+     * checkPermission() 반환 규칙(현재 훅 구현 기준)
+     * - true  : "권한이 아직 확정적으로 허용되지 않아서 안내/요청이 필요" → 토글 OFF
+     * - false : "이미 허용된 상태로 판단" → 토글 ON
      */
     const syncAlarmToggle = async () => {
       try {
         const shouldShowModal = await checkPermission();
         setIsAlarmOn(!shouldShowModal);
       } catch (e) {
-        // 실패 시 기존 값 유지
+        // 실패 시 기존 토글 상태 유지
       }
     };
 
@@ -51,12 +92,16 @@ const SettingScreen = () => {
   }, [checkPermission]);
 
   /**
-   * "알림 설정" row 탭 시 동작
-   * 1) 앱 모달(안내) -> 2) OS 권한 팝업 -> 3) 결과에 따라 토글 반영
+   * 알림 설정 Row(또는 Switch) 클릭 시 동작
+   *
+   * 1) 현재 ON이면: 앱 UI에서만 OFF 처리
+   * 2) 현재 OFF이면:
+   *    - 권한이 필요하면: 안내 모달 → OS 권한 요청 → 결과 반영
+   *    - 이미 허용이면: 바로 ON 처리
    */
   const handlePressAlarmRow = async () => {
-    // 이미 ON 상태면: UX 상 "행 탭"으로 OFF 처리만 해도 충분
-    // (권한 자체를 끄는 건 OS 설정에서)
+    // 이미 ON 상태면, UX 상 "OFF" 처리만 해도 충분
+    // (권한 자체 OFF는 사용자가 OS 설정에서)
     if (isAlarmOn) {
       setIsAlarmOn(false);
       return;
@@ -66,6 +111,7 @@ const SettingScreen = () => {
       const shouldShowModal = await checkPermission();
 
       if (shouldShowModal) {
+        // 권한 요청이 필요한 상태 → 안내 모달 노출 후, 사용자가 동의하면 OS 권한 팝업 요청
         showModal({
           image: <></>,
           title: '알림을 받으시겠어요?',
@@ -79,9 +125,10 @@ const SettingScreen = () => {
             onPress: async () => {
               const granted = await requestPermission();
 
-              // 권한 결과에 따라 토글 반영
+              // OS 권한 결과에 따라 토글 반영
               setIsAlarmOn(!!granted);
 
+              // 거절된 경우 사용자에게 OS 설정 안내
               if (!granted) {
                 Alert.alert(
                   '알림이 꺼져 있어요',
@@ -91,7 +138,6 @@ const SettingScreen = () => {
             },
           },
 
-          // ✅ LoginScreen 알림 모달과 동일한 스타일
           secondaryButton: {
             title: '괜찮아요',
             variant: 'outline',
@@ -101,7 +147,7 @@ const SettingScreen = () => {
               height: scaleWidth(48),
             },
             onPress: async () => {
-              // 사용자가 거절하면 토글 OFF 유지
+              // 사용자가 모달에서 거절한 경우 토글 OFF 유지
               setIsAlarmOn(false);
             },
           },
@@ -120,7 +166,15 @@ const SettingScreen = () => {
 
   return (
     <SafeAreaView style={styles.safe} edges={['top']}>
-      {/* ===== 헤더 ===== */}
+      {/* 토스트 (설정 화면 위에 오버레이) */}
+      <Toast
+        visible={toastVisible}
+        message={toastMessage}
+        duration={1500}
+        onHide={handleHideToast}
+      />
+
+      {/* 상단 헤더: 공통 Header + 가운데 타이틀(설정) 오버레이 */}
       <View style={styles.headerWrap}>
         <Header title="" />
         <View pointerEvents="none" style={styles.headerCenterTitleWrap}>
@@ -128,7 +182,7 @@ const SettingScreen = () => {
         </View>
       </View>
 
-      {/* ===== 컨텐츠 ===== */}
+      {/* 섹션별 메뉴 리스트 */}
       <View style={styles.container}>
         {/* 회원정보 */}
         <Text style={styles.sectionLabel}>회원정보</Text>
@@ -144,7 +198,7 @@ const SettingScreen = () => {
         {/* 알림 */}
         <Text style={styles.sectionLabel}>알림</Text>
 
-        {/* row 자체를 누르면 모달 -> OS 권한 -> 토글 반영 */}
+        {/* Row 전체를 누르면: 모달 → OS 권한 → 토글 반영 */}
         <Pressable
           style={[styles.row, styles.alarmRow]}
           onPress={handlePressAlarmRow}
@@ -156,7 +210,7 @@ const SettingScreen = () => {
             </Text>
           </View>
 
-          {/* 스위치는 표시/반영만 담당 */}
+          {/* Switch는 "표시/트리거" 역할만 (권한 흐름은 동일 handler로 통합) */}
           <Switch
             style={[styles.alarmSwitch, styles.switchLarge]}
             value={isAlarmOn}
@@ -171,7 +225,7 @@ const SettingScreen = () => {
 
         <View style={styles.divider} />
 
-        {/* 약관 */}
+        {/* 약관 및 정책 */}
         <Text style={styles.sectionLabel}>약관 및 정책</Text>
         <Pressable
           style={styles.row}
@@ -206,9 +260,6 @@ const SettingScreen = () => {
 
 export default SettingScreen;
 
-/* =========================
-  스타일
-========================= */
 const styles = StyleSheet.create({
   safe: {
     flex: 1,
@@ -246,7 +297,6 @@ const styles = StyleSheet.create({
     marginBottom: scaleWidth(12),
   },
 
-  // row는 레이아웃만 담당
   row: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -254,7 +304,6 @@ const styles = StyleSheet.create({
     paddingVertical: scaleWidth(12),
   },
 
-  // 구분선 전용 스타일
   divider: {
     height: 1,
     backgroundColor: COLORS.gray200,
