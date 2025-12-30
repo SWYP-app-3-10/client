@@ -8,12 +8,17 @@ import { RouteNames } from '../../../routes';
 
 import RecentSearches from '../../components/RecentSearches';
 import SearchHeader from './components/SearchHeader';
+import SearchLiveResultOverlay from './SearchLiveResultOveraly';
+
 import { COLORS, scaleWidth } from '../../styles/global';
 import {
   loadRecents,
   addRecent,
   removeRecent,
 } from '../../storage/recentSearches';
+
+import type { NewsItems } from '../../data/mock/searchData';
+import { useArticleNavigation } from '../../hooks/useArticleNavigation';
 
 type Props = NativeStackScreenProps<
   FullScreenStackParamList,
@@ -25,16 +30,19 @@ type SearchRecord = {
 };
 
 export default function SearchInputScreen({ navigation }: Props) {
-  /** 현재 입력 중인 검색어 */
+  // 현재 입력 중인 검색어
   const [text, setText] = useState('');
-  /** 최근 검색어 목록 */
+  // 저장된 최근 검색어 목록
   const [searchRecord, setSearchRecord] = useState<SearchRecord[]>([]);
 
-  // string[] -> SearchRecord[] 변환
+  // 기사 상세 화면 이동 공통 훅
+  const { handleArticlePress } = useArticleNavigation({ returnTo: 'search' });
+
+  // string[] 형태의 최근 검색어를 화면에서 사용하는 타입으로 변환
   const convertToSearchRecords = (keywords: string[]): SearchRecord[] =>
     keywords.map(keyword => ({ searchName: keyword }));
 
-  // 마운트 시 최근 검색어 로드
+  // 화면 진입 시 로컬 스토리지에 저장된 최근 검색어 로드
   useEffect(() => {
     const loadRecentSearches = async () => {
       try {
@@ -47,7 +55,7 @@ export default function SearchInputScreen({ navigation }: Props) {
     loadRecentSearches();
   }, []);
 
-  // ✅ 검색어 저장 (useCallback)
+  // 검색어를 최근 검색어 목록에 저장
   const recordSearch = useCallback(async (keyword: string) => {
     try {
       const updated = await addRecent(keyword);
@@ -57,25 +65,27 @@ export default function SearchInputScreen({ navigation }: Props) {
     }
   }, []);
 
-  // ✅ 검색 실행 (useCallback)
+  // 검색 확정(엔터 / 검색 버튼)
+  // - 검색어 저장
+  // - 검색 결과 화면으로 이동
   const submit = useCallback(
     async (kw?: string) => {
       const keyword = (kw ?? text).trim();
       if (!keyword) return;
 
       await recordSearch(keyword);
-
-      // ✅ 검색 결과 화면(탭바 없음)으로 이동
       navigation.navigate(RouteNames.SEARCH_RESULT, { keyword });
     },
     [text, recordSearch, navigation],
   );
 
-  // 최근 검색어 클릭
+  // 최근 검색어 칩 클릭 시
+  // - 입력값 세팅
+  // - 검색 결과 화면으로 이동
   const handleRecentSearchClick = useCallback(
     async (keyword: string) => {
       setText(keyword);
-      await submit(keyword); // ✅ 저장 + SEARCH_RESULT 이동까지 한 번에
+      await submit(keyword);
     },
     [submit],
   );
@@ -90,18 +100,34 @@ export default function SearchInputScreen({ navigation }: Props) {
     }
   }, []);
 
+  // 실시간 검색 결과 오버레이에서 아이템 클릭 시
+  // - 검색어 저장
+  // - 기사 상세 화면으로 바로 이동
+  const handlePressLiveItem = useCallback(
+    async (item: NewsItems) => {
+      const parsed = Number(item.id);
+      if (Number.isNaN(parsed)) return;
+
+      await recordSearch(text.trim());
+      handleArticlePress(parsed);
+    },
+    [handleArticlePress, recordSearch, text],
+  );
+
   return (
     <SafeAreaView style={styles.safe} edges={['top']}>
-      {/* ✅ 검색 전용 헤더 사용 */}
+      {/* 검색 입력 / 표시 공통 헤더 */}
       <SearchHeader
         value={text}
         onChangeText={setText}
         onSubmit={() => submit()}
         goBackAction={() => navigation.goBack()}
-        // iconColor={COLORS.black} // 필요하면
       />
 
       <View style={styles.container}>
+        {/* 기존 최근 검색어 UI
+            - 항상 렌더링
+            - 오버레이 방식으로 덮이기 때문에 구조 변경 없음 */}
         <Text style={styles.sectionTitle}>최근 검색어</Text>
 
         <View style={styles.chipsArea}>
@@ -114,7 +140,7 @@ export default function SearchInputScreen({ navigation }: Props) {
                   key={index.toString()}
                   index={index}
                   removeSearchRecord={removeSearchRecordFn}
-                  recordSearch={handleRecentSearchClick} // ✅ 누르면 결과로 이동
+                  recordSearch={handleRecentSearchClick}
                   setSearch={setText}
                   item={value}
                 />
@@ -122,14 +148,19 @@ export default function SearchInputScreen({ navigation }: Props) {
             </View>
           )}
         </View>
+
+        {/* 입력 중일 때만 노출되는 실시간 검색 결과 오버레이
+            - 기존 최근 검색어 UI 위에 덮는 구조
+            - 입력값이 비어 있으면 내부에서 null 반환 */}
+        <SearchLiveResultOverlay
+          keyword={text}
+          onPressItem={handlePressLiveItem}
+        />
       </View>
     </SafeAreaView>
   );
 }
 
-/* =========================
-  스타일
-========================= */
 const styles = StyleSheet.create({
   safe: {
     flex: 1,
@@ -138,6 +169,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     paddingHorizontal: scaleWidth(20),
+    position: 'relative', // 오버레이 기준이 되는 부모
   },
   sectionTitle: {
     marginTop: scaleWidth(12),

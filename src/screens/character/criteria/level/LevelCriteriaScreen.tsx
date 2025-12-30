@@ -417,6 +417,7 @@ const styles = StyleSheet.create({
 
   textArea: {
     flex: 1,
+    gap: scaleWidth(3),
   },
 
   rowTop: {
