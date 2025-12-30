@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   Text,
   View,
@@ -7,7 +7,7 @@ import {
   TouchableOpacity,
   StatusBar,
 } from 'react-native';
-import { useNavigation, useFocusEffect } from '@react-navigation/native';
+import { useNavigation } from '@react-navigation/native';
 import { RouteNames } from '../../../routes';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useBottomTabBarHeight } from '@react-navigation/bottom-tabs'; // 추가
@@ -36,6 +36,10 @@ import {
   Check_3DIcon,
   InfoIcon,
   Level_1_Tooltip,
+  Level_2_Tooltip,
+  Level_3_Tooltip,
+  Level_4_Tooltip,
+  Level_5_Tooltip,
   RightArrowIcon,
   ProgressBarIcon,
 } from '../../icons';
@@ -51,7 +55,10 @@ const CharacterScreen = () => {
     useNavigation<MainTabNavigationProp<CharacterStackParamList>>();
   const tabBarHeight = useBottomTabBarHeight(); // 탭바 높이
 
-  const [showTooltip, setShowTooltip] = useState(true);
+  const [showTooltip, setShowTooltip] = useState(false);
+  const tooltipTimerRef = React.useRef<ReturnType<typeof setTimeout> | null>(
+    null,
+  );
 
   // React Query hooks
   const {
@@ -86,6 +93,24 @@ const CharacterScreen = () => {
     [currentLevel],
   );
 
+  // 메모이제이션: 레벨에 맞는 툴팁 컴포넌트
+  const LevelTooltip = useMemo(() => {
+    switch (currentLevel) {
+      case 1:
+        return Level_1_Tooltip;
+      case 2:
+        return Level_2_Tooltip;
+      case 3:
+        return Level_3_Tooltip;
+      case 4:
+        return Level_4_Tooltip;
+      case 5:
+        return Level_5_Tooltip;
+      default:
+        return Level_1_Tooltip;
+    }
+  }, [currentLevel]);
+
   // 메모이제이션: 진행률 계산
   const progressPercentageValue = useMemo(
     () => Math.round((currentExp / nextLevelExp) * 100),
@@ -96,22 +121,31 @@ const CharacterScreen = () => {
   const isLoading = characterLoading || attendanceLoading || missionsLoading;
   const hasError = characterError || attendanceError || missionsError;
 
-  useFocusEffect(
-    useCallback(() => {
-      // 화면 진입 시 툴팁 표시
-      setShowTooltip(true);
+  // 캐릭터 정보 클릭 핸들러
+  const handleCharacterInfoPress = useCallback(() => {
+    // 기존 타이머가 있으면 제거
+    if (tooltipTimerRef.current) {
+      clearTimeout(tooltipTimerRef.current);
+    }
 
-      // 3초 후 툴팁 숨기기
-      const timer = setTimeout(() => {
-        setShowTooltip(false);
-      }, 3000);
+    // 툴팁 표시
+    setShowTooltip(true);
 
-      return () => {
-        clearTimeout(timer);
-        setShowTooltip(false);
-      };
-    }, []),
-  );
+    // 1500ms 후 툴팁 숨기기
+    tooltipTimerRef.current = setTimeout(() => {
+      setShowTooltip(false);
+      tooltipTimerRef.current = null;
+    }, 1500);
+  }, []);
+
+  // 컴포넌트 언마운트 시 타이머 정리
+  useEffect(() => {
+    return () => {
+      if (tooltipTimerRef.current) {
+        clearTimeout(tooltipTimerRef.current);
+      }
+    };
+  }, []);
 
   // 네비게이션 핸들러들 메모이제이션
   const handleNavigateToNotification = useCallback(() => {
@@ -188,16 +222,20 @@ const CharacterScreen = () => {
 
         {/* 레벨 버튼 */}
         <View style={styles.levelButtonContainer}>
-          <View style={styles.levelButton}>
+          <Button
+            style={styles.levelButton}
+            onPress={handleCharacterInfoPress}
+            variant="ghost"
+          >
             <Text style={styles.levelButtonText}>
               {currentLevelData?.title || 'Lv. 1 아메바'}
             </Text>
             <InfoIcon />
-          </View>
+          </Button>
           {/* 툴팁 */}
           {showTooltip && (
             <View style={styles.tooltipContainer}>
-              <Level_1_Tooltip />
+              <LevelTooltip />
             </View>
           )}
         </View>

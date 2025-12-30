@@ -8,6 +8,11 @@ import ProgressBar from '../../assets/png/ProgressBar.png';
 import Intro_CardList_IMG from '../../assets/png/Intro_CardList_IMG.png';
 import Intro_Fuction_IMG from '../../assets/png/Intro_Fuction_IMG.png';
 import Intro_Search_IMG from '../../assets/png/Intro_Search_IMG.png';
+import level_2_tooltip from '../../assets/png/level2_tooltip.png';
+import level_3_tooltip from '../../assets/png/level3_tooltip.png';
+import level_4_tooltip from '../../assets/png/level4_tooltip.png';
+import level_5_tooltip from '../../assets/png/level5_tooltip.png';
+
 export const Tooltip_RecentIcon = createImageIconComponent(
   Tooltip_Recent,
   scaleWidth(163),
@@ -15,6 +20,27 @@ export const Tooltip_RecentIcon = createImageIconComponent(
 );
 export const Level_1_Tooltip = createImageIconComponent(
   Level_1_tooltip,
+  scaleWidth(270),
+  scaleWidth(73),
+);
+export const Level_2_Tooltip = createImageIconComponent(
+  level_2_tooltip,
+  scaleWidth(270),
+  scaleWidth(73),
+);
+export const Level_3_Tooltip = createImageIconComponent(
+  level_3_tooltip,
+
+  scaleWidth(270),
+  scaleWidth(73),
+);
+export const Level_4_Tooltip = createImageIconComponent(
+  level_4_tooltip,
+  scaleWidth(270),
+  scaleWidth(73),
+);
+export const Level_5_Tooltip = createImageIconComponent(
+  level_5_tooltip,
   scaleWidth(270),
   scaleWidth(73),
 );
