@@ -21,8 +21,11 @@ import BottomSheetModal from '../components/BottomSheetModal';
 import ToastModal from '../components/ToastModal';
 
 import { useExperienceStore } from '../store/experienceStore';
-import { useCharacterData } from '../hooks/useCharacter';
+import { useCharacterData, characterKeys } from '../hooks/useCharacter';
 import { LevelUpModalContent } from '../components/ArticlePointModalContent';
+import { useQueryClient } from '@tanstack/react-query';
+import { Heading_24EB_Round } from '../styles/typography';
+import { COLORS } from '../styles/global';
 
 const Stack = createNativeStackNavigator();
 
@@ -46,6 +49,7 @@ const RootNavigatorContent: React.FC<{
 
   // 경험치와 레벨 데이터 감시
   const { experience } = useExperienceStore();
+  const queryClient = useQueryClient();
   const { data: characterData } = useCharacterData();
 
   // ref: 마지막 경험치 / 레벨업 모달 노출 여부 / 온보딩 완료 이전 상태
@@ -69,6 +73,19 @@ const RootNavigatorContent: React.FC<{
     }
     prevOnboardingCompletedRef.current = isOnboardingCompleted;
   }, [isOnboardingCompleted, navigationRef]);
+
+  // 경험치 변경 시 characterData refetch
+  useEffect(() => {
+    if (!isOnboardingCompleted) {
+      return;
+    }
+    // 경험치가 변경되면 characterData를 refetch하여 최신 레벨 정보 가져오기
+    const previousExp = lastCheckedExpRef.current;
+    if (experience !== previousExp && experience > previousExp) {
+      // 경험치가 증가했을 때만 refetch
+      queryClient.invalidateQueries({ queryKey: characterKeys.data() });
+    }
+  }, [experience, isOnboardingCompleted, queryClient]);
 
   // 레벨업 체크: 경험치가 다음 레벨 경험치에 도달했는지 확인
   useEffect(() => {
@@ -100,8 +117,10 @@ const RootNavigatorContent: React.FC<{
       // 레벨업 모달 표시
       showModal({
         title: '축하해요! 레벨 업!',
+        titleStyle: { ...Heading_24EB_Round },
         titleDescriptionGapSize: 4,
         description: '조금씩 생각이 자라나고 있어요.',
+        descriptionColor: COLORS.gray700,
         children: React.createElement(LevelUpModalContent, { newLevel }),
         primaryButton: {
           title: '확인',
