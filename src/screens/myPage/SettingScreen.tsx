@@ -1,11 +1,12 @@
 import React, { useEffect, useState, useCallback } from 'react';
-import { View, Text, StyleSheet, Switch, Pressable, Alert } from 'react-native';
+import { View, Text, StyleSheet, Pressable, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useNavigation, useFocusEffect } from '@react-navigation/native'; // ✅ useFocusEffect 추가
+import { useNavigation, useFocusEffect } from '@react-navigation/native';
 
 import Header from '../../components/Header';
 import RightArrow from '../../assets/svg/RightArrow.svg';
-import Toast from '../../components/Toast'; // ✅ 추가
+import Toast from '../../components/Toast';
+import Toggle from '../../components/Toggle';
 
 import {
   COLORS,
@@ -19,7 +20,7 @@ import { RouteNames } from '../../../routes';
 import { useShowModal } from '../../store/modalStore';
 import { useNotificationPermission } from '../../hooks/useNotificationPermission';
 
-// ✅ 추가: Toast store
+// Toast store
 import { useToastMessage, useClearToast } from '../../store/toastStore'; // 경로 맞게
 
 /**
@@ -39,11 +40,11 @@ const SettingScreen = () => {
   // 화면에 표시되는 알림 토글 상태
   const [isAlarmOn, setIsAlarmOn] = useState(false);
 
-  // ✅ 추가: 토스트 로컬 상태(컴포넌트에서 표시 제어)
+  // 토스트 로컬 상태(컴포넌트에서 표시 제어)
   const [toastVisible, setToastVisible] = useState(false);
   const [toastMessage, setToastMessage] = useState('');
 
-  // ✅ 추가: toastStore에서 메시지 읽기/초기화
+  // toastStore에서 메시지 읽기/초기화
   const storedToastMessage = useToastMessage();
   const clearToast = useClearToast();
 
@@ -53,20 +54,20 @@ const SettingScreen = () => {
   // 권한 상태 확인/요청 훅
   const { checkPermission, requestPermission } = useNotificationPermission();
 
-  // ✅ 추가: 화면 포커스 시, store에 메시지가 있으면 토스트로 표시 후 제거
+  // 화면 포커스 시, store에 메시지가 있으면 토스트로 표시 후 제거
   useFocusEffect(
     useCallback(() => {
       if (storedToastMessage) {
         setToastMessage(storedToastMessage);
         setToastVisible(true);
 
-        // ✅ 중복 표시 방지
+        // 중복 표시 방지
         clearToast();
       }
     }, [storedToastMessage, clearToast]),
   );
 
-  // ✅ 추가: 토스트 종료 콜백
+  // 토스트 종료 콜백
   const handleHideToast = useCallback(() => {
     setToastVisible(false);
   }, []);
@@ -118,7 +119,6 @@ const SettingScreen = () => {
           description:
             '알림을 켜두면, 하루 두 번 문해력 루틴을 \n잊지 않고 챙길 수 있어요!',
           descriptionColor: COLORS.gray600,
-          // ✅ LoginScreen 알림 모달과 동일한 스타일
           primaryButton: {
             title: '알림 받을래요',
             textStyle: { ...Heading_16B, color: COLORS.white },
@@ -210,17 +210,8 @@ const SettingScreen = () => {
             </Text>
           </View>
 
-          {/* Switch는 "표시/트리거" 역할만 (권한 흐름은 동일 handler로 통합) */}
-          <Switch
-            style={[styles.alarmSwitch, styles.switchLarge]}
-            value={isAlarmOn}
-            onValueChange={handlePressAlarmRow}
-            trackColor={{
-              false: COLORS.gray300,
-              true: COLORS.puple.main,
-            }}
-            thumbColor={COLORS.white}
-          />
+          {/* Toggle은 "표시/트리거" 역할만 (권한 흐름은 동일 handler로 통합) */}
+          <Toggle value={isAlarmOn} onChange={() => handlePressAlarmRow()} />
         </Pressable>
 
         <View style={styles.divider} />
