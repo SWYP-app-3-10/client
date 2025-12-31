@@ -72,6 +72,7 @@
 			<array>
 				<string>com.googleusercontent.apps.424320333528-3em9k816cropmqufki5vq4cb4nrrcrof</string>
 				<string>com.googleusercontent.apps.424320333528-de3lsl1sqg407ck8nrk8jmodmhertul2</string>
+				<string>com.googleusercontent.apps.424320333528-kds0hat5nvuq8nq74hikfju5720bk91n</string>
 			</array>
 		</dict>
 		<dict>
@@ -87,7 +88,7 @@
 			<string>Editor</string>
 			<key>CFBundleURLSchemes</key>
 			<array>
-				<string>braincellnaver</string>
+				<string>neurousnaver</string>
 			</array>
 		</dict>
 	</array>

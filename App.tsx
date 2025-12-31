@@ -28,7 +28,7 @@ const App = () => {
           projectId: 'neurous-d632a',
           storageBucket: 'neurous-d632a.firebasestorage.app',
           messagingSenderId: '424320333528',
-          appId: '1:424320333528:ios:980dd3a741185e3a48c9ad',
+          appId: '1:424320333528:ios:afc28032174c603c48c9ad',
           databaseURL: 'https://neurous-d632a-default-rtdb.firebaseio.com',
         };
         initializeApp(firebaseConfig);

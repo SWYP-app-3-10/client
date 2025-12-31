@@ -7,66 +7,6 @@
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:424320333528:android:38338ecb462a582848c9ad",
-        "android_client_info": {
-          "package_name": "com.neurous.app"
-        }
-      },
-      "oauth_client": [
-        {
-          "client_id": "424320333528-jlh34ohos5hf6k7pftgee66of5848tm7.apps.googleusercontent.com",
-          "client_type": 1,
-          "android_info": {
-            "package_name": "com.neurous.app",
-            "certificate_hash": "5e8f16062ea3cd2c4a0d547876baa6f38cabf625"
-          }
-        },
-        {
-          "client_id": "424320333528-mbdce7h3auesj7avtsiu4pbf79kjjcbg.apps.googleusercontent.com",
-          "client_type": 1,
-          "android_info": {
-            "package_name": "com.neurous.app",
-            "certificate_hash": "5d3246c4c727d7a87f03bfbb8957edeae2a48702"
-          }
-        },
-        {
-          "client_id": "424320333528-v5i3k9h9servc8rkbsq35jenjp329f4g.apps.googleusercontent.com",
-          "client_type": 1,
-          "android_info": {
-            "package_name": "com.neurous.app",
-            "certificate_hash": "ec6532da1daf55fea9635150420a2c2bb66b5856"
-          }
-        },
-        {
-          "client_id": "424320333528-3em9k816cropmqufki5vq4cb4nrrcrof.apps.googleusercontent.com",
-          "client_type": 3
-        }
-      ],
-      "api_key": [
-        {
-          "current_key": "AIzaSyDInX-MEyyzAHDVcPNbnNLtZBbUufHtO3M"
-        }
-      ],
-      "services": {
-        "appinvite_service": {
-          "other_platform_oauth_client": [
-            {
-              "client_id": "424320333528-3em9k816cropmqufki5vq4cb4nrrcrof.apps.googleusercontent.com",
-              "client_type": 3
-            },
-            {
-              "client_id": "424320333528-de3lsl1sqg407ck8nrk8jmodmhertul2.apps.googleusercontent.com",
-              "client_type": 2,
-              "ios_info": {
-                "bundle_id": "com.neurous.app"
-              }
-            }
-          ]
-        }
-      }
-    },
-    {
-      "client_info": {
         "mobilesdk_app_id": "1:424320333528:android:0c2c955b8bf1f1dd48c9ad",
         "android_client_info": {
           "package_name": "io.neurous.app"
@@ -118,7 +58,7 @@
               "client_id": "424320333528-de3lsl1sqg407ck8nrk8jmodmhertul2.apps.googleusercontent.com",
               "client_type": 2,
               "ios_info": {
-                "bundle_id": "com.neurous.app"
+                "bundle_id": "io.neurous.app"
               }
             }
           ]
