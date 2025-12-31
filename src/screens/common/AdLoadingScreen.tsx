@@ -82,6 +82,7 @@ const AdLoadingScreen = () => {
         navigation.replace(RouteNames.ARTICLE_DETAIL, {
           articleId,
           returnTo,
+          fromAd: true,
         });
       } else {
         // 보상 미지급 - 알림 후 뒤로가기
