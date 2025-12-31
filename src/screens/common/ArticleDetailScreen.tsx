@@ -32,7 +32,7 @@ import { RouteNames } from '../../../routes';
 import { FullScreenStackParamList } from '../../navigation/types';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useOnboardingStore } from '../../store/onboardingStore';
-import { useShowModal } from '../../store/modalStore';
+import { useShowModal, useShowToastModal } from '../../store/modalStore';
 import { ARTICLE_READ_EXPERIENCE } from '../../config/rewards';
 import { useExperienceStore } from '../../store/experienceStore';
 import { LevelCategory } from '../../types/interests';
@@ -80,6 +80,7 @@ const ArticleDetailScreen = () => {
     }
     return time || READING_TIME_BY_DIFFICULTY[LevelCategory.BEGINNER];
   }, [difficulty]);
+  const showToastModal = useShowToastModal();
   // 화면 포커스 상태 추적
   useFocusEffect(
     useCallback(() => {
@@ -101,6 +102,21 @@ const ArticleDetailScreen = () => {
         }
       };
     }, []),
+  );
+  useFocusEffect(
+    useCallback(() => {
+      // 모달
+      setTimeout(() => {
+        showToastModal({
+          message: '새로운 글이 열렸어요',
+          position: 'center',
+          backgroundColor: COLORS.gray800Opacity80,
+          height: scaleWidth(39),
+          width: scaleWidth(148),
+          borderRadius: BORDER_RADIUS[8],
+        });
+      }, 500);
+    }, [showToastModal]),
   );
 
   // articleId가 변경되면 경험치 획득 상태 리셋 및 타이머 정리
