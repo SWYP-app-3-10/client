@@ -51,6 +51,17 @@ import { usePointStore } from '../../store/pointStore';
 import { ActivityIndicator } from 'react-native';
 import { useExperienceStore } from '../../store/experienceStore';
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+import { lv1Images } from '../../assets/lottie/lv1/preload';
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+import { lv2Images } from '../../assets/lottie/lv2/preload';
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+import { lv3Images } from '../../assets/lottie/lv3/preload';
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+import { lv4Images } from '../../assets/lottie/lv4/preload';
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+import { lv5Images } from '../../assets/lottie/lv5/preload';
+
 const CharacterScreen = () => {
   const rootNavigation =
     useNavigation<MainTabNavigationProp<CharacterStackParamList>>();
@@ -117,6 +128,24 @@ const CharacterScreen = () => {
     () => Math.round((currentExp / nextLevelExp) * 100),
     [currentExp, nextLevelExp],
   );
+
+  // 로티
+  const lottieSource = useMemo(() => {
+    switch (currentLevel) {
+      case 1:
+        return require('../../assets/lottie/lv1/lv1_animation.json');
+      case 2:
+        return require('../../assets/lottie/lv2/lv2_animation.json');
+      case 3:
+        return require('../../assets/lottie/lv3/lv3_animation.json');
+      case 4:
+        return require('../../assets/lottie/lv4/lv4_animation.json');
+      case 5:
+        return require('../../assets/lottie/lv5/lv5_animation.json');
+      default:
+        return require('../../assets/lottie/lv1/lv1_animation.json');
+    }
+  }, [currentLevel]);
 
   // 로딩 상태
   const isLoading = characterLoading || attendanceLoading || missionsLoading;
@@ -203,11 +232,13 @@ const CharacterScreen = () => {
         {/* 로티 영역 */}
         <View style={styles.lottieContainer}>
           <LottieView
-            source={require('../../assets/lottie/Lv2..json')}
+            source={lottieSource}
             style={styles.lottie}
             autoPlay
             loop
             resizeMode="cover"
+            imageAssetsFolder="images"
+            renderMode="SOFTWARE"
           />
         </View>
         <View style={styles.notificationButtonContainer}>
