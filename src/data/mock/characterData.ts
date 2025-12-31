@@ -14,20 +14,23 @@ export type LevelDetail = {
   levelId: number;
   title: string;
   requiredExp: number;
-  rewards: { label: string; xp: number; pt: number }[]; // 경험치/포인트 정책
-  tips: string[]; // 안내 문구
+  rewards: { label: string; xp: number; pt: number }[];
+  tips: string[];
 };
 
 /**
  * 포인트 / 경험치 히스토리 아이템
- * ⚠️ createdAt은 반드시 ISO 8601 문자열
+ * createdAt은 반드시 ISO 8601 문자열
  */
 export type PointHistoryItem = {
   id: string;
-  title: string; // 내역 제목
-  createdAt: string; // ISO 8601 (ex: 2025-12-08T00:00:00Z)
-  xpDelta: number; // +/- 경험치
-  ptDelta: number; // +/- 포인트
+  title: string;
+  createdAt: string;
+  xpDelta: number;
+  ptDelta: number;
+
+  /** 트랜잭션 기준 묶음 키 */
+  transactionId: string;
 };
 
 /* ================= 레벨 목록 ================= */
@@ -125,56 +128,68 @@ export const levelDetailMap: Record<number, LevelDetail> = {
   },
 };
 
-/* ================= 포인트 / 경험치 히스토리 (ISO 날짜) ================= */
+/* ================= 포인트 / 경험치 히스토리 ================= */
+/**
+ * 같은 transactionId = 같은 트랜잭션
+ * → 화면에서는 날짜가 아니라 "트랜잭션 기준"으로 묶을 수 있음
+ */
 
 export const pointHistoryMock: PointHistoryItem[] = [
   {
     id: 'h1',
-    title: '미션을 달성해서 경험치와 포인트를 받았어요!',
+    title: '글 읽기',
     createdAt: '2025-12-08T09:00:00Z',
-    xpDelta: 40,
-    ptDelta: 40,
+    xpDelta: 5,
+    ptDelta: 0,
+    transactionId: 'tx-2025-12-08-001',
   },
   {
     id: 'h2',
-    title: '글을 읽어서 경험치를 받았어요!',
-    createdAt: '2025-12-07T09:00:00Z',
-    xpDelta: 0,
-    ptDelta: 30,
-  },
-  {
-    id: 'h3',
-    title: '미션을 달성해서 경험치를 받았어요!',
-    createdAt: '2025-12-06T09:00:00Z',
+    title: '퀴즈(정답)',
+    createdAt: '2025-12-08T09:02:00Z',
     xpDelta: 20,
-    ptDelta: 0,
+    ptDelta: 30,
+    transactionId: 'tx-2025-12-08-001',
   },
-  {
-    id: 'h4',
-    title: '포인트 차감 케이스 테스트',
-    createdAt: '2025-12-05T09:00:00Z',
-    xpDelta: 0,
-    ptDelta: -20,
-  },
+
   {
     id: 'h5',
-    title: '받은 내역 테스트1 12/4 09:00',
+    title: '글 읽기',
     createdAt: '2025-12-04T09:00:00Z',
-    xpDelta: 40,
-    ptDelta: 40,
+    xpDelta: 5,
+    ptDelta: 0,
+    transactionId: 'tx-2025-12-04-001',
   },
   {
     id: 'h6',
-    title: '받은 내역 테스트2 12/4 09:20 -> 최신순 확인',
+    title: '퀴즈 오답',
     createdAt: '2025-12-04T09:20:00Z',
-    xpDelta: 40,
-    ptDelta: 30,
+    xpDelta: 10,
+    ptDelta: 10,
+    transactionId: 'tx-2025-12-04-001',
   },
   {
     id: 'h7',
-    title: '받은 내역 테스트3 12/4 09:10',
-    createdAt: '2025-12-04T09:10:00Z',
-    xpDelta: 40,
+    title: '데일리 출석',
+    createdAt: '2025-12-04T09:00:00Z',
+    xpDelta: 5,
+    ptDelta: 10,
+    transactionId: 'tx-2025-12-04-002',
+  },
+  {
+    id: 'h8',
+    title: '위클리 출석',
+    createdAt: '2025-12-04T09:20:00Z',
+    xpDelta: 30,
     ptDelta: 30,
+    transactionId: 'tx-2025-12-04-002',
+  },
+  {
+    id: 'h9',
+    title: '단일 테스트',
+    createdAt: '2025-12-27T09:20:00Z',
+    xpDelta: 100,
+    ptDelta: 100,
+    transactionId: 'tx-2025-12-27-001',
   },
 ];
