@@ -330,7 +330,7 @@
 					"-ObjC",
 					"-lc++",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.neurous.app;
+				PRODUCT_BUNDLE_IDENTIFIER = io.neurous.app;
 				PRODUCT_NAME = Neurous;
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 5.0;
@@ -359,7 +359,7 @@
 					"-ObjC",
 					"-lc++",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.neurous.app;
+				PRODUCT_BUNDLE_IDENTIFIER = io.neurous.app;
 				PRODUCT_NAME = Neurous;
 				SWIFT_VERSION = 5.0;
 				VERSIONING_SYSTEM = "apple-generic";
