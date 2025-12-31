@@ -81,7 +81,9 @@ const ArticleDetailScreen = () => {
     return time || READING_TIME_BY_DIFFICULTY[LevelCategory.BEGINNER];
   }, [difficulty]);
   const showToastModal = useShowToastModal();
-  // 화면 포커스 상태 추적
+  const toastTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // 화면 포커스 상태 추적 및 초기화
   useFocusEffect(
     useCallback(() => {
       // 화면이 포커스될 때 - 기존 타이머 정리 및 상태 리셋
@@ -89,24 +91,15 @@ const ArticleDetailScreen = () => {
         clearTimeout(timerRef.current);
         timerRef.current = null;
       }
+      if (toastTimerRef.current) {
+        clearTimeout(toastTimerRef.current);
+        toastTimerRef.current = null;
+      }
       isScreenFocusedRef.current = true;
       hasEarnedExperienceRef.current = false;
 
-      return () => {
-        // 화면이 포커스를 잃을 때 (다른 화면으로 이동)
-        isScreenFocusedRef.current = false;
-        // 타이머 정리
-        if (timerRef.current) {
-          clearTimeout(timerRef.current);
-          timerRef.current = null;
-        }
-      };
-    }, []),
-  );
-  useFocusEffect(
-    useCallback(() => {
-      // 모달
-      setTimeout(() => {
+      // 토스트 모달 표시 (화면 진입 시 한 번만)
+      toastTimerRef.current = setTimeout(() => {
         showToastModal({
           message: '새로운 글이 열렸어요',
           position: 'center',
@@ -115,11 +108,24 @@ const ArticleDetailScreen = () => {
           width: scaleWidth(148),
           borderRadius: BORDER_RADIUS[8],
         });
+        toastTimerRef.current = null;
       }, 500);
+
+      return () => {
+        isScreenFocusedRef.current = false;
+        if (timerRef.current) {
+          clearTimeout(timerRef.current);
+          timerRef.current = null;
+        }
+        if (toastTimerRef.current) {
+          clearTimeout(toastTimerRef.current);
+          toastTimerRef.current = null;
+        }
+      };
     }, [showToastModal]),
   );
 
-  // articleId가 변경되면 경험치 획득 상태 리셋 및 타이머 정리
+  // articleId가 변경되면 경험치 획득 상태 리셋
   useEffect(() => {
     // 기존 타이머 정리
     if (timerRef.current) {
