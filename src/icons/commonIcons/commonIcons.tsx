@@ -29,7 +29,7 @@ import BottomModalCheck from '../../assets/svg/bottomModalCheck.svg';
 export const Ic_backIcon = createIconComponent(Icon_back, ICON_SIZES.XL);
 export const CircleIcon = createIconComponent(Circle, scaleWidth(14));
 export const InfoIcon = createIconComponent(Info, ICON_SIZES.L);
-export const CloseIcon = createIconComponent(Close, ICON_SIZES.XL);
+export const CloseIcon = createIconComponent(Close, ICON_SIZES.L);
 export const TriangleIcon = createIconComponent(Triangle, ICON_SIZES.X3L);
 export const AppleIcon = createIconComponent(Apple, ICON_SIZES.M);
 export const GoogleIcon = createIconComponent(Google, ICON_SIZES.M);
