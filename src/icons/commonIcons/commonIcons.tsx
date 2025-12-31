@@ -24,6 +24,7 @@ import Home from '../../assets/svg/home.svg';
 import Search from '../../assets/svg/search.svg';
 import Character from '../../assets/svg/character.svg';
 import MyPage from '../../assets/svg/myPage.svg';
+import BottomModalCheck from '../../assets/svg/bottomModalCheck.svg';
 
 export const Ic_backIcon = createIconComponent(Icon_back, ICON_SIZES.XL);
 export const CircleIcon = createIconComponent(Circle, scaleWidth(14));
@@ -49,6 +50,11 @@ export const Check_2Icon = createRectangleIconComponent(
   Check_2,
   scaleWidth(10),
   scaleWidth(6),
+);
+export const BottomModalCheckIcon = createRectangleIconComponent(
+  BottomModalCheck,
+  scaleWidth(13),
+  scaleWidth(10),
 );
 export const FirstIcon = createRectangleIconComponent(
   First,

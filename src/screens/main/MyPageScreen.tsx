@@ -447,7 +447,7 @@ const MyPageScreen = () => {
             }}
           >
             <Text style={styles.levelText}>{getLevelText(difficulty)}</Text>
-            <Check_2Icon />
+            <Check_2Icon color={COLORS.gray600} />
           </TouchableOpacity>
         </View>
 
