@@ -149,7 +149,11 @@ const MissionScreen = () => {
     const backAction = () => {
       showToastModal({
         message: "'뒤로' 버튼을 한번 더 누르시면 종료됩니다.",
-        duration: 2000,
+        position: 'center',
+        backgroundColor: COLORS.blackOpacity60,
+        height: scaleWidth(67),
+        width: scaleWidth(353),
+        borderRadius: BORDER_RADIUS[16],
       });
       return true;
     };
