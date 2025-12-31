@@ -1,13 +1,15 @@
 // levelData.ts
-import type { ComponentType } from 'react';
-import type { SvgProps } from 'react-native-svg';
-
-// 레벨 캐릭터 SVG import
-import Lv1Ameba from '../../../../assets/svg/level/Lv1_Ameba.svg';
-import Lv2Fish from '../../../../assets/svg/level/Lv2_Fish.svg';
-import Lv3Cloud from '../../../../assets/svg/level/Lv3_Cloud.svg';
-import Lv4Caveman from '../../../../assets/svg/level/Lv4_Caveman.svg';
-import Lv5Einstein from '../../../../assets/svg/level/Lv5_Einstein.svg';
+import React from 'react';
+import { StyleProp } from 'react-native';
+import { ImageStyle } from 'react-native-fast-image';
+import { scaleWidth } from '../../../../styles/global';
+import {
+  Level_1_Profile,
+  Level_2_Profile,
+  Level_3_Profile,
+  Level_4_Profile,
+  Level_5_Profile,
+} from '../../../../icons';
 
 export type LevelCriteria = {
   id: number;
@@ -16,8 +18,20 @@ export type LevelCriteria = {
   summaryTitle: string;
   summaryDesc: string;
 
-  // 레벨별 캐릭터 SVG 컴포넌트
-  character: ComponentType<SvgProps>;
+  // 레벨별 캐릭터 컴포넌트 (사이즈 조정 가능)
+  character: (style?: StyleProp<ImageStyle>) => React.ReactElement;
+};
+
+const createCharacterRenderer = (
+  Component: React.ComponentType<{ style?: StyleProp<ImageStyle> }>,
+  defaultSize?: { width?: number; height?: number },
+): ((style?: StyleProp<ImageStyle>) => React.ReactElement) => {
+  return (style?: StyleProp<ImageStyle>) => {
+    const mergedStyle = defaultSize
+      ? [{ width: defaultSize.width, height: defaultSize.height }, style]
+      : style;
+    return React.createElement(Component, { style: mergedStyle });
+  };
 };
 
 export const levelList: LevelCriteria[] = [
@@ -28,7 +42,10 @@ export const levelList: LevelCriteria[] = [
     requiredExp: 0,
     summaryTitle: '처음 시작',
     summaryDesc: '누구나 ...', // 반영하지 않음 -> 추후 기획 수정 시 사용
-    character: Lv1Ameba,
+    character: createCharacterRenderer(Level_1_Profile, {
+      width: scaleWidth(69.51),
+      height: scaleWidth(62.53),
+    }),
   },
   {
     id: 2,
@@ -36,7 +53,10 @@ export const levelList: LevelCriteria[] = [
     requiredExp: 100,
     summaryTitle: '짧은 글부터 천천히 헤엄치듯 읽기 시작한 단계예요.',
     summaryDesc: '퀴즈를 5개 풀면 달성할 수 있어요!',
-    character: Lv2Fish,
+    character: createCharacterRenderer(Level_2_Profile, {
+      width: scaleWidth(76.21),
+      height: scaleWidth(65.53),
+    }),
   },
   {
     id: 3,
@@ -44,7 +64,10 @@ export const levelList: LevelCriteria[] = [
     requiredExp: 500,
     summaryTitle: '읽는 재미를 알게 되어, 빠르게 자라나는 단계예요.',
     summaryDesc: '퀴즈를 25개 풀면 달성할 수 있어요!',
-    character: Lv3Cloud,
+    character: createCharacterRenderer(Level_3_Profile, {
+      width: scaleWidth(84.4),
+      height: scaleWidth(95.45),
+    }),
   },
   {
     id: 4,
@@ -52,7 +75,10 @@ export const levelList: LevelCriteria[] = [
     requiredExp: 2000,
     summaryTitle: '글을 이해하고, 지식을 도구처럼 활용하기 시작한 단계에요.',
     summaryDesc: '퀴즈를 100개 풀면 달성할 수 있어요!',
-    character: Lv4Caveman,
+    character: createCharacterRenderer(Level_4_Profile, {
+      width: scaleWidth(74.56),
+      height: scaleWidth(84.46),
+    }),
   },
   {
     id: 5,
@@ -60,6 +86,9 @@ export const levelList: LevelCriteria[] = [
     requiredExp: 6000,
     summaryTitle: '복잡한 글도 스스로 생각하며 읽어내는 단계예요.',
     summaryDesc: '퀴즈를 300개 풀면 달성할 수 있어요!',
-    character: Lv5Einstein,
+    character: createCharacterRenderer(Level_5_Profile, {
+      width: scaleWidth(83.57),
+      height: scaleWidth(89.05),
+    }),
   },
 ];
