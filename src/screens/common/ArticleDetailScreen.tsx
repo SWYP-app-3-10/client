@@ -60,6 +60,8 @@ const ArticleDetailScreen = () => {
 
   // @ts-ignore - route params 타입은 나중에 추가
   const articleId = route.params?.articleId;
+  // @ts-ignore - route params 타입은 나중에 추가
+  const fromAd = route.params?.fromAd;
   const article = articles.find((a: Article) => a.id === articleId);
 
   // 난이도에 따른 읽기 시간 설정
@@ -98,18 +100,20 @@ const ArticleDetailScreen = () => {
       isScreenFocusedRef.current = true;
       hasEarnedExperienceRef.current = false;
 
-      // 토스트 모달 표시 (화면 진입 시 한 번만)
-      toastTimerRef.current = setTimeout(() => {
-        showToastModal({
-          message: '새로운 글이 열렸어요',
-          position: 'center',
-          backgroundColor: COLORS.gray800Opacity80,
-          height: scaleWidth(39),
-          width: scaleWidth(148),
-          borderRadius: BORDER_RADIUS[8],
-        });
-        toastTimerRef.current = null;
-      }, 500);
+      // 토스트 모달 표시 (광고를 보고 들어왔을 때만)
+      if (fromAd) {
+        toastTimerRef.current = setTimeout(() => {
+          showToastModal({
+            message: '새로운 글이 열렸어요',
+            position: 'center',
+            backgroundColor: COLORS.gray800Opacity80,
+            height: scaleWidth(39),
+            width: scaleWidth(148),
+            borderRadius: BORDER_RADIUS[8],
+          });
+          toastTimerRef.current = null;
+        }, 500);
+      }
 
       return () => {
         isScreenFocusedRef.current = false;
@@ -122,7 +126,7 @@ const ArticleDetailScreen = () => {
           toastTimerRef.current = null;
         }
       };
-    }, [showToastModal]),
+    }, [showToastModal, fromAd]),
   );
 
   // articleId가 변경되면 경험치 획득 상태 리셋
