@@ -73,3 +73,6 @@ yarn-error.log
 !.yarn/releases
 !.yarn/sdks
 !.yarn/versions
+
+# Android 키스토어 비밀번호 (보안)
+android/gradle.properties
