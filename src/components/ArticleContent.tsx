@@ -69,7 +69,7 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.gray200,
   },
   infoContainer: {
-    borderRadius: scaleWidth(12),
+    borderRadius: BORDER_RADIUS[20],
     top: -scaleWidth(27),
     backgroundColor: COLORS.white,
     paddingHorizontal: scaleWidth(20),

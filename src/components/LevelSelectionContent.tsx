@@ -7,7 +7,7 @@ import {
   Body_18M,
   Heading_18B,
 } from '../styles/global';
-import { CheckIcon } from '../icons';
+import { BottomModalCheckIcon } from '../icons';
 import { LevelCategory } from '../types/interests';
 
 interface LevelOption {
@@ -72,7 +72,9 @@ const LevelSelectionContent: React.FC<LevelSelectionContentProps> = ({
                     >
                       {option.label}
                     </Text>
-                    {isSelected && <CheckIcon color={COLORS.puple.main} />}
+                    {isSelected && (
+                      <BottomModalCheckIcon color={COLORS.puple.main} />
+                    )}
                   </View>
                   <View style={styles.optionDetailsContainer}>
                     <View style={[styles.detailItem]}>
@@ -109,9 +111,11 @@ const LevelSelectionContent: React.FC<LevelSelectionContentProps> = ({
 };
 
 const styles = StyleSheet.create({
-  optionsContainer: {},
+  optionsContainer: {
+    paddingBottom: scaleWidth(21.5),
+  },
   option: {
-    paddingVertical: scaleWidth(16.5),
+    paddingVertical: scaleWidth(16),
     paddingHorizontal: scaleWidth(20),
   },
   optionSelected: {
