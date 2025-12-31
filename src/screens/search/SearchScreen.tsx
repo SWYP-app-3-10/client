@@ -1,10 +1,18 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
 import {
   View,
   Text,
   StyleSheet,
   TouchableOpacity,
   FlatList,
+  LayoutChangeEvent,
+  Pressable,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -30,11 +38,124 @@ import {
   scaleWidth,
 } from '../../styles/global';
 
+/**
+ * 아이콘 SVG import (여기만 너네 파일명/경로에 맞게 수정)
+ * - timer pill 오른쪽 아이콘
+ * - 우측 검색 아이콘
+ */
+import TimerArrowIcon from '../../assets/svg/RightArrow.svg';
+import SearchIcon from '../../assets/svg/Search.svg';
+
 /** 한 번에 추가로 보여줄 아이템 개수(페이지 단위) */
 const PAGE_SIZE = 10;
 
 /** 작은 버튼 UX 개선용 터치 영역 확장 */
 const HIT_SLOP = { top: 10, bottom: 10, left: 10, right: 10 };
+
+/**
+ * value를 min~max 범위로 제한
+ * → 툴팁 위치가 부모 영역을 벗어나지 않도록 보정
+ */
+const clamp = (value: number, min: number, max: number) =>
+  Math.min(Math.max(value, min), max);
+
+/**
+ * ======================================
+ * useTooltip (LevelCriteriaScreen에서 쓰던 방식 이식)
+ * - 툴팁 표시/숨김 토글
+ * - 자동 닫힘 타이머 관리
+ * - 말풍선과 꼬리가 아이콘(타이머 캡슐) 중앙을 가리키도록 위치 계산
+ * ======================================
+ */
+function useTooltip(autoHideMs: number) {
+  /** 툴팁 표시 여부 */
+  const [visible, setVisible] = useState(false);
+
+  /** 자동 닫힘 타이머 */
+  const hideTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  /**
+   * 레이아웃 측정 값들
+   * - areaWidth    : 툴팁이 포함된 영역 너비
+   * - targetCenterX: 타겟(타이머 캡슐) 중앙 좌표
+   * - tooltipWidth : 실제 툴팁 너비
+   */
+  const [areaWidth, setAreaWidth] = useState(0);
+  const [targetCenterX, setTargetCenterX] = useState(0);
+  const [tooltipWidth, setTooltipWidth] = useState(0);
+
+  /** 기존 타이머 제거 */
+  const clearTimer = useCallback(() => {
+    if (hideTimerRef.current) {
+      clearTimeout(hideTimerRef.current);
+      hideTimerRef.current = null;
+    }
+  }, []);
+
+  /** 툴팁 열기 + 자동 닫힘 예약 */
+  const openWithAutoHide = useCallback(() => {
+    clearTimer();
+    setVisible(true);
+
+    hideTimerRef.current = setTimeout(() => {
+      setVisible(false);
+      hideTimerRef.current = null;
+    }, autoHideMs);
+  }, [autoHideMs, clearTimer]);
+
+  /** 토글 */
+  const toggle = useCallback(() => {
+    setVisible(prev => {
+      const next = !prev;
+      clearTimer();
+      if (next) openWithAutoHide();
+      return next;
+    });
+  }, [clearTimer, openWithAutoHide]);
+
+  /**
+   * 툴팁 말풍선 좌측 위치
+   * - 타겟 중앙 기준
+   * - 부모 영역 밖으로 나가지 않도록 clamp
+   */
+  const tooltipLeft = useMemo(() => {
+    if (!areaWidth || !tooltipWidth) return 0;
+    const raw = targetCenterX - tooltipWidth / 2;
+    return clamp(raw, 0, areaWidth - tooltipWidth);
+  }, [areaWidth, tooltipWidth, targetCenterX]);
+
+  /**
+   * 툴팁 꼬리 위치
+   * - 말풍선 내부 기준
+   * - 타겟 중앙을 가리키도록 계산
+   */
+  const arrowLeft = useMemo(() => {
+    const ARROW_HALF = scaleWidth(6);
+    return Math.max(scaleWidth(10), targetCenterX - tooltipLeft - ARROW_HALF);
+  }, [targetCenterX, tooltipLeft]);
+
+  /** 레이아웃 측정 콜백 */
+  const onLayoutArea = (e: LayoutChangeEvent) =>
+    setAreaWidth(e.nativeEvent.layout.width);
+
+  const onLayoutTarget = (e: LayoutChangeEvent) => {
+    const { x, width } = e.nativeEvent.layout;
+    setTargetCenterX(x + width / 2);
+  };
+
+  const onLayoutTooltip = (e: LayoutChangeEvent) =>
+    setTooltipWidth(e.nativeEvent.layout.width);
+
+  return {
+    visible,
+    toggle,
+    tooltipLeft,
+    arrowLeft,
+    onLayoutArea,
+    onLayoutTarget,
+    onLayoutTooltip,
+  };
+}
 
 /**
  * SearchListFooter
@@ -83,6 +204,9 @@ export default function SearchScreen({
   // 추가 로딩 여부
   const [isLoadingMore, setIsLoadingMore] = useState(false);
 
+  // ✅ 타이머 툴팁(사진처럼)
+  const timerTooltip = useTooltip(1500);
+
   /**
    * 라우트 파라미터 반영
    * - 다른 화면에서 특정 카테고리로 진입했을 경우 초기값 설정
@@ -104,10 +228,10 @@ export default function SearchScreen({
 
   /**
    * 타이머 캡슐 버튼
-   * - 추후 기능 확장을 위한 placeholder
+   * - ✅ 누르면 툴팁 토글
    */
   const onPressTimer = () => {
-    console.log('[SearchScreen] timer pressed');
+    timerTooltip.toggle();
   };
 
   /**
@@ -166,19 +290,44 @@ export default function SearchScreen({
             onPress={onPressExplore}
             style={styles.exploreTitleBtn}
             hitSlop={HIT_SLOP}
-          >
-            <Text style={styles.exploreTitleText}>탐색</Text>
-          </TouchableOpacity>
+          />
 
-          <View style={styles.centerWrap}>
-            <TouchableOpacity
+          {/* ✅ 가운데 영역: 툴팁 기준 영역 */}
+          <View style={styles.centerWrap} onLayout={timerTooltip.onLayoutArea}>
+            <Pressable
               onPress={onPressTimer}
               style={styles.timerPill}
               hitSlop={HIT_SLOP}
+              onLayout={timerTooltip.onLayoutTarget}
             >
               <Text style={styles.timerPillText}>16:41</Text>
-              <View style={styles.timerPillIconBox} />
-            </TouchableOpacity>
+
+              {/* ✅ 아이콘 자리: View 박스 → SVG */}
+              <View style={styles.timerPillIconBox}>
+                <TimerArrowIcon
+                  width={scaleWidth(18)}
+                  height={scaleWidth(18)}
+                />
+              </View>
+            </Pressable>
+
+            {/* ✅ 사진처럼 툴팁 */}
+            {timerTooltip.visible && (
+              <View
+                style={[styles.tooltipWrap, { left: timerTooltip.tooltipLeft }]}
+                onLayout={timerTooltip.onLayoutTooltip}
+              >
+                <Text style={styles.tooltipText}>
+                  16분 뒤에 새로운 글을 확인할 수 있어요!
+                </Text>
+                <View
+                  style={[
+                    styles.tooltipArrow,
+                    { left: timerTooltip.arrowLeft },
+                  ]}
+                />
+              </View>
+            )}
           </View>
 
           <TouchableOpacity
@@ -186,7 +335,14 @@ export default function SearchScreen({
             style={styles.searchSquareBtn}
             hitSlop={HIT_SLOP}
           >
-            <View style={styles.searchSquare} />
+            {/* 검색 아이콘 */}
+            <View style={styles.searchIconWrap}>
+              <SearchIcon
+                width={scaleWidth(48)}
+                height={scaleWidth(48)}
+                color={COLORS.gray400}
+              />
+            </View>
           </TouchableOpacity>
         </View>
 
@@ -269,6 +425,11 @@ const styles = StyleSheet.create({
     height: scaleWidth(52),
     paddingHorizontal: scaleWidth(20),
     paddingTop: scaleWidth(8),
+
+    // 툴팁이 탭 위로 올라오도록 수정
+    zIndex: 100,
+    elevation: 100, // Android
+    overflow: 'visible', // iOS
   },
 
   exploreTitleBtn: {
@@ -282,10 +443,16 @@ const styles = StyleSheet.create({
     color: COLORS.puple?.main,
   },
 
+  // ✅ 가운데 영역을 relative로: 툴팁 absolute 위치 기준
   centerWrap: {
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
+    position: 'relative',
+
+    zIndex: 100,
+    elevation: 100,
+    overflow: 'visible',
   },
 
   timerPill: {
@@ -306,11 +473,43 @@ const styles = StyleSheet.create({
     marginRight: scaleWidth(4),
   },
 
+  // ✅ 기존 박스 유지하되 내부에 SVG 렌더
   timerPillIconBox: {
     width: scaleWidth(18),
     height: scaleWidth(18),
     borderRadius: scaleWidth(3),
     backgroundColor: COLORS.gray300,
+  },
+
+  // ✅ 툴팁(사진 느낌)
+  tooltipWrap: {
+    position: 'absolute',
+    top: scaleWidth(42), // 타이머 캡슐 아래로
+    backgroundColor: COLORS.gray800, // gray900 없으면 black로
+    paddingHorizontal: scaleWidth(12),
+    paddingVertical: scaleWidth(8),
+    borderRadius: scaleWidth(12),
+    maxWidth: scaleWidth(280),
+    zIndex: 999, // 툴팁 최상단 노출
+    elevation: 999,
+  },
+
+  tooltipText: {
+    ...Caption_12M,
+    color: COLORS.white,
+  },
+
+  tooltipArrow: {
+    position: 'absolute',
+    top: -scaleWidth(6),
+    width: 0,
+    height: 0,
+    borderLeftWidth: scaleWidth(6),
+    borderRightWidth: scaleWidth(6),
+    borderBottomWidth: scaleWidth(6),
+    borderLeftColor: 'transparent',
+    borderRightColor: 'transparent',
+    borderBottomColor: COLORS.gray800,
   },
 
   searchSquareBtn: {
@@ -319,10 +518,12 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
 
-  searchSquare: {
+  // ✅ 검색 아이콘 터치영역/정렬용 래퍼
+  searchIconWrap: {
     width: scaleWidth(48),
     height: scaleWidth(48),
-    backgroundColor: COLORS.gray300,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
 
   tabsWrap: {
