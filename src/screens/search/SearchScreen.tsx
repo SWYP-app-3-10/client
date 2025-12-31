@@ -282,7 +282,7 @@ export default function SearchScreen({
   };
 
   return (
-    <SafeAreaView style={styles.safe} edges={['top', 'bottom']}>
+    <SafeAreaView style={styles.safe} edges={['top']}>
       <View style={styles.container}>
         {/* 탐색 모드 상단 헤더 */}
         <View style={styles.exploreHeaderRow}>
