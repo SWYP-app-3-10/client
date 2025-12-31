@@ -98,7 +98,7 @@ const styles = StyleSheet.create({
     marginTop: scaleWidth(20),
     alignItems: 'center',
     justifyContent: 'center',
-    width: '100%',
+    width: scaleWidth(248),
     height: scaleWidth(62),
     borderRadius: BORDER_RADIUS[12],
     backgroundColor: COLORS.puple[3],
