@@ -47,7 +47,9 @@ export const COLORS = {
   gray600: '#ADB3C5',
   gray700: '#9EA5BB',
   gray800: '#767C91',
+  gray800Opacity80: 'rgba(118, 124, 145, 0.8)',
   black: '#19181E',
+  blackOpacity60: 'rgba(0, 0, 0, 0.6) ',
   // 메인
   puple: {
     main: '#6F44F5',

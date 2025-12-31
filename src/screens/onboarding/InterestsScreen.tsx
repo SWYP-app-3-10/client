@@ -18,6 +18,7 @@ import ProgressBar from '../../components/ProgressBar';
 import { Button } from '../../components';
 import { BORDER_RADIUS } from '../../styles/global';
 import { useOnboardingStore } from '../../store/onboardingStore';
+import { useShowToastModal } from '../../store/modalStore';
 import {
   CheckIcon,
   FirstIcon,
@@ -98,6 +99,7 @@ const InterestsScreen = () => {
   );
   const savedInterests = useOnboardingStore(state => state.interests);
   const setInterests = useOnboardingStore(state => state.setInterests);
+  const showToastModal = useShowToastModal();
 
   // 편집 모드 확인
   const editMode = route.params?.editMode || false;
@@ -123,7 +125,24 @@ const InterestsScreen = () => {
 
   const toggleInterest = useCallback(
     (id: InterestCategory) => {
+      // 먼저 현재 상태를 확인하여 3개 제한 체크
       setSelectedInterests(prev => {
+        // 3개를 이미 선택한 상태에서 새로운 항목을 선택하려고 할 때
+        if (!prev.has(id) && prev.size >= 3) {
+          // setState 콜백 밖에서 토스트 모달 표시 (렌더링 중 상태 업데이트 경고 방지)
+          setTimeout(() => {
+            showToastModal({
+              message: '최대 3순위까지 선택할 수 있어요',
+              position: 'center',
+              backgroundColor: COLORS.gray800Opacity80,
+              height: scaleWidth(39),
+              width: scaleWidth(212),
+              borderRadius: BORDER_RADIUS[8],
+            });
+          }, 0);
+          return prev; // 변경 없이 이전 상태 반환
+        }
+
         const newSelected = new Map(prev);
         if (newSelected.has(id)) {
           // 이미 선택된 경우 제거하고 순서 재정렬
@@ -137,10 +156,8 @@ const InterestsScreen = () => {
           });
         } else {
           // 최대 3개까지 선택 가능
-          if (newSelected.size < 3) {
-            const nextOrder = newSelected.size + 1;
-            newSelected.set(id, nextOrder);
-          }
+          const nextOrder = newSelected.size + 1;
+          newSelected.set(id, nextOrder);
         }
         // 변경된 관심분야를 AsyncStorage에 저장
         const interestsData: Record<string, number> = {};
@@ -151,7 +168,7 @@ const InterestsScreen = () => {
         return newSelected;
       });
     },
-    [setInterests],
+    [setInterests, showToastModal],
   );
 
   const getPriority = useCallback(

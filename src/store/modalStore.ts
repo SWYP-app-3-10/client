@@ -5,6 +5,7 @@ import {
 } from '../components/NotificationModal';
 import { StyleProp, TextStyle } from 'react-native';
 import { ReactNode } from 'react';
+import { ToastPosition } from '../components/ToastModal';
 
 export type ModalType = 'notification' | 'bottomSheet' | 'toast';
 
@@ -39,6 +40,12 @@ interface ToastModalState {
   visible: boolean;
   message: string;
   duration?: number;
+  position?: ToastPosition;
+  backgroundColor?: string;
+  opacity?: number;
+  height?: number;
+  width?: number;
+  borderRadius?: number;
   onClose?: () => void;
 }
 
