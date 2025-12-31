@@ -87,7 +87,15 @@ const RootNavigatorContent: React.FC<{
       currentExp >= nextLevelExp &&
       !hasShownLevelUpModalRef.current
     ) {
-      const newLevel = characterData.currentLevel + 1;
+      // nextLevelExp에 해당하는 레벨 찾기 (characterData.currentLevel은 이미 업데이트되었을 수 있음)
+      const { levelList } = require('../data/mock/characterData');
+      const newLevelData = levelList.find(
+        (level: { requiredExp: number; id: number }) =>
+          level.requiredExp === nextLevelExp,
+      );
+      const newLevel = newLevelData
+        ? newLevelData.id
+        : characterData.currentLevel + 1;
 
       // 레벨업 모달 표시
       showModal({
