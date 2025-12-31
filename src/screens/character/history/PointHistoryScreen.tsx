@@ -20,24 +20,24 @@ import Header from '../../../components/Header';
 /**
  * PointHistoryScreen
  *
- * - 리스트는 "날짜별 합산"으로 1일 = 1아이템만 노출
- *   예) 12/04에 2개가 있으면 → 80XP 70P, 12월 04일 (1개만 표시)
- * - 레이아웃/스타일은 기존 유지
- * - 바텀시트는 해당 날짜의 상세 항목 리스트만 표시
+ * - 리스트는 "날짜별 합산"으로 1일 = 1아이템만 노출 (기존 유지)
+ * - 바텀시트는 "트랜잭션 기준"으로 묶인 상세 항목만 표시 (UI/스타일은 기존 그대로)
  */
 const PointHistoryScreen = () => {
   /** 바텀시트 상태 */
   const [sheetVisible, setSheetVisible] = useState(false);
-  const [selectedDayKey, setSelectedDayKey] = useState<string | null>(null);
 
-  const openSheet = (day: string) => {
-    setSelectedDayKey(day);
+  // ✅ 변경: 선택 기준을 날짜(dayKey) -> transactionId 로 바꿈
+  const [selectedTxId, setSelectedTxId] = useState<string | null>(null);
+
+  const openSheet = (txId: string) => {
+    setSelectedTxId(txId);
     setSheetVisible(true);
   };
 
   const closeSheet = () => {
     setSheetVisible(false);
-    setSelectedDayKey(null);
+    setSelectedTxId(null);
   };
 
   /** ISO → "12월 08일" */
@@ -50,17 +50,6 @@ const PointHistoryScreen = () => {
     return `${mm}월 ${dd}일`;
   }, []);
 
-  /** ISO에서 날짜 키(yyyy-mm-dd)만 뽑기 */
-  const dayKey = useCallback((iso: string) => {
-    const d = new Date(iso);
-    if (Number.isNaN(d.getTime())) return iso;
-
-    const yyyy = d.getFullYear();
-    const mm = String(d.getMonth() + 1).padStart(2, '0');
-    const dd = String(d.getDate()).padStart(2, '0');
-    return `${yyyy}-${mm}-${dd}`;
-  }, []);
-
   /** 받은 내역만 필터링 + 최신순 정렬(원본) */
   const earnedRawList = useMemo(() => {
     return pointHistoryMock
@@ -71,23 +60,27 @@ const PointHistoryScreen = () => {
       );
   }, []);
 
-  /** 날짜별 합산 리스트(FlatList용) */
-  type DaySummaryItem = {
-    id: string; // dayKey
-    dayKey: string;
-    createdAt: string; // 날짜 표시용 대표 ISO
+  /**
+   * ✅ 추가: 트랜잭션별 합산 리스트(FlatList용)
+   * - 기존 DaySummaryItem과 동일한 역할인데 id/dayKey만 tx 기준으로 바뀜
+   * - createdAt은 "트랜잭션 내 최신 시간"을 대표로 사용(기존 최신순 표기 유지)
+   */
+  type TxSummaryItem = {
+    id: string; // transactionId
+    transactionId: string;
+    createdAt: string; // 대표 ISO (트랜잭션 내 최신)
     xpSum: number;
     ptSum: number;
   };
 
-  const earnedList: DaySummaryItem[] = useMemo(() => {
+  const earnedList: TxSummaryItem[] = useMemo(() => {
     const map = new Map<
       string,
       { xpSum: number; ptSum: number; latestIso: string }
     >();
 
     for (const it of earnedRawList) {
-      const key = dayKey(it.createdAt);
+      const key = it.transactionId; // ✅ 트랜잭션 기준
       const xp = Math.max(0, it.xpDelta);
       const pt = Math.max(0, it.ptDelta);
 
@@ -107,37 +100,42 @@ const PointHistoryScreen = () => {
       }
     }
 
-    const list: DaySummaryItem[] = Array.from(map.entries()).map(
-      ([key, v]) => ({
-        id: key,
-        dayKey: key,
-        createdAt: v.latestIso,
-        xpSum: v.xpSum,
-        ptSum: v.ptSum,
-      }),
+    const list: TxSummaryItem[] = Array.from(map.entries()).map(([key, v]) => ({
+      id: key,
+      transactionId: key,
+      createdAt: v.latestIso,
+      xpSum: v.xpSum,
+      ptSum: v.ptSum,
+    }));
+
+    // 최신 트랜잭션이 위로 (대표 latestIso 기준)
+    list.sort(
+      (a, b) =>
+        new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
     );
 
-    // 최신 날짜가 위로
-    list.sort((a, b) => (a.dayKey < b.dayKey ? 1 : -1));
-
     return list;
-  }, [earnedRawList, dayKey]);
+  }, [earnedRawList]);
 
-  /** 선택한 날짜의 상세(원본 항목들) */
+  /**
+   * ✅ 변경: 선택한 트랜잭션의 상세(원본 항목들)
+   * - 기존 bundledItems = dayKey 필터였는데
+   * - 이제 bundledItems = transactionId 필터
+   */
   const bundledItems = useMemo(() => {
-    if (!selectedDayKey) return [];
-    return earnedRawList.filter(it => dayKey(it.createdAt) === selectedDayKey);
-  }, [selectedDayKey, earnedRawList, dayKey]);
+    if (!selectedTxId) return [];
+    return earnedRawList.filter(it => it.transactionId === selectedTxId);
+  }, [selectedTxId, earnedRawList]);
 
-  /** 리스트 아이템(날짜 합산 1일 1아이템 / 레이아웃 유지) */
-  const renderItem = ({ item }: { item: DaySummaryItem }) => {
+  /** 리스트 아이템(기존 UI/스타일 그대로) */
+  const renderItem = ({ item }: { item: TxSummaryItem }) => {
     const hasXp = item.xpSum > 0;
     const hasPt = item.ptSum > 0;
 
     return (
       <Pressable
         style={styles.rowPressable}
-        onPress={() => openSheet(item.dayKey)}
+        onPress={() => openSheet(item.transactionId)} // ✅ 트랜잭션 id로 오픈
       >
         <View style={styles.row}>
           {/* 1줄: 아이콘 + XP/P  |  우측 날짜 */}
@@ -159,6 +157,7 @@ const PointHistoryScreen = () => {
               </View>
             </View>
 
+            {/* ✅ 날짜 표시는 기존대로 유지: 대표 createdAt을 mm월 dd일로 */}
             <Text style={styles.shortDate}>{toShortDate(item.createdAt)}</Text>
           </View>
 
@@ -169,7 +168,7 @@ const PointHistoryScreen = () => {
     );
   };
 
-  /** 바텀시트 내부 항목(해당 날짜 상세) */
+  /** ✅ 바텀시트 내부 항목(기존 UI/스타일 그대로) */
   const renderSheetItem = ({ item }: { item: PointHistoryItem }) => {
     const hasXp = item.xpDelta > 0;
     const hasPt = item.ptDelta > 0;
@@ -202,9 +201,9 @@ const PointHistoryScreen = () => {
     );
   };
 
-  /** 바텀시트 콘텐츠: 상단 합산 요약 제거, 상세 리스트만 */
+  /** 바텀시트 콘텐츠: 기존처럼 "상세 리스트만" */
   const SheetContent = () => {
-    if (!selectedDayKey) return null;
+    if (!selectedTxId) return null;
 
     return (
       <View style={styles.sheetContainer}>

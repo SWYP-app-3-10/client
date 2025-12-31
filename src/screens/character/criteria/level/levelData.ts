@@ -51,7 +51,7 @@ export const levelList: LevelCriteria[] = [
     id: 2,
     title: 'Lv. 2 꼬물 물고기',
     requiredExp: 100,
-    summaryTitle: '짧은 글부터 천천히 헤엄치듯 읽기 시작한 단계예요.',
+    summaryTitle: '경험치 100',
     summaryDesc: '퀴즈를 5개 풀면 달성할 수 있어요!',
     character: createCharacterRenderer(Level_2_Profile, {
       width: scaleWidth(76.21),
@@ -62,7 +62,7 @@ export const levelList: LevelCriteria[] = [
     id: 3,
     title: 'Lv. 3 괴물 뭉게',
     requiredExp: 500,
-    summaryTitle: '읽는 재미를 알게 되어, 빠르게 자라나는 단계예요.',
+    summaryTitle: '경험치 500',
     summaryDesc: '퀴즈를 25개 풀면 달성할 수 있어요!',
     character: createCharacterRenderer(Level_3_Profile, {
       width: scaleWidth(84.4),
@@ -73,7 +73,7 @@ export const levelList: LevelCriteria[] = [
     id: 4,
     title: 'Lv. 4 꼬마 원시인',
     requiredExp: 2000,
-    summaryTitle: '글을 이해하고, 지식을 도구처럼 활용하기 시작한 단계에요.',
+    summaryTitle: '경험치 2000',
     summaryDesc: '퀴즈를 100개 풀면 달성할 수 있어요!',
     character: createCharacterRenderer(Level_4_Profile, {
       width: scaleWidth(74.56),
@@ -84,7 +84,7 @@ export const levelList: LevelCriteria[] = [
     id: 5,
     title: 'Lv. 5 아인슈타인',
     requiredExp: 6000,
-    summaryTitle: '복잡한 글도 스스로 생각하며 읽어내는 단계예요.',
+    summaryTitle: '경험치 6000',
     summaryDesc: '퀴즈를 300개 풀면 달성할 수 있어요!',
     character: createCharacterRenderer(Level_5_Profile, {
       width: scaleWidth(83.57),
