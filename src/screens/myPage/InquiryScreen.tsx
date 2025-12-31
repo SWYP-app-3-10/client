@@ -47,7 +47,7 @@ const InquiryScreen = () => {
    * - 문의 내용이 비어있지 않으면 활성화
    */
   const isSubmitEnabled = useMemo(() => {
-    return content.trim().length > 0; // 공백만 입력된 경우 비활성화
+    return content.trim().length >= 10; // 10자 이상 입력 시 활성화
   }, [content]); // content 변경 시 재계산
 
   /**
