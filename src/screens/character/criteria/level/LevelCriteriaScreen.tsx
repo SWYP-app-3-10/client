@@ -206,13 +206,10 @@ function XpSummaryCard({
  */
 function LevelRow({ item, isMine }: { item: LevelCriteria; isMine: boolean }) {
   // levelData.ts에서 받은 SVG 컴포넌트
-  const CharacterSvg = item.character;
   return (
     <View style={styles.row}>
       {/* 캐릭터 자리 */}
-      <View style={styles.thumb}>
-        <CharacterSvg width="100%" height="100%" />
-      </View>
+      <View style={styles.thumb}>{item.character()}</View>
       <View style={styles.textArea}>
         <View style={styles.rowTop}>
           <Text style={styles.title} numberOfLines={1}>
@@ -411,8 +408,9 @@ const styles = StyleSheet.create({
     height: scaleWidth(130),
     borderRadius: BORDER_RADIUS[16],
     backgroundColor: COLORS.gray100,
-    padding: scaleWidth(10),
     marginRight: scaleWidth(24),
+    alignItems: 'center',
+    justifyContent: 'center',
   },
 
   textArea: {

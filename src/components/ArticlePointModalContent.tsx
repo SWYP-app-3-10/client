@@ -25,7 +25,7 @@ export const ArticlePointModalContent: React.FC = () => {
     <View style={styles.modalContent}>
       <Text style={styles.modalContentText}>
         <Text style={styles.pointText}>{ARTICLE_READ_POINT_COST}포인트</Text>가
-        사용됩니다
+        사용돼요
       </Text>
     </View>
   );
@@ -98,7 +98,7 @@ const styles = StyleSheet.create({
     marginTop: scaleWidth(20),
     alignItems: 'center',
     justifyContent: 'center',
-    width: '100%',
+    width: scaleWidth(248),
     height: scaleWidth(62),
     borderRadius: BORDER_RADIUS[12],
     backgroundColor: COLORS.puple[3],

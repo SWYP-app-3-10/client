@@ -1,4 +1,4 @@
-package com.neurous.app
+package io.neurous.app
 
 import android.app.Application
 import com.facebook.react.PackageList

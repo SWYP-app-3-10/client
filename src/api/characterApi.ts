@@ -149,16 +149,25 @@ export const addExperience = async (amount: number): Promise<CharacterData> => {
   // 더미 데이터 사용 모드이거나 서버 연결 실패 시 더미 데이터 반환
   if (USE_MOCK_DATA) {
     await delay(200);
-    const currentData = await fetchCharacterData();
-    const newExp = currentData.currentExp + amount;
+    // 경험치 추가 후 다시 레벨 계산
+    const currentExp = await getExperience();
+    const newExp = currentExp + amount;
 
-    // 레벨업 체크 (간단한 예시)
-    let newLevel = currentData.currentLevel;
-    let newNextLevelExp = currentData.nextLevelExp;
+    // 새로운 경험치로 레벨 재계산
+    let newLevel = 1;
+    let newNextLevelExp = 100;
 
-    if (newExp >= currentData.nextLevelExp) {
-      newLevel += 1;
-      newNextLevelExp = currentData.nextLevelExp * 2; // 다음 레벨 경험치 (예시)
+    // levelList를 역순으로 확인하여 현재 레벨 찾기
+    for (let i = levelList.length - 1; i >= 0; i--) {
+      if (newExp >= levelList[i].requiredExp) {
+        newLevel = levelList[i].id;
+        // 다음 레벨 경험치 찾기
+        const nextLevel = levelList.find(l => l.id === newLevel + 1);
+        newNextLevelExp = nextLevel
+          ? nextLevel.requiredExp
+          : levelList[levelList.length - 1].requiredExp * 2;
+        break;
+      }
     }
 
     return {
@@ -178,15 +187,25 @@ export const addExperience = async (amount: number): Promise<CharacterData> => {
     console.error('경험치 추가 실패, 더미 데이터 사용:', error);
     // 서버 연결 실패 시 자동으로 더미 데이터 반환
     await delay(200);
-    const currentData = await fetchCharacterData();
-    const newExp = currentData.currentExp + amount;
+    // 경험치 추가 후 다시 레벨 계산
+    const currentExp = await getExperience();
+    const newExp = currentExp + amount;
 
-    let newLevel = currentData.currentLevel;
-    let newNextLevelExp = currentData.nextLevelExp;
+    // 새로운 경험치로 레벨 재계산
+    let newLevel = 1;
+    let newNextLevelExp = 100;
 
-    if (newExp >= currentData.nextLevelExp) {
-      newLevel += 1;
-      newNextLevelExp = currentData.nextLevelExp * 2;
+    // levelList를 역순으로 확인하여 현재 레벨 찾기
+    for (let i = levelList.length - 1; i >= 0; i--) {
+      if (newExp >= levelList[i].requiredExp) {
+        newLevel = levelList[i].id;
+        // 다음 레벨 경험치 찾기
+        const nextLevel = levelList.find(l => l.id === newLevel + 1);
+        newNextLevelExp = nextLevel
+          ? nextLevel.requiredExp
+          : levelList[levelList.length - 1].requiredExp * 2;
+        break;
+      }
     }
 
     return {

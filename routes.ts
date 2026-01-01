@@ -16,7 +16,7 @@ export const RouteNames = {
   MISSION_TAB: '미션' as const,
   CHARACTER_TAB: '캐릭터' as const,
   SEARCH_TAB: '탐색' as const,
-  MY_PAGE_TAB: '마이페이지' as const,
+  MY_PAGE_TAB: '마이' as const,
 
   // 미션 - 아티클
   ARTICLE_DETAIL: 'article' as const,

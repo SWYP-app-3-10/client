@@ -51,19 +51,19 @@ export const levelList: LevelCriteria[] = [
   {
     id: 3,
     title: 'Lv.3 리틀 몽키',
-    requiredExp: 250,
+    requiredExp: 500,
     summary: '연속 달성 보너스가 유리해요',
   },
   {
     id: 4,
     title: 'Lv.4 꼬마 원시인',
-    requiredExp: 450,
+    requiredExp: 2000,
     summary: '고급 미션이 해금돼요',
   },
   {
     id: 5,
     title: 'Lv.5 아인슈타인',
-    requiredExp: 800,
+    requiredExp: 6000,
     summary: '고급 미션이 해금돼요',
   },
 ];
@@ -96,7 +96,7 @@ export const levelDetailMap: Record<number, LevelDetail> = {
   3: {
     levelId: 3,
     title: 'Lv.3 리틀 몽키',
-    requiredExp: 250,
+    requiredExp: 500,
     rewards: [
       { label: '기사 읽기(10초+)', xp: 60, pt: 0 },
       { label: '미션 완료', xp: 50, pt: 15 },
@@ -107,7 +107,7 @@ export const levelDetailMap: Record<number, LevelDetail> = {
   4: {
     levelId: 4,
     title: 'Lv.4 꼬마 원시인',
-    requiredExp: 450,
+    requiredExp: 2000,
     rewards: [
       { label: '기사 읽기(10초+)', xp: 70, pt: 0 },
       { label: '미션 완료', xp: 60, pt: 20 },
@@ -118,7 +118,7 @@ export const levelDetailMap: Record<number, LevelDetail> = {
   5: {
     levelId: 5,
     title: 'Lv.5 아인슈타인',
-    requiredExp: 800,
+    requiredExp: 6000,
     rewards: [
       { label: '기사 읽기(10초+)', xp: 80, pt: 0 },
       { label: '미션 완료', xp: 70, pt: 25 },

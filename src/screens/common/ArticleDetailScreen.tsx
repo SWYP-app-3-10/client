@@ -32,7 +32,7 @@ import { RouteNames } from '../../../routes';
 import { FullScreenStackParamList } from '../../navigation/types';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useOnboardingStore } from '../../store/onboardingStore';
-import { useShowModal } from '../../store/modalStore';
+import { useShowModal, useShowToastModal } from '../../store/modalStore';
 import { ARTICLE_READ_EXPERIENCE } from '../../config/rewards';
 import { useExperienceStore } from '../../store/experienceStore';
 import { LevelCategory } from '../../types/interests';
@@ -60,6 +60,8 @@ const ArticleDetailScreen = () => {
 
   // @ts-ignore - route params 타입은 나중에 추가
   const articleId = route.params?.articleId;
+  // @ts-ignore - route params 타입은 나중에 추가
+  const fromAd = route.params?.fromAd;
   const article = articles.find((a: Article) => a.id === articleId);
 
   // 난이도에 따른 읽기 시간 설정
@@ -80,7 +82,10 @@ const ArticleDetailScreen = () => {
     }
     return time || READING_TIME_BY_DIFFICULTY[LevelCategory.BEGINNER];
   }, [difficulty]);
-  // 화면 포커스 상태 추적
+  const showToastModal = useShowToastModal();
+  const toastTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // 화면 포커스 상태 추적 및 초기화
   useFocusEffect(
     useCallback(() => {
       // 화면이 포커스될 때 - 기존 타이머 정리 및 상태 리셋
@@ -88,22 +93,43 @@ const ArticleDetailScreen = () => {
         clearTimeout(timerRef.current);
         timerRef.current = null;
       }
+      if (toastTimerRef.current) {
+        clearTimeout(toastTimerRef.current);
+        toastTimerRef.current = null;
+      }
       isScreenFocusedRef.current = true;
       hasEarnedExperienceRef.current = false;
 
+      // 토스트 모달 표시 (광고를 보고 들어왔을 때만)
+      if (fromAd) {
+        toastTimerRef.current = setTimeout(() => {
+          showToastModal({
+            message: '새로운 글이 열렸어요',
+            position: 'center',
+            backgroundColor: COLORS.gray800Opacity80,
+            height: scaleWidth(39),
+            width: scaleWidth(148),
+            borderRadius: BORDER_RADIUS[8],
+          });
+          toastTimerRef.current = null;
+        }, 500);
+      }
+
       return () => {
-        // 화면이 포커스를 잃을 때 (다른 화면으로 이동)
         isScreenFocusedRef.current = false;
-        // 타이머 정리
         if (timerRef.current) {
           clearTimeout(timerRef.current);
           timerRef.current = null;
         }
+        if (toastTimerRef.current) {
+          clearTimeout(toastTimerRef.current);
+          toastTimerRef.current = null;
+        }
       };
-    }, []),
+    }, [showToastModal, fromAd]),
   );
 
-  // articleId가 변경되면 경험치 획득 상태 리셋 및 타이머 정리
+  // articleId가 변경되면 경험치 획득 상태 리셋
   useEffect(() => {
     // 기존 타이머 정리
     if (timerRef.current) {

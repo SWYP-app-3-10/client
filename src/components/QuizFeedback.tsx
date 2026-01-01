@@ -86,6 +86,7 @@ const QuizFeedback: React.FC<QuizFeedbackProps> = ({
 const styles = StyleSheet.create({
   quizSection: {
     paddingHorizontal: scaleWidth(20),
+    paddingTop: scaleWidth(40),
     backgroundColor: COLORS.white,
   },
   feedbackBox: {

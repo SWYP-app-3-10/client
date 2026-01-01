@@ -44,7 +44,7 @@ import {
  * - 우측 검색 아이콘
  */
 import TimerArrowIcon from '../../assets/svg/RightArrow.svg';
-import SearchIcon from '../../assets/svg/Search.svg';
+import SearchIcon from '../../assets/svg/search.svg';
 
 /** 한 번에 추가로 보여줄 아이템 개수(페이지 단위) */
 const PAGE_SIZE = 10;

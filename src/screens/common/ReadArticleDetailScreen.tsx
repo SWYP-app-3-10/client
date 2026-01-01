@@ -93,7 +93,7 @@ const ReadArticleDetailScreen = () => {
       >
         {/* 기사 내용 */}
         <ArticleContent article={article} />
-        <Spacer num={52} />
+        <Spacer num={12} />
         {/* 퀴즈 섹션 */}
         <QuizFeedback
           question={quiz.question}
