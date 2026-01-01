@@ -43,8 +43,9 @@ import {
  * - timer pill 오른쪽 아이콘
  * - 우측 검색 아이콘
  */
-import TimerArrowIcon from '../../assets/svg/RightArrow.svg';
-import SearchIcon from '../../assets/svg/search.svg';
+// 타이머 아이콘을 info.svg로 교체
+import InfoIcon from '../../assets/svg/Info.svg';
+import SearchIcon from '../../assets/svg/ExploreSearch.svg';
 
 /** 한 번에 추가로 보여줄 아이템 개수(페이지 단위) */
 const PAGE_SIZE = 10;
@@ -61,7 +62,7 @@ const clamp = (value: number, min: number, max: number) =>
 
 /**
  * ======================================
- * useTooltip (LevelCriteriaScreen에서 쓰던 방식 이식)
+ * useTooltip
  * - 툴팁 표시/숨김 토글
  * - 자동 닫힘 타이머 관리
  * - 말풍선과 꼬리가 아이콘(타이머 캡슐) 중앙을 가리키도록 위치 계산
@@ -158,6 +159,53 @@ function useTooltip(autoHideMs: number) {
 }
 
 /**
+ * ✅ [추가]
+ * ======================================
+ * Timer Schedule (3, 6, 9, 12, 15, 18, 21, 24시 업데이트)
+ * - 다음 업데이트 시각 계산
+ * - 남은 시간(초) 계산
+ * - UI 표시용 텍스트(H:MM 또는 MM:SS) 포맷
+ * ======================================
+ */
+const UPDATE_HOURS = [3, 6, 9, 12, 15, 18, 21, 24] as const;
+
+/** 다음 업데이트 시각 계산 */
+const getNextUpdateAt = (now: Date) => {
+  const y = now.getFullYear();
+  const m = now.getMonth();
+  const d = now.getDate();
+
+  for (const hour of UPDATE_HOURS) {
+    const candidate =
+      hour === 24
+        ? new Date(y, m, d + 1, 0, 0, 0, 0)
+        : new Date(y, m, d, hour, 0, 0, 0);
+
+    if (candidate.getTime() > now.getTime()) return candidate;
+  }
+
+  // 사실상 여기 도달할 일은 거의 없지만, 안전하게 내일 0시 반환
+  return new Date(y, m, d + 1, 0, 0, 0, 0);
+};
+
+/** 남은 초 계산 */
+const getRemainSeconds = (now: Date, next: Date) =>
+  Math.max(0, Math.floor((next.getTime() - now.getTime()) / 1000));
+
+/** 타이머 표시 텍스트 (HH:MM:SS) */
+const formatRemainText = (remainSec: number) => {
+  const h = Math.floor(remainSec / 3600);
+  const m = Math.floor((remainSec % 3600) / 60);
+  const s = remainSec % 60;
+
+  const hh = String(h).padStart(2, '0');
+  const mm = String(m).padStart(2, '0');
+  const ss = String(s).padStart(2, '0');
+
+  return `${hh}:${mm}:${ss}`;
+};
+
+/**
  * SearchListFooter
  *
  * - 무한 스크롤 하단에 붙는 푸터 컴포넌트
@@ -206,6 +254,50 @@ export default function SearchScreen({
 
   // ✅ 타이머 툴팁(사진처럼)
   const timerTooltip = useTooltip(1500);
+
+  // ✅ [추가] 타이머 상태 (다음 업데이트 시각 / 남은 초)
+  const [nextUpdateAt, setNextUpdateAt] = useState<Date>(() =>
+    getNextUpdateAt(new Date()),
+  );
+  const [remainSec, setRemainSec] = useState<number>(() =>
+    getRemainSeconds(new Date(), nextUpdateAt),
+  );
+
+  /**
+   * ✅ [추가] 업데이트 스케줄에 맞춰 타이머 동작
+   * - 1초마다 남은 시간 갱신
+   * - 0초가 되면 다음 업데이트 시각으로 자동 갱신
+   */
+  useEffect(() => {
+    const tick = () => {
+      const now = new Date();
+
+      // nextUpdateAt이 지났거나(혹은 동일) 남은 시간이 0이면 다음 슬롯으로 갱신
+      if (now.getTime() >= nextUpdateAt.getTime()) {
+        const next = getNextUpdateAt(now);
+        setNextUpdateAt(next);
+        setRemainSec(getRemainSeconds(now, next));
+        return;
+      }
+
+      setRemainSec(getRemainSeconds(now, nextUpdateAt));
+    };
+
+    // 최초 1회 즉시 동기화
+    tick();
+
+    const interval = setInterval(tick, 1000);
+    return () => clearInterval(interval);
+  }, [nextUpdateAt]);
+
+  // ✅ [추가] 타이머 표시 문자열
+  const timerText = useMemo(() => formatRemainText(remainSec), [remainSec]);
+
+  // ✅ [추가] 툴팁의 "n분"도 스케줄 타이머에 맞춤
+  const tooltipMinutes = useMemo(() => {
+    // 0초면 "지금" 처리할 수 있지만, 문구는 기존 스타일 유지 위해 최소 0분 표시 대응
+    return Math.max(0, Math.ceil(remainSec / 60));
+  }, [remainSec]);
 
   /**
    * 라우트 파라미터 반영
@@ -300,13 +392,16 @@ export default function SearchScreen({
               hitSlop={HIT_SLOP}
               onLayout={timerTooltip.onLayoutTarget}
             >
-              <Text style={styles.timerPillText}>16:41</Text>
+              {/* ✅ [변경] 실제 타이머 텍스트 표시 */}
+              <Text style={styles.timerPillText}>{timerText}</Text>
 
               {/* ✅ 아이콘 자리: View 박스 → SVG */}
               <View style={styles.timerPillIconBox}>
-                <TimerArrowIcon
+                {/* ✅ [변경] info.svg 사용 */}
+                <InfoIcon
                   width={scaleWidth(18)}
                   height={scaleWidth(18)}
+                  color={COLORS.gray700}
                 />
               </View>
             </Pressable>
@@ -317,8 +412,11 @@ export default function SearchScreen({
                 style={[styles.tooltipWrap, { left: timerTooltip.tooltipLeft }]}
                 onLayout={timerTooltip.onLayoutTooltip}
               >
+                {/* ✅ [변경] "n분"을 타이머에 맞춰 동적 표시 */}
                 <Text style={styles.tooltipText}>
-                  16분 뒤에 새로운 글을 확인할 수 있어요!
+                  {tooltipMinutes <= 0
+                    ? '지금 새로운 글을 확인할 수 있어요!'
+                    : `${tooltipMinutes}분 뒤에 새로운 글을 확인할 수 있어요!`}
                 </Text>
                 <View
                   style={[
@@ -443,7 +541,6 @@ const styles = StyleSheet.create({
     color: COLORS.puple?.main,
   },
 
-  // ✅ 가운데 영역을 relative로: 툴팁 absolute 위치 기준
   centerWrap: {
     flex: 1,
     alignItems: 'center',
@@ -473,24 +570,21 @@ const styles = StyleSheet.create({
     marginRight: scaleWidth(4),
   },
 
-  // ✅ 기존 박스 유지하되 내부에 SVG 렌더
   timerPillIconBox: {
     width: scaleWidth(18),
     height: scaleWidth(18),
-    borderRadius: scaleWidth(3),
-    backgroundColor: COLORS.gray300,
   },
 
-  // ✅ 툴팁(사진 느낌)
+  // 툴팁
   tooltipWrap: {
     position: 'absolute',
-    top: scaleWidth(42), // 타이머 캡슐 아래로
-    backgroundColor: COLORS.gray800, // gray900 없으면 black로
+    top: scaleWidth(42),
+    backgroundColor: COLORS.gray800,
     paddingHorizontal: scaleWidth(12),
     paddingVertical: scaleWidth(8),
     borderRadius: scaleWidth(12),
     maxWidth: scaleWidth(280),
-    zIndex: 999, // 툴팁 최상단 노출
+    zIndex: 999,
     elevation: 999,
   },
 
@@ -518,7 +612,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
 
-  // ✅ 검색 아이콘 터치영역/정렬용 래퍼
   searchIconWrap: {
     width: scaleWidth(48),
     height: scaleWidth(48),
