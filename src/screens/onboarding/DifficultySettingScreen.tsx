@@ -78,7 +78,7 @@ const DifficultySettingScreen = () => {
 
   return (
     <SafeAreaView style={styles.container} edges={['top', 'bottom']}>
-      <Header iconColor={COLORS.gray400} />
+      <Header iconColor={COLORS.gray800} />
       <Spacer num={2} />
 
       <View style={styles.header}>

@@ -15,7 +15,7 @@ const Tab = createBottomTabNavigator();
 type IconComponent = React.ComponentType<{ color: string }>;
 const createTabBarIcon = (Icon: IconComponent) => {
   return ({ focused }: { focused: boolean }) => (
-    <Icon color={focused ? COLORS.puple.main : COLORS.gray400} />
+    <Icon color={focused ? COLORS.puple.main : COLORS.gray500} />
   );
 };
 
