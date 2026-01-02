@@ -3,38 +3,29 @@
  */
 
 import { create } from 'zustand';
-import {
-  getExperience,
-  saveExperience,
-  addExperience as addExperienceService,
-  subtractExperience as subtractExperienceService,
-} from '../services/experienceService';
 
 interface ExperienceStore {
   experience: number;
-  setExperience: (experience: number) => Promise<void>;
-  addExperience: (amount: number) => Promise<void>;
-  subtractExperience: (amount: number) => Promise<boolean>; // 성공 여부 반환
-  loadExperience: () => Promise<void>;
+  setExperience: (experience: number) => void;
+  addExperience: (amount: number) => void;
+  subtractExperience: (amount: number) => void;
 }
 
 export const useExperienceStore = create<ExperienceStore>((set, get) => ({
   experience: 0,
-  setExperience: async (experience: number) => {
+  setExperience: (experience: number) => {
     try {
-      await saveExperience(experience);
       set({ experience });
     } catch (error) {
-      console.error('포인트 저장 실패:', error);
+      console.error('경험치 저장 실패:', error);
     }
   },
-  addExperience: async (amount: number) => {
+  addExperience: (amount: number) => {
     try {
-      const newExperience = await addExperienceService(amount);
-      set({ experience: newExperience });
+      set({ experience: get().experience + amount });
       console.log(
         '경험치 추가 성공:',
-        newExperience,
+        get().experience + amount,
         '현재 경험치:',
         get().experience,
       );
@@ -42,29 +33,17 @@ export const useExperienceStore = create<ExperienceStore>((set, get) => ({
       console.error('경험치 추가 실패:', error);
     }
   },
-  subtractExperience: async (amount: number) => {
+  subtractExperience: (amount: number) => {
     try {
-      const result = await subtractExperienceService(amount);
-      set({ experience: result.newExperience });
+      set({ experience: get().experience - amount });
       console.log(
         '경험치 차감 성공:',
-        result.newExperience,
+        get().experience - amount,
         '현재 경험치:',
         get().experience,
       );
-      return result.success;
     } catch (error) {
       console.error('경험치 차감 실패:', error);
-      return false;
-    }
-  },
-  loadExperience: async () => {
-    try {
-      const experience = await getExperience();
-      set({ experience });
-    } catch (error) {
-      console.error('경험치 로드 실패:', error);
-      set({ experience: 0 });
     }
   },
 }));

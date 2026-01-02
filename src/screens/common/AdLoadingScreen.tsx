@@ -71,10 +71,7 @@ const AdLoadingScreen = () => {
   useEffect(() => {
     if (hasEarnedReward && !hasAddedPointsRef.current) {
       hasAddedPointsRef.current = true;
-      addPoints(AD_REWARD_POINTS).catch(error => {
-        console.error('포인트 추가 중 오류:', error);
-        hasAddedPointsRef.current = false; // 에러 시 다시 시도 가능하도록
-      });
+      addPoints(AD_REWARD_POINTS);
     }
   }, [hasEarnedReward, addPoints]);
 

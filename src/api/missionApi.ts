@@ -420,3 +420,88 @@ export const fetchQuiz = async (
     throw error;
   }
 };
+
+/**
+ * 퀴즈 제출 - Request Body
+ */
+export interface SubmitQuizRequest {
+  quizId: number;
+  selectedNo: number;
+  readContentId: number;
+}
+
+/**
+ * 퀴즈 제출 - Quiz Result Response
+ */
+export interface QuizResultResponse {
+  quizId: number;
+  selectedNo: number;
+  isAnswerCorrect: boolean;
+  correctChoiceNo: number;
+  correctChoiceText: string;
+}
+
+/**
+ * 퀴즈 제출 - Reward Response
+ */
+export interface RewardResponse {
+  earnedPoint: number;
+  earnedExp: number;
+}
+
+/**
+ * 퀴즈 제출 - User Level Information
+ */
+export interface UserLevelInformation {
+  title: string;
+  message: string;
+  profileUrl: string;
+  levelCode: string;
+  characterName: string;
+}
+
+/**
+ * 퀴즈 제출 - Data Response
+ */
+export interface SubmitQuizData {
+  quizResultResponse: QuizResultResponse;
+  rewardResponse: RewardResponse;
+  userLevelInformation?: UserLevelInformation;
+}
+
+/**
+ * 퀴즈 제출 - API Response
+ */
+export interface SubmitQuizApiResponse {
+  status: number;
+  message: string;
+  data: SubmitQuizData;
+}
+
+/**
+ * 퀴즈 정답 제출
+ * @param userId 사용자 ID (query parameter)
+ * @param requestBody 퀴즈 제출 요청 데이터
+ * @returns Promise<SubmitQuizApiResponse>
+ */
+export const submitQuiz = async (
+  userId: number,
+  requestBody: SubmitQuizRequest,
+): Promise<SubmitQuizApiResponse> => {
+  try {
+    const response = await client.post<SubmitQuizApiResponse>(
+      `/api/quiz/submit?userId=${userId}`,
+      requestBody,
+    );
+    return response.data;
+  } catch (error: any) {
+    console.error('[퀴즈 제출 API] 에러:', error);
+    if (error.response) {
+      console.error('[퀴즈 제출 API] 서버 응답:', {
+        status: error.response.status,
+        data: error.response.data,
+      });
+    }
+    throw error;
+  }
+};

@@ -32,16 +32,13 @@ import { ExperienceModalContent } from '../../components/ArticlePointModalConten
 import { usePointStore } from '../../store/pointStore';
 import { useExperienceStore } from '../../store/experienceStore';
 import {
-  QUIZ_CORRECT_POINT,
-  QUIZ_CORRECT_EXPERIENCE,
-} from '../../config/rewards';
-import {
   useDifficultySubmit,
   checkCanSubmitDifficulty,
 } from '../../hooks/useDifficultySubmit';
 import { createQuizCompleteNavigation } from '../../utils/quizNavigation';
-import { fetchQuiz, QuizResponse } from '../../api/missionApi';
+import { fetchQuiz, QuizResponse, submitQuiz } from '../../api/missionApi';
 import { getUserInfo } from '../../services/authService';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 type QuizState = 'question' | 'feedback';
 
@@ -95,45 +92,70 @@ const QuizScreen: React.FC = () => {
   const { addPoints } = usePointStore();
   const { addExperience } = useExperienceStore();
   const handleNext = async () => {
-    if (!selectedOptionId) {
+    if (!selectedOptionId || !quiz || !quizData) {
       return;
     }
 
-    if (!quiz) {
-      return;
+    try {
+      const userInfo = await getUserInfo();
+      if (!userInfo || !userInfo.userId) {
+        console.error('[퀴즈] 사용자 정보 없음');
+        return;
+      }
+
+      // 선택한 선택지의 choiceNo 찾기
+      const selectedChoice = quizData.choices.find(
+        choice => choice.quizChoiceId === selectedOptionId,
+      );
+      if (!selectedChoice) {
+        console.error('[퀴즈] 선택한 선택지를 찾을 수 없습니다.');
+        return;
+      }
+
+      // 퀴즈 제출 API 호출
+      const response = await submitQuiz(userInfo.userId, {
+        quizId: quiz.id,
+        selectedNo: selectedChoice.choiceNo,
+        readContentId: articleId,
+      });
+
+      const { quizResultResponse, rewardResponse, userLevelInformation } =
+        response.data;
+
+      // 포인트 및 경험치 추가
+      addPoints(rewardResponse.earnedPoint);
+      addExperience(rewardResponse.earnedExp);
+
+      // 레벨업 정보가 있으면 AsyncStorage에 저장
+      if (userLevelInformation) {
+        await AsyncStorage.setItem(
+          '@pending_level_up',
+          JSON.stringify(userLevelInformation),
+        );
+      }
+
+      // 경험치 획득 모달 표시
+      showModal({
+        title: '포인트 & 경험치 획득!',
+        image: <Modal_IMG />,
+        titleStyle: {
+          ...Heading_20EB_Round,
+        },
+        titleDescriptionGapSize: scaleWidth(20),
+        children: React.createElement(ExperienceModalContent, {
+          point: true,
+          correct: quizResultResponse.isAnswerCorrect,
+        }),
+        primaryButton: {
+          title: '확인',
+          onPress: () => {},
+        },
+      });
+
+      setQuizState('feedback');
+    } catch (error: any) {
+      console.error('[퀴즈] 제출 실패:', error);
     }
-
-    // TODO: 서버로 답안 전송
-    // 예시: await submitQuizAnswer(articleId, quiz.id, selectedOptionId);
-    console.log('퀴즈 답안 전송:', {
-      articleId,
-      quizId: quiz.id,
-      answerId: selectedOptionId,
-    });
-
-    await Promise.all([
-      addPoints(QUIZ_CORRECT_POINT),
-      addExperience(QUIZ_CORRECT_EXPERIENCE),
-    ]);
-
-    showModal({
-      title: '포인트 & 경험치 획득!',
-      image: <Modal_IMG />,
-      titleStyle: {
-        ...Heading_20EB_Round,
-      },
-      titleDescriptionGapSize: scaleWidth(20),
-      children: React.createElement(ExperienceModalContent, {
-        point: true,
-        correct: isCorrect(selectedOptionId),
-      }),
-      primaryButton: {
-        title: '확인',
-        onPress: () => {},
-      },
-    });
-
-    setQuizState('feedback');
   };
 
   const handleComplete = async () => {

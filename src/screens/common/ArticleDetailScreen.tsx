@@ -251,7 +251,7 @@ const ArticleDetailScreen = () => {
 
       try {
         // 경험치 추가 (useMutation이 자동으로 캐시 무효화 처리)
-        await addExperience(ARTICLE_READ_EXPERIENCE);
+        addExperience(ARTICLE_READ_EXPERIENCE);
 
         // 화면이 여전히 포커스되어 있는지 최종 확인
         if (!isScreenFocusedRef.current || !isFocused) {

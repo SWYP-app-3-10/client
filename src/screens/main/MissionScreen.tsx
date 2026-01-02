@@ -170,10 +170,8 @@ const MissionScreen = () => {
         if (lastEntryDate !== today) {
           await AsyncStorage.setItem(DAILY_MISSION_ENTRY_KEY, today);
           hasCheckedDailyEntryRef.current = true;
-          await Promise.all([
-            addPoints(DAILY_ATTENDANCE_POINT),
-            addExperience(DAILY_ATTENDANCE_EXPERIENCE),
-          ]);
+          addPoints(DAILY_ATTENDANCE_POINT);
+          addExperience(DAILY_ATTENDANCE_EXPERIENCE);
           showModal({
             title: '포인트 & 경험치 획득!',
             image: <Modal_IMG />,
