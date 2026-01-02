@@ -22,7 +22,7 @@ import QuizOptionCard from '../../components/QuizOptionCard';
 import QuizQuestion from '../../components/QuizQuestion';
 import Spacer from '../../components/Spacer';
 import { QuizOption } from '../../data/mock/quizData';
-import { CheckIcon } from '../../icons/commonIcons/commonIcons';
+import { Modal_IMG, CheckIcon } from '../../icons';
 import { useShowModal, useHideModal } from '../../store/modalStore';
 import DifficultySelectionModal, {
   Difficulty,
@@ -87,6 +87,7 @@ const QuizScreen: React.FC = () => {
 
     showModal({
       title: '포인트 & 경험치 획득!',
+      image: <Modal_IMG />,
       titleStyle: {
         ...Heading_20EB_Round,
       },

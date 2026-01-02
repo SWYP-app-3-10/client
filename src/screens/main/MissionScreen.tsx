@@ -48,7 +48,7 @@ import {
 } from '../../config/rewards';
 import { useExperienceStore } from '../../store/experienceStore';
 import IconButton from '../../components/IconButton';
-import { AlarmIcon } from '../../icons';
+import { AlarmIcon, Modal_IMG } from '../../icons';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 const WIDTH_EDGE = scaleWidth(353); // 처음과 마지막 카드 너비
@@ -176,6 +176,7 @@ const MissionScreen = () => {
           ]);
           showModal({
             title: '포인트 & 경험치 획득!',
+            image: <Modal_IMG />,
             titleStyle: {
               ...Heading_20EB_Round,
             },

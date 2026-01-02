@@ -28,7 +28,7 @@ import BottomModalCheck from '../../assets/svg/bottomModalCheck.svg';
 import Note from '../../assets/svg/note.svg';
 import Clock from '../../assets/svg/clock.svg';
 import NoArticles from '../../assets/svg/noArticles.svg';
-
+import Search_tab from '../../assets/svg/search_tab.svg';
 export const Ic_backIcon = createIconComponent(Icon_back, ICON_SIZES.XL);
 export const CircleIcon = createIconComponent(Circle, scaleWidth(14));
 export const InfoIcon = createIconComponent(Info, ICON_SIZES.L);
@@ -41,6 +41,7 @@ export const NaverIcon = createIconComponent(Naver, ICON_SIZES.M);
 export const AlarmIcon = createIconComponent(Alarm, scaleWidth(28));
 export const HomeIcon = createIconComponent(Home, scaleWidth(28));
 export const SearchIcon = createIconComponent(Search, scaleWidth(28));
+export const Search_tab_Icon = createIconComponent(Search_tab, scaleWidth(28));
 export const CharacterIcon = createIconComponent(Character, scaleWidth(28));
 export const MyPageIcon = createIconComponent(MyPage, scaleWidth(28));
 export const NoteIcon = createIconComponent(Note, scaleWidth(26));

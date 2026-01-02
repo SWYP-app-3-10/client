@@ -6,7 +6,7 @@ import CharacterStackNavigator from './CharacterStackNavigator';
 import SearchStackNavigator from './SearchStackNavigator';
 import MyPageStackNavigator from './MyPageStackNavigator';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { CharacterIcon, HomeIcon, SearchIcon, MyPageIcon } from '../icons';
+import { CharacterIcon, HomeIcon, Search_tab_Icon, MyPageIcon } from '../icons';
 import { COLORS } from '../styles/global';
 
 const Tab = createBottomTabNavigator();
@@ -52,7 +52,7 @@ const MainTabNavigator = () => {
         name={RouteNames.SEARCH_TAB}
         component={SearchStackNavigator}
         options={{
-          tabBarIcon: createTabBarIcon(SearchIcon),
+          tabBarIcon: createTabBarIcon(Search_tab_Icon),
         }}
       />
       <Tab.Screen

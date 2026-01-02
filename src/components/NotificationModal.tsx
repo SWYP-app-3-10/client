@@ -39,6 +39,8 @@ export interface NotificationModalProps {
   description?: string;
   image?: ImageSourcePropType | ReactNode;
   imageSize?: { width: number; height: number };
+  imageTopOffset?: number;
+  imagePaddingTop?: number;
 
   // 단일 버튼 또는 이중 버튼
   primaryButton?: ModalButton;
@@ -58,6 +60,8 @@ const NotificationModal: React.FC<NotificationModalProps> = ({
   description,
   image,
   imageSize = { width: scaleWidth(80), height: scaleWidth(80) },
+  imageTopOffset = scaleWidth(-81),
+  imagePaddingTop = scaleWidth(80),
   children,
   primaryButton,
   secondaryButton,
@@ -115,7 +119,9 @@ const NotificationModal: React.FC<NotificationModalProps> = ({
           <View style={styles.modalWrapper}>
             {/* 이미지 - 모달 위로 배치 */}
             {image && (
-              <View style={styles.imageContainer}>{renderImage()}</View>
+              <View style={[styles.imageContainer, { top: imageTopOffset }]}>
+                {renderImage()}
+              </View>
             )}
             <View style={styles.modalContainer}>
               <View
@@ -125,7 +131,7 @@ const NotificationModal: React.FC<NotificationModalProps> = ({
                     paddingTop: closeButton
                       ? scaleWidth(23)
                       : image
-                      ? scaleWidth(80)
+                      ? imagePaddingTop
                       : scaleWidth(48),
                   },
                 ]}
@@ -221,7 +227,6 @@ const styles = StyleSheet.create({
   },
   imageContainer: {
     position: 'absolute',
-    top: scaleWidth(-81),
     zIndex: 1,
     alignItems: 'center',
     justifyContent: 'center',

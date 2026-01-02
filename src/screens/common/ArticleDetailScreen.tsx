@@ -257,10 +257,10 @@ const ArticleDetailScreen = () => {
         // 경험치 획득 모달 표시
         showModal({
           title: '경험치 획득!',
+          image: <Modal_IMG />,
           titleStyle: {
             ...Heading_20EB_Round,
           },
-          image: <Modal_IMG />,
           titleDescriptionGapSize: scaleWidth(20),
           children: React.createElement(ExperienceModalContent),
           primaryButton: {

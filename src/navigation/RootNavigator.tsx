@@ -25,7 +25,8 @@ import { useCharacterData, characterKeys } from '../hooks/useCharacter';
 import { LevelUpModalContent } from '../components/ArticlePointModalContent';
 import { useQueryClient } from '@tanstack/react-query';
 import { Heading_24EB_Round } from '../styles/typography';
-import { COLORS } from '../styles/global';
+import { COLORS, scaleWidth } from '../styles/global';
+import { Modal_IMG } from '../icons';
 
 const Stack = createNativeStackNavigator();
 
@@ -117,6 +118,9 @@ const RootNavigatorContent: React.FC<{
       // 레벨업 모달 표시
       showModal({
         title: '축하해요! 레벨 업!',
+        image: <Modal_IMG />,
+        imageTopOffset: scaleWidth(-100.62),
+        imagePaddingTop: scaleWidth(64),
         titleStyle: { ...Heading_24EB_Round },
         titleDescriptionGapSize: 4,
         description: '조금씩 생각이 자라나고 있어요.',
@@ -187,6 +191,8 @@ const RootNavigatorContent: React.FC<{
           description={modalState.description}
           image={modalState.image}
           imageSize={modalState.imageSize}
+          imageTopOffset={modalState.imageTopOffset}
+          imagePaddingTop={modalState.imagePaddingTop}
           closeButton={modalState.closeButton}
           titleDescriptionGapSize={modalState.titleDescriptionGapSize}
           descriptionColor={modalState.descriptionColor}
