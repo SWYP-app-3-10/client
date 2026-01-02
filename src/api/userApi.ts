@@ -164,19 +164,12 @@ export const fetchDifficultyInfo = async (
   }
 };
 
+import { ContentDetail } from './missionApi';
+
 /**
- * 읽은 글 상세 정보 - Content
+ * 읽은 글 상세 정보 - Content (missionApi의 ContentDetail 재사용)
  */
-export interface ReadContentDetailContent {
-  contentId: number;
-  title: string;
-  content: string;
-  contentCategory: string; // "POLITICS" 등
-  categoryName: string;
-  contentDate: string; // "2026-01-02"
-  hits: number;
-  imageUrl: string;
-}
+export type ReadContentDetailContent = ContentDetail;
 
 /**
  * 읽은 글 상세 정보 - Quiz Choice

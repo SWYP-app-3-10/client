@@ -9,10 +9,10 @@ import {
   Heading_20EB_Round,
 } from '../styles/global';
 import Spacer from './Spacer';
-import { Article } from '../data/mock/missionData';
+import { ContentDetail } from '../api/missionApi';
 
 interface ArticleContentProps {
-  content?: Article;
+  content?: ContentDetail;
 }
 
 const ArticleContent: React.FC<ArticleContentProps> = ({ content }) => {

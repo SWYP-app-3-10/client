@@ -29,7 +29,6 @@ import {
 } from '../../styles/global';
 import Spacer from '../../components/Spacer';
 import { useMissions } from '../../hooks/useMissions';
-import { useArticles } from '../../hooks/useArticles';
 import { MissionCard, ArticleCard } from '../../components';
 import { useNavigation } from '@react-navigation/native';
 import { useArticleNavigation } from '../../hooks/useArticleNavigation';
@@ -87,11 +86,6 @@ const MissionScreen = () => {
     isLoading: missionsLoading,
     error: missionsError,
   } = useMissions();
-  const {
-    data: articles = [],
-    isLoading: articlesLoading,
-    error: articlesError,
-  } = useArticles();
 
   /**
    * 각 카드가 화면 중앙에 오기 위한 스크롤 위치(Offset) 수동 계산
@@ -202,7 +196,7 @@ const MissionScreen = () => {
     checkDailyEntry();
   }, [addExperience, addPoints, showModal]);
 
-  if (missionsLoading || articlesLoading) {
+  if (missionsLoading) {
     return (
       <SafeAreaView style={missionScreenStyles.container}>
         <View style={missionScreenStyles.loadingContainer}>
@@ -212,7 +206,7 @@ const MissionScreen = () => {
     );
   }
 
-  if (missionsError || articlesError || missions.length === 0) {
+  if (missionsError || missions.length === 0) {
     return (
       <SafeAreaView style={missionScreenStyles.container}>
         <View style={missionScreenStyles.errorContainer}>
@@ -300,13 +294,13 @@ const MissionScreen = () => {
 
         {/* 아티클 리스트 */}
         <View style={missionScreenStyles.articleList}>
-          {articles.map(article => (
+          {/* {missions.map(mission => (
             <ArticleCard
               key={article.id}
               article={article}
               onPress={() => handleArticlePressWrapper(article)}
             />
-          ))}
+          ))} */}
         </View>
       </ScrollView>
     </SafeAreaView>
