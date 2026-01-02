@@ -3,9 +3,9 @@
 <plist version="1.0">
 <dict>
 	<key>CLIENT_ID</key>
-	<string>424320333528-de3lsl1sqg407ck8nrk8jmodmhertul2.apps.googleusercontent.com</string>
+	<string>424320333528-kds0hat5nvuq8nq74hikfju5720bk91n.apps.googleusercontent.com</string>
 	<key>REVERSED_CLIENT_ID</key>
-	<string>com.googleusercontent.apps.424320333528-de3lsl1sqg407ck8nrk8jmodmhertul2</string>
+	<string>com.googleusercontent.apps.424320333528-kds0hat5nvuq8nq74hikfju5720bk91n</string>
 	<key>ANDROID_CLIENT_ID</key>
 	<string>424320333528-4kkfevhkgkcm6c2beufbdq08tf0kssr9.apps.googleusercontent.com</string>
 	<key>API_KEY</key>
@@ -15,7 +15,7 @@
 	<key>PLIST_VERSION</key>
 	<string>1</string>
 	<key>BUNDLE_ID</key>
-	<string>com.neurous.app</string>
+	<string>io.neurous.app</string>
 	<key>PROJECT_ID</key>
 	<string>neurous-d632a</string>
 	<key>STORAGE_BUCKET</key>
@@ -31,6 +31,6 @@
 	<key>IS_SIGNIN_ENABLED</key>
 	<true></true>
 	<key>GOOGLE_APP_ID</key>
-	<string>1:424320333528:ios:980dd3a741185e3a48c9ad</string>
+	<string>1:424320333528:ios:afc28032174c603c48c9ad</string>
 </dict>
 </plist>

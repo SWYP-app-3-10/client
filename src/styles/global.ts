@@ -32,6 +32,7 @@ export const BORDER_RADIUS: Record<number, number> = {
   30: scaleWidth(30),
   10: scaleWidth(10),
   12: scaleWidth(12),
+  2: scaleWidth(2),
 };
 
 // 컬러 팔레트
@@ -46,10 +47,13 @@ export const COLORS = {
   gray600: '#ADB3C5',
   gray700: '#9EA5BB',
   gray800: '#767C91',
+  gray800Opacity80: 'rgba(118, 124, 145, 0.8)',
   black: '#19181E',
+  blackOpacity60: 'rgba(0, 0, 0, 0.6) ',
   // 메인
   puple: {
     main: '#6F44F5',
+    2: '#EDECFC',
     3: '#F6F4FE',
     5: '#9b7bFF',
     light: '#845DFF',
@@ -57,7 +61,13 @@ export const COLORS = {
     completed: '#BFABFF',
   },
   red: { main: '#ff7E6a', 3: '#FFEDEA' },
-  blue: { main: '#4d8cff', 3: '#E1EEFF', 5: '#E8F4FF', 6: '#00b1fc' },
+  blue: {
+    main: '#4d8cff',
+    3: '#E1EEFF',
+    5: '#E8F4FF',
+    6: '#00b1fc',
+    correct: '#4d8cff',
+  },
   yellow: {
     1: '#fff0ba',
     light: '#FFE682',
@@ -71,6 +81,7 @@ export const COLORS = {
   // 오버레이
   overlay: 'rgba(0, 0, 0, 0.5)',
   overlayWhite: 'rgba(255, 255, 255, 0.7)',
+  transparent: 'rgba(255, 255, 255, 0)',
   // 소셜 로그인
   kakao: '#FFD43B',
   naver: '#2DB400',
@@ -98,10 +109,12 @@ export {
   Heading_18EB_Round,
   Heading_18SB,
   Heading_16B,
+  Heading_16EB_Round,
   Body_18M,
   Body_16SB,
   Body_16M,
   Body_16R,
+  Body_15M,
   Caption_14R,
   Caption_12SB,
   Caption_12M,

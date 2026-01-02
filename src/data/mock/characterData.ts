@@ -1,11 +1,12 @@
 /**
  * 캐릭터 관련 화면(레벨/내역/알림)에서 공통으로 쓰는 Mock 데이터
+ * - 날짜는 ISO 8601 문자열 사용 (서버 연동 기준)
  */
 
 export type LevelCriteria = {
   id: number;
   title: string; // 화면에 보여줄 레벨 이름
-  requiredExp: number; // (예시) 해당 레벨 기준 누적 경험치
+  requiredExp: number; // 해당 레벨 기준 누적 경험치
   summary: string; // 한 줄 설명
 };
 
@@ -13,19 +14,27 @@ export type LevelDetail = {
   levelId: number;
   title: string;
   requiredExp: number;
-  rewards: { label: string; xp: number; pt: number }[]; // 경험치/포인트 정책
-  tips: string[]; // 안내 문구
+  rewards: { label: string; xp: number; pt: number }[];
+  tips: string[];
 };
 
+/**
+ * 포인트 / 경험치 히스토리 아이템
+ * createdAt은 반드시 ISO 8601 문자열
+ */
 export type PointHistoryItem = {
   id: string;
-  title: string; // 내역 제목
+  title: string;
   createdAt: string;
-  xpDelta: number; // +/-
-  ptDelta: number; // +/-
+  xpDelta: number;
+  ptDelta: number;
+
+  /** 트랜잭션 기준 묶음 키 */
+  transactionId: string;
 };
 
-/** 레벨 목록(기준 확인 리스트) */
+/* ================= 레벨 목록 ================= */
+
 export const levelList: LevelCriteria[] = [
   {
     id: 1,
@@ -42,24 +51,25 @@ export const levelList: LevelCriteria[] = [
   {
     id: 3,
     title: 'Lv.3 리틀 몽키',
-    requiredExp: 250,
+    requiredExp: 500,
     summary: '연속 달성 보너스가 유리해요',
   },
   {
     id: 4,
     title: 'Lv.4 꼬마 원시인',
-    requiredExp: 450,
+    requiredExp: 2000,
     summary: '고급 미션이 해금돼요',
   },
   {
     id: 5,
     title: 'Lv.5 아인슈타인',
-    requiredExp: 800,
+    requiredExp: 6000,
     summary: '고급 미션이 해금돼요',
   },
 ];
 
-/** 레벨 상세(경험치/포인트 기준) */
+/* ================= 레벨 상세 ================= */
+
 export const levelDetailMap: Record<number, LevelDetail> = {
   1: {
     levelId: 1,
@@ -86,7 +96,7 @@ export const levelDetailMap: Record<number, LevelDetail> = {
   3: {
     levelId: 3,
     title: 'Lv.3 리틀 몽키',
-    requiredExp: 250,
+    requiredExp: 500,
     rewards: [
       { label: '기사 읽기(10초+)', xp: 60, pt: 0 },
       { label: '미션 완료', xp: 50, pt: 15 },
@@ -97,7 +107,7 @@ export const levelDetailMap: Record<number, LevelDetail> = {
   4: {
     levelId: 4,
     title: 'Lv.4 꼬마 원시인',
-    requiredExp: 450,
+    requiredExp: 2000,
     rewards: [
       { label: '기사 읽기(10초+)', xp: 70, pt: 0 },
       { label: '미션 완료', xp: 60, pt: 20 },
@@ -108,7 +118,7 @@ export const levelDetailMap: Record<number, LevelDetail> = {
   5: {
     levelId: 5,
     title: 'Lv.5 아인슈타인',
-    requiredExp: 800,
+    requiredExp: 6000,
     rewards: [
       { label: '기사 읽기(10초+)', xp: 80, pt: 0 },
       { label: '미션 완료', xp: 70, pt: 25 },
@@ -118,41 +128,68 @@ export const levelDetailMap: Record<number, LevelDetail> = {
   },
 };
 
-/** 포인트/경험치 내역 */
+/* ================= 포인트 / 경험치 히스토리 ================= */
+/**
+ * 같은 transactionId = 같은 트랜잭션
+ * → 화면에서는 날짜가 아니라 "트랜잭션 기준"으로 묶을 수 있음
+ */
+
 export const pointHistoryMock: PointHistoryItem[] = [
   {
     id: 'h1',
-    title: '미션을 달성해서 경험치와 포인트를 받았어요!',
-    createdAt: '2025년 12월 08일',
-    xpDelta: 40,
-    ptDelta: +40,
+    title: '글 읽기',
+    createdAt: '2025-12-08T09:00:00Z',
+    xpDelta: 5,
+    ptDelta: 0,
+    transactionId: 'tx-2025-12-08-001',
   },
   {
     id: 'h2',
-    title: '글을 읽어서 경험치를 받았어요!',
-    createdAt: '2025년 12월 07일',
-    xpDelta: 0,
-    ptDelta: +30,
+    title: '퀴즈(정답)',
+    createdAt: '2025-12-08T09:02:00Z',
+    xpDelta: 20,
+    ptDelta: 30,
+    transactionId: 'tx-2025-12-08-001',
   },
-  {
-    id: 'h3',
-    title: '미션을 달성해서 경험치와 포인트를 받았어요!',
-    createdAt: '2025년 12월 06일',
-    xpDelta: +20,
-    ptDelta: 0,
-  },
-  {
-    id: 'h4',
-    title: '포인트 차감 케이스 테스트',
-    createdAt: '2025년 12월 05일',
-    xpDelta: 0,
-    ptDelta: -20,
-  },
+
   {
     id: 'h5',
-    title: '미션을 달성해서 경험치와 포인트를 받았어요!',
-    createdAt: '2025년 12월 04일',
-    xpDelta: +40,
-    ptDelta: +40,
+    title: '글 읽기',
+    createdAt: '2025-12-04T09:00:00Z',
+    xpDelta: 5,
+    ptDelta: 0,
+    transactionId: 'tx-2025-12-04-001',
+  },
+  {
+    id: 'h6',
+    title: '퀴즈 오답',
+    createdAt: '2025-12-04T09:20:00Z',
+    xpDelta: 10,
+    ptDelta: 10,
+    transactionId: 'tx-2025-12-04-001',
+  },
+  {
+    id: 'h7',
+    title: '데일리 출석',
+    createdAt: '2025-12-04T09:00:00Z',
+    xpDelta: 5,
+    ptDelta: 10,
+    transactionId: 'tx-2025-12-04-002',
+  },
+  {
+    id: 'h8',
+    title: '위클리 출석',
+    createdAt: '2025-12-04T09:20:00Z',
+    xpDelta: 30,
+    ptDelta: 30,
+    transactionId: 'tx-2025-12-04-002',
+  },
+  {
+    id: 'h9',
+    title: '단일 테스트',
+    createdAt: '2025-12-27T09:20:00Z',
+    xpDelta: 100,
+    ptDelta: 100,
+    transactionId: 'tx-2025-12-27-001',
   },
 ];

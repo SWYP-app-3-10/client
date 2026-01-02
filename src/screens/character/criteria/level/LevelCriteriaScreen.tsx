@@ -91,7 +91,9 @@ function useTooltip(autoHideMs: number) {
     setVisible(prev => {
       const next = !prev;
       clearTimer();
-      if (next) openWithAutoHide();
+      if (next) {
+        openWithAutoHide();
+      }
       return next;
     });
   }, [clearTimer, openWithAutoHide]);
@@ -102,7 +104,9 @@ function useTooltip(autoHideMs: number) {
    * - 부모 영역 밖으로 나가지 않도록 clamp
    */
   const tooltipLeft = useMemo(() => {
-    if (!leftAreaWidth || !tooltipWidth) return 0;
+    if (!leftAreaWidth || !tooltipWidth) {
+      return 0;
+    }
 
     const raw = iconCenterX - tooltipWidth / 2;
     return clamp(raw, 0, leftAreaWidth - tooltipWidth);
@@ -188,7 +192,6 @@ function XpSummaryCard({
         </Text>
       </View>
 
-      {/* 내부에 XP 아이콘 삽입 */}
       <View style={styles.xpImg}>
         <XpIcon width={scaleWidth(92)} height={scaleWidth(92)} />
       </View>
@@ -202,10 +205,11 @@ function XpSummaryCard({
  * ======================================
  */
 function LevelRow({ item, isMine }: { item: LevelCriteria; isMine: boolean }) {
+  // levelData.ts에서 받은 SVG 컴포넌트
   return (
     <View style={styles.row}>
-      <View style={styles.thumb} />
-
+      {/* 캐릭터 자리 */}
+      <View style={styles.thumb}>{item.character()}</View>
       <View style={styles.textArea}>
         <View style={styles.rowTop}>
           <Text style={styles.title} numberOfLines={1}>
@@ -225,14 +229,12 @@ function LevelRow({ item, isMine }: { item: LevelCriteria; isMine: boolean }) {
   );
 }
 
+// FlatList 아이템 구분선
+const ItemSeparator = () => <View style={styles.separator} />;
+
 /**
  * ======================================
  * Screen
- *
- * - 현재 경험치/레벨 정보를 보여주고, 레벨별 기준 목록을 렌더링하는 화면
- * - 상단: 현재 XP 및 다음 레벨까지 필요한 XP 안내 카드
- *    ■ TODO "N" <-> "XP" 분리 필요
- * - 하단: 전체 레벨 리스트(현재 레벨에는 "내 레벨" 배지 표시)
  * ======================================
  */
 const LevelCriteriaScreen = () => {
@@ -240,23 +242,19 @@ const LevelCriteriaScreen = () => {
   const currentXp = 50;
   const currentLevelId = 1;
 
-  /**
-   * 다음 레벨까지 필요한 XP 계산
-   * - 현재 XP / 레벨 변경 시에만 재계산
-   */
   const needXp = useMemo(() => {
     const next = levelList.find(l => l.id === currentLevelId + 1);
-    if (!next) return 0;
+    if (!next) {
+      return 0;
+    }
     return Math.max(0, next.requiredExp - currentXp);
   }, [currentLevelId, currentXp]);
 
-  /** FlatList 아이템 렌더 함수 */
   const renderItem: ListRenderItem<LevelCriteria> = useCallback(
     ({ item }) => <LevelRow item={item} isMine={item.id === currentLevelId} />,
     [currentLevelId],
   );
 
-  /** FlatList 헤더 */
   const Header = useMemo(
     () => (
       <>
@@ -273,7 +271,7 @@ const LevelCriteriaScreen = () => {
       keyExtractor={item => String(item.id)}
       renderItem={renderItem}
       ListHeaderComponent={Header}
-      ItemSeparatorComponent={() => <View style={styles.separator} />}
+      ItemSeparatorComponent={ItemSeparator}
       showsVerticalScrollIndicator={false}
       contentContainerStyle={styles.listContent}
     />
@@ -289,19 +287,19 @@ export default LevelCriteriaScreen;
  */
 const styles = StyleSheet.create({
   listContent: {
-    paddingTop: scaleWidth(32), // 리스트 상단 패딩
-    paddingBottom: scaleWidth(64), // 리스트 하단 패딩
+    marginHorizontal: scaleWidth(20),
+    paddingTop: scaleWidth(32),
+    paddingBottom: scaleWidth(64),
   },
 
   headerSpace: {
-    height: scaleWidth(32), // 헤더와 리스트 간 여백
+    height: scaleWidth(32),
   },
 
   separator: {
-    height: scaleWidth(20), // 리스트 아이템 간 간격
+    height: scaleWidth(20),
   },
 
-  // XP 카드 컨테이너
   xpCard: {
     padding: scaleWidth(20),
     borderRadius: BORDER_RADIUS[16],
@@ -312,38 +310,32 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
 
-  // XP 카드 좌측 영역
   xpLeft: {
     flex: 1,
     position: 'relative',
   },
 
-  // 질문 텍스트
   xpQ: {
     ...Body_16SB,
     color: COLORS.black,
   },
 
-  // XP 값 라인
   xpValueRow: {
     flexDirection: 'row',
     alignItems: 'center',
     marginTop: scaleWidth(16),
   },
 
-  // XP 숫자
   xpNumber: {
     ...Heading_24EB_Round,
     color: COLORS.black,
   },
 
-  // XP 단위
   xpUnit: {
     ...Heading_24EB_Round,
     color: COLORS.black,
   },
 
-  // 정보 아이콘
   xpInfoIcon: {
     marginLeft: scaleWidth(12),
     width: scaleWidth(22),
@@ -353,13 +345,11 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
 
-  // 아이콘 텍스트
   xpInfoIconText: {
     ...Caption_12SB,
     color: COLORS.white,
   },
 
-  // 툴팁 말풍선
   tooltipWrap: {
     position: 'absolute',
     top: scaleWidth(84),
@@ -371,13 +361,11 @@ const styles = StyleSheet.create({
     zIndex: 10,
   },
 
-  // 툴팁 설명
   tooltipText: {
     ...Caption_12M,
     color: COLORS.white,
   },
 
-  // 툴팁 꼬리
   tooltipArrow: {
     position: 'absolute',
     top: -scaleWidth(6),
@@ -391,19 +379,16 @@ const styles = StyleSheet.create({
     borderBottomColor: COLORS.puple.light,
   },
 
-  // 다음 XP 안내
   xpHint: {
     ...Caption_14R,
     marginTop: scaleWidth(8),
     color: COLORS.gray700,
   },
 
-  // XP 강조
   xpHintStrong: {
     color: COLORS.puple.main,
   },
 
-  // 우측 아이콘 영역
   xpImg: {
     width: scaleWidth(92),
     height: scaleWidth(92),
@@ -412,35 +397,33 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
 
-  // 리스트 행
   row: {
     backgroundColor: COLORS.white,
     flexDirection: 'row',
     alignItems: 'center',
   },
 
-  // 레벨 썸네일
   thumb: {
     width: scaleWidth(110),
     height: scaleWidth(130),
     borderRadius: BORDER_RADIUS[16],
-    backgroundColor: COLORS.gray200,
+    backgroundColor: COLORS.gray100,
     marginRight: scaleWidth(24),
+    alignItems: 'center',
+    justifyContent: 'center',
   },
 
-  // 텍스트 영역
   textArea: {
     flex: 1,
+    gap: scaleWidth(3),
   },
 
-  // 제목 + 배지
   rowTop: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
   },
 
-  // 레벨명
   title: {
     ...Heading_18EB_Round,
     color: COLORS.black,
@@ -448,7 +431,6 @@ const styles = StyleSheet.create({
     marginRight: scaleWidth(8),
   },
 
-  // "내 레벨" 버튼
   myLevelPill: {
     paddingVertical: scaleWidth(4),
     paddingHorizontal: scaleWidth(8),
@@ -456,13 +438,11 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.puple[3],
   },
 
-  // 배지 텍스트
   myLevelText: {
     ...Caption_12SB,
     color: COLORS.puple.main,
   },
 
-  // 레벨 요약 설명
   summaryTitle: {
     ...Body_16M,
     color: COLORS.gray800,

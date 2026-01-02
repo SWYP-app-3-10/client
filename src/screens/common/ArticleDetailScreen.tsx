@@ -1,10 +1,4 @@
-import React, {
-  useEffect,
-  useRef,
-  useState,
-  useMemo,
-  useCallback,
-} from 'react';
+import React, { useEffect, useRef, useMemo, useCallback } from 'react';
 import {
   View,
   Text,
@@ -37,18 +31,19 @@ import { ExperienceModalContent } from '../../components/ArticlePointModalConten
 import { RouteNames } from '../../../routes';
 import { FullScreenStackParamList } from '../../navigation/types';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { useOnboardingStore, Difficulty } from '../../store/onboardingStore';
-import { useShowModal } from '../../store/modalStore';
+import { useOnboardingStore } from '../../store/onboardingStore';
+import { useShowModal, useShowToastModal } from '../../store/modalStore';
 import { ARTICLE_READ_EXPERIENCE } from '../../config/rewards';
 import { useExperienceStore } from '../../store/experienceStore';
+import { LevelCategory } from '../../types/interests';
 
 type NavigationProp = NativeStackNavigationProp<FullScreenStackParamList>;
 
 // 난이도별 읽기 시간 (초)
-const READING_TIME_BY_DIFFICULTY: Record<Difficulty, number> = {
-  beginner: 50, // 초급: 50초
-  intermediate: 90, // 중급: 90초
-  advanced: 190, // 고급: 3분 10초 (190초)
+const READING_TIME_BY_DIFFICULTY: Record<LevelCategory, number> = {
+  [LevelCategory.BEGINNER]: 50, // 초급: 50초
+  [LevelCategory.INTERMEDIATE]: 90, // 중급: 90초
+  [LevelCategory.ADVANCED]: 190, // 고급: 3분 10초 (190초)
 };
 
 const ArticleDetailScreen = () => {
@@ -62,42 +57,86 @@ const ArticleDetailScreen = () => {
   const hasEarnedExperienceRef = useRef(false);
   const isScreenFocusedRef = useRef(true);
   const isFocused = useIsFocused();
-  const [, setHasEarnedExperience] = useState(false);
 
   // @ts-ignore - route params 타입은 나중에 추가
   const articleId = route.params?.articleId;
+  // @ts-ignore - route params 타입은 나중에 추가
+  const fromAd = route.params?.fromAd;
   const article = articles.find((a: Article) => a.id === articleId);
 
   // 난이도에 따른 읽기 시간 설정
   const readingTime = useMemo(() => {
-    return difficulty && difficulty in READING_TIME_BY_DIFFICULTY
-      ? READING_TIME_BY_DIFFICULTY[difficulty]
-      : READING_TIME_BY_DIFFICULTY.beginner; // 기본값: 초급
+    if (!difficulty) {
+      return READING_TIME_BY_DIFFICULTY[LevelCategory.BEGINNER];
+    }
+    // difficulty가 문자열이면 LevelCategory enum 값으로 변환
+    const levelCategory =
+      typeof difficulty === 'string'
+        ? (difficulty.toUpperCase() as LevelCategory)
+        : difficulty;
+    const time = READING_TIME_BY_DIFFICULTY[levelCategory];
+    if (__DEV__) {
+      console.log('[ArticleDetailScreen] difficulty:', difficulty);
+      console.log('[ArticleDetailScreen] levelCategory:', levelCategory);
+      console.log('[ArticleDetailScreen] readingTime:', time);
+    }
+    return time || READING_TIME_BY_DIFFICULTY[LevelCategory.BEGINNER];
   }, [difficulty]);
-  // 화면 포커스 상태 추적
+  const showToastModal = useShowToastModal();
+  const toastTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // 화면 포커스 상태 추적 및 초기화
   useFocusEffect(
     useCallback(() => {
-      // 화면이 포커스될 때
+      // 화면이 포커스될 때 - 기존 타이머 정리 및 상태 리셋
+      if (timerRef.current) {
+        clearTimeout(timerRef.current);
+        timerRef.current = null;
+      }
+      if (toastTimerRef.current) {
+        clearTimeout(toastTimerRef.current);
+        toastTimerRef.current = null;
+      }
       isScreenFocusedRef.current = true;
       hasEarnedExperienceRef.current = false;
-      setHasEarnedExperience(false);
+
+      // 토스트 모달 표시 (광고를 보고 들어왔을 때만)
+      if (fromAd) {
+        toastTimerRef.current = setTimeout(() => {
+          showToastModal({
+            message: '새로운 글이 열렸어요',
+            position: 'center',
+            backgroundColor: COLORS.gray800Opacity80,
+            height: scaleWidth(39),
+            width: scaleWidth(148),
+            borderRadius: BORDER_RADIUS[8],
+          });
+          toastTimerRef.current = null;
+        }, 500);
+      }
 
       return () => {
-        // 화면이 포커스를 잃을 때 (다른 화면으로 이동)
         isScreenFocusedRef.current = false;
-        // 타이머 정리
         if (timerRef.current) {
           clearTimeout(timerRef.current);
           timerRef.current = null;
         }
+        if (toastTimerRef.current) {
+          clearTimeout(toastTimerRef.current);
+          toastTimerRef.current = null;
+        }
       };
-    }, []),
+    }, [showToastModal, fromAd]),
   );
 
   // articleId가 변경되면 경험치 획득 상태 리셋
   useEffect(() => {
+    // 기존 타이머 정리
+    if (timerRef.current) {
+      clearTimeout(timerRef.current);
+      timerRef.current = null;
+    }
     hasEarnedExperienceRef.current = false;
-    setHasEarnedExperience(false);
     isScreenFocusedRef.current = isFocused;
   }, [articleId, isFocused]);
 
@@ -123,8 +162,13 @@ const ArticleDetailScreen = () => {
       timerRef.current = null;
     }
 
-    // article이 없거나 이미 경험치를 획득했으면 타이머 설정하지 않음
-    if (!article || hasEarnedExperienceRef.current) {
+    // article이 없거나 이미 경험치를 획득했거나 화면이 포커스되지 않았으면 타이머 설정하지 않음
+    if (
+      !article ||
+      hasEarnedExperienceRef.current ||
+      !isFocused ||
+      !isScreenFocusedRef.current
+    ) {
       return;
     }
 
@@ -153,7 +197,6 @@ const ArticleDetailScreen = () => {
 
       // ref를 먼저 true로 설정하여 중복 실행 방지
       hasEarnedExperienceRef.current = true;
-      setHasEarnedExperience(true);
 
       try {
         // 경험치 추가 (useMutation이 자동으로 캐시 무효화 처리)
@@ -170,6 +213,10 @@ const ArticleDetailScreen = () => {
         // 경험치 획득 모달 표시
         showModal({
           title: '경험치 획득!',
+          titleStyle: {
+            ...Heading_20EB_Round,
+          },
+          titleDescriptionGapSize: scaleWidth(20),
           children: React.createElement(ExperienceModalContent),
           primaryButton: {
             title: '확인',
@@ -183,7 +230,6 @@ const ArticleDetailScreen = () => {
         // 에러 발생 시 ref를 다시 false로 설정하여 재시도 가능하게
         if (isScreenFocusedRef.current && isFocused) {
           hasEarnedExperienceRef.current = false;
-          setHasEarnedExperience(false);
         }
       }
     };

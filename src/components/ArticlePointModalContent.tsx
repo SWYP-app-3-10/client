@@ -14,9 +14,9 @@ import {
 import {
   COLORS,
   scaleWidth,
-  Body_16M,
   BORDER_RADIUS,
   Heading_20EB_Round,
+  Body_16SB,
 } from '../styles/global';
 import { levelDetailMap } from '../data/mock/characterData';
 
@@ -25,7 +25,7 @@ export const ArticlePointModalContent: React.FC = () => {
     <View style={styles.modalContent}>
       <Text style={styles.modalContentText}>
         <Text style={styles.pointText}>{ARTICLE_READ_POINT_COST}포인트</Text>가
-        사용됩니다
+        사용돼요
       </Text>
     </View>
   );
@@ -98,7 +98,7 @@ const styles = StyleSheet.create({
     marginTop: scaleWidth(20),
     alignItems: 'center',
     justifyContent: 'center',
-    width: '100%',
+    width: scaleWidth(248),
     height: scaleWidth(62),
     borderRadius: BORDER_RADIUS[12],
     backgroundColor: COLORS.puple[3],
@@ -110,25 +110,24 @@ const styles = StyleSheet.create({
   modalContentTextWrap: {
     justifyContent: 'center',
     alignItems: 'center',
-
-    width: scaleWidth(111),
+    paddingHorizontal: scaleWidth(12),
     height: scaleWidth(36),
     borderRadius: BORDER_RADIUS[30],
   },
   modalContentText: {
-    ...Body_16M,
+    ...Body_16SB,
     color: COLORS.gray700,
   },
   pointText: {
-    ...Body_16M,
+    ...Body_16SB,
     color: COLORS.puple.main,
   },
   getExperienceText: {
-    ...Body_16M,
+    ...Body_16SB,
     color: COLORS.blue[6],
   },
   getPointText: {
-    ...Body_16M,
+    ...Body_16SB,
     color: COLORS.yellow.medium,
   },
   modalContent: {

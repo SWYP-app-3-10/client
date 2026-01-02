@@ -16,6 +16,20 @@
   - `@tanstack/react-query` v5
 - **Networking**
   - `axios`
+- **UI Libraries**
+  - `react-native-linear-gradient` - 그라데이션 효과
+  - `react-native-svg` - SVG 아이콘
+  - `lottie-react-native` - 애니메이션
+- **Firebase**
+  - `@react-native-firebase/app`
+  - `@react-native-firebase/auth`
+- **Social Login**
+  - `@react-native-google-signin/google-signin`
+  - `@react-native-seoul/kakao-login`
+  - `@react-native-seoul/naver-login`
+  - `@invertase/react-native-apple-authentication`
+- **Ads**
+  - `react-native-google-mobile-ads` - 리워드 광고
 
 ## 프로젝트 구조
 
@@ -44,20 +58,43 @@ src/
 │   ├── onboarding/      # 온보딩 화면
 │   ├── main/            # 메인 화면 (각 탭의 메인 화면)
 │   ├── common/          # 공통 화면 (여러 탭에서 사용)
-│   │   ├── ArticleDetailScreen.tsx
-│   │   └── NotificationScreen.tsx
+│   │   ├── ArticleDetailScreen.tsx      # 기사 상세 화면
+│   │   ├── ReadArticleDetailScreen.tsx  # 읽은 글 상세 화면
+│   │   ├── QuizScreen.tsx              # 퀴즈 화면
+│   │   ├── AdLoadingScreen.tsx         # 광고 로딩 화면
+│   │   └── NotificationScreen.tsx      # 알림 화면
+│   ├── main/            # 메인 화면 (각 탭의 메인 화면)
+│   │   ├── MissionScreen.tsx           # 미션 탭
+│   │   ├── CharacterScreen.tsx         # 캐릭터 탭
+│   │   └── MyPageScreen.tsx            # 마이페이지 탭
 │   ├── character/       # 캐릭터 탭 관련 하위 화면
+│   │   ├── criteria/                   # 기준 확인 화면
+│   │   └── history/                    # 포인트/경험치 내역 화면
 │   └── search/          # 검색 탭 관련 화면
 ├── components/          # 공통 컴포넌트
 │   ├── Button.tsx
 │   ├── Input.tsx
-│   ├── NotificationModal.tsx
+│   ├── NotificationModal.tsx  # 전역 알림 모달
+│   ├── BottomSheetModal.tsx   # 전역 바텀시트 모달
+│   ├── ArticleContent.tsx     # 기사 내용 표시
+│   ├── QuizFeedback.tsx       # 퀴즈 피드백
+│   ├── QuizOptionCard.tsx     # 퀴즈 선택지 카드
+│   ├── QuizQuestion.tsx       # 퀴즈 문제 표시
+│   ├── LevelSelectionContent.tsx  # 레벨 선택 컨텐츠
+│   └── ...
+├── hooks/               # 커스텀 훅
+│   ├── useArticles.ts         # 기사 데이터 조회
+│   ├── useMissions.ts         # 미션 데이터 조회
+│   ├── useCharacter.ts        # 캐릭터 데이터 조회
+│   ├── useScrollToQuiz.ts     # 퀴즈 섹션 스크롤 제어
+│   ├── useQuizButton.ts       # 퀴즈 버튼 상태 관리
 │   └── ...
 ├── store/               # Zustand 상태 관리
-│   ├── modalStore.ts    # 전역 모달 상태
-│   ├── onboardingStore.ts  # 온보딩 상태
-│   ├── authStore.ts    # 인증 상태
-│   └── pointStore.ts   # 포인트 상태
+│   ├── modalStore.ts          # 전역 모달 상태
+│   ├── onboardingStore.ts    # 온보딩 상태
+│   ├── authStore.ts          # 인증 상태
+│   ├── pointStore.ts         # 포인트 상태
+│   └── experienceStore.ts    # 경험치 상태
 ├── services/            # 서비스 레이어 (로컬/서버 데이터 처리)
 │   ├── authService.ts
 │   ├── authStorageService.ts
@@ -87,7 +124,12 @@ src/
   ↓
 전체 화면 스택 (탭바 없는 화면)
   ├─ 기사 상세 (ARTICLE_DETAIL)
-  └─ 알림 (CHARACTER_NOTIFICATION)
+  ├─ 읽은 글 상세 (READ_ARTICLE_DETAIL)
+  ├─ 퀴즈 (QUIZ)
+  ├─ 광고 로딩 (AD_LOADING)
+  ├─ 알림 (CHARACTER_NOTIFICATION)
+  ├─ 레벨 기준 확인 (CHARACTER_CRITERIA)
+  └─ 포인트/경험치 내역 (CHARACTER_POINT_HISTORY)
 ```
 
 ## 상태 관리 (Zustand)
@@ -175,11 +217,43 @@ const MyComponent = () => {
 };
 ```
 
+#### 4. ExperienceStore (`src/store/experienceStore.ts`)
+
+경험치 상태 관리
+
+```typescript
+import { useExperienceStore } from '../store/experienceStore';
+
+const MyComponent = () => {
+  const { experience, addExperience } = useExperienceStore();
+
+  const handleEarnExp = () => {
+    addExperience(100); // 경험치 100 추가
+  };
+};
+```
+
+#### 5. PointStore (`src/store/pointStore.ts`)
+
+포인트 상태 관리
+
+```typescript
+import { usePointStore } from '../store/pointStore';
+
+const MyComponent = () => {
+  const { points, addPoints, subtractPoints } = usePointStore();
+
+  const handleEarnPoints = () => {
+    addPoints(30); // 포인트 30 추가
+  };
+};
+```
+
 ## 전역 모달 시스템
 
-프로젝트는 전역 모달 시스템을 제공합니다. 어디서든 `useShowModal` 훅을 사용하여 모달을 표시할 수 있습니다.
+프로젝트는 전역 모달 시스템을 제공합니다. 어디서든 `useShowModal` 또는 `useShowBottomSheetModal` 훅을 사용하여 모달을 표시할 수 있습니다.
 
-### 사용 예제
+### NotificationModal 사용 예제
 
 ```typescript
 import { useShowModal } from '../store/modalStore';
@@ -245,6 +319,31 @@ const MyScreen = () => {
 };
 ```
 
+### BottomSheetModal 사용 예제
+
+```typescript
+import { useShowBottomSheetModal } from '../store/modalStore';
+import LevelSelectionContent from '../components/LevelSelectionContent';
+
+const MyScreen = () => {
+  const showBottomSheetModal = useShowBottomSheetModal();
+
+  const showLevelSelection = () => {
+    showBottomSheetModal({
+      children: (
+        <LevelSelectionContent
+          selectedLevel={currentLevel}
+          onSelect={level => {
+            setCurrentLevel(level);
+            // 모달은 자동으로 닫힘
+          }}
+        />
+      ),
+    });
+  };
+};
+```
+
 ## 개발
 
 ### 설치
@@ -286,17 +385,51 @@ npm run lint -- --fix
 
 라우트 이름은 `routes.ts`에서 관리하며, 네비게이션 파라미터 타입은 `src/navigation/types.ts`에서 정의합니다.
 
+#### 네비게이션 타입 사용법
+
+```typescript
+// MainTab 내부 스택에서 사용
+import {
+  MainTabNavigationProp,
+  MissionStackParamList,
+} from '../navigation/types';
+
+const MissionScreen = () => {
+  const navigation =
+    useNavigation<MainTabNavigationProp<MissionStackParamList>>();
+  // ...
+};
+
+// FullScreenStack에서 사용
+import { FullScreenStackRouteProp } from '../navigation/types';
+import { RouteNames } from '../../routes';
+
+const ReadArticleDetailScreen = () => {
+  const route =
+    useRoute<FullScreenStackRouteProp<typeof RouteNames.READ_ARTICLE_DETAIL>>();
+  const articleId = route.params?.articleId;
+  // ...
+};
+```
+
 ## 주요 기능
 
 - ✅ 소셜 로그인 (Google, Kakao, Naver, Apple)
-- ✅ 온보딩 플로우
-- ✅ 전역 모달 시스템
+- ✅ 온보딩 플로우 (난이도 설정, 관심분야 선택)
+- ✅ 전역 모달 시스템 (NotificationModal, BottomSheetModal)
 - ✅ Zustand 기반 상태 관리
 - ✅ TypeScript 지원
 - ✅ React Navigation 기반 네비게이션
 - ✅ 포인트 시스템 (기사 읽기, 광고 시청)
+- ✅ 경험치 시스템 (레벨업, 경험치 획득)
 - ✅ 리워드 광고 연동 (Google Mobile Ads)
-- ✅ 공통 화면 (기사 상세, 알림)
+- ✅ 미션 화면 (일일 미션, 기사 읽기)
+- ✅ 캐릭터 화면 (레벨, 경험치, 포인트, 출석 체크)
+- ✅ 검색 화면 (카테고리별 기사 검색)
+- ✅ 마이페이지 (프로필, 관심분야, 레벨, 읽은 글 목록)
+- ✅ 기사 상세 화면 (기사 내용, 퀴즈 풀기)
+- ✅ 읽은 글 상세 화면 (기사 내용, 퀴즈 피드백)
+- ✅ 퀴즈 시스템 (문제 풀기, 정답/오답 피드백)
 
 ## 라이선스
 

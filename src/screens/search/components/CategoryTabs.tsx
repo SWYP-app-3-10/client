@@ -1,6 +1,12 @@
 import React from 'react';
 import { ScrollView, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import type { NewsCategory } from '../../../data/mock/searchData';
+import {
+  Body_18M,
+  BORDER_RADIUS,
+  COLORS,
+  scaleWidth,
+} from '../../../styles/global'; // 프로젝트 경로에 맞게 유지/조정
 
 type Props = {
   /** 전체 카테고리 목록 */
@@ -27,9 +33,9 @@ export default function CategoryTabs({
 }: Props) {
   return (
     <ScrollView
-      horizontal
-      showsHorizontalScrollIndicator={false}
-      contentContainerStyle={styles.row}
+      horizontal // 가로 스크롤
+      showsHorizontalScrollIndicator={false} // 스크롤바 숨김
+      contentContainerStyle={styles.row} // 양쪽 여백/정렬
     >
       {categories.map(cat => {
         // 현재 카테고리가 선택 상태인지 여부
@@ -39,6 +45,7 @@ export default function CategoryTabs({
           <TouchableOpacity
             key={cat}
             onPress={() => onSelect(cat)}
+            activeOpacity={0.8}
             style={[styles.chip, active && styles.activeChip]}
           >
             <Text style={[styles.text, active && styles.activeText]}>
@@ -51,42 +58,42 @@ export default function CategoryTabs({
   );
 }
 
-/** 카테고리 칩 높이 상수 */
-const CHIP_H = 28;
-
 const styles = StyleSheet.create({
   /** 가로 스크롤 영역 패딩 */
   row: {
-    paddingHorizontal: 16,
-    paddingTop: 2,
-    paddingBottom: 0,
+    paddingHorizontal: scaleWidth(20), // 양쪽 시작/끝 여백 20
+    paddingTop: scaleWidth(2), // 위 여백
+    paddingBottom: 0, // 아래 여백
+    alignItems: 'center', // 세로 가운데 정렬(스크롤 컨테이너)
+    gap: scaleWidth(12), // 칩 간격 12
   },
 
   /** 기본 카테고리 칩 스타일 */
   chip: {
-    height: CHIP_H,
-    borderRadius: CHIP_H / 2,
-    paddingHorizontal: 14,
-    marginRight: 8,
-    backgroundColor: '#F4EEFF',
+    paddingHorizontal: scaleWidth(12),
+    paddingVertical: scaleWidth(8),
+    borderRadius: BORDER_RADIUS[30],
+    backgroundColor: COLORS.puple[3],
     justifyContent: 'center',
     alignItems: 'center',
   },
 
   /** 선택된 카테고리 칩 스타일 */
   activeChip: {
-    backgroundColor: '#6D4CFF',
+    backgroundColor: COLORS.puple.main, // 선택 배경(보라)
   },
 
   /** 기본 카테고리 텍스트 */
   text: {
-    fontSize: 13,
-    color: '#6D4CFF',
+    ...Body_18M,
+    color: COLORS.puple.main, // 기본 텍스트(보라)
+    includeFontPadding: true, // 안드로이드 상하 여백
+    textAlignVertical: 'center', // (안드로이드) 수직 중앙 느낌
   },
 
   /** 선택된 카테고리 텍스트 */
   activeText: {
-    color: 'white',
-    fontWeight: '600',
+    ...Body_18M,
+    color: 'white', // 선택 텍스트 흰색
   },
 });

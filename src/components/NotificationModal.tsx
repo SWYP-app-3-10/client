@@ -117,7 +117,7 @@ const NotificationModal: React.FC<NotificationModalProps> = ({
               style={[
                 styles.modalContent,
                 {
-                  paddingTop: closeButton ? scaleWidth(23) : scaleWidth(40),
+                  paddingTop: closeButton ? scaleWidth(23) : scaleWidth(48),
                 },
               ]}
             >
@@ -133,7 +133,16 @@ const NotificationModal: React.FC<NotificationModalProps> = ({
               {renderImage()}
 
               {/* 제목 */}
-              <Text style={titleStyle ?? styles.title}>{title}</Text>
+              <Text
+                style={[
+                  styles.title,
+                  titleStyle,
+                  // titleStyle이 전달되어도 항상 중앙 정렬 보장
+                  { textAlign: 'center' },
+                ]}
+              >
+                {title}
+              </Text>
 
               <Spacer num={titleDescriptionGapSize} />
 
@@ -178,6 +187,7 @@ const NotificationModal: React.FC<NotificationModalProps> = ({
                       style={
                         secondaryButton ? styles.button : styles.singleButton
                       }
+                      textStyle={primaryButton.textStyle}
                     />
                   </View>
                 </>

@@ -4,8 +4,13 @@ import {
   NotificationModalProps,
 } from '../components/NotificationModal';
 import { StyleProp, TextStyle } from 'react-native';
+import { ReactNode } from 'react';
+import { ToastPosition } from '../components/ToastModal';
 
-interface ModalState {
+export type ModalType = 'notification' | 'bottomSheet' | 'toast';
+
+interface NotificationModalState {
+  type: 'notification';
   visible: boolean;
   title: string;
   description?: string;
@@ -14,23 +19,57 @@ interface ModalState {
   closeButton?: boolean;
   primaryButton?: ModalButton;
   secondaryButton?: ModalButton;
-  children?: React.ReactNode;
+  children?: ReactNode;
   titleDescriptionGapSize?: number;
   descriptionColor?: string;
   titleStyle?: StyleProp<TextStyle>;
-  closeOnBackdropPress?: boolean; // 배경 클릭 시 닫기 여부 (기본값: true)
+  closeOnBackdropPress?: boolean;
+  paddingHorizontal?: number;
 }
+
+interface BottomSheetModalState {
+  type: 'bottomSheet';
+  visible: boolean;
+  children: ReactNode;
+  closeOnBackdropPress?: boolean;
+  paddingHorizontal?: number;
+}
+
+interface ToastModalState {
+  type: 'toast';
+  visible: boolean;
+  message: string;
+  duration?: number;
+  position?: ToastPosition;
+  backgroundColor?: string;
+  opacity?: number;
+  height?: number;
+  width?: number;
+  borderRadius?: number;
+  onClose?: () => void;
+}
+
+type ModalState =
+  | NotificationModalState
+  | BottomSheetModalState
+  | ToastModalState;
 
 interface ModalStore {
   modalState: ModalState;
-  showModal: (config: Omit<ModalState, 'visible'>) => void;
+  showModal: (config: Omit<NotificationModalState, 'visible' | 'type'>) => void;
+  showBottomSheetModal: (
+    config: Omit<BottomSheetModalState, 'visible' | 'type'>,
+  ) => void;
+  showToastModal: (config: Omit<ToastModalState, 'visible' | 'type'>) => void;
   hideModal: () => void;
 }
 
 const defaultModalState: ModalState = {
+  type: 'notification',
   visible: false,
   title: '',
   titleStyle: undefined,
+  paddingHorizontal: undefined,
 };
 
 export const useModalStore = create<ModalStore>(set => ({
@@ -39,8 +78,25 @@ export const useModalStore = create<ModalStore>(set => ({
     set({
       modalState: {
         ...config,
+        type: 'notification',
         visible: true,
-      },
+      } as NotificationModalState,
+    }),
+  showBottomSheetModal: config =>
+    set({
+      modalState: {
+        ...config,
+        type: 'bottomSheet',
+        visible: true,
+      } as BottomSheetModalState,
+    }),
+  showToastModal: config =>
+    set({
+      modalState: {
+        ...config,
+        type: 'toast',
+        visible: true,
+      } as ToastModalState,
     }),
   hideModal: () =>
     set(state => ({
@@ -53,6 +109,14 @@ export const useModalStore = create<ModalStore>(set => ({
 
 // 편의 훅: showModal만 필요한 경우
 export const useShowModal = () => useModalStore(state => state.showModal);
+
+// 편의 훅: showBottomSheetModal만 필요한 경우
+export const useShowBottomSheetModal = () =>
+  useModalStore(state => state.showBottomSheetModal);
+
+// 편의 훅: showToastModal만 필요한 경우
+export const useShowToastModal = () =>
+  useModalStore(state => state.showToastModal);
 
 // 편의 훅: hideModal만 필요한 경우
 export const useHideModal = () => useModalStore(state => state.hideModal);

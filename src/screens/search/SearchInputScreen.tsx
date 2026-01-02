@@ -1,25 +1,27 @@
-import React, { useState, useEffect } from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  TextInput,
-  TouchableOpacity,
-} from 'react-native';
+import React, { useEffect, useState, useCallback } from 'react';
+import { View, Text, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { SearchStackParamList } from '../../navigation/types';
+
+import type { FullScreenStackParamList } from '../../navigation/types';
 import { RouteNames } from '../../../routes';
+
 import RecentSearches from '../../components/RecentSearches';
-import { scaleWidth } from '../../styles/global';
+import SearchHeader from './components/SearchHeader';
+import SearchLiveResultOverlay from './SearchLiveResultOveraly';
+
+import { COLORS, scaleWidth } from '../../styles/global';
 import {
   loadRecents,
   addRecent,
   removeRecent,
 } from '../../storage/recentSearches';
 
+import type { NewsItems } from '../../data/mock/searchData';
+import { useArticleNavigation } from '../../hooks/useArticleNavigation';
+
 type Props = NativeStackScreenProps<
-  SearchStackParamList,
+  FullScreenStackParamList,
   typeof RouteNames.SEARCH_INPUT
 >;
 
@@ -27,25 +29,20 @@ type SearchRecord = {
   searchName: string;
 };
 
-/**
- * SearchInputScreen
- *
- * - 검색어 입력 화면
- * - 최근 검색어를 AsyncStorage에 저장 / 삭제
- * - 검색 실행 시 SearchScreen으로 keyword 전달
- */
 export default function SearchInputScreen({ navigation }: Props) {
-  /** 현재 입력 중인 검색어 */
+  // 현재 입력 중인 검색어
   const [text, setText] = useState('');
-  /** 최근 검색어 목록 */
+  // 저장된 최근 검색어 목록
   const [searchRecord, setSearchRecord] = useState<SearchRecord[]>([]);
 
-  // string[]을 SearchRecord[]로 변환
-  const convertToSearchRecords = (keywords: string[]): SearchRecord[] => {
-    return keywords.map(keyword => ({ searchName: keyword }));
-  };
+  // 기사 상세 화면 이동 공통 훅
+  const { handleArticlePress } = useArticleNavigation({ returnTo: 'search' });
 
-  // 컴포넌트 마운트 시 AsyncStorage에서 최근 검색어 불러오기
+  // string[] 형태의 최근 검색어를 화면에서 사용하는 타입으로 변환
+  const convertToSearchRecords = (keywords: string[]): SearchRecord[] =>
+    keywords.map(keyword => ({ searchName: keyword }));
+
+  // 화면 진입 시 로컬 스토리지에 저장된 최근 검색어 로드
   useEffect(() => {
     const loadRecentSearches = async () => {
       try {
@@ -58,181 +55,140 @@ export default function SearchInputScreen({ navigation }: Props) {
     loadRecentSearches();
   }, []);
 
-  // 검색어 저장 (중복 제거, 최신순으로 정렬)
-  const recordSearch = async (keyword: string) => {
+  // 검색어를 최근 검색어 목록에 저장
+  const recordSearch = useCallback(async (keyword: string) => {
     try {
       const updated = await addRecent(keyword);
       setSearchRecord(convertToSearchRecords(updated));
     } catch (error) {
       console.error('검색어 저장 실패:', error);
     }
-  };
+  }, []);
 
-  // 검색 실행
-  const submit = async (kw?: string) => {
-    const keyword = (kw ?? text).trim();
-    if (!keyword) {
-      return;
-    }
+  // 검색 확정(엔터 / 검색 버튼)
+  // - 검색어 저장
+  // - 검색 결과 화면으로 이동
+  const submit = useCallback(
+    async (kw?: string) => {
+      const keyword = (kw ?? text).trim();
+      if (!keyword) return;
 
-    // 검색어 저장
-    await recordSearch(keyword);
+      await recordSearch(keyword);
+      navigation.navigate(RouteNames.SEARCH_RESULT, { keyword });
+    },
+    [text, recordSearch, navigation],
+  );
 
-    // 검색 결과 화면으로 이동
-    navigation.navigate(RouteNames.SEARCH, { keyword });
-  };
+  // 최근 검색어 칩 클릭 시
+  // - 입력값 세팅
+  // - 검색 결과 화면으로 이동
+  const handleRecentSearchClick = useCallback(
+    async (keyword: string) => {
+      setText(keyword);
+      await submit(keyword);
+    },
+    [submit],
+  );
 
-  // 최근 검색어 클릭 시 검색 실행
-  const handleRecentSearchClick = async (keyword: string) => {
-    setText(keyword);
-    // 검색어 저장 및 검색 실행
-    await recordSearch(keyword);
-    navigation.navigate(RouteNames.SEARCH, { keyword });
-  };
-
-  // 최근검색어 하나 제거
-  const removeSearchRecord = async (name: string) => {
+  // 최근 검색어 삭제
+  const removeSearchRecordFn = useCallback(async (name: string) => {
     try {
       const updated = await removeRecent(name);
       setSearchRecord(convertToSearchRecords(updated));
     } catch (error) {
       console.error('검색어 삭제 실패:', error);
     }
-  };
+  }, []);
+
+  // 실시간 검색 결과 오버레이에서 아이템 클릭 시
+  // - 검색어 저장
+  // - 기사 상세 화면으로 바로 이동
+  const handlePressLiveItem = useCallback(
+    async (item: NewsItems) => {
+      const parsed = Number(item.id);
+      if (Number.isNaN(parsed)) return;
+
+      await recordSearch(text.trim());
+      handleArticlePress(parsed);
+    },
+    [handleArticlePress, recordSearch, text],
+  );
 
   return (
-    <SafeAreaView style={styles.safe}>
+    <SafeAreaView style={styles.safe} edges={['top']}>
+      {/* 검색 입력 / 표시 공통 헤더 */}
+      <SearchHeader
+        value={text}
+        onChangeText={setText}
+        onSubmit={() => submit()}
+        goBackAction={() => navigation.goBack()}
+      />
+
       <View style={styles.container}>
-        {/* 상단 영역 */}
-        <View style={styles.topRow}>
-          {/* 뒤로가기 */}
-          <TouchableOpacity
-            onPress={() => navigation.goBack()}
-            style={styles.backBtn}
-          >
-            <Text style={styles.backText}>‹</Text>
-          </TouchableOpacity>
-
-          {/* 검색 입력창 */}
-          <View style={styles.inputWrap}>
-            <TextInput
-              value={text}
-              onChangeText={setText}
-              placeholder="글을 검색해보세요"
-              placeholderTextColor="#A0A0A0"
-              returnKeyType="search"
-              onSubmitEditing={() => submit()}
-              style={styles.input}
-            />
-          </View>
-        </View>
-
-        {/* 최근 검색어 */}
+        {/* 기존 최근 검색어 UI
+            - 항상 렌더링
+            - 오버레이 방식으로 덮이기 때문에 구조 변경 없음 */}
         <Text style={styles.sectionTitle}>최근 검색어</Text>
 
-        <View style={styles.chipWrap}>
+        <View style={styles.chipsArea}>
           {searchRecord.length === 0 ? (
-            <Text style={styles.empty}>최근 검색어가 없습니다.</Text>
+            <Text style={styles.emptyText}>최근 검색어가 없습니다.</Text>
           ) : (
-            <View style={styles.recentSearchesContainer}>
-              {searchRecord.map((value, index) => {
-                return (
-                  <RecentSearches
-                    key={index.toString()}
-                    index={index}
-                    removeSearchRecord={removeSearchRecord}
-                    recordSearch={handleRecentSearchClick}
-                    setSearch={setText}
-                    item={value}
-                  />
-                );
-              })}
+            <View style={styles.recentContainer}>
+              {searchRecord.map((value, index) => (
+                <RecentSearches
+                  key={index.toString()}
+                  index={index}
+                  removeSearchRecord={removeSearchRecordFn}
+                  recordSearch={handleRecentSearchClick}
+                  setSearch={setText}
+                  item={value}
+                />
+              ))}
             </View>
           )}
         </View>
 
-        {/* 하단 버튼 */}
-        <View style={styles.bottom}>
-          <TouchableOpacity
-            style={[
-              styles.nextBtn,
-              text.trim() === '' && styles.nextBtnDisabled,
-            ]}
-            disabled={text.trim() === ''}
-            onPress={() => submit()}
-          >
-            <Text style={styles.nextText}>다음</Text>
-          </TouchableOpacity>
-        </View>
+        {/* 입력 중일 때만 노출되는 실시간 검색 결과 오버레이
+            - 기존 최근 검색어 UI 위에 덮는 구조
+            - 입력값이 비어 있으면 내부에서 null 반환 */}
+        <SearchLiveResultOverlay
+          keyword={text}
+          onPressItem={handlePressLiveItem}
+        />
       </View>
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: 'white' },
-  container: { flex: 1, paddingHorizontal: 16 },
-
-  topRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingTop: 10,
-    paddingBottom: 8,
-  },
-  backBtn: { paddingRight: 6, paddingVertical: 4 },
-  backText: { fontSize: 24 },
-
-  inputWrap: {
+  safe: {
     flex: 1,
-    backgroundColor: '#F3F3F3',
-    borderRadius: 20,
-    paddingHorizontal: 12,
-    height: 40,
-    justifyContent: 'center',
+    backgroundColor: COLORS.white,
   },
-  input: { fontSize: 14, padding: 0 },
-
+  container: {
+    flex: 1,
+    paddingHorizontal: scaleWidth(20),
+    position: 'relative', // 오버레이 기준이 되는 부모
+  },
   sectionTitle: {
-    marginTop: 10,
-    marginBottom: 10,
-    fontSize: 14,
+    marginTop: scaleWidth(12),
+    marginBottom: scaleWidth(10),
+    fontSize: scaleWidth(14),
     fontWeight: '600',
-    color: '#444',
+    color: COLORS.gray700,
   },
-
-  empty: { color: '#999' },
-
-  chipWrap: { flexDirection: 'row', flexWrap: 'wrap' },
-  recentSearchesContainer: {
+  chipsArea: {
+    flex: 1,
+  },
+  emptyText: {
+    fontSize: scaleWidth(13),
+    color: COLORS.gray400,
+    marginTop: scaleWidth(6),
+  },
+  recentContainer: {
     flexDirection: 'row',
     flexWrap: 'wrap',
     gap: scaleWidth(10),
-    width: scaleWidth(329),
   },
-  chip: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#EFEFEF',
-    borderRadius: 18,
-    paddingHorizontal: 12,
-    height: 32,
-    marginRight: 8,
-    marginBottom: 8,
-  },
-  chipText: { fontSize: 13, color: '#333' },
-  chipX: { marginLeft: 8, paddingHorizontal: 2, paddingVertical: 2 },
-  chipXText: { fontSize: 16, color: '#777' },
-
-  bottom: { marginTop: 'auto', paddingBottom: 16 },
-  nextBtn: {
-    height: 48,
-    borderRadius: 12,
-    backgroundColor: '#DEDEDE',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  nextBtnDisabled: {
-    opacity: 0.4,
-  },
-  nextText: { fontSize: 16, fontWeight: '600' },
 });

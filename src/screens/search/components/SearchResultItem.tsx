@@ -1,6 +1,13 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import type { NewsItems } from '../../../data/mock/searchData';
+import {
+  Body_16M,
+  BORDER_RADIUS,
+  Caption_14R,
+  COLORS,
+  scaleWidth,
+} from '../../../styles/global';
 
 type Props = {
   /** 표시할 뉴스 데이터 */
@@ -59,30 +66,29 @@ const styles = StyleSheet.create({
 
   /** 뉴스 제목 */
   title: {
-    fontSize: 14,
-    fontWeight: '600',
-    marginBottom: 3,
+    ...Body_16M,
+    color: COLORS.black,
+    paddingRight: scaleWidth(20),
   },
 
   /** 뉴스 부제목 */
   sub: {
-    fontSize: 12,
-    color: '#777',
-    marginBottom: 6,
+    ...Body_16M,
+    color: COLORS.black,
   },
 
   /** 읽기 시간 등 메타 정보 */
   meta: {
-    fontSize: 11,
-    color: '#6D4CFF',
+    ...Caption_14R,
+    color: COLORS.gray700,
+    marginTop: scaleWidth(8),
   },
 
   /** 썸네일 영역 (이미지 적용 예정) */
   thumb: {
-    width: 56,
-    height: 56,
-    backgroundColor: '#E7E7E7',
-    borderRadius: 12,
-    marginLeft: 12,
+    width: scaleWidth(85),
+    height: scaleWidth(85),
+    backgroundColor: COLORS.gray300,
+    borderRadius: BORDER_RADIUS[16],
   },
 });

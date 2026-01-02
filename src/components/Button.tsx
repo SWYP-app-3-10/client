@@ -29,6 +29,7 @@ export interface ButtonProps
   children?: React.ReactNode;
   hitslop?: number;
   style?: StyleProp<ViewStyle>;
+  height?: number;
 }
 
 const Button: React.FC<ButtonProps> = ({
@@ -36,10 +37,11 @@ const Button: React.FC<ButtonProps> = ({
   onPress,
   variant = 'primary',
   disabled = false,
-  style,
   textStyle,
   children,
   hitslop,
+  style,
+  ...props
 }) => {
   const buttonStyles = [
     styles.button,
@@ -62,6 +64,7 @@ const Button: React.FC<ButtonProps> = ({
       disabled={disabled}
       activeOpacity={0.7}
       hitSlop={hitslop ?? 10}
+      {...props}
     >
       {children ? children : <Text style={textStyles}>{title}</Text>}
     </TouchableOpacity>
@@ -73,8 +76,8 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     flexDirection: 'row',
-    height: scaleWidth(63),
     borderRadius: BORDER_RADIUS[16],
+    height: scaleWidth(63),
   },
   // Variants
   primary: {

@@ -22,3 +22,7 @@ export { default as ArticleCard } from './ArticleCard';
 export { default as Header } from './Header';
 
 export { default as Spacer } from './Spacer';
+export { default as ArticleContent } from './ArticleContent';
+export { default as QuizFeedback } from './QuizFeedback';
+export { default as QuizOptionCard } from './QuizOptionCard';
+export { default as QuizQuestion } from './QuizQuestion';

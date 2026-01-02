@@ -11,7 +11,6 @@ import {
   BORDER_RADIUS,
   scaleWidth,
   Body_16SB,
-  Caption_12M,
   Heading_24EB_Round,
   Heading_18EB_Round,
   Heading_18B,
@@ -170,11 +169,11 @@ const styles = StyleSheet.create({
   // 스크롤 컨테이너
   scroll: {
     flex: 1,
+    marginHorizontal: scaleWidth(20),
   },
   content: {
     paddingTop: scaleWidth(20),
     paddingBottom: scaleWidth(50),
-    paddingHorizontal: scaleWidth(20),
   },
   // 화면 메인 타이틀
   title: {

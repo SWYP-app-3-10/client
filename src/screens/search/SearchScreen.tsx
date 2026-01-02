@@ -1,36 +1,167 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
 import {
   View,
   Text,
   StyleSheet,
   TouchableOpacity,
   FlatList,
+  LayoutChangeEvent,
+  Pressable,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { RouteProp, useNavigation } from '@react-navigation/native';
-import {
+import { RouteNames } from '../../../routes';
+
+import type {
   MainTabNavigationProp,
   SearchStackParamList,
 } from '../../navigation/types';
-import { RouteNames } from '../../../routes';
+
 import SearchResultSkeleton from './components/SearchResultSkeleton';
-import { MOCK_NEWS, NewsCategory, NewsItems } from '../../data/mock/searchData';
-import SearchResultItem from './components/SearchResultItem';
 import CategoryTabs from './components/CategoryTabs';
+import SearchResultItem from './components/SearchResultItem';
+
+import { MOCK_NEWS, NewsCategory, NewsItems } from '../../data/mock/searchData';
 import { useArticleNavigation } from '../../hooks/useArticleNavigation';
+
+import {
+  Caption_12M,
+  COLORS,
+  Heading_24EB_Round,
+  scaleWidth,
+} from '../../styles/global';
+
+/**
+ * 아이콘 SVG import (여기만 너네 파일명/경로에 맞게 수정)
+ * - timer pill 오른쪽 아이콘
+ * - 우측 검색 아이콘
+ */
+import TimerArrowIcon from '../../assets/svg/RightArrow.svg';
+import SearchIcon from '../../assets/svg/search.svg';
 
 /** 한 번에 추가로 보여줄 아이템 개수(페이지 단위) */
 const PAGE_SIZE = 10;
 
-/** 터치 영역 확장(작은 아이콘 버튼 UX 개선) */
+/** 작은 버튼 UX 개선용 터치 영역 확장 */
 const HIT_SLOP = { top: 10, bottom: 10, left: 10, right: 10 };
+
+/**
+ * value를 min~max 범위로 제한
+ * → 툴팁 위치가 부모 영역을 벗어나지 않도록 보정
+ */
+const clamp = (value: number, min: number, max: number) =>
+  Math.min(Math.max(value, min), max);
+
+/**
+ * ======================================
+ * useTooltip (LevelCriteriaScreen에서 쓰던 방식 이식)
+ * - 툴팁 표시/숨김 토글
+ * - 자동 닫힘 타이머 관리
+ * - 말풍선과 꼬리가 아이콘(타이머 캡슐) 중앙을 가리키도록 위치 계산
+ * ======================================
+ */
+function useTooltip(autoHideMs: number) {
+  /** 툴팁 표시 여부 */
+  const [visible, setVisible] = useState(false);
+
+  /** 자동 닫힘 타이머 */
+  const hideTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  /**
+   * 레이아웃 측정 값들
+   * - areaWidth    : 툴팁이 포함된 영역 너비
+   * - targetCenterX: 타겟(타이머 캡슐) 중앙 좌표
+   * - tooltipWidth : 실제 툴팁 너비
+   */
+  const [areaWidth, setAreaWidth] = useState(0);
+  const [targetCenterX, setTargetCenterX] = useState(0);
+  const [tooltipWidth, setTooltipWidth] = useState(0);
+
+  /** 기존 타이머 제거 */
+  const clearTimer = useCallback(() => {
+    if (hideTimerRef.current) {
+      clearTimeout(hideTimerRef.current);
+      hideTimerRef.current = null;
+    }
+  }, []);
+
+  /** 툴팁 열기 + 자동 닫힘 예약 */
+  const openWithAutoHide = useCallback(() => {
+    clearTimer();
+    setVisible(true);
+
+    hideTimerRef.current = setTimeout(() => {
+      setVisible(false);
+      hideTimerRef.current = null;
+    }, autoHideMs);
+  }, [autoHideMs, clearTimer]);
+
+  /** 토글 */
+  const toggle = useCallback(() => {
+    setVisible(prev => {
+      const next = !prev;
+      clearTimer();
+      if (next) openWithAutoHide();
+      return next;
+    });
+  }, [clearTimer, openWithAutoHide]);
+
+  /**
+   * 툴팁 말풍선 좌측 위치
+   * - 타겟 중앙 기준
+   * - 부모 영역 밖으로 나가지 않도록 clamp
+   */
+  const tooltipLeft = useMemo(() => {
+    if (!areaWidth || !tooltipWidth) return 0;
+    const raw = targetCenterX - tooltipWidth / 2;
+    return clamp(raw, 0, areaWidth - tooltipWidth);
+  }, [areaWidth, tooltipWidth, targetCenterX]);
+
+  /**
+   * 툴팁 꼬리 위치
+   * - 말풍선 내부 기준
+   * - 타겟 중앙을 가리키도록 계산
+   */
+  const arrowLeft = useMemo(() => {
+    const ARROW_HALF = scaleWidth(6);
+    return Math.max(scaleWidth(10), targetCenterX - tooltipLeft - ARROW_HALF);
+  }, [targetCenterX, tooltipLeft]);
+
+  /** 레이아웃 측정 콜백 */
+  const onLayoutArea = (e: LayoutChangeEvent) =>
+    setAreaWidth(e.nativeEvent.layout.width);
+
+  const onLayoutTarget = (e: LayoutChangeEvent) => {
+    const { x, width } = e.nativeEvent.layout;
+    setTargetCenterX(x + width / 2);
+  };
+
+  const onLayoutTooltip = (e: LayoutChangeEvent) =>
+    setTooltipWidth(e.nativeEvent.layout.width);
+
+  return {
+    visible,
+    toggle,
+    tooltipLeft,
+    arrowLeft,
+    onLayoutArea,
+    onLayoutTarget,
+    onLayoutTooltip,
+  };
+}
 
 /**
  * SearchListFooter
  *
- * - FlatList 하단 푸터 컴포넌트
- * - 로딩 중이면 PAGE_SIZE만큼 스켈레톤을 노출
+ * - 무한 스크롤 하단에 붙는 푸터 컴포넌트
+ * - 로딩 중이면 스켈레톤을 PAGE_SIZE 만큼 노출
  * - 로딩이 아니면 최소 여백만 제공
  */
 const SearchListFooter = ({ loading }: { loading: boolean }) => {
@@ -48,167 +179,196 @@ const SearchListFooter = ({ loading }: { loading: boolean }) => {
 /**
  * SearchScreen
  *
- * - 탐색(카테고리 기반) + 검색 결과 화면
- * - keyword가 있으면 "검색 모드", 없으면 "탐색 모드"
- * - 목록은 클라이언트 페이지네이션(무한 스크롤) 형태로 노출
+ * - "탐색" 탭의 메인 화면 (탭바 O)
+ * - 카테고리 기반 기사 리스트 탐색
+ * - 우측 검색 버튼 클릭 시
+ *   → 탭바 없는 SearchInputScreen으로 이동
  */
 export default function SearchScreen({
   route,
 }: {
-  route: RouteProp<SearchStackParamList, 'search'>;
+  route: RouteProp<SearchStackParamList, typeof RouteNames.SEARCH>;
 }) {
-  /** 현재 선택된 카테고리(탐색 모드에서 사용) */
-  const [selectedCategory, setSelectedCategory] =
-    useState<NewsCategory>('경제');
+  // 현재 선택된 카테고리
+  const [selectedCategory, setSelectedCategory] = useState<NewsCategory>(
+    '전체' as any,
+  );
+
+  // 탐색 탭 네비게이션 객체
   const navigation =
     useNavigation<MainTabNavigationProp<SearchStackParamList>>();
-  /** 검색 키워드(있으면 검색 모드) */
-  const [keyword, setKeyword] = useState<string | undefined>();
 
-  /** 현재 페이지(클라이언트 페이지네이션) */
+  // 현재 페이지 (무한 스크롤)
   const [page, setPage] = useState(1);
 
-  /** 더 불러오는 중 여부(중복 호출 방지 및 스켈레톤 표시용) */
+  // 추가 로딩 여부
   const [isLoadingMore, setIsLoadingMore] = useState(false);
 
-  /** keyword 존재 여부로 검색 모드 판단 */
-  const isSearching = !!keyword;
+  // ✅ 타이머 툴팁(사진처럼)
+  const timerTooltip = useTooltip(1500);
 
   /**
    * 라우트 파라미터 반영
-   * - initialCategory: 탐색 모드 진입 시 초기 카테고리 설정
-   * - keyword: 검색 모드 진입/갱신 시 keyword 반영 및 page 초기화
+   * - 다른 화면에서 특정 카테고리로 진입했을 경우 초기값 설정
    */
   useEffect(() => {
     if (route.params?.initialCategory) {
       setSelectedCategory(route.params.initialCategory);
-    }
-    if (route.params?.keyword !== undefined) {
-      setKeyword(route.params.keyword);
       setPage(1);
     }
-  }, [route.params?.initialCategory, route.params?.keyword]);
+  }, [route.params?.initialCategory]);
 
   /**
-   * 뒤로가기 동작
-   * - 검색 모드: keyword를 해제하고 탐색 모드로 복귀
-   * - 탐색 모드: 부모 네비게이터로 뒤로 이동
+   * 상단 "탐색" 버튼
+   * - 탐색 화면에서는 아무 동작 없음 (기획 유지)
    */
-  const onPressBack = () => {
-    if (keyword) {
-      setKeyword(undefined);
-      setPage(1);
-      navigation.setParams({ keyword: undefined });
-      return;
-    }
-    navigation.getParent()?.goBack();
+  const onPressExplore = () => {
+    return;
   };
 
   /**
-   * 선택된 카테고리 + keyword로 전체 데이터 필터링
-   * - keyword는 title/subtitle/content를 합쳐 대소문자 무시 포함 검색
+   * 타이머 캡슐 버튼
+   * - ✅ 누르면 툴팁 토글
+   */
+  const onPressTimer = () => {
+    timerTooltip.toggle();
+  };
+
+  /**
+   * 카테고리 기반 데이터 필터링
+   * - "전체" 선택 시 모든 기사 노출
    */
   const filteredAll: NewsItems[] = useMemo(() => {
     return MOCK_NEWS.filter(item => {
-      const catOk = item.category === selectedCategory;
-
-      const kwOk = keyword
-        ? (item.title + item.subtitle + item.content)
-            .toLowerCase()
-            .includes(keyword.toLowerCase())
-        : true;
-
-      return catOk && kwOk;
+      if ((selectedCategory as any) === '전체') return true;
+      return item.category === selectedCategory;
     });
-  }, [selectedCategory, keyword]);
+  }, [selectedCategory]);
 
   /**
-   * 현재 page에 맞춰 화면에 보여줄 데이터만 슬라이스
+   * 현재 페이지 기준으로 화면에 표시할 데이터만 슬라이스
    */
   const visibleData = useMemo(() => {
     return filteredAll.slice(0, page * PAGE_SIZE);
   }, [filteredAll, page]);
 
-  /** 더 불러올 데이터가 있는지 여부 */
+  // 추가로 불러올 데이터가 있는지 여부
   const hasMore = visibleData.length < filteredAll.length;
 
   /**
-   * 무한 스크롤 로딩
-   * - hasMore가 없거나 이미 로딩 중이면 중단
-   * - 현재는 더미 딜레이로 로딩을 흉내냄
-   * - 추후 서버 페이지네이션으로 교체 가능
+   * 무한 스크롤 로딩 처리
+   * - 마지막 근처에 도달하면 다음 페이지 로드
    */
   const loadMore = async () => {
     if (!hasMore || isLoadingMore) return;
 
     setIsLoadingMore(true);
-
-    /*
-      백엔드 연동 시 예시
-      GET /news?category=...&keyword=...&page=page+1&size=10
-    */
     await new Promise<void>(resolve => setTimeout(resolve, 900));
-
     setPage(prev => prev + 1);
     setIsLoadingMore(false);
   };
-  // 기사 클릭 처리 (커스텀 훅 사용)
+
+  // 기사 클릭 시 상세 화면 이동
   const { handleArticlePress } = useArticleNavigation({ returnTo: 'search' });
+
+  /**
+   * 우측 검색 버튼 클릭
+   * - 탭바 없는 검색 입력 화면(SearchInputScreen)으로 이동
+   */
+  const goToSearchInput = () => {
+    navigation.navigate(RouteNames.FULL_SCREEN_STACK, {
+      screen: RouteNames.SEARCH_INPUT,
+    });
+  };
+
   return (
-    <SafeAreaView style={styles.safe}>
+    <SafeAreaView style={styles.safe} edges={['top']}>
       <View style={styles.container}>
-        {/* 헤더 영역 */}
-        <View style={styles.header}>
-          {/* 검색 모드일 때만 뒤로가기 표시(탐색 모드에서는 중앙 타이틀 정렬 유지) */}
-          {isSearching ? (
-            <TouchableOpacity
-              onPress={onPressBack}
-              style={styles.backBtn}
-              hitSlop={HIT_SLOP}
-            >
-              <Text style={styles.backText}>‹</Text>
-            </TouchableOpacity>
-          ) : (
-            <View style={{ width: 28 }} />
-          )}
-
-          {/* 화면 타이틀 */}
-          <Text style={styles.headerTitle}>
-            {isSearching ? `"${keyword}" 검색 결과` : '탐색'}
-          </Text>
-
-          {/* 검색 입력 화면으로 이동 */}
+        {/* 탐색 모드 상단 헤더 */}
+        <View style={styles.exploreHeaderRow}>
           <TouchableOpacity
-            onPress={() => navigation.navigate(RouteNames.SEARCH_INPUT)}
-            style={styles.iconBtn}
+            onPress={onPressExplore}
+            style={styles.exploreTitleBtn}
+            hitSlop={HIT_SLOP}
+          />
+
+          {/* ✅ 가운데 영역: 툴팁 기준 영역 */}
+          <View style={styles.centerWrap} onLayout={timerTooltip.onLayoutArea}>
+            <Pressable
+              onPress={onPressTimer}
+              style={styles.timerPill}
+              hitSlop={HIT_SLOP}
+              onLayout={timerTooltip.onLayoutTarget}
+            >
+              <Text style={styles.timerPillText}>16:41</Text>
+
+              {/* ✅ 아이콘 자리: View 박스 → SVG */}
+              <View style={styles.timerPillIconBox}>
+                <TimerArrowIcon
+                  width={scaleWidth(18)}
+                  height={scaleWidth(18)}
+                />
+              </View>
+            </Pressable>
+
+            {/* ✅ 사진처럼 툴팁 */}
+            {timerTooltip.visible && (
+              <View
+                style={[styles.tooltipWrap, { left: timerTooltip.tooltipLeft }]}
+                onLayout={timerTooltip.onLayoutTooltip}
+              >
+                <Text style={styles.tooltipText}>
+                  16분 뒤에 새로운 글을 확인할 수 있어요!
+                </Text>
+                <View
+                  style={[
+                    styles.tooltipArrow,
+                    { left: timerTooltip.arrowLeft },
+                  ]}
+                />
+              </View>
+            )}
+          </View>
+
+          <TouchableOpacity
+            onPress={goToSearchInput}
+            style={styles.searchSquareBtn}
             hitSlop={HIT_SLOP}
           >
-            <Text style={styles.icon}>🔍</Text>
+            {/* 검색 아이콘 */}
+            <View style={styles.searchIconWrap}>
+              <SearchIcon
+                width={scaleWidth(48)}
+                height={scaleWidth(48)}
+                color={COLORS.gray400}
+              />
+            </View>
           </TouchableOpacity>
         </View>
 
-        {/* 탐색 모드에서만 카테고리 탭 노출 */}
-        {!isSearching && (
-          <View style={styles.tabsWrap}>
-            <CategoryTabs
-              categories={[
+        {/* 카테고리 선택 탭 */}
+        <View style={styles.tabsWrap}>
+          <CategoryTabs
+            categories={
+              [
+                '전체',
                 '정치',
                 '경제',
                 '사회',
                 '생활/문화',
                 'IT/과학',
                 '세계',
-              ]}
-              selected={selectedCategory}
-              onSelect={cat => {
-                setSelectedCategory(cat);
-                setPage(1);
-              }}
-            />
-          </View>
-        )}
+              ] as any
+            }
+            selected={selectedCategory as any}
+            onSelect={(cat: any) => {
+              setSelectedCategory(cat);
+              setPage(1);
+            }}
+          />
+        </View>
 
-        {/* 검색/탐색 결과 리스트 */}
+        {/* 탐색 기사 리스트 */}
         <FlatList
           style={styles.list}
           data={visibleData}
@@ -216,7 +376,14 @@ export default function SearchScreen({
           renderItem={({ item }) => (
             <SearchResultItem
               item={item}
-              onPress={() => handleArticlePress(Number(item.id))}
+              onPress={() => {
+                const parsed = Number(item.id);
+                if (Number.isNaN(parsed)) {
+                  console.warn('[SearchScreen] invalid article id:', item.id);
+                  return;
+                }
+                handleArticlePress(parsed);
+              }}
             />
           )}
           contentContainerStyle={styles.listContent}
@@ -226,47 +393,157 @@ export default function SearchScreen({
           ListEmptyComponent={
             <Text style={styles.empty}>검색 결과가 없습니다.</Text>
           }
+          // 항상 리스트 최상단에 고정 노출되는 스켈레톤
+          ListHeaderComponent={
+            <View>
+              <SearchResultSkeleton />
+              <SearchResultSkeleton />
+            </View>
+          }
         />
       </View>
     </SafeAreaView>
   );
 }
 
+/* =========================
+  스타일
+========================= */
 const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: 'white' },
-  container: { flex: 1 },
+  safe: {
+    flex: 1,
+    backgroundColor: COLORS.white,
+  },
 
-  header: {
+  container: {
+    flex: 1,
+  },
+
+  exploreHeaderRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingTop: 6,
-    paddingBottom: 2,
-  },
-  backBtn: { padding: 4 },
-  backText: { fontSize: 24 },
+    height: scaleWidth(52),
+    paddingHorizontal: scaleWidth(20),
+    paddingTop: scaleWidth(8),
 
-  headerTitle: {
+    // 툴팁이 탭 위로 올라오도록 수정
+    zIndex: 100,
+    elevation: 100, // Android
+    overflow: 'visible', // iOS
+  },
+
+  exploreTitleBtn: {
+    minWidth: scaleWidth(44),
+    alignItems: 'flex-start',
+    justifyContent: 'center',
+  },
+
+  exploreTitleText: {
+    ...Heading_24EB_Round,
+    color: COLORS.puple?.main,
+  },
+
+  // ✅ 가운데 영역을 relative로: 툴팁 absolute 위치 기준
+  centerWrap: {
     flex: 1,
-    textAlign: 'center',
-    fontSize: 18,
-    fontWeight: '700',
+    alignItems: 'center',
+    justifyContent: 'center',
+    position: 'relative',
+
+    zIndex: 100,
+    elevation: 100,
+    overflow: 'visible',
   },
 
-  iconBtn: { padding: 6 },
-  icon: { fontSize: 18 },
+  timerPill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    height: scaleWidth(34),
+    borderRadius: scaleWidth(999),
+    borderWidth: 1,
+    borderColor: COLORS.gray500,
+    backgroundColor: COLORS.white,
+    paddingHorizontal: scaleWidth(12),
+    paddingVertical: scaleWidth(8),
+  },
+
+  timerPillText: {
+    ...Caption_12M,
+    color: COLORS.gray700,
+    marginRight: scaleWidth(4),
+  },
+
+  // ✅ 기존 박스 유지하되 내부에 SVG 렌더
+  timerPillIconBox: {
+    width: scaleWidth(18),
+    height: scaleWidth(18),
+    borderRadius: scaleWidth(3),
+    backgroundColor: COLORS.gray300,
+  },
+
+  // ✅ 툴팁(사진 느낌)
+  tooltipWrap: {
+    position: 'absolute',
+    top: scaleWidth(42), // 타이머 캡슐 아래로
+    backgroundColor: COLORS.gray800, // gray900 없으면 black로
+    paddingHorizontal: scaleWidth(12),
+    paddingVertical: scaleWidth(8),
+    borderRadius: scaleWidth(12),
+    maxWidth: scaleWidth(280),
+    zIndex: 999, // 툴팁 최상단 노출
+    elevation: 999,
+  },
+
+  tooltipText: {
+    ...Caption_12M,
+    color: COLORS.white,
+  },
+
+  tooltipArrow: {
+    position: 'absolute',
+    top: -scaleWidth(6),
+    width: 0,
+    height: 0,
+    borderLeftWidth: scaleWidth(6),
+    borderRightWidth: scaleWidth(6),
+    borderBottomWidth: scaleWidth(6),
+    borderLeftColor: 'transparent',
+    borderRightColor: 'transparent',
+    borderBottomColor: COLORS.gray800,
+  },
+
+  searchSquareBtn: {
+    minWidth: scaleWidth(44),
+    alignItems: 'flex-end',
+    justifyContent: 'center',
+  },
+
+  // ✅ 검색 아이콘 터치영역/정렬용 래퍼
+  searchIconWrap: {
+    width: scaleWidth(48),
+    height: scaleWidth(48),
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
 
   tabsWrap: {
-    maxHeight: 52,
+    paddingHorizontal: 0,
+    paddingVertical: scaleWidth(10),
   },
 
-  list: { flex: 1 },
-
-  empty: { textAlign: 'center', paddingTop: 20, color: '#777' },
+  list: {
+    flex: 1,
+  },
 
   listContent: {
-    paddingTop: 8,
-    paddingBottom: 12,
-    alignItems: 'stretch',
+    paddingTop: scaleWidth(15),
+    paddingBottom: scaleWidth(48),
+    gap: scaleWidth(12),
+  },
+
+  empty: {
+    textAlign: 'center',
+    paddingTop: scaleWidth(20),
+    color: COLORS.gray700,
   },
 });

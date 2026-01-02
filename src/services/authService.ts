@@ -3,11 +3,8 @@
  * 서버 API 연동 시 이 파일을 수정하여 실제 인증 로직 구현
  */
 
-import {
-  getRecentLogin,
-  RecentLoginInfo,
-  clearRecentLogin,
-} from './authStorageService';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { getRecentLogin, RecentLoginInfo } from './authStorageService';
 import { signOutSocial, SocialLoginProvider } from './socialLoginService';
 
 export interface AuthStatus {
@@ -17,9 +14,6 @@ export interface AuthStatus {
 
 /**
  * 현재 인증 상태 확인
- * 로컬 스토리지의 최근 로그인 정보를 확인하고,
- * 나중에 서버 API로 토큰 검증 등을 추가할 수 있음
- *
  * @returns Promise<AuthStatus>
  */
 export const checkAuthStatus = async (): Promise<AuthStatus> => {
@@ -31,16 +25,8 @@ export const checkAuthStatus = async (): Promise<AuthStatus> => {
       return { isAuthenticated: false };
     }
 
-    // TODO: 서버 API로 토큰 검증
-    // 예시:
-    // const token = await getAuthToken(); // AsyncStorage에서 토큰 가져오기
-    // if (token) {
-    //   const isValid = await validateToken(token); // 서버에 토큰 검증 요청
-    //   if (!isValid) {
-    //     await clearRecentLogin(); // 토큰이 유효하지 않으면 로컬 정보 삭제
-    //     return {isAuthenticated: false};
-    //   }
-    // }
+    // TODO: 서버 API로 토큰 검증 (필요 시 구현)
+    // 현재는 API 호출 시 서버가 401/403을 반환하면 client.ts의 인터셉터에서 처리
 
     // 현재는 로컬 정보만 확인
     return {
@@ -53,49 +39,111 @@ export const checkAuthStatus = async (): Promise<AuthStatus> => {
   }
 };
 
-/**
- * 서버에 토큰 검증 요청 (나중에 구현)
- * @param token 인증 토큰
- * @returns Promise<boolean> 토큰 유효성
- */
-export const validateToken = async (_token: string): Promise<boolean> => {
-  // TODO: 실제 서버 API 호출
-  // 예시:
-  // try {
-  //   const response = await fetch('https://api.example.com/auth/validate', {
-  //     method: 'POST',
-  //     headers: {
-  //       'Content-Type': 'application/json',
-  //       'Authorization': `Bearer ${token}`,
-  //     },
-  //   });
-  //   return response.ok;
-  // } catch (error) {
-  //   console.error('토큰 검증 실패:', error);
-  //   return false;
-  // }
+const REFRESH_TOKEN_KEY = '@refresh_token';
+const USER_INFO_KEY = '@user_info';
 
-  // 현재는 더미 구현
-  return true;
+/**
+ * 인증 토큰 저장
+ * @param token 인증 토큰
+ */
+export const saveAuthToken = async (token: string): Promise<void> => {
+  try {
+    await AsyncStorage.setItem('@auth_token', token);
+  } catch (error) {
+    console.error('토큰 저장 실패:', error);
+  }
 };
 
 /**
- * 인증 토큰 저장 (나중에 구현)
- * @param token 인증 토큰
+ * 리프레시 토큰 저장
+ * @param refreshToken 리프레시 토큰
  */
-export const saveAuthToken = async (_token: string): Promise<void> => {
-  // TODO: AsyncStorage에 토큰 저장
-  // await AsyncStorage.setItem('@auth_token', token);
+export const saveRefreshToken = async (refreshToken: string): Promise<void> => {
+  try {
+    await AsyncStorage.setItem(REFRESH_TOKEN_KEY, refreshToken);
+  } catch (error) {
+    console.error('리프레시 토큰 저장 실패:', error);
+  }
 };
 
 /**
- * 인증 토큰 조회 (나중에 구현)
+ * 리프레시 토큰 조회
+ * @returns Promise<string | null>
+ */
+export const getRefreshToken = async (): Promise<string | null> => {
+  try {
+    return await AsyncStorage.getItem(REFRESH_TOKEN_KEY);
+  } catch (error) {
+    console.error('리프레시 토큰 조회 실패:', error);
+    return null;
+  }
+};
+
+/**
+ * 사용자 정보 저장 (provider, loginTime 포함)
+ * @param userInfo 사용자 정보
+ */
+export const saveUserInfo = async (userInfo: {
+  userId: number;
+  name?: string;
+  email?: string;
+  profileImage?: string;
+  provider?: string;
+  loginTime?: number;
+}): Promise<void> => {
+  try {
+    await AsyncStorage.setItem(USER_INFO_KEY, JSON.stringify(userInfo));
+  } catch (error) {
+    console.error('사용자 정보 저장 실패:', error);
+  }
+};
+
+/**
+ * 사용자 정보 조회
+ * @returns Promise<UserInfo | null>
+ */
+export const getUserInfo = async (): Promise<{
+  userId: number;
+  name?: string;
+  email?: string;
+  profileImage?: string;
+  provider?: string;
+  loginTime?: number;
+} | null> => {
+  try {
+    const data = await AsyncStorage.getItem(USER_INFO_KEY);
+    if (data) {
+      return JSON.parse(data);
+    }
+    return null;
+  } catch (error) {
+    console.error('사용자 정보 조회 실패:', error);
+    return null;
+  }
+};
+
+/**
+ * 인증 토큰 조회
  * @returns Promise<string | null>
  */
 export const getAuthToken = async (): Promise<string | null> => {
-  // TODO: AsyncStorage에서 토큰 가져오기
-  // return await AsyncStorage.getItem('@auth_token');
-  return null;
+  try {
+    return await AsyncStorage.getItem('@auth_token');
+  } catch (error) {
+    console.error('토큰 조회 실패:', error);
+    return null;
+  }
+};
+
+/**
+ * 사용자 정보 삭제 (로그아웃 시)
+ */
+export const clearUserInfo = async (): Promise<void> => {
+  try {
+    await AsyncStorage.removeItem(USER_INFO_KEY);
+  } catch (error) {
+    console.error('사용자 정보 삭제 실패:', error);
+  }
 };
 
 /**
@@ -109,8 +157,8 @@ export const logout = async (provider?: SocialLoginProvider): Promise<void> => {
       await signOutSocial(provider);
     }
 
-    // 2. 로컬 로그인 정보 삭제
-    await clearRecentLogin();
+    // 2. 로컬 사용자 정보 삭제
+    await clearUserInfo();
 
     console.log('로그아웃 완료');
   } catch (error) {
@@ -123,8 +171,8 @@ export const logout = async (provider?: SocialLoginProvider): Promise<void> => {
  */
 export const clearAllAuthData = async (): Promise<void> => {
   try {
-    // 최근 로그인 정보 삭제
-    await clearRecentLogin();
+    // 사용자 정보 삭제
+    await clearUserInfo();
 
     // 온보딩 상태 초기화는 onboardingStore.resetOnboarding()에서 처리
     // 이 함수는 authService에서만 처리하므로 여기서는 로그인 정보만 삭제

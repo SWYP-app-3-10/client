@@ -23,11 +23,11 @@ export const missionKeys = {
  * 오늘의 미션 목록 조회
  */
 export const useMissions = () => {
-  return useQuery({
+  return useQuery<Mission[], Error>({
     queryKey: missionKeys.lists(),
     queryFn: fetchMissions,
-    staleTime: 1000 * 60 * 5, // 5분간 fresh 상태 유지
-    gcTime: 1000 * 60 * 10, // 10분간 캐시 유지
+    staleTime: 1000 * 60 * 5,
+    gcTime: 1000 * 60 * 10,
   });
 };
 

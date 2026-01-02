@@ -1,18 +1,39 @@
-import { StyleSheet, TextStyle } from 'react-native';
+import { StyleSheet, TextStyle, Platform } from 'react-native';
 import { scaleWidth } from './global';
 
 const getFontFamily = (weight: number): string => {
-  if (weight >= 800) {
+  // 모든 플랫폼에서 정확한 폰트 이름 사용 (영어/숫자/한글 모두 동일한 굵기 보장)
+  if (weight === 800) {
     return 'Pretendard-ExtraBold';
-  } else if (weight >= 700) {
+  } else if (weight === 700) {
     return 'Pretendard-Bold';
-  } else if (weight >= 600) {
+  } else if (weight === 600) {
     return 'Pretendard-SemiBold';
-  } else if (weight >= 500) {
+  } else if (weight === 500) {
     return 'Pretendard-Medium';
+  } else if (weight === 400) {
+    return 'Pretendard-Regular';
   } else {
     return 'Pretendard-Regular';
   }
+};
+
+const getFontWeight = (weight: number): TextStyle['fontWeight'] => {
+  // iOS에서 폰트 두께를 명시적으로 지정
+  if (Platform.OS === 'ios') {
+    if (weight === 800) {
+      return '800';
+    } else if (weight === 700) {
+      return '700';
+    } else if (weight === 600) {
+      return '600';
+    } else if (weight === 500) {
+      return '500';
+    } else {
+      return '400';
+    }
+  }
+  return undefined;
 };
 
 const getLineHeight = (fontSize: number, lineHeightPercent: number): number => {
@@ -33,10 +54,11 @@ const createTextStyle = (
   letterSpacingPercent: number = 0,
 ): TextStyle => {
   const fontSize = scaleWidth(size);
+  const fontWeight = getFontWeight(weight);
   return {
     fontFamily: getFontFamily(weight),
+    ...(fontWeight && { fontWeight }),
     fontSize,
-    fontWeight: weight.toString() as TextStyle['fontWeight'],
     lineHeight: getLineHeight(size, lineHeightPercent),
     letterSpacing: getLetterSpacing(size, letterSpacingPercent),
   };
@@ -44,13 +66,19 @@ const createTextStyle = (
 
 const TYPOGRAPHY = StyleSheet.create({
   // ========== Heading Styles ==========
-  Heading_24EB_Round: createTextStyle(24, 800, 150, 0),
+  Heading_24EB_Round: {
+    fontFamily: 'Pretendard-ExtraBold',
+    ...(Platform.OS === 'ios' && { fontWeight: '800' }),
+    fontSize: scaleWidth(24),
+    lineHeight: getLineHeight(24, 150),
+    letterSpacing: getLetterSpacing(24, 0),
+  },
   Heading_20EB_Round: createTextStyle(20, 800, 150, 0),
   Heading_18B: createTextStyle(18, 700, 150, 0),
   Heading_18EB_Round: createTextStyle(18, 800, 150, 0),
   Heading_18SB: createTextStyle(18, 600, 150, 0),
   Heading_16B: createTextStyle(16, 700, 150, 0),
-
+  Heading_16EB_Round: createTextStyle(16, 800, 150, 0),
   // ========== Body Styles ==========
   Body_18M: createTextStyle(18, 500, 150, 0),
   Body_16SB: createTextStyle(16, 600, 150, 0),
@@ -71,6 +99,7 @@ export const Heading_18B = TYPOGRAPHY.Heading_18B;
 export const Heading_18EB_Round = TYPOGRAPHY.Heading_18EB_Round;
 export const Heading_18SB = TYPOGRAPHY.Heading_18SB;
 export const Heading_16B = TYPOGRAPHY.Heading_16B;
+export const Heading_16EB_Round = TYPOGRAPHY.Heading_16EB_Round;
 
 export const Body_18M = TYPOGRAPHY.Body_18M;
 export const Body_16SB = TYPOGRAPHY.Body_16SB;

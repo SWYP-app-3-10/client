@@ -1,8 +1,7 @@
 import React, { useState, useCallback, useMemo, useEffect } from 'react';
-import { View, Text, StyleSheet, ScrollView } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useNavigation } from '@react-navigation/native';
-import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { RouteNames } from '../../../routes';
 import {
   Body_16M,
@@ -10,12 +9,16 @@ import {
   Heading_24EB_Round,
   scaleWidth,
 } from '../../styles/global';
-import { OnboardingStackParamList } from '../../navigation/types';
+import {
+  MainTabNavigationProp,
+  OnboardingStackParamList,
+} from '../../navigation/types';
 import Spacer from '../../components/Spacer';
 import ProgressBar from '../../components/ProgressBar';
 import { Button } from '../../components';
 import { BORDER_RADIUS } from '../../styles/global';
 import { useOnboardingStore } from '../../store/onboardingStore';
+import { useShowToastModal } from '../../store/modalStore';
 import {
   CheckIcon,
   FirstIcon,
@@ -24,22 +27,10 @@ import {
 } from '../../icons/commonIcons/commonIcons';
 import { Body_15M, Body_18M, Heading_18SB } from '../../styles/typography';
 import Header from '../../components/Header';
-
-type NavigationProp = NativeStackNavigationProp<OnboardingStackParamList>;
-
-interface Interest {
-  id: string;
-  name: string;
-}
-
-const INTERESTS: Interest[] = [
-  { id: 'politics', name: '정치' },
-  { id: 'economy', name: '경제' },
-  { id: 'society', name: '사회' },
-  { id: 'lifestyle', name: '생활/문화' },
-  { id: 'it', name: 'IT/과학' },
-  { id: 'world', name: '세계' },
-];
+import { Interest, INTERESTS, InterestCategory } from '../../types/interests';
+import { updateUserInterests } from '../../api/userApi';
+import { USE_SERVER_API_FOR_INTERESTS } from '../../config/apiConfig';
+import { getUserInfo } from '../../services/authService';
 
 const FIRST_ROW_INTERESTS = INTERESTS.slice(0, 3);
 const SECOND_ROW_INTERESTS = INTERESTS.slice(3, 6);
@@ -48,7 +39,7 @@ interface InterestTagProps {
   interest: Interest;
   priority: number | null;
   isSelected: boolean;
-  onPress: (id: string) => void;
+  onPress: (id: InterestCategory) => void;
   isFirstRow?: boolean;
 }
 
@@ -100,29 +91,58 @@ const InterestTag: React.FC<InterestTagProps> = ({
 };
 
 const InterestsScreen = () => {
-  const navigation = useNavigation<NavigationProp>();
+  const navigation =
+    useNavigation<MainTabNavigationProp<OnboardingStackParamList>>();
+  const route = useRoute<RouteProp<OnboardingStackParamList, 'interests'>>();
   const setOnboardingStep = useOnboardingStore(
     state => state.setOnboardingStep,
   );
   const savedInterests = useOnboardingStore(state => state.interests);
   const setInterests = useOnboardingStore(state => state.setInterests);
+  const showToastModal = useShowToastModal();
 
-  // 선택 순서를 저장: Map<id, 순서(1, 2, ...)>
+  // 편집 모드 확인
+  const editMode = route.params?.editMode || false;
+
+  // 선택 순서를 저장: Map<InterestCategory, 순서(1, 2, ...)>
   const [selectedInterests, setSelectedInterests] = useState<
-    Map<string, number>
+    Map<InterestCategory, number>
   >(new Map());
 
   // 저장된 관심분야가 로드되면 state에 반영
   useEffect(() => {
     if (savedInterests) {
-      const interestsMap = new Map(Object.entries(savedInterests));
+      const interestsMap = new Map<InterestCategory, number>();
+      Object.entries(savedInterests).forEach(([key, value]) => {
+        // 기존 데이터 호환성을 위해 string을 InterestCategory로 변환
+        if (Object.values(InterestCategory).includes(key as InterestCategory)) {
+          interestsMap.set(key as InterestCategory, value);
+        }
+      });
       setSelectedInterests(interestsMap);
     }
   }, [savedInterests]);
 
   const toggleInterest = useCallback(
-    (id: string) => {
+    (id: InterestCategory) => {
+      // 먼저 현재 상태를 확인하여 3개 제한 체크
       setSelectedInterests(prev => {
+        // 3개를 이미 선택한 상태에서 새로운 항목을 선택하려고 할 때
+        if (!prev.has(id) && prev.size >= 3) {
+          // setState 콜백 밖에서 토스트 모달 표시 (렌더링 중 상태 업데이트 경고 방지)
+          setTimeout(() => {
+            showToastModal({
+              message: '최대 3순위까지 선택할 수 있어요',
+              position: 'center',
+              backgroundColor: COLORS.gray800Opacity80,
+              height: scaleWidth(39),
+              width: scaleWidth(212),
+              borderRadius: BORDER_RADIUS[8],
+            });
+          }, 0);
+          return prev; // 변경 없이 이전 상태 반환
+        }
+
         const newSelected = new Map(prev);
         if (newSelected.has(id)) {
           // 이미 선택된 경우 제거하고 순서 재정렬
@@ -136,10 +156,8 @@ const InterestsScreen = () => {
           });
         } else {
           // 최대 3개까지 선택 가능
-          if (newSelected.size < 3) {
-            const nextOrder = newSelected.size + 1;
-            newSelected.set(id, nextOrder);
-          }
+          const nextOrder = newSelected.size + 1;
+          newSelected.set(id, nextOrder);
         }
         // 변경된 관심분야를 AsyncStorage에 저장
         const interestsData: Record<string, number> = {};
@@ -150,20 +168,61 @@ const InterestsScreen = () => {
         return newSelected;
       });
     },
-    [setInterests],
+    [setInterests, showToastModal],
   );
 
   const getPriority = useCallback(
-    (id: string): number | null => {
+    (id: InterestCategory): number | null => {
       return selectedInterests.get(id) || null;
     },
     [selectedInterests],
   );
 
   const handleNext = useCallback(async () => {
-    await setOnboardingStep('difficulty');
-    navigation.navigate(RouteNames.DIFFICULTY_SETTING);
-  }, [navigation, setOnboardingStep]);
+    // 선택된 관심분야를 순서대로 배열로 변환
+    const interestsArray = Array.from(selectedInterests.entries())
+      .sort((a, b) => a[1] - b[1]) // 순서대로 정렬
+      .map(([category]) => category); // InterestCategory만 추출
+
+    // 서버 API 호출
+    if (USE_SERVER_API_FOR_INTERESTS) {
+      try {
+        // userId 가져오기 (사용자 정보에서)
+        const userInfo = await getUserInfo();
+        if (!userInfo || !userInfo.userId) {
+          Alert.alert(
+            '오류',
+            '사용자 정보를 찾을 수 없습니다. 다시 로그인해주세요.',
+          );
+          return; // 로컬 저장 중단
+        }
+
+        console.log('[관심분야 업데이트] API 호출 시작');
+        await updateUserInterests(userInfo.userId, interestsArray);
+        console.log('[관심분야 업데이트] API 호출 성공');
+      } catch (error) {
+        console.error('[관심분야 업데이트] 서버 업데이트 실패:', error);
+        Alert.alert(
+          '업데이트 실패',
+          '관심분야 업데이트에 실패했습니다. 네트워크를 확인하고 다시 시도해주세요.',
+        );
+        return; // 서버 업데이트 실패 시 로컬 저장 중단
+      }
+    } else {
+      console.log(
+        '[관심분야 업데이트] USE_SERVER_API_FOR_INTERESTS가 false입니다.',
+      );
+    }
+
+    if (editMode) {
+      // 편집 모드: 뒤로가기만
+      navigation.goBack();
+    } else {
+      // 온보딩 모드: 다음 단계로
+      await setOnboardingStep('difficulty');
+      navigation.navigate(RouteNames.DIFFICULTY_SETTING);
+    }
+  }, [navigation, setOnboardingStep, editMode, selectedInterests]);
 
   const isNextButtonActive = useMemo(
     () => selectedInterests.size >= 2,
@@ -172,15 +231,19 @@ const InterestsScreen = () => {
 
   return (
     <SafeAreaView style={styles.container} edges={['top', 'bottom']}>
-      <Header iconColor={COLORS.gray400} />
+      <Header
+        iconColor={COLORS.gray400}
+        title={editMode ? '관심분야 설정하기' : ''}
+      />
       <Spacer num={2} />
-
-      <View style={styles.header}>
-        <ProgressBar fill={1} />
-      </View>
+      {!editMode && (
+        <View style={styles.header}>
+          <ProgressBar fill={1} />
+        </View>
+      )}
 
       <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
-        <Spacer num={92} />
+        <Spacer num={editMode ? 54 : 92} />
         <Text style={styles.title}>관심분야를 선택해주세요</Text>
         <Spacer num={4} />
         <Text style={[Body_15M, { color: COLORS.gray600 }]}>
@@ -220,9 +283,9 @@ const InterestsScreen = () => {
       <View style={styles.footer}>
         <Button
           variant="primary"
-          title="다음"
+          title={editMode ? '완료' : '다음'}
           onPress={handleNext}
-          disabled={!isNextButtonActive}
+          disabled={!editMode && !isNextButtonActive}
         />
       </View>
     </SafeAreaView>
