@@ -71,7 +71,7 @@ export const signInWithGoogle = async (): Promise<SocialLoginResult> => {
     try {
       const loginResponse = await loginWithProvider('GOOGLE', {
         accessToken: tokens.accessToken,
-        email: firebaseUser.email || undefined,
+        // email: firebaseUser.email || undefined,
       });
       if (loginResponse.data) {
         if (loginResponse.data.accessToken) {
@@ -174,7 +174,6 @@ export const signInWithKakao = async (): Promise<SocialLoginResult> => {
     try {
       const loginResponse = await loginWithProvider('KAKAO', {
         accessToken: token.accessToken,
-        email: userInfo.email,
       });
       if (loginResponse.data) {
         if (loginResponse.data.accessToken) {
@@ -188,7 +187,7 @@ export const signInWithKakao = async (): Promise<SocialLoginResult> => {
         if (loginResponse.data.userInfo) {
           await saveUserInfo({
             ...loginResponse.data.userInfo,
-            provider: 'GOOGLE',
+            provider: 'KAKAO',
             loginTime: Date.now(),
           });
         }
@@ -288,7 +287,7 @@ export const signInWithNaver = async (): Promise<SocialLoginResult> => {
     try {
       const loginResponse = await loginWithProvider('NAVER', {
         accessToken: result.successResponse.accessToken,
-        email: userInfo.email,
+        // email: userInfo.email,
         // name: userInfo.name,
         // profileImage: userInfo.profileImage,
       });
@@ -451,7 +450,7 @@ export const signInWithApple = async (): Promise<SocialLoginResult> => {
     try {
       const loginResponse = await loginWithProvider('APPLE', {
         accessToken: identityToken,
-        email: userInfo.email,
+        // email: userInfo.email,
         // name: userInfo.name,
         // profileImage: userInfo.profileImage,
       });
