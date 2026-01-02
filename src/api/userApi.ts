@@ -46,6 +46,17 @@ export interface MyPageResponse {
   message: string;
   data: MyPageData;
 }
+export interface DifficultyInfo {
+  key: string;
+  level: string;
+  description: string;
+  timeGuide: string;
+}
+export interface DifficultyInfoResponse {
+  status: number;
+  message: string;
+  data: DifficultyInfo;
+}
 
 /**
  * 관심분야 업데이트 API 호출
@@ -116,6 +127,25 @@ export const fetchMyPage = async (
     console.error('[마이페이지 API] 에러:', error);
     if (error.response) {
       console.error('[마이페이지 API] 서버 응답:', {
+        status: error.response.status,
+        data: error.response.data,
+      });
+    }
+    throw error;
+  }
+};
+export const fetchDifficultyInfo = async (
+  level: LevelCategory,
+): Promise<DifficultyInfoResponse> => {
+  try {
+    const response = await client.get<DifficultyInfoResponse>(
+      `/api/levels/${level}`,
+    );
+    return response.data;
+  } catch (error: any) {
+    console.error('[난이도 정보 API] 에러:', error);
+    if (error.response) {
+      console.error('[난이도 정보 API] 서버 응답:', {
         status: error.response.status,
         data: error.response.data,
       });
