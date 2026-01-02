@@ -41,8 +41,29 @@ import {
   QUIZ_CORRECT_POINT,
   QUIZ_CORRECT_EXPERIENCE,
 } from '../../config/rewards';
+import { submitDifficulty } from '../../api/missionApi';
+import { getUserInfo } from '../../services/authService';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 type QuizState = 'question' | 'feedback';
+
+const DIFFICULTY_SUBMIT_KEY = '@difficulty_submit_date';
+
+// 난이도 타입 변환: 'easy' | 'normal' | 'hard' -> 'EASY' | 'MEDIUM' | 'HARD'
+const convertDifficultyToApiFormat = (
+  difficulty: Difficulty,
+): 'EASY' | 'MEDIUM' | 'HARD' => {
+  switch (difficulty) {
+    case 'easy':
+      return 'EASY';
+    case 'normal':
+      return 'MEDIUM';
+    case 'hard':
+      return 'HARD';
+    default:
+      return 'EASY';
+  }
+};
 
 const QuizScreen: React.FC = () => {
   const route = useRoute();
@@ -101,16 +122,57 @@ const QuizScreen: React.FC = () => {
         onPress: () => {},
       },
     });
-    if (true) {
-      // 피드백 안떴다면
-      setQuizState('feedback');
-    }
+
+    setQuizState('feedback');
   };
 
-  const handleComplete = () => {
+  const handleComplete = async () => {
     // 기존 타이머가 있으면 클리어
     if (timeoutRef.current) {
       clearTimeout(timeoutRef.current);
+    }
+
+    // 하루에 한 번만 난이도 모달 표시 체크
+    try {
+      const today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
+      const lastSubmitDate = await AsyncStorage.getItem(DIFFICULTY_SUBMIT_KEY);
+
+      // 오늘 이미 전송했다면 모달 표시하지 않고 바로 이동
+      if (lastSubmitDate === today) {
+        navigation.dispatch(
+          CommonActions.reset({
+            index: 0,
+            routes: [
+              {
+                name: RouteNames.MAIN_TAB,
+                state: {
+                  routes: [
+                    {
+                      name:
+                        returnTo === 'search'
+                          ? RouteNames.SEARCH_TAB
+                          : RouteNames.MISSION_TAB,
+                      state: {
+                        routes: [
+                          {
+                            name:
+                              returnTo === 'search'
+                                ? RouteNames.SEARCH
+                                : RouteNames.MISSION,
+                          },
+                        ],
+                      },
+                    },
+                  ],
+                },
+              },
+            ],
+          }),
+        );
+        return;
+      }
+    } catch (error) {
+      console.error('[QuizScreen] 난이도 전송 날짜 체크 실패:', error);
     }
 
     // 난이도 선택 모달 표시
@@ -126,7 +188,7 @@ const QuizScreen: React.FC = () => {
       children: (
         <DifficultySelectionModal
           initialDifficulty={selectedDifficulty}
-          onSelect={difficulty => {
+          onSelect={async difficulty => {
             setSelectedDifficulty(difficulty);
             // 난이도 선택 시 모달 닫고 원래 화면으로 이동
             setTimeout(() => {
@@ -163,11 +225,30 @@ const QuizScreen: React.FC = () => {
                 }),
               );
             }, 2000);
-            // TODO: 서버로 난이도 전송
-            console.log('난이도 전송:', {
-              articleId,
-              difficulty,
-            });
+
+            // 서버로 난이도 전송
+            try {
+              const userInfo = await getUserInfo();
+              if (!userInfo || !userInfo.userId) {
+                console.error('[QuizScreen] 사용자 정보 없음');
+                return;
+              }
+
+              const apiDifficulty = convertDifficultyToApiFormat(difficulty);
+              const response = await submitDifficulty(
+                userInfo.userId,
+                articleId,
+                apiDifficulty,
+              );
+
+              console.log('[QuizScreen] 난이도 전송 성공:', response);
+
+              // 오늘 날짜 저장 (하루에 한 번만 전송)
+              const today = new Date().toISOString().split('T')[0];
+              await AsyncStorage.setItem(DIFFICULTY_SUBMIT_KEY, today);
+            } catch (error) {
+              console.error('[QuizScreen] 난이도 전송 실패:', error);
+            }
           }}
         />
       ),

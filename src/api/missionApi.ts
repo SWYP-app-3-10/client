@@ -307,3 +307,41 @@ export const checkReadStatus = async (
     throw error;
   }
 };
+
+/**
+ * 난이도 전송 API 응답
+ */
+export interface SubmitDifficultyResponse {
+  status: number;
+  message: string;
+  data: string;
+}
+
+/**
+ * 난이도 전송
+ * @param userId 사용자 ID (query parameter)
+ * @param contentId 컨텐츠 ID (path parameter)
+ * @param difficulty 난이도 (EASY, MEDIUM, HARD) (query parameter)
+ * @returns Promise<SubmitDifficultyResponse>
+ */
+export const submitDifficulty = async (
+  userId: number,
+  contentId: number,
+  difficulty: 'EASY' | 'MEDIUM' | 'HARD',
+): Promise<SubmitDifficultyResponse> => {
+  try {
+    const response = await client.post<SubmitDifficultyResponse>(
+      `/api/content/${contentId}/difficulty?userId=${userId}&difficulty=${difficulty}`,
+    );
+    return response.data;
+  } catch (error: any) {
+    console.error('[난이도 전송 API] 에러:', error);
+    if (error.response) {
+      console.error('[난이도 전송 API] 서버 응답:', {
+        status: error.response.status,
+        data: error.response.data,
+      });
+    }
+    throw error;
+  }
+};
