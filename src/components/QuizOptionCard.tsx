@@ -1,9 +1,11 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { COLORS, scaleWidth, BORDER_RADIUS, Body_16M } from '../styles/global';
-import { QuizOption } from '../data/mock/quizData';
 import { CircleIcon, CloseIcon } from '../icons/commonIcons/commonIcons';
-
+interface QuizOption {
+  id: number;
+  text: string;
+}
 interface QuizOptionCardProps {
   option: QuizOption;
   isCorrect: boolean;

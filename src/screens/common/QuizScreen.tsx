@@ -21,7 +21,6 @@ import Button from '../../components/Button';
 import QuizOptionCard from '../../components/QuizOptionCard';
 import QuizQuestion from '../../components/QuizQuestion';
 import Spacer from '../../components/Spacer';
-import { QuizOption } from '../../data/mock/quizData';
 import { Modal_IMG, CheckIcon } from '../../icons';
 import { useShowModal, useHideModal } from '../../store/modalStore';
 import DifficultySelectionModal, {
@@ -41,6 +40,11 @@ import { getUserInfo } from '../../services/authService';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 type QuizState = 'question' | 'feedback';
+
+interface QuizOption {
+  id: number;
+  text: string;
+}
 
 const QuizScreen: React.FC = () => {
   const route = useRoute();
