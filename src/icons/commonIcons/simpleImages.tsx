@@ -19,6 +19,7 @@ import level2 from '../../assets/png/level2.png';
 import level3 from '../../assets/png/level3.png';
 import level4 from '../../assets/png/level4.png';
 import level5 from '../../assets/png/level5.png';
+import login from '../../assets/png/login.png';
 
 export const Tooltip_RecentIcon = createImageIconComponent(
   Tooltip_Recent,
@@ -110,4 +111,9 @@ export const Modal_IMG = createImageIconComponent(
   ModalIMG,
   scaleWidth(259.46),
   scaleWidth(152.62),
+);
+export const LoginBackground = createImageIconComponent(
+  login,
+  scaleWidth(393),
+  scaleWidth(852),
 );

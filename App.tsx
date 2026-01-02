@@ -5,15 +5,11 @@ import { initializeApp, getApps, getApp } from '@react-native-firebase/app';
 import RootNavigator from './src/navigation/RootNavigator';
 import { queryClient } from './src/config/queryClient';
 import { useOnboardingStore } from './src/store/onboardingStore';
-import { usePointStore } from './src/store/pointStore';
-import { useExperienceStore } from './src/store/experienceStore';
 
 const App = () => {
   const loadOnboardingStatus = useOnboardingStore(
     state => state.loadOnboardingStatus,
   );
-  const loadPoints = usePointStore(state => state.loadPoints);
-  const loadExperience = useExperienceStore(state => state.loadExperience);
 
   useEffect(() => {
     try {
@@ -42,18 +38,14 @@ const App = () => {
   useEffect(() => {
     const initializeAppData = async () => {
       try {
-        await Promise.all([
-          loadOnboardingStatus(),
-          loadPoints(),
-          loadExperience(),
-        ]);
+        await Promise.all([loadOnboardingStatus()]);
       } catch (error) {
         console.error('앱 초기화 중 오류:', error);
       }
     };
 
     initializeAppData();
-  }, [loadOnboardingStatus, loadPoints, loadExperience]);
+  }, [loadOnboardingStatus]);
 
   return (
     <SafeAreaProvider>

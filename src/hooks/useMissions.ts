@@ -3,8 +3,13 @@
  */
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { fetchMissions, updateMissionProgress } from '../api/missionApi';
+import {
+  fetchMissionToday,
+  convertMissionTodayToMission,
+  updateMissionProgress,
+} from '../api/missionApi';
 import { Mission } from '../data/mock/missionData';
+import { getUserInfo } from '../services/authService';
 
 // Query Keys
 export const missionKeys = {
@@ -21,7 +26,21 @@ export const missionKeys = {
 export const useMissions = () => {
   return useQuery<Mission[], Error>({
     queryKey: missionKeys.lists(),
-    queryFn: fetchMissions,
+    queryFn: async () => {
+      const userInfo = await getUserInfo();
+      if (!userInfo || !userInfo.userId) {
+        throw new Error('사용자 정보가 없습니다');
+      }
+
+      const response = await fetchMissionToday(userInfo.userId);
+      if (response.data && response.data.missions) {
+        // MissionToday를 Mission으로 변환
+        return response.data.missions.map((mission, index) =>
+          convertMissionTodayToMission(mission, index),
+        );
+      }
+      return [];
+    },
     staleTime: 1000 * 60 * 5,
     gcTime: 1000 * 60 * 10,
   });
@@ -44,7 +63,9 @@ export const useUpdateMissionProgress = () => {
     onSuccess: (data, variables) => {
       // 미션 목록 캐시 업데이트
       queryClient.setQueryData<Mission[]>(missionKeys.lists(), old => {
-        if (!old) return [data];
+        if (!old) {
+          return [data];
+        }
         return old.map(mission =>
           mission.id === variables.missionId ? data : mission,
         );

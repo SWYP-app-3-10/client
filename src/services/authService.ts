@@ -107,37 +107,18 @@ export const getUserInfo = async (): Promise<{
   name?: string;
   email?: string;
   profileImage?: string;
-  provider?: string;
+  provider?: SocialLoginProvider;
   loginTime?: number;
 } | null> => {
   try {
-    // 테스트용: userId를 7로 하드코딩
     const data = await AsyncStorage.getItem(USER_INFO_KEY);
     if (data) {
-      const userInfo = JSON.parse(data);
-      return {
-        ...userInfo,
-        userId: 7, // 하드코딩된 userId (토큰의 sub와 일치)
-      };
+      return JSON.parse(data);
     }
-    // 저장된 정보가 없어도 테스트용 userId 반환
-    return {
-      userId: 7,
-      name: '테스트 사용자',
-      email: 'test@example.com',
-      provider: 'test',
-      loginTime: Date.now(),
-    };
+    return null;
   } catch (error) {
     console.error('사용자 정보 조회 실패:', error);
-    // 에러 발생 시에도 테스트용 userId 반환
-    return {
-      userId: 7,
-      name: '테스트 사용자',
-      email: 'test@example.com',
-      provider: 'test',
-      loginTime: Date.now(),
-    };
+    return null;
   }
 };
 

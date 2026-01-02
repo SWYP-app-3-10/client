@@ -5,9 +5,33 @@
  * 서버에서 리워드 설정을 받아오지만, 오프라인/에러 시 기본값으로 사용
  */
 
-import { RewardsConfig } from '../api/rewardsApi';
+/**
+ * 리워드 설정 타입
+ */
+export interface RewardsConfig {
+  // 기사 읽기 관련
+  articleReadPointCost: number;
+  articleReadExperience: number;
 
-// 기본 리워드 설정 (서버 연동 전 또는 오프라인 시 사용)
+  // 광고 시청 관련
+  adRewardPoints: number;
+
+  // 퀴즈 관련
+  quizCorrectExperience: number;
+  quizCorrectPoint: number;
+  quizIncorrectExperience: number;
+  quizIncorrectPoint: number;
+
+  // 데일리 출석
+  dailyAttendanceExperience: number;
+  dailyAttendancePoint: number;
+
+  // 위클리 출석
+  weeklyAttendanceExperience: number;
+  weeklyAttendancePoint: number;
+}
+
+// 기본 리워드 설정
 export const DEFAULT_REWARDS_CONFIG: RewardsConfig = {
   // 기사 읽기 관련
   articleReadPointCost: 30,
@@ -31,26 +55,29 @@ export const DEFAULT_REWARDS_CONFIG: RewardsConfig = {
   weeklyAttendancePoint: 30,
 };
 
-// 하위 호환성을 위한 개별 상수 export (기존 코드 마이그레이션용)
-export const ARTICLE_READ_POINT_COST =
-  DEFAULT_REWARDS_CONFIG.articleReadPointCost;
-export const ARTICLE_READ_EXPERIENCE =
-  DEFAULT_REWARDS_CONFIG.articleReadExperience;
-export const AD_REWARD_POINTS = DEFAULT_REWARDS_CONFIG.adRewardPoints;
-export const QUIZ_CORRECT_EXPERIENCE =
-  DEFAULT_REWARDS_CONFIG.quizCorrectExperience;
-export const QUIZ_CORRECT_POINT = DEFAULT_REWARDS_CONFIG.quizCorrectPoint;
-export const QUIZ_INCORRECT_EXPERIENCE =
-  DEFAULT_REWARDS_CONFIG.quizIncorrectExperience;
-export const QUIZ_INCORRECT_POINT = DEFAULT_REWARDS_CONFIG.quizIncorrectPoint;
-export const DAILY_ATTENDANCE_EXPERIENCE =
-  DEFAULT_REWARDS_CONFIG.dailyAttendanceExperience;
-export const DAILY_ATTENDANCE_POINT =
-  DEFAULT_REWARDS_CONFIG.dailyAttendancePoint;
-export const WEEKLY_ATTENDANCE_EXPERIENCE =
-  DEFAULT_REWARDS_CONFIG.weeklyAttendanceExperience;
-export const WEEKLY_ATTENDANCE_POINT =
-  DEFAULT_REWARDS_CONFIG.weeklyAttendancePoint;
+// 하위 호환성을 위한 개별 상수 export
+const {
+  articleReadPointCost,
+  articleReadExperience,
+  adRewardPoints,
+  quizCorrectExperience,
+  quizCorrectPoint,
+  quizIncorrectExperience,
+  quizIncorrectPoint,
+  dailyAttendanceExperience,
+  dailyAttendancePoint,
+  weeklyAttendanceExperience,
+  weeklyAttendancePoint,
+} = DEFAULT_REWARDS_CONFIG;
 
-// 타입 export (useRewards hook에서 사용)
-export type { RewardsConfig };
+export const ARTICLE_READ_POINT_COST = articleReadPointCost;
+export const ARTICLE_READ_EXPERIENCE = articleReadExperience;
+export const AD_REWARD_POINTS = adRewardPoints;
+export const QUIZ_CORRECT_EXPERIENCE = quizCorrectExperience;
+export const QUIZ_CORRECT_POINT = quizCorrectPoint;
+export const QUIZ_INCORRECT_EXPERIENCE = quizIncorrectExperience;
+export const QUIZ_INCORRECT_POINT = quizIncorrectPoint;
+export const DAILY_ATTENDANCE_EXPERIENCE = dailyAttendanceExperience;
+export const DAILY_ATTENDANCE_POINT = dailyAttendancePoint;
+export const WEEKLY_ATTENDANCE_EXPERIENCE = weeklyAttendanceExperience;
+export const WEEKLY_ATTENDANCE_POINT = weeklyAttendancePoint;

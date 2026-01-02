@@ -26,7 +26,7 @@ const SocialLoginButton: React.FC<SocialLoginButtonProps> = ({
 
   const renderButton = () => {
     switch (provider) {
-      case 'apple':
+      case 'APPLE':
         return (
           <Button
             variant="outline"
@@ -42,7 +42,7 @@ const SocialLoginButton: React.FC<SocialLoginButtonProps> = ({
             </Text>
           </Button>
         );
-      case 'google':
+      case 'GOOGLE':
         return (
           <Button
             variant="outline"
@@ -55,7 +55,7 @@ const SocialLoginButton: React.FC<SocialLoginButtonProps> = ({
             <Text style={styles.socialButtonText}>구글 계정으로 로그인</Text>
           </Button>
         );
-      case 'kakao':
+      case 'KAKAO':
         return (
           <Button
             variant="primary"
@@ -70,7 +70,7 @@ const SocialLoginButton: React.FC<SocialLoginButtonProps> = ({
             </Text>
           </Button>
         );
-      case 'naver':
+      case 'NAVER':
         return (
           <Button
             variant="primary"
@@ -132,6 +132,7 @@ const styles = StyleSheet.create({
   },
   outlineButton: {
     borderColor: '#747775',
+    backgroundColor: COLORS.white,
   },
   kakaoButton: {
     backgroundColor: COLORS.kakao,

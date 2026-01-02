@@ -7,9 +7,13 @@ import {
   Caption_14R,
 } from '../styles/global';
 import Spacer from './Spacer';
-import { QuizOption } from '../data/mock/quizData';
 import QuizOptionCard from './QuizOptionCard';
 import QuizQuestion from './QuizQuestion';
+
+interface QuizOption {
+  id: number;
+  text: string;
+}
 
 interface QuizFeedbackProps {
   question: string;

@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import {
   View,
   Text,
@@ -21,28 +21,30 @@ import Button from '../../components/Button';
 import QuizOptionCard from '../../components/QuizOptionCard';
 import QuizQuestion from '../../components/QuizQuestion';
 import Spacer from '../../components/Spacer';
-import { QuizOption } from '../../data/mock/quizData';
-import { CheckIcon } from '../../icons/commonIcons/commonIcons';
+import { Modal_IMG, CheckIcon } from '../../icons';
 import { useShowModal, useHideModal } from '../../store/modalStore';
 import DifficultySelectionModal, {
   Difficulty,
 } from '../../components/DifficultySelectionModal';
-import {
-  useNavigation,
-  useRoute,
-  CommonActions,
-} from '@react-navigation/native';
-import { RouteNames } from '../../../routes';
-import { mockQuiz } from '../../data/mock/quizData';
+import { useNavigation, useRoute } from '@react-navigation/native';
 import { ExperienceModalContent } from '../../components/ArticlePointModalContent';
 import { usePointStore } from '../../store/pointStore';
 import { useExperienceStore } from '../../store/experienceStore';
 import {
-  QUIZ_CORRECT_POINT,
-  QUIZ_CORRECT_EXPERIENCE,
-} from '../../config/rewards';
+  useDifficultySubmit,
+  checkCanSubmitDifficulty,
+} from '../../hooks/useDifficultySubmit';
+import { createQuizCompleteNavigation } from '../../utils/quizNavigation';
+import { fetchQuiz, QuizResponse, submitQuiz } from '../../api/missionApi';
+import { getUserInfo } from '../../services/authService';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 type QuizState = 'question' | 'feedback';
+
+interface QuizOption {
+  id: number;
+  text: string;
+}
 
 const QuizScreen: React.FC = () => {
   const route = useRoute();
@@ -50,7 +52,7 @@ const QuizScreen: React.FC = () => {
   const articleId = route.params?.articleId || 0;
   // @ts-ignore
   const returnTo = route.params?.returnTo || 'mission';
-  const quiz = mockQuiz; // TODO: articleId로 실제 퀴즈 데이터 가져오기
+  const [quizData, setQuizData] = useState<QuizResponse | null>(null);
   const [selectedOptionId, setSelectedOptionId] = useState<number | null>(null);
   const [quizState, setQuizState] = useState<QuizState>('question');
   const [selectedDifficulty, setSelectedDifficulty] =
@@ -59,6 +61,32 @@ const QuizScreen: React.FC = () => {
   const hideModal = useHideModal();
   const navigation = useNavigation();
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const { submitDifficultyToServer } = useDifficultySubmit();
+
+  // 퀴즈 데이터 로드
+  useEffect(() => {
+    const loadQuiz = async () => {
+      if (!articleId) {
+        return;
+      }
+
+      try {
+        const userInfo = await getUserInfo();
+        if (!userInfo || !userInfo.userId) {
+          return;
+        }
+
+        const response = await fetchQuiz(userInfo.userId, articleId);
+        if (response.data) {
+          setQuizData(response.data);
+        }
+      } catch (err: any) {
+        console.error('[퀴즈] 로드 실패:', err);
+      }
+    };
+
+    loadQuiz();
+  }, [articleId]);
 
   const handleOptionSelect = (optionId: number) => {
     if (quizState === 'question') {
@@ -68,48 +96,85 @@ const QuizScreen: React.FC = () => {
   const { addPoints } = usePointStore();
   const { addExperience } = useExperienceStore();
   const handleNext = async () => {
-    if (!selectedOptionId) {
+    if (!selectedOptionId || !quiz || !quizData) {
       return;
     }
 
-    // TODO: 서버로 답안 전송
-    // 예시: await submitQuizAnswer(articleId, quiz.id, selectedOptionId);
-    console.log('퀴즈 답안 전송:', {
-      articleId,
-      quizId: quiz.id,
-      answerId: selectedOptionId,
-    });
+    try {
+      const userInfo = await getUserInfo();
+      if (!userInfo || !userInfo.userId) {
+        console.error('[퀴즈] 사용자 정보 없음');
+        return;
+      }
 
-    await Promise.all([
-      addPoints(QUIZ_CORRECT_POINT),
-      addExperience(QUIZ_CORRECT_EXPERIENCE),
-    ]);
+      // 선택한 선택지의 choiceNo 찾기
+      const selectedChoice = quizData.choices.find(
+        choice => choice.quizChoiceId === selectedOptionId,
+      );
+      if (!selectedChoice) {
+        console.error('[퀴즈] 선택한 선택지를 찾을 수 없습니다.');
+        return;
+      }
 
-    showModal({
-      title: '포인트 & 경험치 획득!',
-      titleStyle: {
-        ...Heading_20EB_Round,
-      },
-      titleDescriptionGapSize: scaleWidth(20),
-      children: React.createElement(ExperienceModalContent, {
-        point: true,
-        correct: isCorrect(selectedOptionId),
-      }),
-      primaryButton: {
-        title: '확인',
-        onPress: () => {},
-      },
-    });
-    if (true) {
-      // 피드백 안떴다면
+      // 퀴즈 제출 API 호출
+      const response = await submitQuiz(userInfo.userId, {
+        quizId: quiz.id,
+        selectedNo: selectedChoice.choiceNo,
+        readContentId: articleId,
+      });
+
+      const { quizResultResponse, rewardResponse, userLevelInformation } =
+        response.data;
+
+      // 포인트 및 경험치 추가
+      addPoints(rewardResponse.earnedPoint);
+      addExperience(rewardResponse.earnedExp);
+
+      // 레벨업 정보가 있으면 AsyncStorage에 저장
+      if (userLevelInformation) {
+        await AsyncStorage.setItem(
+          '@pending_level_up',
+          JSON.stringify(userLevelInformation),
+        );
+      }
+
+      // 경험치 획득 모달 표시
+      showModal({
+        title: '포인트 & 경험치 획득!',
+        image: <Modal_IMG />,
+        titleStyle: {
+          ...Heading_20EB_Round,
+        },
+        titleDescriptionGapSize: scaleWidth(20),
+        children: React.createElement(ExperienceModalContent, {
+          point: true,
+          correct: quizResultResponse.isAnswerCorrect,
+        }),
+        primaryButton: {
+          title: '확인',
+          onPress: () => {},
+        },
+      });
+
       setQuizState('feedback');
+    } catch (error: any) {
+      console.error('[퀴즈] 제출 실패:', error);
     }
   };
 
-  const handleComplete = () => {
+  const handleComplete = async () => {
     // 기존 타이머가 있으면 클리어
     if (timeoutRef.current) {
       clearTimeout(timeoutRef.current);
+    }
+
+    // 하루에 한 번만 난이도 모달 표시 체크
+    const canSubmit = await checkCanSubmitDifficulty();
+
+    // 오늘 이미 전송했다면 모달 표시하지 않고 바로 이동
+    if (!canSubmit) {
+      navigation.dispatch(createQuizCompleteNavigation(returnTo));
+      return;
     }
 
     // 난이도 선택 모달 표시
@@ -125,55 +190,41 @@ const QuizScreen: React.FC = () => {
       children: (
         <DifficultySelectionModal
           initialDifficulty={selectedDifficulty}
-          onSelect={difficulty => {
+          onSelect={async difficulty => {
             setSelectedDifficulty(difficulty);
+
+            // 서버로 난이도 전송
+            await submitDifficultyToServer(articleId, difficulty);
+
             // 난이도 선택 시 모달 닫고 원래 화면으로 이동
             setTimeout(() => {
               hideModal();
-              // 원래 화면으로 이동 (스택 초기화)
-              navigation.dispatch(
-                CommonActions.reset({
-                  index: 0,
-                  routes: [
-                    {
-                      name: RouteNames.MAIN_TAB,
-                      state: {
-                        routes: [
-                          {
-                            name:
-                              returnTo === 'search'
-                                ? RouteNames.SEARCH_TAB
-                                : RouteNames.MISSION_TAB,
-                            state: {
-                              routes: [
-                                {
-                                  name:
-                                    returnTo === 'search'
-                                      ? RouteNames.SEARCH
-                                      : RouteNames.MISSION,
-                                },
-                              ],
-                            },
-                          },
-                        ],
-                      },
-                    },
-                  ],
-                }),
-              );
+              navigation.dispatch(createQuizCompleteNavigation(returnTo));
             }, 2000);
-            // TODO: 서버로 난이도 전송
-            console.log('난이도 전송:', {
-              articleId,
-              difficulty,
-            });
           }}
         />
       ),
     });
   };
 
+  // API 응답을 기존 Quiz 구조로 변환
+  const quiz = quizData
+    ? {
+        id: quizData.quizId,
+        question: quizData.question,
+        options: quizData.choices.map(choice => ({
+          id: choice.quizChoiceId,
+          text: choice.choiceText,
+        })),
+        correctAnswerId:
+          quizData.choices.find(choice => choice.correct)?.quizChoiceId || 0,
+      }
+    : null;
+
   const isCorrect = (optionId: number) => {
+    if (!quiz) {
+      return false;
+    }
     return optionId === quiz.correctAnswerId;
   };
 
@@ -212,6 +263,10 @@ const QuizScreen: React.FC = () => {
       );
     }
   };
+
+  if (!quiz) {
+    return null;
+  }
 
   return (
     <SafeAreaView style={styles.container}>
