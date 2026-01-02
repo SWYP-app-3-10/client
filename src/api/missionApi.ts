@@ -10,7 +10,6 @@ import {
   mockMissions,
   mockArticles,
 } from '../data/mock/missionData';
-import { USE_SERVER_API_FOR_MISSION } from '../config/apiConfig';
 import { getUserInfo } from '../services/authService';
 
 // API 응답 시뮬레이션을 위한 딜레이 함수 (개발용)
@@ -22,19 +21,11 @@ const delay = (ms: number) =>
  * @returns Promise<Mission[]>
  */
 export const fetchMissions = async (): Promise<Mission[]> => {
-  // 더미 데이터 우선 사용
-  if (USE_MOCK_DATA || !USE_SERVER_API_FOR_MISSION) {
-    await delay(200);
-    return mockMissions;
-  }
-
   // 서버 API 호출 시도
   try {
     const userInfo = await getUserInfo();
     if (!userInfo) {
-      console.warn('사용자 정보가 없어 더미 데이터 사용');
-      await delay(200);
-      return mockMissions;
+      throw new Error('사용자 정보가 없습니다');
     }
 
     const response = await client.get<Mission[]>(
@@ -42,10 +33,8 @@ export const fetchMissions = async (): Promise<Mission[]> => {
     );
     return response.data;
   } catch (error) {
-    console.error('미션 목록 조회 실패, 더미 데이터 사용:', error);
-    // 서버 연결 실패 시 자동으로 더미 데이터 반환
-    await delay(200);
-    return mockMissions;
+    console.error('미션 목록 조회 실패:', error);
+    throw error;
   }
 };
 

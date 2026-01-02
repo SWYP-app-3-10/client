@@ -3,11 +3,7 @@
  */
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import {
-  fetchMissions,
-  fetchMissionById,
-  updateMissionProgress,
-} from '../api/missionApi';
+import { fetchMissions, updateMissionProgress } from '../api/missionApi';
 import { Mission } from '../data/mock/missionData';
 
 // Query Keys
@@ -28,18 +24,6 @@ export const useMissions = () => {
     queryFn: fetchMissions,
     staleTime: 1000 * 60 * 5,
     gcTime: 1000 * 60 * 10,
-  });
-};
-
-/**
- * 특정 미션 조회
- */
-export const useMission = (missionId: number) => {
-  return useQuery({
-    queryKey: missionKeys.detail(missionId),
-    queryFn: () => fetchMissionById(missionId),
-    enabled: !!missionId, // missionId가 있을 때만 실행
-    staleTime: 1000 * 60 * 5,
   });
 };
 

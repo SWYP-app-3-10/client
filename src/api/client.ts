@@ -1,6 +1,6 @@
 import axios, { AxiosError, InternalAxiosRequestConfig } from 'axios';
 import {
-  getAuthToken,
+  // getAuthToken, // 나중에 실제 유저 토큰 사용 시 필요 (주석 해제 시 사용)
   getRefreshToken,
   saveAuthToken,
   saveRefreshToken,
@@ -32,17 +32,24 @@ client.interceptors.request.use(
         delete config.headers.Authorization;
       }
     } else {
-      // AsyncStorage에서 토큰을 가져와서 헤더에 추가
-      try {
-        const token = await getAuthToken();
-        if (token && config.headers) {
-          config.headers.Authorization = `Bearer ${token}`;
-        }
-      } catch (error) {
-        if (__DEV__) {
-          console.warn('토큰 가져오기 실패:', error);
-        }
+      // 테스트용: 하드코딩된 토큰 사용
+      if (config.headers) {
+        config.headers.Authorization =
+          'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI3IiwiaWF0IjoxNTE2MjM5MDIyLCJleHAiOjE5OTk5OTk5OTl9.6XaRlhfmRlgcjyf3jwYf6Ycbe5wLVkUWHoyZgzSdZYM';
       }
+
+      // 나중에 실제 유저 토큰으로 전환 시: 위의 하드코딩된 토큰 부분을 주석 처리하고 아래 주석을 해제
+      // AsyncStorage에서 토큰을 가져와서 헤더에 추가
+      // try {
+      //   const token = await getAuthToken();
+      //   if (token && config.headers) {
+      //     config.headers.Authorization = `Bearer ${token}`;
+      //   }
+      // } catch (error) {
+      //   if (__DEV__) {
+      //     console.warn('토큰 가져오기 실패:', error);
+      //   }
+      // }
     }
 
     // 개발 모드일 때 로그 출력 (디버깅용)

@@ -4,13 +4,12 @@
  */
 
 // 관심분야 업데이트 API 서버 사용 여부
-
-export const USE_SERVER_API_FOR_INTERESTS = false;
+export const USE_SERVER_API_FOR_INTERESTS = true;
 
 // 난이도 설정 API 서버 사용 여부
-export const USE_SERVER_API_FOR_LEVEL = false;
+export const USE_SERVER_API_FOR_LEVEL = true;
 // 미션 API 서버 사용 여부
-export const USE_SERVER_API_FOR_MISSION = false;
+export const USE_SERVER_API_FOR_MISSION = true;
 
 // 다른 API 서버 사용 여부 (서버가 준비되면 true로 변경)
 export const USE_SERVER_API = false;
