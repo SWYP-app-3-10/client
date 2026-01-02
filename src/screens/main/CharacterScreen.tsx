@@ -62,6 +62,20 @@ import { lv4Images } from '../../assets/lottie/lv4/preload';
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { lv5Images } from '../../assets/lottie/lv5/preload';
 
+/**
+ * 로티는 file:///android_asset 방식이 버전 조합에 따라 크래시가 날 수 있어서,
+ * 가장 안정적인 require() 번들 방식으로 고정한다.
+ *
+ * 아래 JSON 파일들은 반드시 "src/assets/..." 경로에 실제로 존재해야 함.
+ */
+const LOTTIE_BY_LEVEL: Record<number, any> = {
+  1: require('../../assets/lottie/lv1/lv1_animation.json'),
+  2: require('../../assets/lottie/lv2/lv2_animation.json'),
+  3: require('../../assets/lottie/lv3/lv3_animation.json'),
+  4: require('../../assets/lottie/lv4/lv4_animation.json'),
+  5: require('../../assets/lottie/lv5/lv5_animation.json'),
+};
+
 const CharacterScreen = () => {
   const rootNavigation =
     useNavigation<MainTabNavigationProp<CharacterStackParamList>>();
@@ -129,22 +143,11 @@ const CharacterScreen = () => {
     [currentExp, nextLevelExp],
   );
 
-  // 로티
+  // 로티 source: require 맵핑
   const lottieSource = useMemo(() => {
-    switch (currentLevel) {
-      case 1:
-        return require('../../assets/lottie/lv1/lv1_animation.json');
-      case 2:
-        return require('../../assets/lottie/lv2/lv2_animation.json');
-      case 3:
-        return require('../../assets/lottie/lv3/lv3_animation.json');
-      case 4:
-        return require('../../assets/lottie/lv4/lv4_animation.json');
-      case 5:
-        return require('../../assets/lottie/lv5/lv5_animation.json');
-      default:
-        return require('../../assets/lottie/lv1/lv1_animation.json');
-    }
+    const src = LOTTIE_BY_LEVEL[currentLevel] ?? LOTTIE_BY_LEVEL[1];
+    console.log('[Lottie] source level =', currentLevel);
+    return src;
   }, [currentLevel]);
 
   // 로딩 상태
@@ -237,10 +240,15 @@ const CharacterScreen = () => {
             autoPlay
             loop
             resizeMode="cover"
-            imageAssetsFolder="images"
-            renderMode="SOFTWARE"
+            /**
+             * 이미지( png )가 포함된 로티면 assets 폴더를 명시해야 함
+             * ※ 이 경로는 "android/app/src/main/assets" 기준으로도 존재해야 함
+             * (png는 android assets에서 읽는 케이스가 많음)
+             */
+            imageAssetsFolder={`lottie/lv${currentLevel}/images`}
           />
         </View>
+
         <View style={styles.notificationButtonContainer}>
           <IconButton onPress={handleNavigateToNotification}>
             <AlarmIcon />
