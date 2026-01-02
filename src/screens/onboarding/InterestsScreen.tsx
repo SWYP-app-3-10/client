@@ -29,7 +29,6 @@ import { Body_15M, Body_18M, Heading_18SB } from '../../styles/typography';
 import Header from '../../components/Header';
 import { Interest, INTERESTS, InterestCategory } from '../../types/interests';
 import { updateUserInterests } from '../../api/userApi';
-import { USE_SERVER_API_FOR_INTERESTS } from '../../config/apiConfig';
 import { getUserInfo } from '../../services/authService';
 
 const FIRST_ROW_INTERESTS = INTERESTS.slice(0, 3);
@@ -190,33 +189,27 @@ const InterestsScreen = () => {
       .map(([category]) => category); // InterestCategory만 추출
 
     // 서버 API 호출
-    if (USE_SERVER_API_FOR_INTERESTS) {
-      try {
-        // userId 가져오기 (사용자 정보에서)
-        const userInfo = await getUserInfo();
-        if (!userInfo || !userInfo.userId) {
-          Alert.alert(
-            '오류',
-            '사용자 정보를 찾을 수 없습니다. 다시 로그인해주세요.',
-          );
-          return; // 로컬 저장 중단
-        }
-
-        console.log('[관심분야 업데이트] API 호출 시작');
-        await updateUserInterests(userInfo.userId, interestsArray);
-        console.log('[관심분야 업데이트] API 호출 성공');
-      } catch (error) {
-        console.error('[관심분야 업데이트] 서버 업데이트 실패:', error);
+    try {
+      // userId 가져오기 (사용자 정보에서)
+      const userInfo = await getUserInfo();
+      if (!userInfo || !userInfo.userId) {
         Alert.alert(
-          '업데이트 실패',
-          '관심분야 업데이트에 실패했습니다. 네트워크를 확인하고 다시 시도해주세요.',
+          '오류',
+          '사용자 정보를 찾을 수 없습니다. 다시 로그인해주세요.',
         );
-        return; // 서버 업데이트 실패 시 로컬 저장 중단
+        return; // 로컬 저장 중단
       }
-    } else {
-      console.log(
-        '[관심분야 업데이트] USE_SERVER_API_FOR_INTERESTS가 false입니다.',
+
+      console.log('[관심분야 업데이트] API 호출 시작');
+      await updateUserInterests(userInfo.userId, interestsArray);
+      console.log('[관심분야 업데이트] API 호출 성공');
+    } catch (error) {
+      console.error('[관심분야 업데이트] 서버 업데이트 실패:', error);
+      Alert.alert(
+        '업데이트 실패',
+        '관심분야 업데이트에 실패했습니다. 네트워크를 확인하고 다시 시도해주세요.',
       );
+      return; // 서버 업데이트 실패 시 로컬 저장 중단
     }
 
     if (editMode) {

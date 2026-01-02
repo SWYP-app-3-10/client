@@ -22,7 +22,6 @@ import {
 import Spacer from '../../components/Spacer';
 import Button from '../../components/Button';
 import Header from '../../components/Header';
-import { USE_SERVER_API_FOR_LEVEL } from '../../config/apiConfig';
 import { getUserInfo } from '../../services/authService';
 import { updateUserLevel } from '../../api/userApi';
 import { useDifficultyInfo } from '../../hooks/useDifficultyInfo';
@@ -48,19 +47,18 @@ const DifficultySettingScreen = () => {
 
   const handleNext = async () => {
     // 온보딩 완료 처리 및 메인 화면으로 이동
-    if (USE_SERVER_API_FOR_LEVEL) {
-      const userInfo = await getUserInfo();
-      if (!userInfo || !userInfo.userId) {
-        Alert.alert(
-          '오류',
-          '사용자 정보를 찾을 수 없습니다. 다시 로그인해주세요.',
-        );
-        return;
-      }
-      console.log('[난이도 업데이트] API 호출 시작');
-      await updateUserLevel(userInfo.userId, selectedDifficulty);
-      console.log('[난이도 업데이트] API 호출 성공');
+
+    const userInfo = await getUserInfo();
+    if (!userInfo || !userInfo.userId) {
+      Alert.alert(
+        '오류',
+        '사용자 정보를 찾을 수 없습니다. 다시 로그인해주세요.',
+      );
+      return;
     }
+    console.log('[난이도 업데이트] API 호출 시작');
+    await updateUserLevel(userInfo.userId, selectedDifficulty);
+    console.log('[난이도 업데이트] API 호출 성공');
     await completeOnboarding();
   };
   const { bottom } = useSafeAreaInsets();
