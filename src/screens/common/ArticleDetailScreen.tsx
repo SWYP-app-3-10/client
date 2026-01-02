@@ -37,10 +37,15 @@ import { useShowModal, useShowToastModal } from '../../store/modalStore';
 import { ARTICLE_READ_EXPERIENCE } from '../../config/rewards';
 import { useExperienceStore } from '../../store/experienceStore';
 import { LevelCategory } from '../../types/interests';
-import { fetchContentDetail, ContentDetail } from '../../api/missionApi';
+import {
+  fetchContentDetail,
+  ContentDetail,
+  checkReadStatus,
+} from '../../api/missionApi';
 import { getUserInfo } from '../../services/authService';
 import ArticleContent from '../../components/ArticleContent';
 import { Modal_IMG } from '../../icons';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 type NavigationProp = NativeStackNavigationProp<FullScreenStackParamList>;
 
@@ -61,6 +66,8 @@ const ArticleDetailScreen = () => {
   const hasEarnedExperienceRef = useRef(false);
   const isScreenFocusedRef = useRef(true);
   const isFocused = useIsFocused();
+  const screenEnterTimeRef = useRef<number | null>(null);
+  const hasCheckedReadStatusRef = useRef(false);
 
   // @ts-ignore - route params 타입은 나중에 추가
   const articleId = route.params?.articleId;
@@ -119,11 +126,7 @@ const ArticleDetailScreen = () => {
         ? (difficulty.toUpperCase() as LevelCategory)
         : difficulty;
     const time = READING_TIME_BY_DIFFICULTY[levelCategory];
-    if (__DEV__) {
-      console.log('[ArticleDetailScreen] difficulty:', difficulty);
-      console.log('[ArticleDetailScreen] levelCategory:', levelCategory);
-      console.log('[ArticleDetailScreen] readingTime:', time);
-    }
+
     return time || READING_TIME_BY_DIFFICULTY[LevelCategory.BEGINNER];
   }, [difficulty]);
   const showToastModal = useShowToastModal();
@@ -143,6 +146,8 @@ const ArticleDetailScreen = () => {
       }
       isScreenFocusedRef.current = true;
       hasEarnedExperienceRef.current = false;
+      hasCheckedReadStatusRef.current = false;
+      screenEnterTimeRef.current = Date.now(); // 화면 진입 시간 기록
 
       // 토스트 모달 표시 (광고를 보고 들어왔을 때만)
       if (fromAd) {
@@ -181,6 +186,8 @@ const ArticleDetailScreen = () => {
       timerRef.current = null;
     }
     hasEarnedExperienceRef.current = false;
+    hasCheckedReadStatusRef.current = false;
+    screenEnterTimeRef.current = Date.now(); // articleId 변경 시 진입 시간 리셋
     isScreenFocusedRef.current = isFocused;
   }, [articleId, isFocused]);
 
@@ -254,7 +261,62 @@ const ArticleDetailScreen = () => {
           return;
         }
 
-        // 경험치 획득 모달 표시
+        // 완독 여부 체크 API 호출
+        if (!hasCheckedReadStatusRef.current && screenEnterTimeRef.current) {
+          hasCheckedReadStatusRef.current = true;
+
+          try {
+            const userInfo = await getUserInfo();
+            if (userInfo && articleId) {
+              // 체류 시간 계산 (초)
+              const staySeconds = Math.floor(
+                (Date.now() - screenEnterTimeRef.current) / 1000,
+              );
+
+              // 완독 여부 체크 API 호출
+              const readStatusResponse = await checkReadStatus(
+                userInfo.userId,
+                articleId,
+                staySeconds,
+                true,
+              );
+
+              console.log(
+                '[ArticleDetailScreen] 완독 체크 응답:',
+                readStatusResponse.data,
+              );
+
+              const readStatusData = readStatusResponse.data;
+
+              // 레벨업이 발생한 경우 레벨업 정보를 저장 (미션 페이지에서 체크)
+              if (readStatusData.levelUp && readStatusData.levelUpInfo) {
+                try {
+                  await AsyncStorage.setItem(
+                    '@pending_level_up',
+                    JSON.stringify(readStatusData.levelUpInfo),
+                  );
+                  console.log(
+                    '[ArticleDetailScreen] 레벨업 정보 저장:',
+                    readStatusData.levelUpInfo,
+                  );
+                } catch (storageError) {
+                  console.error(
+                    '[ArticleDetailScreen] 레벨업 정보 저장 실패:',
+                    storageError,
+                  );
+                }
+              }
+            }
+          } catch (readStatusError: any) {
+            console.error(
+              '[ArticleDetailScreen] 완독 체크 에러:',
+              readStatusError,
+            );
+            // 완독 체크 실패해도 경험치 모달은 표시
+          }
+        }
+
+        // 경험치 획득 모달 표시 (레벨업이 아닌 경우)
         showModal({
           title: '경험치 획득!',
           image: <Modal_IMG />,
@@ -291,7 +353,14 @@ const ArticleDetailScreen = () => {
         timerRef.current = null;
       }
     };
-  }, [readingTime, addExperience, showModal, isFocused, contentDetail]);
+  }, [
+    readingTime,
+    addExperience,
+    showModal,
+    isFocused,
+    contentDetail,
+    articleId,
+  ]);
 
   if (isLoading) {
     return (

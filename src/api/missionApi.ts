@@ -243,3 +243,67 @@ export const purchaseContentWithAd = async (
     throw error;
   }
 };
+
+/**
+ * 완독 여부 체크 - LevelUpInfo
+ */
+export interface LevelUpInfo {
+  title: string;
+  message: string;
+  profileUrl: string;
+  levelCode: string;
+  characterName: string;
+}
+
+/**
+ * 완독 여부 체크 응답
+ */
+export interface ReadStatusResponse {
+  levelUpInfo?: LevelUpInfo;
+  completed: boolean;
+  levelUp: boolean;
+}
+
+/**
+ * 완독 여부 체크 API 응답
+ */
+export interface ReadStatusApiResponse {
+  status: number;
+  message: string;
+  data: ReadStatusResponse;
+}
+
+/**
+ * 완독 여부 체크
+ * @param userId 사용자 ID (query parameter)
+ * @param contentId 컨텐츠 ID (path parameter)
+ * @param staySeconds 체류 시간 (초)
+ * @param isCompleted 완독 여부
+ * @returns Promise<ReadStatusApiResponse>
+ */
+export const checkReadStatus = async (
+  userId: number,
+  contentId: number,
+  staySeconds: number,
+  isCompleted: boolean,
+): Promise<ReadStatusApiResponse> => {
+  try {
+    const response = await client.post<ReadStatusApiResponse>(
+      `/api/content/${contentId}/read-status?userId=${userId}`,
+      {
+        staySeconds,
+        isCompleted,
+      },
+    );
+    return response.data;
+  } catch (error: any) {
+    console.error('[완독 체크 API] 에러:', error);
+    if (error.response) {
+      console.error('[완독 체크 API] 서버 응답:', {
+        status: error.response.status,
+        data: error.response.data,
+      });
+    }
+    throw error;
+  }
+};

@@ -21,12 +21,14 @@ import BottomSheetModal from '../components/BottomSheetModal';
 import ToastModal from '../components/ToastModal';
 
 import { useExperienceStore } from '../store/experienceStore';
-import { useCharacterData, characterKeys } from '../hooks/useCharacter';
+import { characterKeys } from '../hooks/useCharacter';
 import { LevelUpModalContent } from '../components/ArticlePointModalContent';
 import { useQueryClient } from '@tanstack/react-query';
 import { Heading_24EB_Round } from '../styles/typography';
 import { COLORS, scaleWidth } from '../styles/global';
 import { Modal_IMG } from '../icons';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { LevelUpInfo } from '../api/missionApi';
 
 const Stack = createNativeStackNavigator();
 
@@ -51,12 +53,11 @@ const RootNavigatorContent: React.FC<{
   // 경험치와 레벨 데이터 감시
   const { experience } = useExperienceStore();
   const queryClient = useQueryClient();
-  const { data: characterData } = useCharacterData();
 
   // ref: 마지막 경험치 / 레벨업 모달 노출 여부 / 온보딩 완료 이전 상태
   const lastCheckedExpRef = useRef<number>(0);
-  const hasShownLevelUpModalRef = useRef<boolean>(false);
   const prevOnboardingCompletedRef = useRef<boolean>(false);
+  const hasCheckedPendingLevelUpRef = useRef<boolean>(false);
 
   // 온보딩 완료 시 메인 화면으로 자동 전환
   useEffect(() => {
@@ -88,63 +89,55 @@ const RootNavigatorContent: React.FC<{
     }
   }, [experience, isOnboardingCompleted, queryClient]);
 
-  // 레벨업 체크: 경험치가 다음 레벨 경험치에 도달했는지 확인
+  // 완독 체크 API 응답의 레벨업 정보 체크
   useEffect(() => {
-    // 온보딩이 완료되지 않았거나 데이터가 없으면 체크하지 않음
-    if (!isOnboardingCompleted || !characterData) {
+    if (!isOnboardingCompleted) {
       return;
     }
 
-    const currentExp = experience;
-    const nextLevelExp = characterData.nextLevelExp;
-    const previousExp = lastCheckedExpRef.current;
+    const checkPendingLevelUp = async () => {
+      if (hasCheckedPendingLevelUpRef.current) return;
 
-    // 이전 경험치가 다음 레벨 경험치 미만이었고, 현재 경험치가 도달했을 때 레벨업
-    if (
-      previousExp < nextLevelExp &&
-      currentExp >= nextLevelExp &&
-      !hasShownLevelUpModalRef.current
-    ) {
-      // nextLevelExp에 해당하는 레벨 찾기 (characterData.currentLevel은 이미 업데이트되었을 수 있음)
-      const { levelList } = require('../data/mock/characterData');
-      const newLevelData = levelList.find(
-        (level: { requiredExp: number; id: number }) =>
-          level.requiredExp === nextLevelExp,
-      );
-      const newLevel = newLevelData
-        ? newLevelData.id
-        : characterData.currentLevel + 1;
+      try {
+        const pendingLevelUpData = await AsyncStorage.getItem(
+          '@pending_level_up',
+        );
 
-      // 레벨업 모달 표시
-      showModal({
-        title: '축하해요! 레벨 업!',
-        image: <Modal_IMG />,
-        imageTopOffset: scaleWidth(-100.62),
-        imagePaddingTop: scaleWidth(64),
-        titleStyle: { ...Heading_24EB_Round },
-        titleDescriptionGapSize: 4,
-        description: '조금씩 생각이 자라나고 있어요.',
-        descriptionColor: COLORS.gray700,
-        children: React.createElement(LevelUpModalContent, { newLevel }),
-        primaryButton: {
-          title: '확인',
-          onPress: () => {
-            // 버튼 눌렀을 때 추가 동작이 필요하면 여기에
-          },
-        },
-      });
+        if (pendingLevelUpData) {
+          const levelUpInfo: LevelUpInfo = JSON.parse(pendingLevelUpData);
+          hasCheckedPendingLevelUpRef.current = true;
 
-      hasShownLevelUpModalRef.current = true;
-    }
+          // 레벨업 모달 표시
+          showModal({
+            title: levelUpInfo.title || '축하해요! 레벨 업!',
+            image: <Modal_IMG />,
+            imageTopOffset: scaleWidth(-100.62),
+            imagePaddingTop: scaleWidth(64),
+            titleStyle: { ...Heading_24EB_Round },
+            titleDescriptionGapSize: 4,
+            description:
+              levelUpInfo.message || '조금씩 생각이 자라나고 있어요.',
+            descriptionColor: COLORS.gray700,
+            children: React.createElement(LevelUpModalContent, {
+              newLevel: parseInt(levelUpInfo.levelCode, 10) || 0,
+            }),
+            primaryButton: {
+              title: '확인',
+              onPress: async () => {
+                // 레벨업 정보 삭제
+                await AsyncStorage.removeItem('@pending_level_up');
+                hasCheckedPendingLevelUpRef.current = false;
+              },
+            },
+          });
+        }
+      } catch (error) {
+        console.error('[RootNavigator] 레벨업 체크 실패:', error);
+      }
+    };
 
-    // 경험치가 다음 레벨 경험치보다 낮아지면 (레벨업 후 리셋 등) 플래그 리셋
-    if (currentExp < nextLevelExp) {
-      hasShownLevelUpModalRef.current = false;
-    }
-
-    // 마지막 체크한 경험치 업데이트
-    lastCheckedExpRef.current = currentExp;
-  }, [experience, characterData, isOnboardingCompleted, showModal]);
+    checkPendingLevelUp();
+  }, [isOnboardingCompleted, showModal]);
 
   return (
     <>
