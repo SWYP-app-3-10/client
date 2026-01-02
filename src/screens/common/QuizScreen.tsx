@@ -27,12 +27,7 @@ import { useShowModal, useHideModal } from '../../store/modalStore';
 import DifficultySelectionModal, {
   Difficulty,
 } from '../../components/DifficultySelectionModal';
-import {
-  useNavigation,
-  useRoute,
-  CommonActions,
-} from '@react-navigation/native';
-import { RouteNames } from '../../../routes';
+import { useNavigation, useRoute } from '@react-navigation/native';
 import { mockQuiz } from '../../data/mock/quizData';
 import { ExperienceModalContent } from '../../components/ArticlePointModalContent';
 import { usePointStore } from '../../store/pointStore';
@@ -41,29 +36,13 @@ import {
   QUIZ_CORRECT_POINT,
   QUIZ_CORRECT_EXPERIENCE,
 } from '../../config/rewards';
-import { submitDifficulty } from '../../api/missionApi';
-import { getUserInfo } from '../../services/authService';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import {
+  useDifficultySubmit,
+  checkCanSubmitDifficulty,
+} from '../../hooks/useDifficultySubmit';
+import { createQuizCompleteNavigation } from '../../utils/quizNavigation';
 
 type QuizState = 'question' | 'feedback';
-
-const DIFFICULTY_SUBMIT_KEY = '@difficulty_submit_date';
-
-// 난이도 타입 변환: 'easy' | 'normal' | 'hard' -> 'EASY' | 'MEDIUM' | 'HARD'
-const convertDifficultyToApiFormat = (
-  difficulty: Difficulty,
-): 'EASY' | 'MEDIUM' | 'HARD' => {
-  switch (difficulty) {
-    case 'easy':
-      return 'EASY';
-    case 'normal':
-      return 'MEDIUM';
-    case 'hard':
-      return 'HARD';
-    default:
-      return 'EASY';
-  }
-};
 
 const QuizScreen: React.FC = () => {
   const route = useRoute();
@@ -80,6 +59,7 @@ const QuizScreen: React.FC = () => {
   const hideModal = useHideModal();
   const navigation = useNavigation();
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const { submitDifficultyToServer } = useDifficultySubmit();
 
   const handleOptionSelect = (optionId: number) => {
     if (quizState === 'question') {
@@ -133,46 +113,12 @@ const QuizScreen: React.FC = () => {
     }
 
     // 하루에 한 번만 난이도 모달 표시 체크
-    try {
-      const today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
-      const lastSubmitDate = await AsyncStorage.getItem(DIFFICULTY_SUBMIT_KEY);
+    const canSubmit = await checkCanSubmitDifficulty();
 
-      // 오늘 이미 전송했다면 모달 표시하지 않고 바로 이동
-      if (lastSubmitDate === today) {
-        navigation.dispatch(
-          CommonActions.reset({
-            index: 0,
-            routes: [
-              {
-                name: RouteNames.MAIN_TAB,
-                state: {
-                  routes: [
-                    {
-                      name:
-                        returnTo === 'search'
-                          ? RouteNames.SEARCH_TAB
-                          : RouteNames.MISSION_TAB,
-                      state: {
-                        routes: [
-                          {
-                            name:
-                              returnTo === 'search'
-                                ? RouteNames.SEARCH
-                                : RouteNames.MISSION,
-                          },
-                        ],
-                      },
-                    },
-                  ],
-                },
-              },
-            ],
-          }),
-        );
-        return;
-      }
-    } catch (error) {
-      console.error('[QuizScreen] 난이도 전송 날짜 체크 실패:', error);
+    // 오늘 이미 전송했다면 모달 표시하지 않고 바로 이동
+    if (!canSubmit) {
+      navigation.dispatch(createQuizCompleteNavigation(returnTo));
+      return;
     }
 
     // 난이도 선택 모달 표시
@@ -190,65 +136,15 @@ const QuizScreen: React.FC = () => {
           initialDifficulty={selectedDifficulty}
           onSelect={async difficulty => {
             setSelectedDifficulty(difficulty);
+
+            // 서버로 난이도 전송
+            await submitDifficultyToServer(articleId, difficulty);
+
             // 난이도 선택 시 모달 닫고 원래 화면으로 이동
             setTimeout(() => {
               hideModal();
-              // 원래 화면으로 이동 (스택 초기화)
-              navigation.dispatch(
-                CommonActions.reset({
-                  index: 0,
-                  routes: [
-                    {
-                      name: RouteNames.MAIN_TAB,
-                      state: {
-                        routes: [
-                          {
-                            name:
-                              returnTo === 'search'
-                                ? RouteNames.SEARCH_TAB
-                                : RouteNames.MISSION_TAB,
-                            state: {
-                              routes: [
-                                {
-                                  name:
-                                    returnTo === 'search'
-                                      ? RouteNames.SEARCH
-                                      : RouteNames.MISSION,
-                                },
-                              ],
-                            },
-                          },
-                        ],
-                      },
-                    },
-                  ],
-                }),
-              );
+              navigation.dispatch(createQuizCompleteNavigation(returnTo));
             }, 2000);
-
-            // 서버로 난이도 전송
-            try {
-              const userInfo = await getUserInfo();
-              if (!userInfo || !userInfo.userId) {
-                console.error('[QuizScreen] 사용자 정보 없음');
-                return;
-              }
-
-              const apiDifficulty = convertDifficultyToApiFormat(difficulty);
-              const response = await submitDifficulty(
-                userInfo.userId,
-                articleId,
-                apiDifficulty,
-              );
-
-              console.log('[QuizScreen] 난이도 전송 성공:', response);
-
-              // 오늘 날짜 저장 (하루에 한 번만 전송)
-              const today = new Date().toISOString().split('T')[0];
-              await AsyncStorage.setItem(DIFFICULTY_SUBMIT_KEY, today);
-            } catch (error) {
-              console.error('[QuizScreen] 난이도 전송 실패:', error);
-            }
           }}
         />
       ),
