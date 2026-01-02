@@ -163,3 +163,84 @@ export const fetchDifficultyInfo = async (
     throw error;
   }
 };
+
+/**
+ * 읽은 글 상세 정보 - Content
+ */
+export interface ReadContentDetailContent {
+  contentId: number;
+  title: string;
+  content: string;
+  contentCategory: string; // "POLITICS" 등
+  categoryName: string;
+  contentDate: string; // "2026-01-02"
+  hits: number;
+  imageUrl: string;
+}
+
+/**
+ * 읽은 글 상세 정보 - Quiz Choice
+ */
+export interface QuizChoice {
+  quizChoiceId: number;
+  choiceNo: number;
+  choiceText: string;
+}
+
+/**
+ * 읽은 글 상세 정보 - Quiz
+ */
+export interface ReadContentDetailQuiz {
+  quizId: number;
+  contentId: number;
+  quizContent: string; // 질문
+  choices: QuizChoice[];
+  selectedNo: number; // 선택한 답안 번호
+  correctChoiceNo: number; // 정답 번호
+  correct: boolean; // 정답 여부
+  solvedAt: string; // "2026-01-02T07:29:23.532Z"
+}
+
+/**
+ * 읽은 글 상세 정보
+ */
+export interface ReadContentDetail {
+  content: ReadContentDetailContent;
+  quiz?: ReadContentDetailQuiz;
+}
+
+/**
+ * 읽은 글 상세 정보 API 응답
+ */
+export interface ReadContentDetailResponse {
+  status: number;
+  message: string;
+  data: ReadContentDetail;
+}
+
+/**
+ * 읽은 글 상세 정보 조회
+ * @param userId 사용자 ID (query parameter)
+ * @param contentId 컨텐츠 ID (path parameter)
+ * @returns Promise<ReadContentDetailResponse>
+ */
+export const fetchReadContentDetail = async (
+  userId: number,
+  contentId: number,
+): Promise<ReadContentDetailResponse> => {
+  try {
+    const response = await client.get<ReadContentDetailResponse>(
+      `/api/content/${contentId}/read?userId=${userId}`,
+    );
+    return response.data;
+  } catch (error: any) {
+    console.error('[읽은 글 상세 API] 에러:', error);
+    if (error.response) {
+      console.error('[읽은 글 상세 API] 서버 응답:', {
+        status: error.response.status,
+        data: error.response.data,
+      });
+    }
+    throw error;
+  }
+};

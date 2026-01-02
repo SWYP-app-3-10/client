@@ -15,7 +15,7 @@ interface QuizFeedbackProps {
   question: string;
   options: QuizOption[];
   correctAnswerId: number;
-  selectedAnswerId: number;
+  selectedAnswerId: number | null;
   showFeedbackMessage?: boolean;
   containerRef?: React.RefObject<View>;
 }
@@ -28,7 +28,8 @@ const QuizFeedback: React.FC<QuizFeedbackProps> = ({
   showFeedbackMessage = true,
   containerRef,
 }) => {
-  const isCorrect = selectedAnswerId === correctAnswerId;
+  const isCorrect =
+    selectedAnswerId !== null && selectedAnswerId === correctAnswerId;
 
   return (
     <View style={styles.quizSection} ref={containerRef}>

@@ -1,5 +1,12 @@
-import React, { useRef, useMemo } from 'react';
-import { View, Text, StyleSheet, ScrollView, Platform } from 'react-native';
+import React, { useRef, useMemo, useState, useEffect } from 'react';
+import {
+  View,
+  Text,
+  StyleSheet,
+  ScrollView,
+  Platform,
+  ActivityIndicator,
+} from 'react-native';
 import {
   SafeAreaView,
   useSafeAreaInsets,
@@ -12,13 +19,12 @@ import Button from '../../components/Button';
 import ArticleContent from '../../components/ArticleContent';
 import QuizFeedback from '../../components/QuizFeedback';
 import Spacer from '../../components/Spacer';
-import { useArticles } from '../../hooks/useArticles';
 import { useScrollToQuiz } from '../../hooks/useScrollToQuiz';
 import { useQuizButton } from '../../hooks/useQuizButton';
-import { Article } from '../../data/mock/missionData';
-import { mockQuiz } from '../../data/mock/quizData';
 import { FullScreenStackRouteProp } from '../../navigation/types';
 import { RouteNames } from '../../../routes';
+import { fetchReadContentDetail, ReadContentDetail } from '../../api/userApi';
+import { getUserInfo } from '../../services/authService';
 
 // 플랫폼별 버튼 영역 높이 상수
 const BUTTON_WRAPPER_HEIGHT = Platform.OS === 'ios' ? 246 : 267;
@@ -26,20 +32,74 @@ const BUTTON_WRAPPER_HEIGHT = Platform.OS === 'ios' ? 246 : 267;
 const ReadArticleDetailScreen = () => {
   const route =
     useRoute<FullScreenStackRouteProp<typeof RouteNames.READ_ARTICLE_DETAIL>>();
-  const { data: articles = [] } = useArticles();
   const { bottom: safeAreaBottom } = useSafeAreaInsets();
   const scrollViewRef = useRef<ScrollView>(null);
   const quizSectionRef = useRef<View>(null);
 
-  // 라우트 파라미터에서 articleId 추출
-  const articleId = route.params?.articleId;
-  const article = useMemo(
-    () => articles.find((a: Article) => a.id === articleId),
-    [articles, articleId],
-  );
+  // 라우트 파라미터에서 contentId 추출
+  const contentId = route.params?.articleId;
 
-  // TODO: articleId로 실제 퀴즈 데이터 가져오기
-  const quiz = mockQuiz;
+  const [contentDetail, setContentDetail] = useState<ReadContentDetail | null>(
+    null,
+  );
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  // API로 읽은 글 상세 정보 조회
+  useEffect(() => {
+    const loadContentDetail = async () => {
+      if (!contentId) {
+        setError('컨텐츠 ID가 없습니다.');
+        setIsLoading(false);
+        return;
+      }
+
+      try {
+        setIsLoading(true);
+        setError(null);
+
+        const userInfo = await getUserInfo();
+        if (!userInfo || !userInfo.userId) {
+          setError('사용자 정보를 찾을 수 없습니다.');
+          setIsLoading(false);
+          return;
+        }
+
+        const response = await fetchReadContentDetail(
+          userInfo.userId,
+          contentId,
+        );
+        if (response.data) {
+          setContentDetail(response.data);
+        }
+      } catch (err: any) {
+        console.error('[읽은 글 상세] 로드 실패:', err);
+        setError('글을 불러오는데 실패했습니다.');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadContentDetail();
+  }, [contentId]);
+
+  // 퀴즈 데이터
+  const quiz = useMemo(() => {
+    if (contentDetail?.quiz) {
+      return {
+        id: contentDetail.quiz.quizId,
+        question: contentDetail.quiz.quizContent,
+        options: contentDetail.quiz.choices.map(choice => ({
+          id: choice.quizChoiceId,
+          text: choice.choiceText,
+        })),
+        correctAnswerId: contentDetail.quiz.correctChoiceNo,
+      };
+    }
+  }, [contentDetail]);
+
+  // 선택한 답안
+  const selectedAnswerId = contentDetail?.quiz?.selectedNo || null;
 
   // 스크롤 감지 및 제어 커스텀 훅
   const { showQuiz, handleScroll, scrollToQuiz, scrollToTop } = useScrollToQuiz(
@@ -56,21 +116,33 @@ const ReadArticleDetailScreen = () => {
     onScrollToTop: scrollToTop,
   });
 
-  // TODO: 실제 선택한 답안 가져오기
-  const selectedAnswerId = 1;
-
   // 동적 paddingBottom 계산: 버튼 영역 높이 + safeAreaBottom
   const contentPaddingBottom = useMemo(
     () => scaleWidth(BUTTON_WRAPPER_HEIGHT) + safeAreaBottom,
     [safeAreaBottom],
   );
 
-  if (!article) {
+  // 로딩 중
+  if (isLoading) {
     return (
       <SafeAreaView style={styles.container}>
         <Header iconColor={COLORS.black} />
         <View style={styles.errorContainer}>
-          <Text>기사를 찾을 수 없습니다.</Text>
+          <ActivityIndicator size="large" color={COLORS.puple.main} />
+          <Spacer num={16} />
+          <Text>글을 불러오는 중...</Text>
+        </View>
+      </SafeAreaView>
+    );
+  }
+
+  // 에러 또는 데이터 없음
+  if (error || !contentDetail) {
+    return (
+      <SafeAreaView style={styles.container}>
+        <Header iconColor={COLORS.black} />
+        <View style={styles.errorContainer}>
+          <Text>{error || '기사를 찾을 수 없습니다.'}</Text>
         </View>
       </SafeAreaView>
     );
@@ -92,17 +164,19 @@ const ReadArticleDetailScreen = () => {
         scrollEventThrottle={16}
       >
         {/* 기사 내용 */}
-        <ArticleContent article={article} />
+        <ArticleContent content={contentDetail.content} />
         <Spacer num={12} />
         {/* 퀴즈 섹션 */}
-        <QuizFeedback
-          question={quiz.question}
-          options={quiz.options}
-          correctAnswerId={quiz.correctAnswerId}
-          selectedAnswerId={selectedAnswerId}
-          showFeedbackMessage={true}
-          containerRef={quizSectionRef}
-        />
+        {quiz && (
+          <QuizFeedback
+            question={quiz.question}
+            options={quiz.options}
+            correctAnswerId={quiz.correctAnswerId}
+            selectedAnswerId={selectedAnswerId}
+            showFeedbackMessage={true}
+            containerRef={quizSectionRef}
+          />
+        )}
       </ScrollView>
 
       <View
