@@ -180,3 +180,39 @@ export const fetchContentAccess = async (
     throw error;
   }
 };
+
+/**
+ * 포인트로 컨텐츠 구매 API 응답
+ */
+export interface PurchaseContentResponse {
+  status: number;
+  message: string;
+  data: string;
+}
+
+/**
+ * 포인트로 컨텐츠 구매
+ * @param userId 사용자 ID (query parameter)
+ * @param contentId 컨텐츠 ID (path parameter)
+ * @returns Promise<PurchaseContentResponse>
+ */
+export const purchaseContentWithPoint = async (
+  userId: number,
+  contentId: number,
+): Promise<PurchaseContentResponse> => {
+  try {
+    const response = await client.post<PurchaseContentResponse>(
+      `/api/content/${contentId}/purchase/point?userId=${userId}`,
+    );
+    return response.data;
+  } catch (error: any) {
+    console.error('[포인트 구매 API] 에러:', error);
+    if (error.response) {
+      console.error('[포인트 구매 API] 서버 응답:', {
+        status: error.response.status,
+        data: error.response.data,
+      });
+    }
+    throw error;
+  }
+};

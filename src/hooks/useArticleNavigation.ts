@@ -11,7 +11,10 @@ import {
   ArticlePointModalContentGet,
 } from '../components/ArticlePointModalContent';
 import { COLORS, Heading_16B } from '../styles/global';
-import { fetchContentAccess } from '../api/missionApi';
+import {
+  fetchContentAccess,
+  purchaseContentWithPoint,
+} from '../api/missionApi';
 import { getUserInfo } from '../services/authService';
 
 type ReturnTo = 'mission' | 'search';
@@ -83,38 +86,56 @@ export const useArticleNavigation = ({
                 // 중복 호출 방지
                 if (isProcessingRef.current) {
                   console.log(
-                    '[useArticleNavigation] 포인트 차감 이미 처리 중, 중복 호출 방지',
+                    '[useArticleNavigation] 포인트 구매 이미 처리 중, 중복 호출 방지',
                   );
                   return;
                 }
 
                 isProcessingRef.current = true;
-                console.log(
-                  `[useArticleNavigation] 포인트 차감 시도: ${ARTICLE_READ_POINT_COST}`,
-                );
 
-                // try {
-                // const success = await subtractPoints(ARTICLE_READ_POINT_COST);
-                // console.log(
-                //   `[useArticleNavigation] 포인트 차감 결과: ${success}`,
-                // );
-                // if (success) {
-                navigation.navigate(RouteNames.FULL_SCREEN_STACK, {
-                  screen: RouteNames.ARTICLE_DETAIL,
-                  params: {
+                try {
+                  // 사용자 정보 가져오기
+                  const purchaseUserInfo = await getUserInfo();
+                  if (!purchaseUserInfo) {
+                    Alert.alert('오류', '사용자 정보를 찾을 수 없습니다.');
+                    return;
+                  }
+
+                  // 포인트로 컨텐츠 구매 API 호출
+                  const purchaseResponse = await purchaseContentWithPoint(
+                    purchaseUserInfo.userId,
                     articleId,
-                    returnTo,
-                  },
-                });
-                // } else {
-                //   Alert.alert('오류', '포인트 차감에 실패했습니다.');
-                // }
-                // } finally {
-                //   // 네비게이션 후 리셋 (다음 기사 읽기 가능하도록)
-                //   setTimeout(() => {
-                //   }, 1000);
-                // }
-                isProcessingRef.current = false;
+                  );
+
+                  console.log(
+                    '[useArticleNavigation] 포인트 구매 응답:',
+                    purchaseResponse,
+                  );
+
+                  // 구매 성공 후 글 상세 화면으로 이동
+                  navigation.navigate(RouteNames.FULL_SCREEN_STACK, {
+                    screen: RouteNames.ARTICLE_DETAIL,
+                    params: {
+                      articleId,
+                      returnTo,
+                    },
+                  });
+                } catch (error: any) {
+                  console.error(
+                    '[useArticleNavigation] 포인트 구매 에러:',
+                    error,
+                  );
+                  Alert.alert(
+                    '오류',
+                    error.response?.data?.message ||
+                      '포인트 구매에 실패했습니다.',
+                  );
+                } finally {
+                  // 네비게이션 후 리셋 (다음 기사 읽기 가능하도록)
+                  setTimeout(() => {
+                    isProcessingRef.current = false;
+                  }, 1000);
+                }
               },
             },
           });
