@@ -1,14 +1,17 @@
 import React from 'react';
-import { View, StyleSheet } from 'react-native';
+import { View, StyleSheet, Image } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { COLORS, scaleWidth } from '../styles/global';
+import { COLORS } from '../styles/global';
 
 const SplashScreen = () => {
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={styles.container} edges={[]}>
       <View style={styles.content}>
-        {/* 로고 placeholder */}
-        <View style={styles.logoPlaceholder} />
+        <Image
+          source={require('../assets/png/SplashScreen.png')}
+          style={styles.splashImage}
+          resizeMode="cover"
+        />
       </View>
     </SafeAreaView>
   );
@@ -24,11 +27,9 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
-  logoPlaceholder: {
-    width: scaleWidth(120),
-    height: scaleWidth(120),
-    backgroundColor: COLORS.grayLight,
-    borderRadius: scaleWidth(12),
+  splashImage: {
+    width: '100%',
+    height: '100%',
   },
 });
 
