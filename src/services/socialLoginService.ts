@@ -19,7 +19,7 @@ import {
 import { loginWithProvider } from '../api/authApi';
 import { saveAuthToken, saveRefreshToken, saveUserInfo } from './authService';
 // 소셜 로그인 타입
-export type SocialLoginProvider = 'google' | 'kakao' | 'naver' | 'apple';
+export type SocialLoginProvider = 'GOOGLE' | 'KAKAO' | 'NAVER' | 'APPLE';
 
 export interface SocialLoginResult {
   success: boolean;
@@ -69,8 +69,9 @@ export const signInWithGoogle = async (): Promise<SocialLoginResult> => {
     // 서버 API 호출 (필수)
 
     try {
-      const loginResponse = await loginWithProvider('google', {
+      const loginResponse = await loginWithProvider('GOOGLE', {
         accessToken: tokens.accessToken,
+        email: firebaseUser.email || undefined,
       });
       if (loginResponse.data) {
         if (loginResponse.data.accessToken) {
@@ -85,7 +86,7 @@ export const signInWithGoogle = async (): Promise<SocialLoginResult> => {
         if (loginResponse.data.userInfo) {
           await saveUserInfo({
             ...loginResponse.data.userInfo,
-            provider: 'google',
+            provider: 'GOOGLE',
             loginTime: Date.now(),
           });
         }
@@ -112,14 +113,14 @@ export const signInWithGoogle = async (): Promise<SocialLoginResult> => {
       // 서버 API 실패 시 에러 반환 (토큰 없이는 이후 API 호출 불가)
       return {
         success: false,
-        provider: 'google',
+        provider: 'GOOGLE',
         error: '서버 로그인에 실패했습니다. 다시 시도해주세요.',
       };
     }
 
     return {
       success: true,
-      provider: 'google',
+      provider: 'GOOGLE',
       accessToken: idToken,
       userInfo: {
         id: firebaseUser.uid,
@@ -132,7 +133,7 @@ export const signInWithGoogle = async (): Promise<SocialLoginResult> => {
     console.error('구글 로그인 에러:', error);
     return {
       success: false,
-      provider: 'google',
+      provider: 'GOOGLE',
       error: error.message || '구글 로그인 실패',
     };
   }
@@ -171,8 +172,9 @@ export const signInWithKakao = async (): Promise<SocialLoginResult> => {
 
     // 서버 API 호출
     try {
-      const loginResponse = await loginWithProvider('kakao', {
+      const loginResponse = await loginWithProvider('KAKAO', {
         accessToken: token.accessToken,
+        email: userInfo.email,
       });
       if (loginResponse.data) {
         if (loginResponse.data.accessToken) {
@@ -186,7 +188,7 @@ export const signInWithKakao = async (): Promise<SocialLoginResult> => {
         if (loginResponse.data.userInfo) {
           await saveUserInfo({
             ...loginResponse.data.userInfo,
-            provider: 'google',
+            provider: 'GOOGLE',
             loginTime: Date.now(),
           });
         }
@@ -213,21 +215,21 @@ export const signInWithKakao = async (): Promise<SocialLoginResult> => {
       // 서버 API 실패 시 에러 반환
       return {
         success: false,
-        provider: 'kakao',
+        provider: 'KAKAO',
         error: '서버 로그인에 실패했습니다. 다시 시도해주세요.',
       };
     }
 
     return {
       success: true,
-      provider: 'kakao',
+      provider: 'KAKAO',
       accessToken: token.accessToken,
       userInfo,
     };
   } catch (error: any) {
     return {
       success: false,
-      provider: 'kakao',
+      provider: 'KAKAO',
       error: error.message || '카카오 로그인 실패',
     };
   }
@@ -266,7 +268,7 @@ export const signInWithNaver = async (): Promise<SocialLoginResult> => {
     if (!result.isSuccess || !result.successResponse) {
       return {
         success: false,
-        provider: 'naver',
+        provider: 'NAVER',
         error: result.failureResponse?.message || '네이버 로그인 실패',
       };
     }
@@ -284,9 +286,9 @@ export const signInWithNaver = async (): Promise<SocialLoginResult> => {
 
     // 서버 API 호출
     try {
-      const loginResponse = await loginWithProvider('naver', {
+      const loginResponse = await loginWithProvider('NAVER', {
         accessToken: result.successResponse.accessToken,
-        // email: userInfo.email,
+        email: userInfo.email,
         // name: userInfo.name,
         // profileImage: userInfo.profileImage,
       });
@@ -307,7 +309,7 @@ export const signInWithNaver = async (): Promise<SocialLoginResult> => {
           await saveUserInfo(loginResponse.data.userInfo);
           await saveUserInfo({
             ...loginResponse.data.userInfo,
-            provider: 'naver',
+            provider: 'NAVER',
             loginTime: Date.now(),
           });
         }
@@ -334,21 +336,21 @@ export const signInWithNaver = async (): Promise<SocialLoginResult> => {
       // 서버 API 실패 시 에러 반환
       return {
         success: false,
-        provider: 'naver',
+        provider: 'NAVER',
         error: '서버 로그인에 실패했습니다. 다시 시도해주세요.',
       };
     }
 
     return {
       success: true,
-      provider: 'naver',
+      provider: 'NAVER',
       accessToken: result.successResponse.accessToken,
       userInfo,
     };
   } catch (error: any) {
     return {
       success: false,
-      provider: 'naver',
+      provider: 'NAVER',
       error: error.message || '네이버 로그인 실패',
     };
   }
@@ -367,30 +369,22 @@ export const signOutNaver = async (): Promise<void> => {
 export const signInWithSocial = async (
   provider: SocialLoginProvider,
 ): Promise<SocialLoginResult> => {
-  return {
-    success: true,
-    provider,
-    userInfo: {
-      id: '7',
-      email: 'test@example.com',
-    },
-  };
-  // switch (provider) {
-  //   case 'google':
-  //     return signInWithGoogle();
-  //   case 'kakao':
-  //     return signInWithKakao();
-  //   case 'naver':
-  //     return signInWithNaver();
-  //   case 'apple':
-  //     return signInWithApple();
-  //   default:
-  //     return {
-  //       success: false,
-  //       provider,
-  //       error: '지원하지 않는 소셜 로그인입니다',
-  //     };
-  // }
+  switch (provider) {
+    case 'GOOGLE':
+      return signInWithGoogle();
+    case 'KAKAO':
+      return signInWithKakao();
+    case 'NAVER':
+      return signInWithNaver();
+    case 'APPLE':
+      return signInWithApple();
+    default:
+      return {
+        success: false,
+        provider,
+        error: '지원하지 않는 소셜 로그인입니다',
+      };
+  }
 };
 
 // 통합 로그아웃 함수
@@ -398,13 +392,13 @@ export const signOutSocial = async (
   provider: SocialLoginProvider,
 ): Promise<void> => {
   switch (provider) {
-    case 'google':
+    case 'GOOGLE':
       await signOutGoogle();
       break;
-    case 'kakao':
+    case 'KAKAO':
       await signOutKakao();
       break;
-    case 'naver':
+    case 'NAVER':
       await signOutNaver();
       break;
   }
@@ -455,9 +449,9 @@ export const signInWithApple = async (): Promise<SocialLoginResult> => {
 
     // 서버 API 호출
     try {
-      const loginResponse = await loginWithProvider('apple', {
+      const loginResponse = await loginWithProvider('APPLE', {
         accessToken: identityToken,
-        // email: userInfo.email,
+        email: userInfo.email,
         // name: userInfo.name,
         // profileImage: userInfo.profileImage,
       });
@@ -478,7 +472,7 @@ export const signInWithApple = async (): Promise<SocialLoginResult> => {
           await saveUserInfo(loginResponse.data.userInfo);
           await saveUserInfo({
             ...loginResponse.data.userInfo,
-            provider: 'apple',
+            provider: 'APPLE',
             loginTime: Date.now(),
           });
         }
@@ -505,14 +499,14 @@ export const signInWithApple = async (): Promise<SocialLoginResult> => {
       // 서버 API 실패 시 에러 반환
       return {
         success: false,
-        provider: 'apple',
+        provider: 'APPLE',
         error: '서버 로그인에 실패했습니다. 다시 시도해주세요.',
       };
     }
 
     return {
       success: true,
-      provider: 'apple',
+      provider: 'APPLE',
       accessToken: identityToken,
       userInfo,
     };
@@ -520,7 +514,7 @@ export const signInWithApple = async (): Promise<SocialLoginResult> => {
     console.error('애플 로그인 에러:', err);
     return {
       success: false,
-      provider: 'apple',
+      provider: 'APPLE',
       error: err.message || '애플 로그인 실패',
     };
   }

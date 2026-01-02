@@ -1,5 +1,12 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, Alert, Platform } from 'react-native';
+import {
+  View,
+  Text,
+  StyleSheet,
+  Alert,
+  Platform,
+  Dimensions,
+} from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import { RouteNames } from '../../../routes';
@@ -26,6 +33,7 @@ import {
 import { useShowModal } from '../../store/modalStore';
 import { useOnboardingStore } from '../../store/onboardingStore';
 import { useNotificationPermission } from '../../hooks/useNotificationPermission';
+import { LoginBackground } from '../../icons/commonIcons/simpleImages';
 
 type NavigationProp = NativeStackNavigationProp<OnboardingStackParamList>;
 
@@ -121,50 +129,42 @@ const LoginScreen = () => {
     }
   };
 
-  const handleGoogleLogin = () => handleSocialLogin('google');
-  const handleKakaoLogin = () => handleSocialLogin('kakao');
-  const handleNaverLogin = () => handleSocialLogin('naver');
-  const handleAppleLogin = () => handleSocialLogin('apple');
+  const handleGoogleLogin = () => handleSocialLogin('GOOGLE');
+  const handleKakaoLogin = () => handleSocialLogin('KAKAO');
+  const handleNaverLogin = () => handleSocialLogin('NAVER');
+  const handleAppleLogin = () => handleSocialLogin('APPLE');
 
   return (
     <SafeAreaView style={styles.container}>
+      <View style={styles.backgroundContainer}>
+        <LoginBackground style={styles.backgroundImage} />
+      </View>
       <View style={styles.content}>
-        <Spacer num={163} />
-        <View style={styles.logoContainer}>
-          <Text>로고</Text>
-        </View>
-        <Spacer num={16} />
         <Text style={styles.logoText}>
           일상의 틈, 언제든 시작하는 문해력 미션
         </Text>
         <View style={styles.buttonContainer}>
-          {/* <SocialLoginButton
-            provider="apple"
-            onPress={() => navigation.navigate(RouteNames.INTERESTS)}
-            loading={loading}
-            recentLogin={recentLogin}
-          /> */}
           <SocialLoginButton
-            provider="kakao"
+            provider="KAKAO"
             onPress={handleKakaoLogin}
             loading={loading}
             recentLogin={recentLogin}
           />
           <SocialLoginButton
-            provider="google"
+            provider="GOOGLE"
             onPress={handleGoogleLogin}
             loading={loading}
             recentLogin={recentLogin}
           />
           <SocialLoginButton
-            provider="naver"
+            provider="NAVER"
             onPress={handleNaverLogin}
             loading={loading}
             recentLogin={recentLogin}
           />
           {Platform.OS === 'ios' && (
             <SocialLoginButton
-              provider="apple"
+              provider="APPLE"
               onPress={handleAppleLogin}
               loading={loading}
               recentLogin={recentLogin}
@@ -172,6 +172,7 @@ const LoginScreen = () => {
           )}
         </View>
       </View>
+      <Spacer num={52} />
     </SafeAreaView>
   );
 };
@@ -179,12 +180,25 @@ const LoginScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: COLORS.white,
+    backgroundColor: COLORS.puple.main,
+  },
+  backgroundContainer: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    zIndex: 0,
+  },
+  backgroundImage: {
+    width: Dimensions.get('window').width,
+    height: Dimensions.get('window').height,
   },
   content: {
     flex: 1,
     alignItems: 'center',
     paddingHorizontal: scaleWidth(20),
+    zIndex: 1,
   },
   logoContainer: {
     width: scaleWidth(140),
