@@ -367,22 +367,30 @@ export const signOutNaver = async (): Promise<void> => {
 export const signInWithSocial = async (
   provider: SocialLoginProvider,
 ): Promise<SocialLoginResult> => {
-  switch (provider) {
-    case 'google':
-      return signInWithGoogle();
-    case 'kakao':
-      return signInWithKakao();
-    case 'naver':
-      return signInWithNaver();
-    case 'apple':
-      return signInWithApple();
-    default:
-      return {
-        success: false,
-        provider,
-        error: '지원하지 않는 소셜 로그인입니다',
-      };
-  }
+  return {
+    success: true,
+    provider,
+    userInfo: {
+      id: '7',
+      email: 'test@example.com',
+    },
+  };
+  // switch (provider) {
+  //   case 'google':
+  //     return signInWithGoogle();
+  //   case 'kakao':
+  //     return signInWithKakao();
+  //   case 'naver':
+  //     return signInWithNaver();
+  //   case 'apple':
+  //     return signInWithApple();
+  //   default:
+  //     return {
+  //       success: false,
+  //       provider,
+  //       error: '지원하지 않는 소셜 로그인입니다',
+  //     };
+  // }
 };
 
 // 통합 로그아웃 함수

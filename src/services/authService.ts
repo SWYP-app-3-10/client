@@ -111,14 +111,33 @@ export const getUserInfo = async (): Promise<{
   loginTime?: number;
 } | null> => {
   try {
+    // 테스트용: userId를 7로 하드코딩
     const data = await AsyncStorage.getItem(USER_INFO_KEY);
     if (data) {
-      return JSON.parse(data);
+      const userInfo = JSON.parse(data);
+      return {
+        ...userInfo,
+        userId: 7, // 하드코딩된 userId (토큰의 sub와 일치)
+      };
     }
-    return null;
+    // 저장된 정보가 없어도 테스트용 userId 반환
+    return {
+      userId: 7,
+      name: '테스트 사용자',
+      email: 'test@example.com',
+      provider: 'test',
+      loginTime: Date.now(),
+    };
   } catch (error) {
     console.error('사용자 정보 조회 실패:', error);
-    return null;
+    // 에러 발생 시에도 테스트용 userId 반환
+    return {
+      userId: 7,
+      name: '테스트 사용자',
+      email: 'test@example.com',
+      provider: 'test',
+      loginTime: Date.now(),
+    };
   }
 };
 

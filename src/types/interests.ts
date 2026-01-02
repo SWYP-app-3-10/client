@@ -5,8 +5,8 @@ export enum InterestCategory {
   POLITICS = 'POLITICS',
   ECONOMY = 'ECONOMY',
   SOCIETY = 'SOCIETY',
-  LIFE_CULTURE = 'LIFESTYLE',
-  IT_SCIENCE = 'IT',
+  LIFE_CULTURE = 'LIFE_CULTURE',
+  IT_SCIENCE = 'IT_SCIENCE',
   WORLD = 'WORLD',
 }
 export enum LevelCategory {

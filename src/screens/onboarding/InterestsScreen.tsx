@@ -29,7 +29,6 @@ import { Body_15M, Body_18M, Heading_18SB } from '../../styles/typography';
 import Header from '../../components/Header';
 import { Interest, INTERESTS, InterestCategory } from '../../types/interests';
 import { updateUserInterests } from '../../api/userApi';
-import { USE_SERVER_API_FOR_INTERESTS } from '../../config/apiConfig';
 import { getUserInfo } from '../../services/authService';
 
 const FIRST_ROW_INTERESTS = INTERESTS.slice(0, 3);
@@ -114,12 +113,12 @@ const InterestsScreen = () => {
     if (savedInterests) {
       const interestsMap = new Map<InterestCategory, number>();
       Object.entries(savedInterests).forEach(([key, value]) => {
-        // 기존 데이터 호환성을 위해 string을 InterestCategory로 변환
         if (Object.values(InterestCategory).includes(key as InterestCategory)) {
           interestsMap.set(key as InterestCategory, value);
         }
       });
       setSelectedInterests(interestsMap);
+    } else {
     }
   }, [savedInterests]);
 
@@ -127,9 +126,7 @@ const InterestsScreen = () => {
     (id: InterestCategory) => {
       // 먼저 현재 상태를 확인하여 3개 제한 체크
       setSelectedInterests(prev => {
-        // 3개를 이미 선택한 상태에서 새로운 항목을 선택하려고 할 때
         if (!prev.has(id) && prev.size >= 3) {
-          // setState 콜백 밖에서 토스트 모달 표시 (렌더링 중 상태 업데이트 경고 방지)
           setTimeout(() => {
             showToastModal({
               message: '최대 3순위까지 선택할 수 있어요',
@@ -156,7 +153,14 @@ const InterestsScreen = () => {
           });
         } else {
           // 최대 3개까지 선택 가능
-          const nextOrder = newSelected.size + 1;
+          // 현재 Map에 있는 최대 순서를 찾아서 +1
+          let maxOrder = 0;
+          newSelected.forEach(order => {
+            if (order > maxOrder) {
+              maxOrder = order;
+            }
+          });
+          const nextOrder = maxOrder + 1;
           newSelected.set(id, nextOrder);
         }
         // 변경된 관심분야를 AsyncStorage에 저장
@@ -185,33 +189,27 @@ const InterestsScreen = () => {
       .map(([category]) => category); // InterestCategory만 추출
 
     // 서버 API 호출
-    if (USE_SERVER_API_FOR_INTERESTS) {
-      try {
-        // userId 가져오기 (사용자 정보에서)
-        const userInfo = await getUserInfo();
-        if (!userInfo || !userInfo.userId) {
-          Alert.alert(
-            '오류',
-            '사용자 정보를 찾을 수 없습니다. 다시 로그인해주세요.',
-          );
-          return; // 로컬 저장 중단
-        }
-
-        console.log('[관심분야 업데이트] API 호출 시작');
-        await updateUserInterests(userInfo.userId, interestsArray);
-        console.log('[관심분야 업데이트] API 호출 성공');
-      } catch (error) {
-        console.error('[관심분야 업데이트] 서버 업데이트 실패:', error);
+    try {
+      // userId 가져오기 (사용자 정보에서)
+      const userInfo = await getUserInfo();
+      if (!userInfo || !userInfo.userId) {
         Alert.alert(
-          '업데이트 실패',
-          '관심분야 업데이트에 실패했습니다. 네트워크를 확인하고 다시 시도해주세요.',
+          '오류',
+          '사용자 정보를 찾을 수 없습니다. 다시 로그인해주세요.',
         );
-        return; // 서버 업데이트 실패 시 로컬 저장 중단
+        return; // 로컬 저장 중단
       }
-    } else {
-      console.log(
-        '[관심분야 업데이트] USE_SERVER_API_FOR_INTERESTS가 false입니다.',
+
+      console.log('[관심분야 업데이트] API 호출 시작');
+      await updateUserInterests(userInfo.userId, interestsArray);
+      console.log('[관심분야 업데이트] API 호출 성공');
+    } catch (error) {
+      console.error('[관심분야 업데이트] 서버 업데이트 실패:', error);
+      Alert.alert(
+        '업데이트 실패',
+        '관심분야 업데이트에 실패했습니다. 네트워크를 확인하고 다시 시도해주세요.',
       );
+      return; // 서버 업데이트 실패 시 로컬 저장 중단
     }
 
     if (editMode) {
