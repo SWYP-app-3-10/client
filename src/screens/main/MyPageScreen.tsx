@@ -18,7 +18,6 @@ import {
   Caption_14R,
   Heading_18SB,
 } from '../../styles/global';
-import { readArticlesMock } from '../../data/mock/readArticlesData';
 
 import Spacer from '../../components/Spacer';
 import { TimelineGroup } from '../../components/TimelineGroup';
@@ -58,6 +57,7 @@ import {
   calculateWeekRange,
   hasNextWeekData,
   convertToYYYYMMDD,
+  convertMyPageContentsToReadArticles,
 } from '../../utils/myPageUtils';
 
 // MyPageStack + RootStack 합친 네비게이션 타입
@@ -105,10 +105,15 @@ const MyPageScreen = () => {
     }
   }, [currentLevel]);
 
-  // 읽은 글 데이터 (현재는 mock 데이터 사용)
-  const readArticles = readArticlesMock;
+  // 읽은 글 데이터 변환
+  const readArticles = useMemo(() => {
+    if (!myPageData?.contents || myPageData.contents.length === 0) {
+      return [];
+    }
+    return convertMyPageContentsToReadArticles(myPageData.contents);
+  }, [myPageData?.contents]);
 
-  // 관심분야 태그 목록 (API 데이터 사용)
+  // 관심분야 태그 목록
   const interestTags = useMemo(() => {
     if (myPageData?.interests && myPageData.interests.length > 0) {
       return myPageData.interests.map(id => categoryNameMap[id] || id);
@@ -272,13 +277,6 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: COLORS.white,
     paddingTop: scaleWidth(8),
-  },
-
-  // 상단 설정 버튼
-  backButton: {
-    width: scaleWidth(50),
-    height: scaleWidth(50),
-    alignSelf: 'flex-end',
   },
 
   // 프로필 섹션

@@ -4,6 +4,7 @@ import {
   LevelCategory,
 } from '../types/interests';
 import dayjs from 'dayjs';
+import { MyPageContent, ReadArticlesByDate } from '../api/userApi';
 
 /**
  * 난이도 -> 레벨 표시 텍스트 변환
@@ -88,11 +89,17 @@ export const calculateWeekRange = (selectedWeek: number): string => {
 
 /**
  * 다음 주에 데이터가 있는지 확인
+ * @param selectedWeek 선택된 주 (0 = 현재 주)
+ * @param readArticles 읽은 글 목록 (ReadArticlesByDate[])
  */
 export const hasNextWeekData = (
   selectedWeek: number,
-  readArticles: Array<{ date: string }>,
+  readArticles: ReadArticlesByDate[],
 ): boolean => {
+  if (!readArticles || readArticles.length === 0) {
+    return false;
+  }
+
   const today = new Date();
   const nextWeekDate = new Date(today);
   nextWeekDate.setDate(today.getDate() + (selectedWeek + 1) * 7);
@@ -123,4 +130,55 @@ export const convertToYYYYMMDD = (dateStr: string): string => {
   // 만약 날짜가 미래라면 올해, 과거라면 내년으로 간주
   const year = date.isAfter(dayjs()) ? currentYear - 1 : currentYear;
   return dayjs(`${year}-${month}-${day}`).format('YYYY-MM-DD');
+};
+
+/**
+ * 요일 이름을 한글로 변환
+ */
+const getDayOfWeek = (date: Date): string => {
+  const days = [
+    '일요일',
+    '월요일',
+    '화요일',
+    '수요일',
+    '목요일',
+    '금요일',
+    '토요일',
+  ];
+  return days[date.getDay()];
+};
+
+/**
+ * MyPageContent[]를 ReadArticlesByDate[] 형태로 변환
+아마 수정 필요...
+ */
+export const convertMyPageContentsToReadArticles = (
+  contents: MyPageContent[],
+): ReadArticlesByDate[] => {
+  if (!contents || contents.length === 0) {
+    return [];
+  }
+
+  // 날짜별로 그룹화
+  const groupedByDate = contents.reduce((acc, content) => {
+    const readDate = dayjs(content.readAt).format('YYYY-MM-DD');
+    if (!acc[readDate]) {
+      acc[readDate] = [];
+    }
+    acc[readDate].push(content);
+    return acc;
+  }, {} as Record<string, MyPageContent[]>);
+
+  // ReadArticlesByDate 형태로 변환
+  return Object.entries(groupedByDate)
+    .map(([date, articles]) => {
+      const dateObj = new Date(date);
+      return {
+        date,
+        dayOfWeek: getDayOfWeek(dateObj),
+        count: articles.length,
+        articles, // MyPageContent[] 그대로 사용
+      };
+    })
+    .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()); // 최신순 정렬
 };

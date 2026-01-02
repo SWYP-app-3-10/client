@@ -12,19 +12,14 @@ import {
 import Button from './Button';
 import Spacer from './Spacer';
 import { RightArrowIcon } from '../icons';
+import { MyPageContent } from '../api/userApi';
 
 export interface TimelineGroupProps {
   dateGroup: {
     date: string;
     dayOfWeek: string;
     count: number;
-    articles: Array<{
-      id: number;
-      title: string;
-      category: string;
-      quizResult: 'correct' | 'incorrect';
-      readDate: string;
-    }>;
+    articles: MyPageContent[];
   };
   formatDate: (dateStr: string, dayOfWeek: string) => string;
   isLast: boolean;
@@ -87,14 +82,14 @@ export const TimelineGroup: React.FC<TimelineGroupProps> = ({
 
           {/* 글 카드들 */}
           {displayedArticles.map((article, articleIndex) => (
-            <React.Fragment key={article.id}>
+            <React.Fragment key={article.contentId}>
               <TouchableOpacity
                 style={[
                   styles.articleCard,
                   articleIndex === displayedArticles.length - 1 &&
                     styles.articleCardLast,
                 ]}
-                onPress={() => onArticlePress(article.id)}
+                onPress={() => onArticlePress(article.contentId)}
               >
                 <View style={styles.articleContent}>
                   <Text style={styles.articleTitle} numberOfLines={2}>
@@ -111,7 +106,7 @@ export const TimelineGroup: React.FC<TimelineGroupProps> = ({
                     <View
                       style={[
                         styles.quizBadge,
-                        article.quizResult === 'correct'
+                        article.isQuizCorrect
                           ? styles.quizBadgeCorrect
                           : styles.quizBadgeIncorrect,
                       ]}
@@ -119,12 +114,12 @@ export const TimelineGroup: React.FC<TimelineGroupProps> = ({
                       <Text
                         style={[
                           styles.quizBadgeText,
-                          article.quizResult === 'correct'
+                          article.isQuizCorrect
                             ? styles.quizBadgeTextCorrect
                             : styles.quizBadgeTextIncorrect,
                         ]}
                       >
-                        Q - {article.quizResult === 'correct' ? '정답' : '오답'}
+                        Q - {article.isQuizCorrect ? '정답' : '오답'}
                       </Text>
                     </View>
                   </View>

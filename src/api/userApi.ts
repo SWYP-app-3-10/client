@@ -46,6 +46,16 @@ export interface MyPageResponse {
   message: string;
   data: MyPageData;
 }
+
+/**
+ * 읽은 글 데이터
+ */
+export interface ReadArticlesByDate {
+  date: string; // YYYY-MM-DD
+  dayOfWeek: string; // "수요일"
+  count: number;
+  articles: MyPageContent[];
+}
 export interface DifficultyInfo {
   key: string;
   level: string;
