@@ -216,3 +216,30 @@ export const purchaseContentWithPoint = async (
     throw error;
   }
 };
+
+/**
+ * 광고 시청으로 컨텐츠 구매
+ * @param userId 사용자 ID (query parameter)
+ * @param contentId 컨텐츠 ID (path parameter)
+ * @returns Promise<PurchaseContentResponse>
+ */
+export const purchaseContentWithAd = async (
+  userId: number,
+  contentId: number,
+): Promise<PurchaseContentResponse> => {
+  try {
+    const response = await client.post<PurchaseContentResponse>(
+      `/api/content/${contentId}/purchase/ad?userId=${userId}`,
+    );
+    return response.data;
+  } catch (error: any) {
+    console.error('[광고 구매 API] 에러:', error);
+    if (error.response) {
+      console.error('[광고 구매 API] 서버 응답:', {
+        status: error.response.status,
+        data: error.response.data,
+      });
+    }
+    throw error;
+  }
+};

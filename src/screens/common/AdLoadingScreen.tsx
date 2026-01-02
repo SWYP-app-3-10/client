@@ -9,6 +9,8 @@ import { FullScreenStackParamList } from '../../navigation/types';
 import { RouteNames } from '../../../routes';
 import { usePointStore } from '../../store/pointStore';
 import { AD_REWARD_POINTS } from '../../config/rewards';
+import { purchaseContentWithAd } from '../../api/missionApi';
+import { getUserInfo } from '../../services/authService';
 // import { REWARDED_AD_UNIT_ID } from '../../config/adConfig';
 
 type NavigationProp = NativeStackNavigationProp<FullScreenStackParamList>;
@@ -33,6 +35,7 @@ const AdLoadingScreen = () => {
   const [isAdShowing, setIsAdShowing] = useState(false);
   const [hasEarnedReward, setHasEarnedReward] = useState(false);
   const hasAddedPointsRef = useRef(false);
+  const hasPurchasedRef = useRef(false);
 
   // 보상 감지
   useEffect(() => {
@@ -75,32 +78,73 @@ const AdLoadingScreen = () => {
     }
   }, [hasEarnedReward, addPoints]);
 
-  // 광고 닫힘 처리
+  // 광고 시청 완료 후 컨텐츠 구매 API 호출
   useEffect(() => {
-    if (isClosed && isAdShowing) {
-      if (hasEarnedReward) {
-        navigation.replace(RouteNames.ARTICLE_DETAIL, {
-          articleId,
-          returnTo,
-          fromAd: true,
-        });
-      } else {
-        // 보상 미지급 - 알림 후 뒤로가기
-        Alert.alert(
-          '알림',
-          '광고를 끝까지 시청해야 포인트를 받을 수 있습니다.',
-          [
-            {
-              text: '확인',
-              onPress: () => {
-                navigation.goBack();
-              },
-            },
-          ],
-        );
+    const handlePurchase = async () => {
+      if (
+        hasEarnedReward &&
+        isClosed &&
+        isAdShowing &&
+        !hasPurchasedRef.current
+      ) {
+        hasPurchasedRef.current = true;
+
+        try {
+          // 사용자 정보 가져오기
+          const userInfo = await getUserInfo();
+          if (!userInfo) {
+            Alert.alert('오류', '사용자 정보를 찾을 수 없습니다.');
+            navigation.goBack();
+            return;
+          }
+
+          // 광고로 컨텐츠 구매 API 호출
+          const purchaseResponse = await purchaseContentWithAd(
+            userInfo.userId,
+            articleId,
+          );
+
+          console.log('[AdLoadingScreen] 광고 구매 응답:', purchaseResponse);
+
+          // 구매 성공 후 글 상세 화면으로 이동
+          navigation.replace(RouteNames.ARTICLE_DETAIL, {
+            articleId,
+            returnTo,
+            fromAd: true,
+          });
+        } catch (error: any) {
+          console.error('[AdLoadingScreen] 광고 구매 에러:', error);
+          Alert.alert(
+            '오류',
+            error.response?.data?.message || '컨텐츠 구매에 실패했습니다.',
+          );
+          navigation.goBack();
+        }
       }
+    };
+
+    handlePurchase();
+  }, [hasEarnedReward, isClosed, isAdShowing, articleId, navigation, returnTo]);
+
+  // 광고 닫힘 처리 (보상 미지급 시)
+  useEffect(() => {
+    if (
+      isClosed &&
+      isAdShowing &&
+      !hasEarnedReward &&
+      !hasPurchasedRef.current
+    ) {
+      // 보상 미지급 - 알림 후 뒤로가기
+      Alert.alert('알림', '광고를 끝까지 시청해야 포인트를 받을 수 있습니다.', [
+        {
+          text: '확인',
+          onPress: () => {
+            navigation.goBack();
+          },
+        },
+      ]);
     }
-  }, [isClosed, isAdShowing, hasEarnedReward, articleId, navigation, returnTo]);
+  }, [isClosed, isAdShowing, hasEarnedReward, navigation]);
 
   return (
     <SafeAreaView style={styles.container}>
