@@ -345,3 +345,78 @@ export const submitDifficulty = async (
     throw error;
   }
 };
+
+/**
+ * 퀴즈 조회 - Content
+ */
+export interface QuizContent {
+  contentId: number;
+  title: string;
+  content: string;
+  contentDate: string;
+  contentCategory: string;
+  contentLevel: string;
+  imageUrl: string;
+  batchTime: string;
+  hits: number;
+}
+
+/**
+ * 퀴즈 조회 - Choice
+ */
+export interface QuizChoice {
+  quizChoiceId: number;
+  choiceNo: number;
+  choiceText: string;
+  quiz: string;
+  correct: boolean;
+}
+
+/**
+ * 퀴즈 조회 응답
+ */
+export interface QuizResponse {
+  quizId: number;
+  quizNum: number;
+  content: QuizContent;
+  question: string;
+  quizDiff: string;
+  quizCategory: string;
+  choices: QuizChoice[];
+}
+
+/**
+ * 퀴즈 조회 API 응답
+ */
+export interface QuizApiResponse {
+  status: number;
+  message: string;
+  data: QuizResponse;
+}
+
+/**
+ * 퀴즈 조회
+ * @param userId 사용자 ID (query parameter)
+ * @param contentId 컨텐츠 ID (path parameter)
+ * @returns Promise<QuizApiResponse>
+ */
+export const fetchQuiz = async (
+  userId: number,
+  contentId: number,
+): Promise<QuizApiResponse> => {
+  try {
+    const response = await client.get<QuizApiResponse>(
+      `/api/quiz/${contentId}?userId=${userId}`,
+    );
+    return response.data;
+  } catch (error: any) {
+    console.error('[퀴즈 조회 API] 에러:', error);
+    if (error.response) {
+      console.error('[퀴즈 조회 API] 서버 응답:', {
+        status: error.response.status,
+        data: error.response.data,
+      });
+    }
+    throw error;
+  }
+};

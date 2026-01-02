@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import {
   View,
   Text,
@@ -28,7 +28,6 @@ import DifficultySelectionModal, {
   Difficulty,
 } from '../../components/DifficultySelectionModal';
 import { useNavigation, useRoute } from '@react-navigation/native';
-import { mockQuiz } from '../../data/mock/quizData';
 import { ExperienceModalContent } from '../../components/ArticlePointModalContent';
 import { usePointStore } from '../../store/pointStore';
 import { useExperienceStore } from '../../store/experienceStore';
@@ -41,6 +40,8 @@ import {
   checkCanSubmitDifficulty,
 } from '../../hooks/useDifficultySubmit';
 import { createQuizCompleteNavigation } from '../../utils/quizNavigation';
+import { fetchQuiz, QuizResponse } from '../../api/missionApi';
+import { getUserInfo } from '../../services/authService';
 
 type QuizState = 'question' | 'feedback';
 
@@ -50,7 +51,7 @@ const QuizScreen: React.FC = () => {
   const articleId = route.params?.articleId || 0;
   // @ts-ignore
   const returnTo = route.params?.returnTo || 'mission';
-  const quiz = mockQuiz; // TODO: articleId로 실제 퀴즈 데이터 가져오기
+  const [quizData, setQuizData] = useState<QuizResponse | null>(null);
   const [selectedOptionId, setSelectedOptionId] = useState<number | null>(null);
   const [quizState, setQuizState] = useState<QuizState>('question');
   const [selectedDifficulty, setSelectedDifficulty] =
@@ -61,6 +62,31 @@ const QuizScreen: React.FC = () => {
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const { submitDifficultyToServer } = useDifficultySubmit();
 
+  // 퀴즈 데이터 로드
+  useEffect(() => {
+    const loadQuiz = async () => {
+      if (!articleId) {
+        return;
+      }
+
+      try {
+        const userInfo = await getUserInfo();
+        if (!userInfo || !userInfo.userId) {
+          return;
+        }
+
+        const response = await fetchQuiz(userInfo.userId, articleId);
+        if (response.data) {
+          setQuizData(response.data);
+        }
+      } catch (err: any) {
+        console.error('[퀴즈] 로드 실패:', err);
+      }
+    };
+
+    loadQuiz();
+  }, [articleId]);
+
   const handleOptionSelect = (optionId: number) => {
     if (quizState === 'question') {
       setSelectedOptionId(optionId);
@@ -70,6 +96,10 @@ const QuizScreen: React.FC = () => {
   const { addExperience } = useExperienceStore();
   const handleNext = async () => {
     if (!selectedOptionId) {
+      return;
+    }
+
+    if (!quiz) {
       return;
     }
 
@@ -151,7 +181,24 @@ const QuizScreen: React.FC = () => {
     });
   };
 
+  // API 응답을 기존 Quiz 구조로 변환
+  const quiz = quizData
+    ? {
+        id: quizData.quizId,
+        question: quizData.question,
+        options: quizData.choices.map(choice => ({
+          id: choice.quizChoiceId,
+          text: choice.choiceText,
+        })),
+        correctAnswerId:
+          quizData.choices.find(choice => choice.correct)?.quizChoiceId || 0,
+      }
+    : null;
+
   const isCorrect = (optionId: number) => {
+    if (!quiz) {
+      return false;
+    }
     return optionId === quiz.correctAnswerId;
   };
 
@@ -190,6 +237,10 @@ const QuizScreen: React.FC = () => {
       );
     }
   };
+
+  if (!quiz) {
+    return null;
+  }
 
   return (
     <SafeAreaView style={styles.container}>
