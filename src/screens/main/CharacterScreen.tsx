@@ -10,7 +10,7 @@ import {
 import { useNavigation } from '@react-navigation/native';
 import { RouteNames } from '../../../routes';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useBottomTabBarHeight } from '@react-navigation/bottom-tabs'; // 추가
+import { useBottomTabBarHeight } from '@react-navigation/bottom-tabs';
 
 import {
   COLORS,
@@ -63,9 +63,7 @@ import { lv4Images } from '../../assets/lottie/lv4/preload';
 import { lv5Images } from '../../assets/lottie/lv5/preload';
 
 /**
- * 로티는 file:///android_asset 방식이 버전 조합에 따라 크래시가 날 수 있어서,
- * 가장 안정적인 require() 번들 방식으로 고정한다.
- *
+ * 로티는 require() 번들 방식으로 고정한다.
  * 아래 JSON 파일들은 반드시 "src/assets/..." 경로에 실제로 존재해야 함.
  */
 const LOTTIE_BY_LEVEL: Record<number, any> = {
@@ -243,7 +241,6 @@ const CharacterScreen = () => {
             /**
              * 이미지( png )가 포함된 로티면 assets 폴더를 명시해야 함
              * ※ 이 경로는 "android/app/src/main/assets" 기준으로도 존재해야 함
-             * (png는 android assets에서 읽는 케이스가 많음)
              */
             imageAssetsFolder={`lottie/lv${currentLevel}/images`}
           />
