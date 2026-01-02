@@ -7,8 +7,9 @@
     "ios": "react-native run-ios",
     "lint": "eslint",
     "start": "react-native start",
-    "test": "jest"
-  },
+    "test": "jest",
+    "lottie:sync:android": "powershell -NoProfile -ExecutionPolicy Bypass -Command \"if (Test-Path android/app/src/main/assets/lottie) { Remove-Item -Recurse -Force android/app/src/main/assets/lottie }; New-Item -ItemType Directory -Force android/app/src/main/assets/lottie | Out-Null; Copy-Item -Recurse -Force src/assets/lottie/* android/app/src/main/assets/lottie\""
+},
   "dependencies": {
     "@invertase/react-native-apple-authentication": "^2.5.0",
     "@react-native-async-storage/async-storage": "^2.2.0",

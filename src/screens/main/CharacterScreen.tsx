@@ -10,7 +10,7 @@ import {
 import { useNavigation } from '@react-navigation/native';
 import { RouteNames } from '../../../routes';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useBottomTabBarHeight } from '@react-navigation/bottom-tabs'; // 추가
+import { useBottomTabBarHeight } from '@react-navigation/bottom-tabs';
 
 import {
   COLORS,
@@ -50,6 +50,29 @@ import { useMissions } from '../../hooks/useMissions';
 import { usePointStore } from '../../store/pointStore';
 import { ActivityIndicator } from 'react-native';
 import { useExperienceStore } from '../../store/experienceStore';
+
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+import { lv1Images } from '../../assets/lottie/lv1/preload';
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+import { lv2Images } from '../../assets/lottie/lv2/preload';
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+import { lv3Images } from '../../assets/lottie/lv3/preload';
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+import { lv4Images } from '../../assets/lottie/lv4/preload';
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+import { lv5Images } from '../../assets/lottie/lv5/preload';
+
+/**
+ * 로티는 require() 번들 방식으로 고정한다.
+ * 아래 JSON 파일들은 반드시 "src/assets/..." 경로에 실제로 존재해야 함.
+ */
+const LOTTIE_BY_LEVEL: Record<number, any> = {
+  1: require('../../assets/lottie/lv1/lv1_animation.json'),
+  2: require('../../assets/lottie/lv2/lv2_animation.json'),
+  3: require('../../assets/lottie/lv3/lv3_animation.json'),
+  4: require('../../assets/lottie/lv4/lv4_animation.json'),
+  5: require('../../assets/lottie/lv5/lv5_animation.json'),
+};
 
 const CharacterScreen = () => {
   const rootNavigation =
@@ -117,6 +140,13 @@ const CharacterScreen = () => {
     () => Math.round((currentExp / nextLevelExp) * 100),
     [currentExp, nextLevelExp],
   );
+
+  // 로티 source: require 맵핑
+  const lottieSource = useMemo(() => {
+    const src = LOTTIE_BY_LEVEL[currentLevel] ?? LOTTIE_BY_LEVEL[1];
+    console.log('[Lottie] source level =', currentLevel);
+    return src;
+  }, [currentLevel]);
 
   // 로딩 상태
   const isLoading = characterLoading || attendanceLoading || missionsLoading;
@@ -203,13 +233,19 @@ const CharacterScreen = () => {
         {/* 로티 영역 */}
         <View style={styles.lottieContainer}>
           <LottieView
-            source={require('../../assets/lottie/Lv2..json')}
+            source={lottieSource}
             style={styles.lottie}
             autoPlay
             loop
             resizeMode="cover"
+            /**
+             * 이미지( png )가 포함된 로티면 assets 폴더를 명시해야 함
+             * ※ 이 경로는 "android/app/src/main/assets" 기준으로도 존재해야 함
+             */
+            imageAssetsFolder={`lottie/lv${currentLevel}/images`}
           />
         </View>
+
         <View style={styles.notificationButtonContainer}>
           <IconButton onPress={handleNavigateToNotification}>
             <AlarmIcon />
