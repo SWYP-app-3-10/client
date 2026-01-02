@@ -57,9 +57,11 @@ export const fetchMissionById = async (
  * 미션 진행도 업데이트
  */
 export const updateMissionProgress = async (
-  missionId: number,
-  current: number,
+  _missionId: number,
+  _current: number,
 ): Promise<Mission> => {
+  // TODO: 미션 진행도 업데이트 API 구현
+  throw new Error('Not implemented');
   // try {
   //   // 서버 API 호출
   //   const response = await client.patch<Mission>(`/missions/${missionId}`, {
@@ -121,6 +123,56 @@ export const fetchContentDetail = async (
     console.error('[글 상세 API] 에러:', error);
     if (error.response) {
       console.error('[글 상세 API] 서버 응답:', {
+        status: error.response.status,
+        data: error.response.data,
+      });
+    }
+    throw error;
+  }
+};
+
+/**
+ * 글 접근 권한 확인 응답
+ */
+export interface ContentAccessResponse {
+  accessType: string; // "POINT_USE" 등
+  title: string;
+  message: string;
+  currentPoints: number;
+  requiredPoints: number;
+  lackOfPoints: number;
+  rewardPoints: number;
+  readable: boolean;
+}
+
+/**
+ * 글 접근 권한 확인 API 응답
+ */
+export interface ContentAccessApiResponse {
+  status: number;
+  message: string;
+  data: ContentAccessResponse;
+}
+
+/**
+ * 글 접근 권한 확인
+ * @param userId 사용자 ID (query parameter)
+ * @param contentId 컨텐츠 ID (path parameter)
+ * @returns Promise<ContentAccessApiResponse>
+ */
+export const fetchContentAccess = async (
+  userId: number,
+  contentId: number,
+): Promise<ContentAccessApiResponse> => {
+  try {
+    const response = await client.get<ContentAccessApiResponse>(
+      `/api/content/${contentId}/access?userId=${userId}`,
+    );
+    return response.data;
+  } catch (error: any) {
+    console.error('[글 접근 권한 API] 에러:', error);
+    if (error.response) {
+      console.error('[글 접근 권한 API] 서버 응답:', {
         status: error.response.status,
         data: error.response.data,
       });
