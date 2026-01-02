@@ -13,7 +13,7 @@ export const RouteNames = {
 
   // 메인 탭
   MAIN_TAB: 'main-tab' as const,
-  MISSION_TAB: '미션' as const,
+  MISSION_TAB: '홈' as const,
   CHARACTER_TAB: '캐릭터' as const,
   SEARCH_TAB: '탐색' as const,
   MY_PAGE_TAB: '마이' as const,

@@ -43,6 +43,7 @@ import {
   Level_3_Profile,
   Level_4_Profile,
   Level_5_Profile,
+  NoArticlesIcon,
   TriangleIcon,
 } from '../../icons';
 import { useShowBottomSheetModal, useHideModal } from '../../store/modalStore';
@@ -250,22 +251,32 @@ const MyPageScreen = () => {
           <Spacer num={24} />
 
           {/* 타임라인 */}
-          {readArticles.map((dateGroup, groupIndex) => (
-            <TimelineGroup
-              key={`${dateGroup.date}-${groupIndex}`}
-              dateGroup={dateGroup}
-              formatDate={formatArticleDate}
-              isLast={groupIndex === readArticles.length - 1}
-              onArticlePress={articleId => {
-                navigation.getParent()?.navigate(RouteNames.FULL_SCREEN_STACK, {
-                  screen: RouteNames.READ_ARTICLE_DETAIL,
-                  params: {
-                    articleId,
-                  },
-                });
-              }}
-            />
-          ))}
+          {readArticles.length > 0 ? (
+            readArticles.map((dateGroup, groupIndex) => (
+              <TimelineGroup
+                key={`${dateGroup.date}-${groupIndex}`}
+                dateGroup={dateGroup}
+                formatDate={formatArticleDate}
+                isLast={groupIndex === readArticles.length - 1}
+                onArticlePress={articleId => {
+                  navigation
+                    .getParent()
+                    ?.navigate(RouteNames.FULL_SCREEN_STACK, {
+                      screen: RouteNames.READ_ARTICLE_DETAIL,
+                      params: {
+                        articleId,
+                      },
+                    });
+                }}
+              />
+            ))
+          ) : (
+            <View style={styles.noArticlesContainer}>
+              <NoArticlesIcon />
+              <Spacer num={16} />
+              <Text style={styles.noArticlesText}>읽은 글이 없어요</Text>
+            </View>
+          )}
         </View>
       </ScrollView>
     </SafeAreaView>
@@ -381,6 +392,16 @@ const styles = StyleSheet.create({
   dateRange: {
     ...Heading_18SB,
     color: COLORS.black,
+  },
+  noArticlesContainer: {
+    flex: 1,
+    alignItems: 'center',
+    paddingTop: scaleWidth(100),
+    paddingBottom: scaleWidth(128),
+  },
+  noArticlesText: {
+    ...Caption_14R,
+    color: COLORS.gray600,
   },
 });
 

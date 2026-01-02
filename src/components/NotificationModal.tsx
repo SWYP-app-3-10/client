@@ -86,7 +86,7 @@ const NotificationModal: React.FC<NotificationModalProps> = ({
 
     // ReactNode인 경우 (SVG 컴포넌트 등)
     if (React.isValidElement(image)) {
-      return <View style={styles.imageWrapper}>{image}</View>;
+      return image;
     }
 
     // ImageSourcePropType인 경우
@@ -94,13 +94,13 @@ const NotificationModal: React.FC<NotificationModalProps> = ({
       return (
         <Image
           source={image as ImageSourcePropType}
-          style={[styles.image, imageSize]}
+          style={imageSize}
           resizeMode="contain"
         />
       );
     }
 
-    return <View style={imageSize}>{image as ReactNode}</View>;
+    return image as ReactNode;
   };
 
   return (
@@ -112,86 +112,94 @@ const NotificationModal: React.FC<NotificationModalProps> = ({
     >
       <Pressable style={styles.overlay} onPress={handleOverlayPress}>
         <TouchableWithoutFeedback onPress={() => {}}>
-          <View style={styles.modalContainer}>
-            <View
-              style={[
-                styles.modalContent,
-                {
-                  paddingTop: closeButton ? scaleWidth(23) : scaleWidth(48),
-                },
-              ]}
-            >
-              {/* 닫기 버튼 */}
-              {closeButton && (
-                <View style={styles.closeButtonContainer}>
-                  <IconButton onPress={handleClose}>
-                    <CloseIcon color={COLORS.gray500} size={ICON_SIZES.M} />
-                  </IconButton>
-                </View>
-              )}
-              {/* 이미지 */}
-              {renderImage()}
-
-              {/* 제목 */}
-              <Text
+          <View style={styles.modalWrapper}>
+            {/* 이미지 - 모달 위로 배치 */}
+            {image && (
+              <View style={styles.imageContainer}>{renderImage()}</View>
+            )}
+            <View style={styles.modalContainer}>
+              <View
                 style={[
-                  styles.title,
-                  titleStyle,
-                  // titleStyle이 전달되어도 항상 중앙 정렬 보장
-                  { textAlign: 'center' },
+                  styles.modalContent,
+                  {
+                    paddingTop: closeButton
+                      ? scaleWidth(23)
+                      : image
+                      ? scaleWidth(80)
+                      : scaleWidth(48),
+                  },
                 ]}
               >
-                {title}
-              </Text>
+                {/* 닫기 버튼 */}
+                {closeButton && (
+                  <View style={styles.closeButtonContainer}>
+                    <IconButton onPress={handleClose}>
+                      <CloseIcon color={COLORS.gray500} size={ICON_SIZES.M} />
+                    </IconButton>
+                  </View>
+                )}
 
-              <Spacer num={titleDescriptionGapSize} />
-
-              {/* 설명 텍스트 */}
-              {description && (
+                {/* 제목 */}
                 <Text
                   style={[
-                    styles.description,
-                    { color: descriptionColor ?? COLORS.gray800 },
+                    styles.title,
+                    titleStyle,
+                    // titleStyle이 전달되어도 항상 중앙 정렬 보장
+                    { textAlign: 'center' },
                   ]}
                 >
-                  {description}
+                  {title}
                 </Text>
-              )}
-              {/* 컨텐츠 */}
-              {children && (
-                <View style={styles.childrenContainer}>{children}</View>
-              )}
-              {primaryButton && (
-                <>
-                  <Spacer num={20} />
-                  {/* 버튼 컨테이너 */}
-                  <View
+
+                <Spacer num={titleDescriptionGapSize} />
+
+                {/* 설명 텍스트 */}
+                {description && (
+                  <Text
                     style={[
-                      styles.buttonContainer,
-                      !secondaryButton && styles.singleButtonContainer,
+                      styles.description,
+                      { color: descriptionColor ?? COLORS.gray800 },
                     ]}
                   >
-                    {secondaryButton && (
+                    {description}
+                  </Text>
+                )}
+                {/* 컨텐츠 */}
+                {children && (
+                  <View style={styles.childrenContainer}>{children}</View>
+                )}
+                {primaryButton && (
+                  <>
+                    <Spacer num={20} />
+                    {/* 버튼 컨테이너 */}
+                    <View
+                      style={[
+                        styles.buttonContainer,
+                        !secondaryButton && styles.singleButtonContainer,
+                      ]}
+                    >
+                      {secondaryButton && (
+                        <Button
+                          title={secondaryButton.title}
+                          onPress={secondaryButton.onPress}
+                          variant={secondaryButton.variant || 'primary'}
+                          style={[styles.button, secondaryButton.style]}
+                          textStyle={secondaryButton.textStyle}
+                        />
+                      )}
                       <Button
-                        title={secondaryButton.title}
-                        onPress={secondaryButton.onPress}
-                        variant={secondaryButton.variant || 'primary'}
-                        style={[styles.button, secondaryButton.style]}
-                        textStyle={secondaryButton.textStyle}
+                        title={primaryButton.title}
+                        onPress={primaryButton.onPress}
+                        variant={primaryButton.variant || 'primary'}
+                        style={
+                          secondaryButton ? styles.button : styles.singleButton
+                        }
+                        textStyle={primaryButton.textStyle}
                       />
-                    )}
-                    <Button
-                      title={primaryButton.title}
-                      onPress={primaryButton.onPress}
-                      variant={primaryButton.variant || 'primary'}
-                      style={
-                        secondaryButton ? styles.button : styles.singleButton
-                      }
-                      textStyle={primaryButton.textStyle}
-                    />
-                  </View>
-                </>
-              )}
+                    </View>
+                  </>
+                )}
+              </View>
             </View>
           </View>
         </TouchableWithoutFeedback>
@@ -207,11 +215,23 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
+  modalWrapper: {
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  imageContainer: {
+    position: 'absolute',
+    top: scaleWidth(-81),
+    zIndex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   modalContainer: {
     backgroundColor: COLORS.white,
     borderRadius: BORDER_RADIUS[20],
     width: scaleWidth(312),
     alignItems: 'center',
+    overflow: 'visible',
   },
   modalContent: {
     width: '100%',
@@ -223,27 +243,6 @@ const styles = StyleSheet.create({
     width: '100%',
     alignItems: 'flex-end',
     marginBottom: scaleWidth(15),
-  },
-  imagePlaceholder: {
-    backgroundColor: COLORS.gray100,
-    borderRadius: BORDER_RADIUS[16],
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: scaleWidth(20),
-  },
-  image: {
-    marginBottom: scaleWidth(20),
-  },
-  imageWrapper: {
-    marginBottom: scaleWidth(20),
-    alignItems: 'center',
-    justifyContent: 'center',
-    width: scaleWidth(80),
-    height: scaleWidth(80),
-    backgroundColor: COLORS.gray100,
-    borderRadius: BORDER_RADIUS[16],
-    minHeight: scaleWidth(80),
-    minWidth: scaleWidth(80),
   },
 
   title: {

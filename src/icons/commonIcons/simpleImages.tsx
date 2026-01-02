@@ -12,6 +12,7 @@ import level_2_tooltip from '../../assets/png/level2_tooltip.png';
 import level_3_tooltip from '../../assets/png/level3_tooltip.png';
 import level_4_tooltip from '../../assets/png/level4_tooltip.png';
 import level_5_tooltip from '../../assets/png/level5_tooltip.png';
+import ModalIMG from '../../assets/png/ModalIMG.png';
 
 import level1 from '../../assets/png/level1.png';
 import level2 from '../../assets/png/level2.png';
@@ -104,4 +105,9 @@ export const Intro_Search = createImageIconComponent(
   Intro_Search_IMG,
   scaleWidth(330),
   scaleWidth(360),
+);
+export const Modal_IMG = createImageIconComponent(
+  ModalIMG,
+  scaleWidth(259.46),
+  scaleWidth(152.62),
 );

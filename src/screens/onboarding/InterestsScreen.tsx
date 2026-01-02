@@ -230,7 +230,7 @@ const InterestsScreen = () => {
   return (
     <SafeAreaView style={styles.container} edges={['top', 'bottom']}>
       <Header
-        iconColor={COLORS.gray400}
+        iconColor={COLORS.gray800}
         title={editMode ? '관심분야 설정하기' : ''}
       />
       <Spacer num={2} />

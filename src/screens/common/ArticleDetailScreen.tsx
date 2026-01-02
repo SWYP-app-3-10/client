@@ -40,6 +40,7 @@ import { LevelCategory } from '../../types/interests';
 import { fetchContentDetail, ContentDetail } from '../../api/missionApi';
 import { getUserInfo } from '../../services/authService';
 import ArticleContent from '../../components/ArticleContent';
+import { Modal_IMG } from '../../icons';
 
 type NavigationProp = NativeStackNavigationProp<FullScreenStackParamList>;
 
@@ -259,6 +260,7 @@ const ArticleDetailScreen = () => {
           titleStyle: {
             ...Heading_20EB_Round,
           },
+          image: <Modal_IMG />,
           titleDescriptionGapSize: scaleWidth(20),
           children: React.createElement(ExperienceModalContent),
           primaryButton: {
