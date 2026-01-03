@@ -7,7 +7,7 @@ import {
   Body_18M,
   Heading_18B,
 } from '../styles/global';
-import { BottomModalCheckIcon } from '../icons';
+import { BottomModalCheckIcon, ClockIcon, NoteIcon } from '../icons';
 import { LevelCategory } from '../types/interests';
 
 interface LevelOption {
@@ -26,19 +26,19 @@ export const LEVEL_OPTIONS: LevelOption[] = [
   {
     value: LevelCategory.BEGINNER,
     label: '초급',
-    description: '유지',
+    description: '한 문단',
     time: '1분',
   },
   {
     value: LevelCategory.INTERMEDIATE,
     label: '중급',
-    description: '2배 증가',
+    description: '두 문단',
     time: '2분',
   },
   {
     value: LevelCategory.ADVANCED,
     label: '고급',
-    description: '4배 증가',
+    description: '세 문단',
     time: '4분',
   },
 ];
@@ -78,7 +78,7 @@ const LevelSelectionContent: React.FC<LevelSelectionContentProps> = ({
                   </View>
                   <View style={styles.optionDetailsContainer}>
                     <View style={[styles.detailItem]}>
-                      <View style={styles.detailItemIcon} />
+                      <NoteIcon />
                       <Text
                         style={[
                           styles.detailText,
@@ -89,7 +89,7 @@ const LevelSelectionContent: React.FC<LevelSelectionContentProps> = ({
                       </Text>
                     </View>
                     <View style={[styles.detailItem]}>
-                      <View style={styles.detailItemIcon} />
+                      <ClockIcon />
                       <Text
                         style={[
                           styles.detailText,
@@ -148,11 +148,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     width: scaleWidth(165),
-  },
-  detailItemIcon: {
-    backgroundColor: COLORS.placeholder,
-    width: scaleWidth(26),
-    height: scaleWidth(26),
   },
   detailItem: {
     flexDirection: 'row',

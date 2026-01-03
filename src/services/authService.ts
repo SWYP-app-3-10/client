@@ -107,7 +107,7 @@ export const getUserInfo = async (): Promise<{
   name?: string;
   email?: string;
   profileImage?: string;
-  provider?: string;
+  provider?: SocialLoginProvider;
   loginTime?: number;
 } | null> => {
   try {

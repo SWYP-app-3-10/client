@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Image } from 'react-native';
 import {
   COLORS,
   scaleWidth,
@@ -15,6 +15,7 @@ interface Article {
   category: string;
   readTime: string;
   date: string;
+  imageUrl?: string;
 }
 
 interface ArticleCardProps {
@@ -26,9 +27,17 @@ const ArticleCard = React.memo<ArticleCardProps>(({ article, onPress }) => {
   return (
     <TouchableOpacity style={styles.articleCardWrapper} onPress={onPress}>
       <View style={styles.articleCard}>
-        {/* 이미지 플레이스홀더 */}
+        {/* 이미지 */}
         <View style={styles.articleImageContainer}>
-          <View style={styles.articleImagePlaceholder} />
+          {article.imageUrl ? (
+            <Image
+              source={{ uri: article.imageUrl }}
+              style={styles.articleImage}
+              resizeMode="cover"
+            />
+          ) : (
+            <View style={styles.articleImagePlaceholder} />
+          )}
           <View style={styles.articleTag}>
             <Text style={styles.articleTagText}>
               {article.category} | {article.readTime}
@@ -73,6 +82,10 @@ const styles = StyleSheet.create({
     position: 'relative',
     width: '100%',
     height: scaleWidth(175),
+  },
+  articleImage: {
+    width: '100%',
+    height: '100%',
   },
   articleImagePlaceholder: {
     width: '100%',

@@ -25,7 +25,10 @@ import Search from '../../assets/svg/search.svg';
 import Character from '../../assets/svg/character.svg';
 import MyPage from '../../assets/svg/myPage.svg';
 import BottomModalCheck from '../../assets/svg/bottomModalCheck.svg';
-
+import Note from '../../assets/svg/note.svg';
+import Clock from '../../assets/svg/clock.svg';
+import NoArticles from '../../assets/svg/noArticles.svg';
+import Search_tab from '../../assets/svg/search_tab.svg';
 export const Ic_backIcon = createIconComponent(Icon_back, ICON_SIZES.XL);
 export const CircleIcon = createIconComponent(Circle, scaleWidth(14));
 export const InfoIcon = createIconComponent(Info, ICON_SIZES.L);
@@ -38,8 +41,12 @@ export const NaverIcon = createIconComponent(Naver, ICON_SIZES.M);
 export const AlarmIcon = createIconComponent(Alarm, scaleWidth(28));
 export const HomeIcon = createIconComponent(Home, scaleWidth(28));
 export const SearchIcon = createIconComponent(Search, scaleWidth(28));
+export const Search_tab_Icon = createIconComponent(Search_tab, scaleWidth(28));
 export const CharacterIcon = createIconComponent(Character, scaleWidth(28));
 export const MyPageIcon = createIconComponent(MyPage, scaleWidth(28));
+export const NoteIcon = createIconComponent(Note, scaleWidth(26));
+export const ClockIcon = createIconComponent(Clock, scaleWidth(26));
+
 //  가로, 세로 크기 다름
 export const CheckIcon = createRectangleIconComponent(
   Check,
@@ -75,4 +82,9 @@ export const RightArrowIcon = createRectangleIconComponent(
   RightArrow,
   scaleWidth(7),
   scaleWidth(12),
+);
+export const NoArticlesIcon = createRectangleIconComponent(
+  NoArticles,
+  scaleWidth(64),
+  scaleWidth(62),
 );

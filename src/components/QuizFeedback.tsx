@@ -7,15 +7,19 @@ import {
   Caption_14R,
 } from '../styles/global';
 import Spacer from './Spacer';
-import { QuizOption } from '../data/mock/quizData';
 import QuizOptionCard from './QuizOptionCard';
 import QuizQuestion from './QuizQuestion';
+
+interface QuizOption {
+  id: number;
+  text: string;
+}
 
 interface QuizFeedbackProps {
   question: string;
   options: QuizOption[];
   correctAnswerId: number;
-  selectedAnswerId: number;
+  selectedAnswerId: number | null;
   showFeedbackMessage?: boolean;
   containerRef?: React.RefObject<View>;
 }
@@ -28,7 +32,8 @@ const QuizFeedback: React.FC<QuizFeedbackProps> = ({
   showFeedbackMessage = true,
   containerRef,
 }) => {
-  const isCorrect = selectedAnswerId === correctAnswerId;
+  const isCorrect =
+    selectedAnswerId !== null && selectedAnswerId === correctAnswerId;
 
   return (
     <View style={styles.quizSection} ref={containerRef}>

@@ -1,5 +1,6 @@
 package io.neurous.app
 
+import android.os.Bundle
 import com.facebook.react.ReactActivity
 import com.facebook.react.ReactActivityDelegate
 import com.facebook.react.defaults.DefaultNewArchitectureEntryPoint.fabricEnabled
@@ -19,4 +20,12 @@ class MainActivity : ReactActivity() {
    */
   override fun createReactActivityDelegate(): ReactActivityDelegate =
       DefaultReactActivityDelegate(this, mainComponentName, fabricEnabled)
+
+  override fun onCreate(savedInstanceState: Bundle?) {
+    // Set splash theme before super.onCreate
+    setTheme(R.style.SplashTheme)
+    super.onCreate(savedInstanceState)
+    // Switch back to AppTheme after React Native is loaded
+    setTheme(R.style.AppTheme)
+  }
 }

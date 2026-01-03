@@ -16,6 +16,8 @@ interface NotificationModalState {
   description?: string;
   image?: NotificationModalProps['image'];
   imageSize?: { width: number; height: number };
+  imageTopOffset?: number;
+  imagePaddingTop?: number;
   closeButton?: boolean;
   primaryButton?: ModalButton;
   secondaryButton?: ModalButton;

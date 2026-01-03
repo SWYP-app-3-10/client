@@ -6,7 +6,7 @@ import CharacterStackNavigator from './CharacterStackNavigator';
 import SearchStackNavigator from './SearchStackNavigator';
 import MyPageStackNavigator from './MyPageStackNavigator';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { CharacterIcon, HomeIcon, SearchIcon, MyPageIcon } from '../icons';
+import { CharacterIcon, HomeIcon, Search_tab_Icon, MyPageIcon } from '../icons';
 import { COLORS } from '../styles/global';
 
 const Tab = createBottomTabNavigator();
@@ -15,7 +15,7 @@ const Tab = createBottomTabNavigator();
 type IconComponent = React.ComponentType<{ color: string }>;
 const createTabBarIcon = (Icon: IconComponent) => {
   return ({ focused }: { focused: boolean }) => (
-    <Icon color={focused ? COLORS.puple.main : COLORS.gray400} />
+    <Icon color={focused ? COLORS.puple.main : COLORS.gray500} />
   );
 };
 
@@ -52,7 +52,7 @@ const MainTabNavigator = () => {
         name={RouteNames.SEARCH_TAB}
         component={SearchStackNavigator}
         options={{
-          tabBarIcon: createTabBarIcon(SearchIcon),
+          tabBarIcon: createTabBarIcon(Search_tab_Icon),
         }}
       />
       <Tab.Screen

@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -25,6 +25,7 @@ import {
 } from '../../styles/global';
 
 import { useShowToast } from '../../store/toastStore';
+import { getUserInfo } from '../../services/authService';
 
 /**
  * 문의하기 화면
@@ -41,6 +42,20 @@ const InquiryScreen = () => {
 
   const [content, setContent] = useState(''); // 문의 내용
   const [email, setEmail] = useState(''); // 답변 받을 이메일
+
+  /**
+   * 로그인 정보에서 이메일 가져오기
+   */
+  useEffect(() => {
+    const fetchEmail = async () => {
+      const userInfo = await getUserInfo();
+      console.log('저장된 유저 정보:', userInfo);
+      if (userInfo?.email) {
+        setEmail(userInfo.email);
+      }
+    };
+    fetchEmail();
+  }, []);
 
   /**
    * 버튼 활성화 조건
@@ -145,46 +160,38 @@ const InquiryScreen = () => {
 
 export default InquiryScreen;
 
-/* =========================
-  스타일
-========================= */
 const styles = StyleSheet.create({
   safe: {
-    flex: 1, // 화면 전체 차지
-    backgroundColor: COLORS.white, // 배경 흰색
+    flex: 1,
+    backgroundColor: COLORS.white,
     paddingBottom: scaleWidth(20),
   },
-  // 헤더 래퍼
   headerWrap: {
-    position: 'relative', // 중앙 타이틀 오버레이 기준
+    position: 'relative',
   },
-
-  // 헤더 중앙 타이틀 오버레이 래퍼
   headerCenterTitleWrap: {
-    position: 'absolute', // 헤더 위에 덮기
-    left: 0, // 좌측 기준
-    right: 0, // 우측 기준
-    top: scaleWidth(8), // Header의 marginTop(8)과 맞춤
-    height: scaleWidth(52), // Header 높이와 맞춤
-    alignItems: 'center', // 가로 중앙
-    justifyContent: 'center', // 세로 중앙
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    top: scaleWidth(8),
+    height: scaleWidth(52),
+    alignItems: 'center',
+    justifyContent: 'center',
   },
-
-  // 헤더 중앙 타이틀 텍스트
   headerCenterTitle: {
     ...Heading_16B,
     color: COLORS.black,
   },
   kav: {
-    flex: 1, // 키보드 회피 뷰 전체 높이
+    flex: 1,
   },
   scroll: {
-    flex: 1, // 스크롤 영역 확장
+    flex: 1,
   },
   scrollContent: {
-    paddingHorizontal: scaleWidth(20), // 좌우 패딩
-    paddingTop: scaleWidth(25), // 상단 여백
-    paddingBottom: scaleWidth(10), // 하단 여백
+    paddingHorizontal: scaleWidth(20),
+    paddingTop: scaleWidth(25),
+    paddingBottom: scaleWidth(10),
   },
   title: {
     ...Heading_20EB_Round,
@@ -192,15 +199,11 @@ const styles = StyleSheet.create({
     lineHeight: scaleWidth(35),
     marginBottom: scaleWidth(52),
   },
-
-  // 이 화면에서만 사용하는 라벨 스타일
   sectionLabel: {
     ...Heading_18SB,
     color: COLORS.black,
     marginBottom: scaleWidth(12),
   },
-
-  // textarea 컨테이너 커스터마이징
   textareaContainer: {
     height: scaleWidth(207),
     alignItems: 'flex-start',
@@ -212,7 +215,6 @@ const styles = StyleSheet.create({
     height: scaleWidth(60),
     borderColor: COLORS.gray300,
   },
-  // textarea 내부 TextInput 커스터마이징
   textareaInput: {
     ...Body_16M,
     color: COLORS.gray600,
@@ -220,7 +222,6 @@ const styles = StyleSheet.create({
   sectionLabelWithTop: {
     marginTop: scaleWidth(32),
   },
-
   bottom: {
     height: scaleWidth(63),
     paddingHorizontal: scaleWidth(20),
