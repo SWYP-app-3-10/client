@@ -1,5 +1,4 @@
 // 카테고리 타입
-// eslint-disable-next-line prettier/prettier
 export type NewsCategory =
   | '정치'
   | '경제'
