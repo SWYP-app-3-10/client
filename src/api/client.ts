@@ -7,11 +7,12 @@ import {
 } from '../services/authService';
 import { refreshToken } from './authApi';
 
-const PROD_URL = 'https://api.your-backend.com';
+const PROD_URL = 'http://175.45.193.98:8080';
+// const PROD_URL = 'https://api.your-backend.com';
 const DEV_URL = 'http://175.45.193.98:8080';
 
 const client = axios.create({
-  // __DEV__는 React Native에 내장된 전역 변수입니다.
+  // 배포 빌드에서도 개발 서버를 사용할 수 있도록 설정
   baseURL: __DEV__ ? DEV_URL : PROD_URL,
   timeout: 10000, // 10초 타임아웃 (네트워크가 느릴 때 무한 대기 방지)
   headers: {

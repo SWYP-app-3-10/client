@@ -31,9 +31,13 @@ import {
   RecentLoginInfo,
 } from '../../services/authStorageService';
 import { useShowModal } from '../../store/modalStore';
-import { useOnboardingStore } from '../../store/onboardingStore';
+import {
+  useOnboardingStore,
+  useCompleteOnboarding,
+} from '../../store/onboardingStore';
 import { useNotificationPermission } from '../../hooks/useNotificationPermission';
 import { LoginBackground } from '../../icons/commonIcons/simpleImages';
+import { CommonActions } from '@react-navigation/native';
 
 type NavigationProp = NativeStackNavigationProp<OnboardingStackParamList>;
 
@@ -45,6 +49,7 @@ const LoginScreen = () => {
   const setOnboardingStep = useOnboardingStore(
     state => state.setOnboardingStep,
   );
+  const completeOnboarding = useCompleteOnboarding();
   const { checkPermission, requestPermission } = useNotificationPermission();
 
   useEffect(() => {
@@ -118,7 +123,21 @@ const LoginScreen = () => {
       const result = await signInWithSocial(provider);
 
       if (result.success && result.userInfo) {
-        await handleNotificationModal();
+        // newUser가 false이면 온보딩 건너뛰고 바로 메인 화면으로 이동
+        if (result.newUser === false) {
+          // 온보딩 완료 처리
+          await completeOnboarding();
+          // 메인 화면으로 이동
+          navigation.dispatch(
+            CommonActions.reset({
+              index: 0,
+              routes: [{ name: RouteNames.MAIN_TAB }],
+            }),
+          );
+        } else {
+          // 신규 사용자이면 온보딩 진행
+          await handleNotificationModal();
+        }
       } else {
         Alert.alert('로그인 실패', result.error || '로그인에 실패했습니다.');
       }
