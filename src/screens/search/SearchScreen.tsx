@@ -63,7 +63,7 @@ export default function SearchScreen() {
     isFetchingNextPage,
     refetch,
     isRefetching,
-  } = useExploreContents(); // ✅ 훅 수정으로 이제 안전하게 호출 가능
+  } = useExploreContents();
 
   // 3. 클라이언트 사이드 필터링 로직
   const visibleData: NewsItems[] = useMemo(() => {
