@@ -91,6 +91,41 @@ export const convertMissionTodayToMission = (
 };
 
 /**
+ * MissionContent를 ArticleCard가 사용할 수 있는 형식으로 변환
+ * contentId는 URL에서 추출하거나 임시로 인덱스 사용
+ */
+export const convertMissionContentToArticle = (
+  content: MissionContent,
+  index: number,
+): {
+  id: number;
+  title: string;
+  category: string;
+  readTime: string;
+  date: string;
+  imageUrl: string;
+  contentId?: number;
+} => {
+  const categoryMap: Record<string, string> = {
+    LIFE_CULTURE: '생활/문화',
+    SOCIETY: '사회',
+    ECONOMY: '경제',
+    POLITICS: '정치',
+    IT_SCIENCE: 'IT/과학',
+    WORLD: '세계',
+  };
+
+  return {
+    id: index, // 임시 ID
+    title: content.contentTile,
+    category: categoryMap[content.contentCategory] || content.contentCategory,
+    readTime: '5분', // 기본값 (실제 읽기 시간이 있다면 사용)
+    date: content.contentDate,
+    imageUrl: content.contentImg,
+  };
+};
+
+/**
  * 오늘의 미션 목록 조회 (기존 - 하위 호환성 유지)
  * @returns Promise<Mission[]>
  */
