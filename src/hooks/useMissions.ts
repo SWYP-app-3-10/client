@@ -7,6 +7,7 @@ import {
   fetchMissionToday,
   convertMissionTodayToMission,
   updateMissionProgress,
+  MissionContent,
 } from '../api/missionApi';
 import { Mission } from '../data/mock/missionData';
 import { getUserInfo } from '../services/authService';
@@ -24,7 +25,7 @@ export const missionKeys = {
  * 오늘의 미션 목록 조회
  */
 export const useMissions = () => {
-  return useQuery<Mission[], Error>({
+  return useQuery<{ missions: Mission[]; contents: MissionContent[] }, Error>({
     queryKey: missionKeys.lists(),
     queryFn: async () => {
       const userInfo = await getUserInfo();
@@ -33,13 +34,14 @@ export const useMissions = () => {
       }
 
       const response = await fetchMissionToday(userInfo.userId);
-      if (response.data && response.data.missions) {
-        // MissionToday를 Mission으로 변환
-        return response.data.missions.map((mission, index) =>
-          convertMissionTodayToMission(mission, index),
-        );
-      }
-      return [];
+      const missions = response.data.missions
+        ? response.data.missions.map((mission, index) =>
+            convertMissionTodayToMission(mission, index),
+          )
+        : [];
+      const contents = response.data.contents || [];
+
+      return { missions, contents };
     },
     staleTime: 1000 * 60 * 5,
     gcTime: 1000 * 60 * 10,
