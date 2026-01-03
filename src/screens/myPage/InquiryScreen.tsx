@@ -30,7 +30,7 @@ import { getUserInfo } from '../../services/authService';
 /**
  * 문의하기 화면
  * - 문의 내용(멀티라인) + 답변 받을 이메일 입력
- * - 하단 "전달하기" 버튼은 문의 내용이 1글자 이상이면 활성화
+ * - 하단 "전달하기" 버튼은 문의 내용이 10글자 이상이면 활성화
  * - 라벨은 공통 Input의 label만 사용 (중복 방지)
  * - textarea는 Input의 containerStyle로 높이만 확장 (공통 컴포넌트 유지)
  */
