@@ -306,13 +306,13 @@ const HeaderArea = ({ timerText, tooltip, tooltipMinutes, onSearch }: any) => (
         onLayout={tooltip.onLayoutTarget}
       >
         <Text style={styles.timerPillText}>{timerText}</Text>
-        <div style={styles.timerPillIconBox}>
+        <View style={styles.timerPillIconBox}>
           <InfoIcon
             width={scaleWidth(18)}
             height={scaleWidth(18)}
             color={COLORS.gray700}
           />
-        </div>
+        </View>
       </Pressable>
       {tooltip.visible && (
         <View
