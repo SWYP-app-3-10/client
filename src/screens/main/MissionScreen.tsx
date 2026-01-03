@@ -246,6 +246,7 @@ const MissionScreen = () => {
                 snapToOffsets={snapOffsets}
                 snapToAlignment="start"
                 disableIntervalMomentum={true}
+                nestedScrollEnabled={true}
                 contentContainerStyle={{
                   paddingHorizontal: SIDE_SPACING,
                 }}
