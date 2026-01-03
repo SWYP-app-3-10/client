@@ -16,6 +16,7 @@ import {
   purchaseContentWithPoint,
 } from '../api/missionApi';
 import { getUserInfo } from '../services/authService';
+import { usePointStore } from '../store/pointStore';
 
 type ReturnTo = 'mission' | 'search';
 
@@ -37,6 +38,7 @@ export const useArticleNavigation = ({
   const navigation = useNavigation<NavigationProp>();
   const showModal = useShowModal();
   const isProcessingRef = useRef(false);
+  const { points: storePoints } = usePointStore();
 
   const handleArticlePress = useCallback(
     async (articleId: number) => {
@@ -69,13 +71,25 @@ export const useArticleNavigation = ({
 
         const accessData = accessResponse.data;
 
+        // API 응답의 currentPoints가 없으면 스토어의 포인트 사용
+        const currentPoints =
+          accessData.currentPoints !== undefined
+            ? accessData.currentPoints
+            : storePoints;
+
+        console.log('[useArticleNavigation] 포인트 확인:', {
+          apiPoints: accessData.currentPoints,
+          storePoints,
+          currentPoints,
+        });
+
         // readable이 false면 모달 표시
         // 포인트 확인
-        if (accessData.currentPoints >= ARTICLE_READ_POINT_COST) {
+        if (currentPoints >= ARTICLE_READ_POINT_COST) {
           // 포인트가 충분한 경우 - 포인트 사용 모달
           showModal({
             title: '새로운 글을 읽으시겠어요?',
-            description: `사용 가능한 포인트: ${accessData.currentPoints}p`,
+            description: `사용 가능한 포인트: ${currentPoints}p`,
             descriptionColor: COLORS.gray600,
             closeButton: true,
             children: React.createElement(ArticlePointModalContent),
@@ -143,7 +157,7 @@ export const useArticleNavigation = ({
           // 포인트가 부족한 경우 - 광고 시청 모달
           showModal({
             title: '광고를 보고 포인트 받으시겠어요?',
-            description: `사용 가능한 포인트: ${accessData.currentPoints}p`,
+            description: `사용 가능한 포인트: ${currentPoints}p`,
             descriptionColor: COLORS.gray600,
             closeButton: true,
             children: React.createElement(ArticlePointModalContentGet),
@@ -171,7 +185,7 @@ export const useArticleNavigation = ({
         }, 1000);
       }
     },
-    [showModal, navigation, returnTo],
+    [showModal, navigation, returnTo, storePoints],
   );
 
   return { handleArticlePress };
