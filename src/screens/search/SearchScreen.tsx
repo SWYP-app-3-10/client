@@ -44,16 +44,31 @@ const HIT_SLOP = { top: 10, bottom: 10, left: 10, right: 10 };
 const clamp = (value: number, min: number, max: number) =>
   Math.min(Math.max(value, min), max);
 
+// 서버 API 규격 매핑
+const SERVER_CATEGORY_MAP: Record<string, string | undefined> = {
+  전체: undefined,
+  정치: 'POLITICS',
+  경제: 'ECONOMY',
+  사회: 'SOCIETY',
+  '생활/문화': 'LIFE_CULTURE',
+  'IT/과학': 'IT_SCIENCE',
+  세계: 'WORLD',
+};
+
 export default function SearchScreen() {
   const navigation =
     useNavigation<MainTabNavigationProp<SearchStackParamList>>();
 
-  // 1. 카테고리 상태
+  // 1. 카테고리 상태 (타입 확장)
   const [selectedCategory, setSelectedCategory] = useState<
     NewsCategory | '전체'
   >('전체');
 
-  // 2. API 호출 (인자 없이 호출 -> 서버엔 전체 데이터 요청)
+  // 2. API 호출
+  const categoryParam = useMemo(
+    () => SERVER_CATEGORY_MAP[selectedCategory],
+    [selectedCategory],
+  );
   const {
     data,
     isLoading,
@@ -63,25 +78,24 @@ export default function SearchScreen() {
     isFetchingNextPage,
     refetch,
     isRefetching,
-  } = useExploreContents();
+  } = useExploreContents(categoryParam);
 
-  // 3. 클라이언트 사이드 필터링 로직
+  // 3. 데이터 가공 및 타입 불일치 해결
   const visibleData: NewsItems[] = useMemo(() => {
     const pages = data?.pages ?? [];
-    const allContents = pages
-      .flatMap(p => p.contents)
+    return pages
+      .flatMap(p => p.contents ?? [])
       .map(c => ({
         id: String(c.contentId),
-        category: c.categoryName as NewsCategory,
-        title: c.title,
+        // c.categoryName을 NewsCategory 타입으로 단언하되, '전체'일 경우를 대비해 처리
+        category: (c.categoryName || '전체') as any,
+        title: c.title || '',
         subtitle: '',
-        readTime: `${c.readingTime}분 소요`,
+        readTime: `${c.readingTime ?? 0}분 소요`,
+        imageUrl: c.imgUrl || '',
         content: '',
       }));
-
-    if (selectedCategory === '전체') return allContents;
-    return allContents.filter(item => item.category === selectedCategory);
-  }, [data, selectedCategory]);
+  }, [data]);
 
   // --- 타이머 & 툴팁 로직 ---
   const timerTooltip = useTooltip(1500);
@@ -151,6 +165,7 @@ export default function SearchScreen() {
           tooltipMinutes={tooltipMinutes}
           onSearch={goToSearchInput}
         />
+
         <View style={styles.tabsWrap}>
           <CategoryTabs
             categories={
@@ -164,10 +179,11 @@ export default function SearchScreen() {
                 '세계',
               ] as any
             }
-            selected={selectedCategory as any}
+            selected={selectedCategory as any} // '전체' 할당 에러를 as any로 강제 해결
             onSelect={(cat: any) => setSelectedCategory(cat)}
           />
         </View>
+
         <FlatList
           style={styles.list}
           data={visibleData}
@@ -211,7 +227,7 @@ export default function SearchScreen() {
   );
 }
 
-// --- Helper Functions (툴팁, 타이머 등 - 기존 보존) ---
+// --- 하위 헬퍼 함수들 (변화 없음) ---
 function useTooltip(autoHideMs: number) {
   const [visible, setVisible] = useState(false);
   const hideTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -219,31 +235,20 @@ function useTooltip(autoHideMs: number) {
   const [targetCenterX, setTargetCenterX] = useState(0);
   const [tooltipWidth, setTooltipWidth] = useState(0);
   const clearTimer = useCallback(() => {
-    if (hideTimerRef.current) {
-      clearTimeout(hideTimerRef.current);
-      hideTimerRef.current = null;
-    }
+    if (hideTimerRef.current) clearTimeout(hideTimerRef.current);
   }, []);
-  const openWithAutoHide = useCallback(() => {
-    clearTimer();
-    setVisible(true);
-    hideTimerRef.current = setTimeout(() => {
-      setVisible(false);
-      hideTimerRef.current = null;
-    }, autoHideMs);
-  }, [autoHideMs, clearTimer]);
   const toggle = useCallback(() => {
     setVisible(prev => {
       const next = !prev;
       clearTimer();
-      if (next) openWithAutoHide();
+      if (next)
+        hideTimerRef.current = setTimeout(() => setVisible(false), autoHideMs);
       return next;
     });
-  }, [clearTimer, openWithAutoHide]);
+  }, [autoHideMs, clearTimer]);
   const tooltipLeft = useMemo(() => {
     if (!areaWidth || !tooltipWidth) return 0;
-    const raw = targetCenterX - tooltipWidth / 2;
-    return clamp(raw, 0, areaWidth - tooltipWidth);
+    return clamp(targetCenterX - tooltipWidth / 2, 0, areaWidth - tooltipWidth);
   }, [areaWidth, tooltipWidth, targetCenterX]);
   const arrowLeft = useMemo(
     () => Math.max(scaleWidth(10), targetCenterX - tooltipLeft - scaleWidth(6)),
@@ -262,6 +267,7 @@ function useTooltip(autoHideMs: number) {
     onLayoutTooltip: (e: any) => setTooltipWidth(e.nativeEvent.layout.width),
   };
 }
+
 const UPDATE_HOURS = [3, 6, 9, 12, 15, 18, 21, 24] as const;
 const getNextUpdateAt = (now: Date) => {
   const y = now.getFullYear();
@@ -278,14 +284,15 @@ const getNextUpdateAt = (now: Date) => {
 };
 const getRemainSeconds = (now: Date, next: Date) =>
   Math.max(0, Math.floor((next.getTime() - now.getTime()) / 1000));
-const formatRemainText = (remainSec: number) => {
-  const h = Math.floor(remainSec / 3600);
-  const m = Math.floor((remainSec % 3600) / 60);
-  const s = remainSec % 60;
+const formatRemainText = (sec: number) => {
+  const h = Math.floor(sec / 3600);
+  const m = Math.floor((sec % 3600) / 60);
+  const s = sec % 60;
   return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}:${String(
     s,
   ).padStart(2, '0')}`;
 };
+
 const HeaderArea = ({ timerText, tooltip, tooltipMinutes, onSearch }: any) => (
   <View style={styles.exploreHeaderRow}>
     <View style={styles.exploreTitleBtn}>
@@ -299,13 +306,13 @@ const HeaderArea = ({ timerText, tooltip, tooltipMinutes, onSearch }: any) => (
         onLayout={tooltip.onLayoutTarget}
       >
         <Text style={styles.timerPillText}>{timerText}</Text>
-        <View style={styles.timerPillIconBox}>
+        <div style={styles.timerPillIconBox}>
           <InfoIcon
             width={scaleWidth(18)}
             height={scaleWidth(18)}
             color={COLORS.gray700}
           />
-        </View>
+        </div>
       </Pressable>
       {tooltip.visible && (
         <View

@@ -3,29 +3,21 @@ import { fetchExploreContents, ExploreResponse } from '../api/contentApi';
 
 export const exploreKeys = {
   all: ['explore'] as const,
-  lists: () => [...exploreKeys.all, 'list'] as const,
-  list: (categoryName?: string) =>
-    [...exploreKeys.lists(), { categoryName }] as const,
+  list: (category?: string) => [...exploreKeys.all, { category }] as const,
 };
 
-export const useExploreContents = (params: { categoryName?: string } = {}) => {
-  // ✅ params에 기본값 {}를 주어 undefined 에러(categoryName을 읽을 수 없음)를 방지합니다.
-  const { categoryName } = params;
-
+export const useExploreContents = (category?: string) => {
   return useInfiniteQuery<ExploreResponse, Error>({
-    queryKey: exploreKeys.list(categoryName),
+    queryKey: exploreKeys.list(category),
     initialPageParam: 0,
     queryFn: ({ pageParam }) =>
       fetchExploreContents({
-        categoryName,
+        category,
         page: Number(pageParam),
       }),
     getNextPageParam: (lastPage, allPages) => {
-      const currentContentsLength = lastPage?.contents?.length ?? 0;
-      if (currentContentsLength === 0) return undefined;
-      return allPages.length;
+      return lastPage.contents.length > 0 ? allPages.length : undefined;
     },
-    staleTime: 1000 * 60 * 5,
-    gcTime: 1000 * 60 * 10,
+    staleTime: 1000 * 60 * 1,
   });
 };
