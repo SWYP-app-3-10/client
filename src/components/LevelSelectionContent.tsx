@@ -26,19 +26,19 @@ export const LEVEL_OPTIONS: LevelOption[] = [
   {
     value: LevelCategory.BEGINNER,
     label: '초급',
-    description: '유지',
+    description: '한 문단',
     time: '1분',
   },
   {
     value: LevelCategory.INTERMEDIATE,
     label: '중급',
-    description: '2배 증가',
+    description: '두 문단',
     time: '2분',
   },
   {
     value: LevelCategory.ADVANCED,
     label: '고급',
-    description: '4배 증가',
+    description: '세 문단',
     time: '4분',
   },
 ];
