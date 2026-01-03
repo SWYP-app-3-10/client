@@ -1,9 +1,16 @@
-import React, { useMemo } from 'react';
-import { View, Text, StyleSheet, FlatList } from 'react-native';
+import React from 'react';
+import {
+  View,
+  Text,
+  StyleSheet,
+  FlatList,
+  ActivityIndicator,
+} from 'react-native';
 
 import SearchResultItem from './components/SearchResultItem';
-import { MOCK_NEWS, NewsItems } from '../../data/mock/searchData';
+import { NewsItems } from '../../data/mock/searchData';
 import { COLORS, scaleWidth } from '../../styles/global';
+import { useSearchContents } from '../../hooks/useSearchContents';
 
 type Props = {
   // 현재 입력 중인 검색어
@@ -18,16 +25,23 @@ export default function SearchLiveResultOverlay({
   keyword,
   onPressItem,
 }: Props) {
-  // 입력 중인 keyword 기준으로 실시간 검색 결과 필터링
-  // 기존 최근 검색어 UI를 건드리지 않기 위해 오버레이 컴포넌트로 분리
-  const liveResults: NewsItems[] = useMemo(() => {
-    const kw = keyword.trim().toLowerCase();
-    if (!kw) return [];
+  // 실제 API 호출 (keyword가 있을 때만 작동하도록 enabled 처리)
+  const { data, isLoading } = useSearchContents({
+    keyword: keyword.trim(),
+    enabled: keyword.trim().length > 0,
+  });
 
-    return MOCK_NEWS.filter(item =>
-      (item.title + item.subtitle + item.content).toLowerCase().includes(kw),
-    );
-  }, [keyword]);
+  // 서버 응답 데이터를 NewsItems 형식으로 변환
+  const liveResults: NewsItems[] = (
+    data?.pages.flatMap(page => page) ?? []
+  ).map(item => ({
+    id: String(item.contentId),
+    category: item.categoryName as any,
+    title: item.title,
+    subtitle: '',
+    readTime: `${item.readingTime}분 소요`,
+    content: '',
+  }));
 
   // 검색어가 비어 있으면 오버레이 자체를 렌더링하지 않음
   // (X 버튼으로 입력 삭제 시 자동으로 사라지게 하기 위함)
@@ -37,18 +51,25 @@ export default function SearchLiveResultOverlay({
     // absoluteFillObject를 사용해
     // SearchInputScreen의 기존 UI 위를 "덮는" 오버레이 레이어
     <View style={styles.overlay} pointerEvents="auto">
-      <FlatList
-        data={liveResults}
-        keyExtractor={item => item.id}
-        renderItem={({ item }) => (
-          <SearchResultItem item={item} onPress={() => onPressItem(item)} />
-        )}
-        contentContainerStyle={styles.listContent}
-        keyboardShouldPersistTaps="handled"
-        ListEmptyComponent={
-          <Text style={styles.emptyText}>검색 결과가 없습니다.</Text>
-        }
-      />
+      {isLoading ? (
+        <ActivityIndicator
+          style={{ marginTop: 20 }}
+          color={COLORS.puple.main}
+        />
+      ) : (
+        <FlatList
+          data={liveResults}
+          keyExtractor={item => item.id}
+          renderItem={({ item }) => (
+            <SearchResultItem item={item} onPress={() => onPressItem(item)} />
+          )}
+          contentContainerStyle={styles.listContent}
+          keyboardShouldPersistTaps="handled"
+          ListEmptyComponent={
+            <Text style={styles.emptyText}>검색 결과가 없습니다.</Text>
+          }
+        />
+      )}
     </View>
   );
 }
@@ -66,7 +87,7 @@ const styles = StyleSheet.create({
   emptyText: {
     fontSize: scaleWidth(13),
     color: COLORS.gray400,
-    marginTop: scaleWidth(6),
+    marginTop: scaleWidth(20),
     textAlign: 'center',
   },
 });
