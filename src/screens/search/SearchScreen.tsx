@@ -80,21 +80,26 @@ export default function SearchScreen() {
     isRefetching,
   } = useExploreContents(categoryParam);
 
-  // 3. 데이터 가공 및 타입 불일치 해결
+  // 3. 데이터 가공 및 중복 제거 로직 추가
   const visibleData: NewsItems[] = useMemo(() => {
     const pages = data?.pages ?? [];
-    return pages
-      .flatMap(p => p.contents ?? [])
-      .map(c => ({
-        id: String(c.contentId),
-        // c.categoryName을 NewsCategory 타입으로 단언하되, '전체'일 경우를 대비해 처리
-        category: (c.categoryName || '전체') as any,
-        title: c.title || '',
-        subtitle: '',
-        readTime: `${c.readingTime ?? 0}분 소요`,
-        imageUrl: c.imgUrl || '',
-        content: '',
-      }));
+    const allContents = pages.flatMap(p => p.contents ?? []);
+
+    // ID 기반 중복 제거 (이미 로드된 contentId가 있으면 제외)
+    const uniqueContents = allContents.filter(
+      (item, index, self) =>
+        index === self.findIndex(t => t.contentId === item.contentId),
+    );
+
+    return uniqueContents.map(c => ({
+      id: String(c.contentId),
+      category: (c.categoryName || '전체') as any,
+      title: c.title || '',
+      subtitle: '',
+      readTime: `${c.readingTime ?? 0}분 소요`,
+      imageUrl: c.imgUrl || '',
+      content: '',
+    }));
   }, [data]);
 
   // --- 타이머 & 툴팁 로직 ---
@@ -179,7 +184,7 @@ export default function SearchScreen() {
                 '세계',
               ] as any
             }
-            selected={selectedCategory as any} // '전체' 할당 에러를 as any로 강제 해결
+            selected={selectedCategory as any}
             onSelect={(cat: any) => setSelectedCategory(cat)}
           />
         </View>
@@ -195,7 +200,12 @@ export default function SearchScreen() {
             />
           )}
           contentContainerStyle={styles.listContent}
-          onEndReached={() => hasNextPage && fetchNextPage()}
+          // fetchNextPage 호출 시 중복 요청 방지 조건 추가
+          onEndReached={() => {
+            if (hasNextPage && !isFetchingNextPage) {
+              fetchNextPage();
+            }
+          }}
           onEndReachedThreshold={0.5}
           ListFooterComponent={() =>
             isFetchingNextPage ? (
