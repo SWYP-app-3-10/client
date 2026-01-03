@@ -31,6 +31,7 @@ export interface SocialLoginResult {
     name?: string;
     profileImage?: string;
   };
+  newUser?: boolean; // 신규 사용자 여부
   error?: string;
 }
 
@@ -67,12 +68,17 @@ export const signInWithGoogle = async (): Promise<SocialLoginResult> => {
     const firebaseUser = userCredential.user;
 
     // 서버 API 호출 (필수)
+    let newUser = true; // 기본값은 true (신규 사용자)
 
     try {
       const loginResponse = await loginWithProvider('GOOGLE', {
         accessToken: tokens.accessToken,
         // email: firebaseUser.email || undefined,
       });
+
+      // newUser 값 저장
+      newUser = loginResponse.data?.newUser ?? true;
+
       if (loginResponse.data) {
         if (loginResponse.data.accessToken) {
           await saveAuthToken(loginResponse.data.accessToken);
@@ -128,6 +134,7 @@ export const signInWithGoogle = async (): Promise<SocialLoginResult> => {
         name: firebaseUser.displayName || undefined,
         profileImage: firebaseUser.photoURL || undefined,
       },
+      newUser,
     };
   } catch (error: any) {
     console.error('구글 로그인 에러:', error);
@@ -171,10 +178,16 @@ export const signInWithKakao = async (): Promise<SocialLoginResult> => {
     };
 
     // 서버 API 호출
+    let newUser = true; // 기본값은 true (신규 사용자)
+
     try {
       const loginResponse = await loginWithProvider('KAKAO', {
         accessToken: token.accessToken,
       });
+
+      // newUser 값 저장
+      newUser = loginResponse.data?.newUser ?? true;
+
       if (loginResponse.data) {
         if (loginResponse.data.accessToken) {
           await saveAuthToken(loginResponse.data.accessToken);
@@ -224,6 +237,7 @@ export const signInWithKakao = async (): Promise<SocialLoginResult> => {
       provider: 'KAKAO',
       accessToken: token.accessToken,
       userInfo,
+      newUser,
     };
   } catch (error: any) {
     return {
@@ -284,13 +298,19 @@ export const signInWithNaver = async (): Promise<SocialLoginResult> => {
     };
 
     // 서버 API 호출
+    let newUser = true; // 기본값은 true (신규 사용자)
+
     try {
       const loginResponse = await loginWithProvider('NAVER', {
         accessToken: result.successResponse.accessToken,
-        // email: userInfo.email,
+        email: userInfo.email,
         // name: userInfo.name,
         // profileImage: userInfo.profileImage,
       });
+
+      // newUser 값 저장
+      newUser = loginResponse.data?.newUser ?? true;
+
       // 서버에서 받은 데이터 저장
       if (loginResponse.data) {
         // accessToken 저장
@@ -305,7 +325,6 @@ export const signInWithNaver = async (): Promise<SocialLoginResult> => {
 
         // userInfo 저장
         if (loginResponse.data.userInfo) {
-          await saveUserInfo(loginResponse.data.userInfo);
           await saveUserInfo({
             ...loginResponse.data.userInfo,
             provider: 'NAVER',
@@ -345,6 +364,7 @@ export const signInWithNaver = async (): Promise<SocialLoginResult> => {
       provider: 'NAVER',
       accessToken: result.successResponse.accessToken,
       userInfo,
+      newUser,
     };
   } catch (error: any) {
     return {
@@ -447,13 +467,19 @@ export const signInWithApple = async (): Promise<SocialLoginResult> => {
     };
 
     // 서버 API 호출
+    let newUser = true; // 기본값은 true (신규 사용자)
+
     try {
       const loginResponse = await loginWithProvider('APPLE', {
         accessToken: identityToken,
-        // email: userInfo.email,
+        email: userInfo.email,
         // name: userInfo.name,
         // profileImage: userInfo.profileImage,
       });
+
+      // newUser 값 저장
+      newUser = loginResponse.data?.newUser ?? true;
+
       // 서버에서 받은 데이터 저장
       if (loginResponse.data) {
         // accessToken 저장
@@ -468,7 +494,6 @@ export const signInWithApple = async (): Promise<SocialLoginResult> => {
 
         // userInfo 저장
         if (loginResponse.data.userInfo) {
-          await saveUserInfo(loginResponse.data.userInfo);
           await saveUserInfo({
             ...loginResponse.data.userInfo,
             provider: 'APPLE',
@@ -508,6 +533,7 @@ export const signInWithApple = async (): Promise<SocialLoginResult> => {
       provider: 'APPLE',
       accessToken: identityToken,
       userInfo,
+      newUser,
     };
   } catch (err: any) {
     console.error('애플 로그인 에러:', err);
