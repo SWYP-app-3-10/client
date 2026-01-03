@@ -209,8 +209,9 @@ const MissionScreen = () => {
   return (
     <SafeAreaView style={missionScreenStyles.container} edges={['top']}>
       <ScrollView
-        contentContainerStyle={{ flex: 1 }}
         showsVerticalScrollIndicator={false}
+        nestedScrollEnabled={true}
+        contentContainerStyle={missionScreenStyles.scrollContent}
       >
         {/* 헤더 */}
         <View style={missionScreenStyles.notificationButtonContainer}>
@@ -380,10 +381,12 @@ export const missionScreenStyles = StyleSheet.create({
     width: scaleWidth(12),
     height: scaleWidth(12),
   },
+  scrollContent: {
+    paddingBottom: scaleWidth(50),
+  },
   articleList: {
     gap: scaleWidth(24),
     paddingHorizontal: scaleWidth(20),
-    paddingBottom: scaleWidth(50),
   },
   loadingContainer: {
     flex: 1,
