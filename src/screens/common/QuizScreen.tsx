@@ -211,7 +211,7 @@ const QuizScreen: React.FC = () => {
   const quiz = quizData
     ? {
         id: quizData.quizId,
-        question: quizData.question,
+        question: quizData.quizContent, // question -> quizContent 수정
         options: quizData.choices.map(choice => ({
           id: choice.quizChoiceId,
           text: choice.choiceText,
