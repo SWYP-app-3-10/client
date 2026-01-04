@@ -26,7 +26,7 @@ const TermsOfServiceScreen = () => {
         contentContainerStyle={styles.contentContainer}
         showsVerticalScrollIndicator={false}
       >
-        <Text style={styles.lastUpdated}>시행일: 2024년 5월 22일</Text>
+        <Text style={styles.lastUpdated}>시행일: 2026년 1월 4일</Text>
 
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>제1조 (목적)</Text>
@@ -143,21 +143,21 @@ const styles = StyleSheet.create({
   contentContainer: {
     paddingHorizontal: scaleWidth(20),
     paddingTop: scaleWidth(16),
-    paddingBottom: scaleWidth(40), // 하단 여백 추가
+    paddingBottom: scaleWidth(60), // 스크롤 여유 공간 확대
   },
   lastUpdated: {
     fontSize: scaleWidth(12),
     color: COLORS.gray500,
-    marginBottom: scaleWidth(20),
+    marginBottom: scaleWidth(24),
   },
   section: {
-    marginBottom: scaleWidth(24),
+    marginBottom: scaleWidth(28),
   },
   sectionTitle: {
     fontSize: scaleWidth(16),
     fontWeight: '700',
     color: COLORS.gray800,
-    marginBottom: scaleWidth(8),
+    marginBottom: scaleWidth(10),
   },
   sectionContent: {
     fontSize: scaleWidth(14),
@@ -165,7 +165,7 @@ const styles = StyleSheet.create({
     color: COLORS.gray700,
   },
   boldText: {
-    fontWeight: '600',
+    fontWeight: '700',
     color: COLORS.gray800,
   },
 });
