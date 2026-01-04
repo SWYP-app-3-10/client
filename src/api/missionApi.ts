@@ -490,7 +490,7 @@ export interface QuizResponse {
   quizId: number;
   quizNum: number;
   content: QuizContent;
-  question: string;
+  quizContent: string; // question -> quizContent로 수정
   quizDiff: string;
   quizCategory: string;
   choices: QuizChoice[];

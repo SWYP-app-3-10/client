@@ -98,7 +98,10 @@ export default function SearchHeader({
               placeholderTextColor={COLORS.gray400}
               style={styles.searchInput}
               editable={false}
-              pointerEvents="none"
+              showSoftInputOnFocus={false}
+              selectTextOnFocus={false}
+              caretHidden
+              focusable={false}
             />
           </TouchableOpacity>
         ) : (
