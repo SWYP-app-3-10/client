@@ -6,6 +6,7 @@ import {
   ScrollView,
   TouchableOpacity,
   StatusBar,
+  Platform,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { RouteNames } from '../../../routes';
@@ -54,14 +55,14 @@ import { ActivityIndicator } from 'react-native';
 
 /**
  * 로티는 require() 번들 방식으로 고정한다.
- * 아래 JSON 파일들은 반드시 "src/assets/..." 경로에 실제로 존재해야 함.
+ * 아래 JSON 파일들은 반드시 "src/assets/lottie/" 경로에 실제로 존재해야 함.
  */
 const LOTTIE_BY_LEVEL: Record<number, any> = {
-  1: require('../../assets/lottie/lv1/lv1_animation.json'),
-  2: require('../../assets/lottie/lv2/lv2_animation.json'),
-  3: require('../../assets/lottie/lv3/lv3_animation.json'),
-  4: require('../../assets/lottie/lv4/lv4_animation.json'),
-  5: require('../../assets/lottie/lv5/lv5_animation.json'),
+  1: require('../../assets/lottie/Lv1.json'),
+  2: require('../../assets/lottie/Lv2.json'),
+  3: require('../../assets/lottie/Lv3.json'),
+  4: require('../../assets/lottie/Lv4.json'),
+  5: require('../../assets/lottie/Lv5.json'),
 };
 
 const CharacterScreen = () => {
@@ -254,7 +255,11 @@ const CharacterScreen = () => {
              * 이미지( png )가 포함된 로티면 assets 폴더를 명시해야 함
              * ※ 이 경로는 "android/app/src/main/assets" 기준으로도 존재해야 함
              */
-            imageAssetsFolder={`lottie/lv${currentLevel}/images`}
+            imageAssetsFolder={
+              Platform.OS === 'ios'
+                ? `lottie/lv${currentLevel}`
+                : `lottie/lv${currentLevel}/images`
+            }
           />
         </View>
 
