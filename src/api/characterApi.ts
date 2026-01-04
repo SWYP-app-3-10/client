@@ -45,6 +45,57 @@ export interface AttendanceData {
 }
 
 /**
+ * 유저 성장 정보 타입
+ */
+export interface UserGrowthInfo {
+  levelName: string;
+  levelEnum: string;
+  characterVideoUrl: string;
+  progressPercent: number;
+  currentExp: number;
+  currentPoint: number;
+  showLevelUpModal: boolean;
+}
+
+/**
+ * 주간 출석 현황 타입
+ */
+export interface WeeklyAttendance {
+  monday: boolean;
+  tuesday: boolean;
+  wednesday: boolean;
+  thursday: boolean;
+  friday: boolean;
+  saturday: boolean;
+  sunday: boolean;
+}
+
+/**
+ * 미션 정보 타입 (통합 API용)
+ */
+export interface CharacterMission {
+  missionType: string;
+  title: string;
+  currentProgress: number;
+  targetGoal: number;
+  isCompleted: boolean;
+  isLocked: boolean;
+}
+
+/**
+ * 캐릭터 통합 정보 API 응답 타입
+ */
+export interface CharacterMeResponse {
+  status: number;
+  message?: string;
+  data: {
+    userGrowthInfo: UserGrowthInfo;
+    attendance: WeeklyAttendance;
+    missions: CharacterMission[];
+  };
+}
+
+/**
  * 포인트/경험치 정보 타입
  */
 export interface AboutPointExpInformation {
@@ -187,3 +238,69 @@ export const fetchCharacterReward =
       throw error;
     }
   };
+
+/**
+ * 캐릭터 통합 정보 조회 (성장 정보, 출석, 미션)
+ * @returns Promise<CharacterMeResponse>
+ */
+export const fetchCharacterMe = async (): Promise<CharacterMeResponse> => {
+  try {
+    const userInfo = await getUserInfo();
+    if (!userInfo || !userInfo.userId) {
+      throw new Error('사용자 정보가 없습니다');
+    }
+
+    const response = await client.get<CharacterMeResponse>(
+      `/api/characters/me?userId=${userInfo.userId}`,
+    );
+    return response.data;
+  } catch (error) {
+    if (__DEV__) {
+      console.error('[캐릭터 통합 정보 API] 에러:', error);
+    }
+    throw error;
+  }
+};
+
+/**
+ * CharacterMeResponse의 data를 추출하는 헬퍼 타입
+ */
+export type CharacterMeData = CharacterMeResponse['data'];
+
+/**
+ * WeeklyAttendance를 AttendanceData[]로 변환
+ */
+export const convertWeeklyAttendanceToAttendanceData = (
+  weeklyAttendance: WeeklyAttendance,
+): AttendanceData[] => {
+  const days = [
+    { key: 'monday', label: '월' },
+    { key: 'tuesday', label: '화' },
+    { key: 'wednesday', label: '수' },
+    { key: 'thursday', label: '목' },
+    { key: 'friday', label: '금' },
+    { key: 'saturday', label: '토' },
+    { key: 'sunday', label: '일' },
+  ] as const;
+
+  return days.map(day => ({
+    day: day.label,
+    attended: weeklyAttendance[day.key],
+  }));
+};
+
+/**
+ * CharacterMission을 Mission 형식으로 변환
+ */
+export const convertCharacterMissionToMission = (
+  mission: CharacterMission,
+  index: number,
+): any => {
+  return {
+    id: index + 1,
+    title: mission.title,
+    current: mission.currentProgress,
+    total: mission.targetGoal,
+    status: mission.isCompleted ? '완료' : mission.isLocked ? null : '진행 중',
+  };
+};

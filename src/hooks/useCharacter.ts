@@ -7,9 +7,13 @@ import {
   fetchCharacterData,
   fetchAttendanceData,
   fetchCharacterReward,
+  fetchCharacterMe,
+  convertWeeklyAttendanceToAttendanceData,
+  convertCharacterMissionToMission,
   CharacterData,
   AttendanceData,
   CharacterRewardResponse,
+  CharacterMeResponse,
 } from '../api/characterApi';
 
 // Query Keys
@@ -18,6 +22,7 @@ export const characterKeys = {
   data: () => [...characterKeys.all, 'data'] as const,
   attendance: () => [...characterKeys.all, 'attendance'] as const,
   reward: () => [...characterKeys.all, 'reward'] as const,
+  me: () => [...characterKeys.all, 'me'] as const,
 };
 
 /**
@@ -54,4 +59,22 @@ export const useCharacterReward = () => {
     staleTime: 1000 * 60 * 5, // 5분간 fresh 상태 유지
     gcTime: 1000 * 60 * 10, // 10분간 캐시 유지
   });
+};
+
+/**
+ * 캐릭터 통합 정보 조회 (성장 정보, 출석, 미션)
+ */
+export const useCharacterMe = () => {
+  return useQuery<CharacterMeResponse>({
+    queryKey: characterKeys.me(),
+    queryFn: fetchCharacterMe,
+    staleTime: 1000 * 60 * 5, // 5분간 fresh 상태 유지
+    gcTime: 1000 * 60 * 10, // 10분간 캐시 유지
+  });
+};
+
+// 변환 함수 export
+export {
+  convertWeeklyAttendanceToAttendanceData,
+  convertCharacterMissionToMission,
 };

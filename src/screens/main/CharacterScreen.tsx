@@ -45,9 +45,11 @@ import {
   AlarmIcon,
 } from '../../icons';
 import { Body_15M, Heading_16B } from '../../styles/typography';
-import { useCharacterData, useAttendanceData } from '../../hooks/useCharacter';
-import { useMissions } from '../../hooks/useMissions';
-import { usePointStore } from '../../store/pointStore';
+import {
+  useCharacterMe,
+  convertWeeklyAttendanceToAttendanceData,
+  convertCharacterMissionToMission,
+} from '../../hooks/useCharacter';
 import { ActivityIndicator } from 'react-native';
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -83,35 +85,54 @@ const CharacterScreen = () => {
     null,
   );
 
-  // React Query hooks
+  // React Query hooks - 통합 API 사용
   const {
-    data: characterData,
+    data: characterMeResponse,
     isLoading: characterLoading,
     error: characterError,
-  } = useCharacterData();
+  } = useCharacterMe();
 
-  const {
-    data: attendanceData = [],
-    isLoading: attendanceLoading,
-    error: attendanceError,
-  } = useAttendanceData();
+  // data 래퍼에서 실제 데이터 추출
+  const characterMeData = characterMeResponse?.data;
 
-  const {
-    data: missionData,
-    isLoading: missionsLoading,
-    error: missionsError,
-  } = useMissions();
-  const missions: any[] = useMemo(
-    () => missionData?.missions || [],
-    [missionData?.missions],
+  // 데이터 변환
+  const attendanceData = useMemo(
+    () =>
+      characterMeData?.attendance
+        ? convertWeeklyAttendanceToAttendanceData(characterMeData.attendance)
+        : [],
+    [characterMeData?.attendance],
   );
 
-  // 포인트는 전역 스토어에서 가져오기
-  const { points: currentPoints } = usePointStore();
+  const missions = useMemo(
+    () =>
+      characterMeData?.missions
+        ? characterMeData.missions.map((mission, index) =>
+            convertCharacterMissionToMission(mission, index),
+          )
+        : [],
+    [characterMeData?.missions],
+  );
+
   // 기본값 설정
-  const currentLevel = characterData?.currentLevel ?? 1;
-  const currentExp = characterData?.currentExp ?? 0;
-  const nextLevelExp = characterData?.nextLevelExp ?? 100;
+  const userGrowthInfo = characterMeData?.userGrowthInfo;
+  const currentLevel = useMemo(() => {
+    if (!userGrowthInfo?.levelEnum) {
+      return 1;
+    }
+    const match = userGrowthInfo.levelEnum.match(/LEVEL_(\d+)/);
+    return match ? parseInt(match[1], 10) : 1;
+  }, [userGrowthInfo?.levelEnum]);
+  const currentExp = userGrowthInfo?.currentExp ?? 0;
+  const currentPoints = userGrowthInfo?.currentPoint ?? 0;
+  const progressPercent = userGrowthInfo?.progressPercent ?? 0;
+  const nextLevelExp = useMemo(() => {
+    // progressPercent를 기반으로 다음 레벨 경험치 계산
+    if (progressPercent === 100 || currentExp === 0) {
+      return 100;
+    }
+    return Math.round((currentExp / progressPercent) * 100);
+  }, [currentExp, progressPercent]);
 
   // 메모이제이션: 레벨 데이터
   const currentLevelData = useMemo(
@@ -137,10 +158,10 @@ const CharacterScreen = () => {
     }
   }, [currentLevel]);
 
-  // 메모이제이션: 진행률 계산
+  // 메모이제이션: 진행률 계산 (API에서 받은 progressPercent 사용)
   const progressPercentageValue = useMemo(
-    () => Math.round((currentExp / nextLevelExp) * 100),
-    [currentExp, nextLevelExp],
+    () => progressPercent || Math.round((currentExp / nextLevelExp) * 100),
+    [currentExp, nextLevelExp, progressPercent],
   );
 
   // 로티 source: require 맵핑
@@ -151,8 +172,8 @@ const CharacterScreen = () => {
   }, [currentLevel]);
 
   // 로딩 상태
-  const isLoading = characterLoading || attendanceLoading || missionsLoading;
-  const hasError = characterError || attendanceError || missionsError;
+  const isLoading = characterLoading;
+  const hasError = characterError;
 
   // 캐릭터 정보 클릭 핸들러
   const handleCharacterInfoPress = useCallback(() => {
