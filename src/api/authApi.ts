@@ -40,16 +40,14 @@ export interface RefreshTokenRequest {
 }
 
 export interface RefreshTokenResponse {
-  status: number;
+  // 직접 토큰이 오는 경우
+  accessToken?: string;
+  refreshToken?: string;
+  status?: number;
   message?: string;
-  data?: {
-    accessToken?: string;
-    refreshToken?: string;
-  };
   // 하위 호환성을 위한 필드
   success?: boolean;
   token?: string;
-  refreshToken?: string;
 }
 
 /**
