@@ -139,7 +139,9 @@ client.interceptors.response.use(
 
         // 토큰 재발급 API 호출
         const refreshResponse = await refreshToken(refreshTokenValue);
-        const newAccessToken = refreshResponse.accessToken;
+        // data 래퍼가 있으면 data에서, 없으면 직접 접근 (하위 호환성)
+        const newAccessToken =
+          refreshResponse.data?.accessToken || refreshResponse.accessToken;
 
         if (!newAccessToken) {
           throw new Error('토큰 재발급 응답에 accessToken이 없습니다');
@@ -147,7 +149,8 @@ client.interceptors.response.use(
 
         // 새 토큰 저장
         await saveAuthToken(newAccessToken);
-        const newRefreshToken = refreshResponse.refreshToken;
+        const newRefreshToken =
+          refreshResponse.data?.refreshToken || refreshResponse.refreshToken;
         if (newRefreshToken) {
           await saveRefreshToken(newRefreshToken);
         }
