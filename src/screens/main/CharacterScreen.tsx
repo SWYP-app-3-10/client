@@ -98,10 +98,14 @@ const CharacterScreen = () => {
   } = useAttendanceData();
 
   const {
-    data: missions = [],
+    data: missionData,
     isLoading: missionsLoading,
     error: missionsError,
   } = useMissions();
+  const missions: any[] = useMemo(
+    () => missionData?.missions || [],
+    [missionData?.missions],
+  );
 
   // 포인트는 전역 스토어에서 가져오기
   const { points: currentPoints } = usePointStore();
@@ -362,7 +366,7 @@ const CharacterScreen = () => {
             진행 중인 미션을 완료하면 새로운 미션이 열려요!
           </Text>
           <Spacer num={32} />
-          {missions.map(mission => (
+          {missions.map((mission: any) => (
             <View key={mission.id} style={styles.missionCardWrapper}>
               <MissionCard mission={mission} myPage={true} />
             </View>

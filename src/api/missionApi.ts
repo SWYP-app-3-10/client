@@ -4,7 +4,6 @@
 
 import client from './client';
 import { getUserInfo } from '../services/authService';
-import { Mission } from '../data/mock/missionData';
 
 /**
  * 오늘의 미션 화면 컨텐츠
@@ -76,7 +75,7 @@ export const fetchMissionToday = async (
 export const convertMissionTodayToMission = (
   missionToday: MissionToday,
   index: number,
-): Mission => {
+): any => {
   return {
     id: index + 1, // 임시 ID (missionType을 기반으로 할 수도 있음)
     title: missionToday.title,
@@ -129,7 +128,7 @@ export const convertMissionContentToArticle = (
  * 오늘의 미션 목록 조회 (기존 - 하위 호환성 유지)
  * @returns Promise<Mission[]>
  */
-export const fetchMissions = async (): Promise<Mission[]> => {
+export const fetchMissions = async (): Promise<any[]> => {
   // 서버 API 호출 시도
   try {
     const userInfo = await getUserInfo();
@@ -137,7 +136,7 @@ export const fetchMissions = async (): Promise<Mission[]> => {
       throw new Error('사용자 정보가 없습니다');
     }
 
-    const response = await client.get<Mission[]>(
+    const response = await client.get<any[]>(
       `/api/content/today/userId=${userInfo.userId}`,
     );
     return response.data;
@@ -154,10 +153,10 @@ export const fetchMissions = async (): Promise<Mission[]> => {
  */
 export const fetchMissionById = async (
   missionId: number,
-): Promise<Mission | null> => {
+): Promise<any | null> => {
   try {
     // 서버 API 호출
-    const response = await client.get<Mission>(`/missions/${missionId}`);
+    const response = await client.get<any>(`/missions/${missionId}`);
     return response.data;
   } catch (error) {
     console.error('미션 조회 실패:', error);
@@ -171,7 +170,7 @@ export const fetchMissionById = async (
 export const updateMissionProgress = async (
   _missionId: number,
   _current: number,
-): Promise<Mission> => {
+): Promise<any> => {
   // TODO: 미션 진행도 업데이트 API 구현
   throw new Error('Not implemented');
   // try {

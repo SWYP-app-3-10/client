@@ -94,17 +94,17 @@ client.interceptors.response.use(
       }
     }
 
-    // 403 에러 발생 시 토큰 재발급 시도
+    // 401 또는 403 에러 발생 시 토큰 재발급 시도
     if (
-      error.response?.status === 403 &&
+      (error.response?.status === 401 || error.response?.status === 403) &&
       originalRequest &&
       !originalRequest._retry
     ) {
-      // 토큰 재발급 API 자체가 403을 반환하면 무한 루프 방지
+      // 토큰 재발급 API 자체가 401/403을 반환하면 무한 루프 방지
       if (originalRequest.url?.includes('/api/auth/refresh')) {
         if (__DEV__) {
           console.error(
-            '[토큰 재발급] 재발급 API도 403 에러 발생 - 로그아웃 필요',
+            `[토큰 재발급] 재발급 API도 ${error.response?.status} 에러 발생 - 로그아웃 필요`,
           );
         }
         return Promise.reject(error);
@@ -123,7 +123,9 @@ client.interceptors.response.use(
 
       try {
         if (__DEV__) {
-          console.log('[토큰 재발급] 시작');
+          console.log(
+            `[토큰 재발급] 시작 (원인: ${error.response?.status} 에러)`,
+          );
         }
 
         const refreshTokenValue = await getRefreshToken();
@@ -137,7 +139,7 @@ client.interceptors.response.use(
 
         // 토큰 재발급 API 호출
         const refreshResponse = await refreshToken(refreshTokenValue);
-        const newAccessToken = refreshResponse.data?.accessToken;
+        const newAccessToken = refreshResponse.accessToken;
 
         if (!newAccessToken) {
           throw new Error('토큰 재발급 응답에 accessToken이 없습니다');
@@ -145,23 +147,10 @@ client.interceptors.response.use(
 
         // 새 토큰 저장
         await saveAuthToken(newAccessToken);
-        const newRefreshToken = refreshResponse.data?.refreshToken;
+        const newRefreshToken = refreshResponse.refreshToken;
         if (newRefreshToken) {
           await saveRefreshToken(newRefreshToken);
         }
-
-        if (__DEV__) {
-          console.log('[토큰 재발급] 성공 - 원래 요청 재시도');
-        }
-
-        // 원래 요청의 헤더에 새 토큰 설정
-        if (originalRequest.headers) {
-          originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
-        }
-
-        // 원래 요청 재시도
-        isRefreshing = false;
-        return client(originalRequest);
       } catch (refreshError: any) {
         if (__DEV__) {
           console.error('[토큰 재발급] 실패:', refreshError);
