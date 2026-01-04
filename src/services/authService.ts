@@ -6,6 +6,7 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { getRecentLogin, RecentLoginInfo } from './authStorageService';
 import { signOutSocial, SocialLoginProvider } from './socialLoginService';
+import { logoutFromServer } from '../api/authApi';
 
 export interface AuthStatus {
   isAuthenticated: boolean;
@@ -39,6 +40,7 @@ export const checkAuthStatus = async (): Promise<AuthStatus> => {
   }
 };
 
+const AUTH_TOKEN_KEY = '@auth_token';
 const REFRESH_TOKEN_KEY = '@refresh_token';
 const USER_INFO_KEY = '@user_info';
 
@@ -148,21 +150,44 @@ export const clearUserInfo = async (): Promise<void> => {
 
 /**
  * 로그아웃 - 모든 로그인 정보 및 온보딩 상태 초기화
- * @param provider 소셜 로그인 제공자 (선택사항)
+ * @param provider 소셜 로그인 제공자
  */
 export const logout = async (provider?: SocialLoginProvider): Promise<void> => {
   try {
-    // 1. 소셜 로그인 로그아웃
-    if (provider) {
-      await signOutSocial(provider);
+    // 자동로그인은 "로그인 시 저장된 값(@user_info/@auth_token/@refresh_token)"으로 유지됨
+
+    // 0. 현재 저장된 유저정보에서 userId/provider를 확보 (삭제 전)
+    const userInfo = await getUserInfo();
+    const resolvedProvider = provider ?? userInfo?.provider;
+    const userId = userInfo?.userId;
+
+    // 1. 서버 로그아웃 (실패해도 로컬 로그아웃은 진행)
+    if (userId) {
+      try {
+        await logoutFromServer(userId);
+      } catch (e) {
+        console.warn(
+          '[logout] 서버 로그아웃 실패 - 로컬 로그아웃은 계속 진행합니다.',
+        );
+      }
     }
 
-    // 2. 로컬 사용자 정보 삭제
-    await clearUserInfo();
+    // 2. 소셜 로그인 로그아웃 (구글/카카오/네이버)
+    if (resolvedProvider) {
+      await signOutSocial(resolvedProvider);
+    }
+
+    // 3. 로컬 저장값 삭제 (로그아웃 후 자동로그인 방지)
+    await AsyncStorage.multiRemove([
+      AUTH_TOKEN_KEY,
+      REFRESH_TOKEN_KEY,
+      USER_INFO_KEY,
+    ]);
 
     console.log('로그아웃 완료');
   } catch (error) {
     console.error('로그아웃 중 오류:', error);
+    throw error;
   }
 };
 
