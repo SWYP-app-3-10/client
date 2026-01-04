@@ -9,7 +9,7 @@
     "start": "react-native start",
     "test": "jest",
     "lottie:sync:android": "powershell -NoProfile -ExecutionPolicy Bypass -Command \"if (Test-Path android/app/src/main/assets/lottie) { Remove-Item -Recurse -Force android/app/src/main/assets/lottie }; New-Item -ItemType Directory -Force android/app/src/main/assets/lottie | Out-Null; Copy-Item -Recurse -Force src/assets/lottie/* android/app/src/main/assets/lottie\"",
-    "lottie:sync:ios": "bash -lc \"mkdir -p ios/NewsLens/lottie && rsync -a --delete src/assets/lottie/ ios/NewsLens/lottie/\""
+    "lottie:sync:ios": "bash -lc \"mkdir -p ios/Neurous/lottie && rsync -a --delete src/assets/lottie/ ios/Neurous/lottie/\""
   },
   "dependencies": {
     "@invertase/react-native-apple-authentication": "^2.5.0",
