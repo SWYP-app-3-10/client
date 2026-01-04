@@ -9,7 +9,6 @@ import {
   updateMissionProgress,
   MissionContent,
 } from '../api/missionApi';
-import { Mission } from '../data/mock/missionData';
 import { getUserInfo } from '../services/authService';
 
 // Query Keys
@@ -25,7 +24,7 @@ export const missionKeys = {
  * 오늘의 미션 목록 조회
  */
 export const useMissions = () => {
-  return useQuery<{ missions: Mission[]; contents: MissionContent[] }, Error>({
+  return useQuery<{ missions: any[]; contents: MissionContent[] }, Error>({
     queryKey: missionKeys.lists(),
     queryFn: async () => {
       const userInfo = await getUserInfo();
@@ -64,7 +63,7 @@ export const useUpdateMissionProgress = () => {
     }) => updateMissionProgress(missionId, current),
     onSuccess: (data, variables) => {
       // 미션 목록 캐시 업데이트
-      queryClient.setQueryData<Mission[]>(missionKeys.lists(), old => {
+      queryClient.setQueryData<any[]>(missionKeys.lists(), old => {
         if (!old) {
           return [data];
         }
