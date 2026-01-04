@@ -13,14 +13,14 @@ export interface ContentResponse {
 
 export interface ExploreResponse {
   contents: ContentResponse[];
-  nextBatchTime: string;
+  nextBatchTime: string | null;
   updatedContent: boolean;
 }
 
 /** [GET] 탐색 목록 가져오기 */
 export const fetchExploreContents = async (params: {
   category?: string;
-  page: number;
+  nextBatchTime?: string | null;
 }): Promise<ExploreResponse> => {
   try {
     const userInfo = await getUserInfo();
@@ -34,17 +34,18 @@ export const fetchExploreContents = async (params: {
       : '/api/content/explore';
 
     console.log(
-      `[API Request] URL: ${url} | Page: ${params.page} | Category: ${
-        params.category || '전체'
-      }`,
+      `[API Request] URL: ${url} | nextBatchTime: ${
+        params.nextBatchTime ?? 'null(첫 요청)'
+      } | Category: ${params.category || '전체'}`,
     );
 
-    // 로그 확인 결과, 서버 응답이 { status, message, data: { ...실제데이터 } } 구조입니다.
-    // 따라서 response.data.data를 가져와야 ExploreResponse 규격에 맞습니다.
+    // Swagger 상 필수는 userId
     const response = await client.get<any>(url, {
       params: {
         userId: userInfo.userId,
-        page: params.page,
+        ...(params.nextBatchTime
+          ? { nextBatchTime: params.nextBatchTime }
+          : {}),
       },
     });
 
@@ -54,8 +55,9 @@ export const fetchExploreContents = async (params: {
     // 서버 응답 데이터 상세 확인
     console.log('[API Response Success]:', {
       contentCount: actualData?.contents?.length,
-      firstItem: actualData?.contents?.[0], // 첫 번째 아이템 구조 확인용
-      raw: response.data, // 전체 응답 확인
+      firstItem: actualData?.contents?.[0],
+      nextBatchTime: actualData?.nextBatchTime,
+      raw: response.data,
     });
 
     return actualData;

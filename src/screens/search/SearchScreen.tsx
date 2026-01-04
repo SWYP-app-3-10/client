@@ -103,36 +103,7 @@ export default function SearchScreen() {
   }, [data]);
 
   // --- 타이머 & 툴팁 로직 ---
-  const timerTooltip = useTooltip(1500);
-  const [nextUpdateAt, setNextUpdateAt] = useState<Date>(() =>
-    getNextUpdateAt(new Date()),
-  );
-  const [remainSec, setRemainSec] = useState<number>(() =>
-    getRemainSeconds(new Date(), nextUpdateAt),
-  );
-
-  useEffect(() => {
-    const tick = () => {
-      const now = new Date();
-      if (now.getTime() >= nextUpdateAt.getTime()) {
-        const next = getNextUpdateAt(now);
-        setNextUpdateAt(next);
-        setRemainSec(getRemainSeconds(now, next));
-        return;
-      }
-      setRemainSec(getRemainSeconds(now, nextUpdateAt));
-    };
-    tick();
-    const interval = setInterval(tick, 1000);
-    return () => clearInterval(interval);
-  }, [nextUpdateAt]);
-
-  const timerText = useMemo(() => formatRemainText(remainSec), [remainSec]);
-  const tooltipMinutes = useMemo(
-    () => Math.max(0, Math.ceil(remainSec / 60)),
-    [remainSec],
-  );
-
+  // ✅ 기존 동작 동일, 단 리렌더 범위 축소를 위해 Header 컴포넌트로 분리
   const { handleArticlePress } = useArticleNavigation({ returnTo: 'search' });
 
   const goToSearchInput = () => {
@@ -144,12 +115,7 @@ export default function SearchScreen() {
   if (isLoading) {
     return (
       <SafeAreaView style={styles.safe} edges={['top']}>
-        <HeaderArea
-          timerText={timerText}
-          tooltip={timerTooltip}
-          tooltipMinutes={tooltipMinutes}
-          onSearch={goToSearchInput}
-        />
+        <ExploreHeaderWithTimer onSearch={goToSearchInput} />
         <FlatList
           style={styles.list}
           data={[1, 2, 3, 4, 5]}
@@ -164,12 +130,7 @@ export default function SearchScreen() {
   return (
     <SafeAreaView style={styles.safe} edges={['top']}>
       <View style={styles.container}>
-        <HeaderArea
-          timerText={timerText}
-          tooltip={timerTooltip}
-          tooltipMinutes={tooltipMinutes}
-          onSearch={goToSearchInput}
-        />
+        <ExploreHeaderWithTimer onSearch={goToSearchInput} />
 
         <View style={styles.tabsWrap}>
           <CategoryTabs
@@ -236,6 +197,53 @@ export default function SearchScreen() {
     </SafeAreaView>
   );
 }
+
+// ✅ 타이머/툴팁 전용 헤더 컴포넌트 (기존 동작 동일)
+const ExploreHeaderWithTimer = React.memo(function ExploreHeaderWithTimer({
+  onSearch,
+}: {
+  onSearch: () => void;
+}) {
+  // --- 타이머 & 툴팁 로직 ---
+  const timerTooltip = useTooltip(1500);
+  const [nextUpdateAt, setNextUpdateAt] = useState<Date>(() =>
+    getNextUpdateAt(new Date()),
+  );
+  const [remainSec, setRemainSec] = useState<number>(() =>
+    getRemainSeconds(new Date(), nextUpdateAt),
+  );
+
+  useEffect(() => {
+    const tick = () => {
+      const now = new Date();
+      if (now.getTime() >= nextUpdateAt.getTime()) {
+        const next = getNextUpdateAt(now);
+        setNextUpdateAt(next);
+        setRemainSec(getRemainSeconds(now, next));
+        return;
+      }
+      setRemainSec(getRemainSeconds(now, nextUpdateAt));
+    };
+    tick();
+    const interval = setInterval(tick, 1000);
+    return () => clearInterval(interval);
+  }, [nextUpdateAt]);
+
+  const timerText = useMemo(() => formatRemainText(remainSec), [remainSec]);
+  const tooltipMinutes = useMemo(
+    () => Math.max(0, Math.ceil(remainSec / 60)),
+    [remainSec],
+  );
+
+  return (
+    <HeaderArea
+      timerText={timerText}
+      tooltip={timerTooltip}
+      tooltipMinutes={tooltipMinutes}
+      onSearch={onSearch}
+    />
+  );
+});
 
 // --- 하위 헬퍼 함수들 (변화 없음) ---
 function useTooltip(autoHideMs: number) {
