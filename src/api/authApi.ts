@@ -127,3 +127,48 @@ export const refreshToken = async (
     throw error;
   }
 };
+
+/**
+ * 서버 로그아웃 API 호출
+ *
+ * - 서버가 refreshToken 무효화/세션 정리 등을 할 수 있음
+ * - 클라이언트는 로그아웃 시 로컬 토큰/유저정보도 함께 삭제해야 함(authService.logout에서 처리)
+ *
+ * @param userId 현재 로그인된 사용자 ID
+ */
+export interface LogoutResponse {
+  success: boolean;
+  message?: string;
+}
+
+export const logoutFromServer = async (
+  userId: number,
+): Promise<LogoutResponse> => {
+  try {
+    // body는 없는 엔드포인트라 null로 보냄
+    // query는 params로 전달
+    const response = await client.post<LogoutResponse>(
+      '/api/auth/logout',
+      null,
+      { params: { userId } },
+    );
+
+    if (__DEV__) {
+      console.log(
+        '[로그아웃 API] 응답 성공:',
+        JSON.stringify(response.data, null, 2),
+      );
+    }
+
+    return response.data;
+  } catch (error: any) {
+    if (__DEV__) {
+      console.error('[로그아웃 API] 에러:', {
+        status: error?.response?.status,
+        data: error?.response?.data,
+        message: error?.message,
+      });
+    }
+    throw error;
+  }
+};
