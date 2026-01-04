@@ -36,8 +36,10 @@ target 'Neurous' do
     installer.pods_project.targets.each do |target|
       target.build_configurations.each do |config|
         config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '15.1'
-        
-
+        # Hermes dSYM 생성을 위한 설정
+        if target.name == 'hermes-engine'
+          config.build_settings['DEBUG_INFORMATION_FORMAT'] = 'dwarf-with-dsym'
+        end
       end
     end
   end
