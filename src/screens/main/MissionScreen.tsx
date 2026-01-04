@@ -30,7 +30,7 @@ import {
 import Spacer from '../../components/Spacer';
 import { useMissions } from '../../hooks/useMissions';
 import { MissionCard, ArticleCard } from '../../components';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { useArticleNavigation } from '../../hooks/useArticleNavigation';
 import { convertMissionContentToArticle } from '../../api/missionApi';
 import {
@@ -79,6 +79,7 @@ const MissionScreen = () => {
   const { addPoints } = usePointStore();
   const { addExperience } = useExperienceStore();
   const hasCheckedDailyEntryRef = useRef(false);
+  const backPressTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // 데이터 로딩
   const { data: missionData, isLoading: missionsLoading } = useMissions();
@@ -134,26 +135,57 @@ const MissionScreen = () => {
     });
   }, [navigation]);
 
-  // 안드로이드 뒤로가기 종료 처리
-  useEffect(() => {
-    if (Platform.OS !== 'android') return;
-    const backAction = () => {
-      showToastModal({
-        message: "'뒤로' 버튼을 한번 더 누르시면 종료됩니다.",
-        position: 'center',
-        backgroundColor: COLORS.blackOpacity60,
-        height: scaleWidth(67),
-        width: scaleWidth(353),
-        borderRadius: BORDER_RADIUS[16],
-      });
-      return true;
-    };
-    const backHandler = BackHandler.addEventListener(
-      'hardwareBackPress',
-      backAction,
-    );
-    return () => backHandler.remove();
-  }, [showToastModal]);
+  // 안드로이드 뒤로가기 종료 처리 (화면이 포커스되어 있을 때만)
+  useFocusEffect(
+    useCallback(() => {
+      if (Platform.OS !== 'android') {
+        return;
+      }
+      const backAction = () => {
+        // 뒤로가기할 페이지가 있으면 기본 동작 (뒤로가기)
+        if (navigation.canGoBack()) {
+          return false; // 기본 동작 허용
+        }
+
+        // 뒤로가기할 페이지가 없으면
+        // 타이머가 있으면 (2초 내 두 번째 백키) 앱 종료
+        if (backPressTimerRef.current) {
+          clearTimeout(backPressTimerRef.current);
+          backPressTimerRef.current = null;
+          BackHandler.exitApp();
+          return true;
+        }
+
+        // 첫 번째 백키: 토스트 표시
+        showToastModal({
+          message: "'뒤로' 버튼을 한번 더 누르시면 종료됩니다.",
+          position: 'center',
+          backgroundColor: COLORS.blackOpacity60,
+          height: scaleWidth(67),
+          width: scaleWidth(353),
+          borderRadius: BORDER_RADIUS[16],
+        });
+
+        // 2초 후 타이머 초기화
+        backPressTimerRef.current = setTimeout(() => {
+          backPressTimerRef.current = null;
+        }, 2000);
+
+        return true; // 기본 동작 차단
+      };
+      const backHandler = BackHandler.addEventListener(
+        'hardwareBackPress',
+        backAction,
+      );
+      return () => {
+        backHandler.remove();
+        if (backPressTimerRef.current) {
+          clearTimeout(backPressTimerRef.current);
+          backPressTimerRef.current = null;
+        }
+      };
+    }, [navigation, showToastModal]),
+  );
 
   // 일일 출석 체크
   useEffect(() => {

@@ -6,6 +6,7 @@ import {
   ScrollView,
   TouchableOpacity,
   StatusBar,
+  Platform,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { RouteNames } from '../../../routes';
@@ -45,33 +46,23 @@ import {
   AlarmIcon,
 } from '../../icons';
 import { Body_15M, Heading_16B } from '../../styles/typography';
-import { useCharacterData, useAttendanceData } from '../../hooks/useCharacter';
-import { useMissions } from '../../hooks/useMissions';
-import { usePointStore } from '../../store/pointStore';
+import {
+  useCharacterMe,
+  convertWeeklyAttendanceToAttendanceData,
+  convertCharacterMissionToMission,
+} from '../../hooks/useCharacter';
 import { ActivityIndicator } from 'react-native';
-import { useExperienceStore } from '../../store/experienceStore';
-
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-import { lv1Images } from '../../assets/lottie/lv1/preload';
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-import { lv2Images } from '../../assets/lottie/lv2/preload';
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-import { lv3Images } from '../../assets/lottie/lv3/preload';
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-import { lv4Images } from '../../assets/lottie/lv4/preload';
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-import { lv5Images } from '../../assets/lottie/lv5/preload';
 
 /**
  * 로티는 require() 번들 방식으로 고정한다.
- * 아래 JSON 파일들은 반드시 "src/assets/..." 경로에 실제로 존재해야 함.
+ * 아래 JSON 파일들은 반드시 "src/assets/lottie/" 경로에 실제로 존재해야 함.
  */
 const LOTTIE_BY_LEVEL: Record<number, any> = {
-  1: require('../../assets/lottie/lv1/lv1_animation.json'),
-  2: require('../../assets/lottie/lv2/lv2_animation.json'),
-  3: require('../../assets/lottie/lv3/lv3_animation.json'),
-  4: require('../../assets/lottie/lv4/lv4_animation.json'),
-  5: require('../../assets/lottie/lv5/lv5_animation.json'),
+  1: require('../../assets/lottie/Lv1.json'),
+  2: require('../../assets/lottie/Lv2.json'),
+  3: require('../../assets/lottie/Lv3.json'),
+  4: require('../../assets/lottie/Lv4.json'),
+  5: require('../../assets/lottie/Lv5.json'),
 };
 
 const CharacterScreen = () => {
@@ -84,36 +75,54 @@ const CharacterScreen = () => {
     null,
   );
 
-  // React Query hooks
+  // React Query hooks - 통합 API 사용
   const {
-    data: characterData,
+    data: characterMeResponse,
     isLoading: characterLoading,
     error: characterError,
-  } = useCharacterData();
+  } = useCharacterMe();
 
-  const {
-    data: attendanceData = [],
-    isLoading: attendanceLoading,
-    error: attendanceError,
-  } = useAttendanceData();
+  // data 래퍼에서 실제 데이터 추출
+  const characterMeData = characterMeResponse?.data;
 
-  const {
-    data: missionData,
-    isLoading: missionsLoading,
-    error: missionsError,
-  } = useMissions();
-  const missions: any[] = useMemo(
-    () => missionData?.missions || [],
-    [missionData?.missions],
+  // 데이터 변환
+  const attendanceData = useMemo(
+    () =>
+      characterMeData?.attendance
+        ? convertWeeklyAttendanceToAttendanceData(characterMeData.attendance)
+        : [],
+    [characterMeData?.attendance],
   );
 
-  // 포인트는 전역 스토어에서 가져오기
-  const { points: currentPoints } = usePointStore();
-  const { experience } = useExperienceStore();
+  const missions = useMemo(
+    () =>
+      characterMeData?.missions
+        ? characterMeData.missions.map((mission, index) =>
+            convertCharacterMissionToMission(mission, index),
+          )
+        : [],
+    [characterMeData?.missions],
+  );
+
   // 기본값 설정
-  const currentLevel = characterData?.currentLevel ?? 1;
-  const currentExp = experience ?? 0;
-  const nextLevelExp = characterData?.nextLevelExp ?? 100;
+  const userGrowthInfo = characterMeData?.userGrowthInfo;
+  const currentLevel = useMemo(() => {
+    if (!userGrowthInfo?.levelEnum) {
+      return 1;
+    }
+    const match = userGrowthInfo.levelEnum.match(/LEVEL_(\d+)/);
+    return match ? parseInt(match[1], 10) : 1;
+  }, [userGrowthInfo?.levelEnum]);
+  const currentExp = userGrowthInfo?.currentExp ?? 0;
+  const currentPoints = userGrowthInfo?.currentPoint ?? 0;
+  const progressPercent = userGrowthInfo?.progressPercent ?? 0;
+  const nextLevelExp = useMemo(() => {
+    // progressPercent를 기반으로 다음 레벨 경험치 계산
+    if (progressPercent === 100 || currentExp === 0) {
+      return 100;
+    }
+    return Math.round((currentExp / progressPercent) * 100);
+  }, [currentExp, progressPercent]);
 
   // 메모이제이션: 레벨 데이터
   const currentLevelData = useMemo(
@@ -139,10 +148,10 @@ const CharacterScreen = () => {
     }
   }, [currentLevel]);
 
-  // 메모이제이션: 진행률 계산
+  // 메모이제이션: 진행률 계산 (API에서 받은 progressPercent 사용)
   const progressPercentageValue = useMemo(
-    () => Math.round((currentExp / nextLevelExp) * 100),
-    [currentExp, nextLevelExp],
+    () => progressPercent || Math.round((currentExp / nextLevelExp) * 100),
+    [currentExp, nextLevelExp, progressPercent],
   );
 
   // 로티 source: require 맵핑
@@ -153,8 +162,8 @@ const CharacterScreen = () => {
   }, [currentLevel]);
 
   // 로딩 상태
-  const isLoading = characterLoading || attendanceLoading || missionsLoading;
-  const hasError = characterError || attendanceError || missionsError;
+  const isLoading = characterLoading;
+  const hasError = characterError;
 
   // 캐릭터 정보 클릭 핸들러
   const handleCharacterInfoPress = useCallback(() => {
@@ -246,7 +255,11 @@ const CharacterScreen = () => {
              * 이미지( png )가 포함된 로티면 assets 폴더를 명시해야 함
              * ※ 이 경로는 "android/app/src/main/assets" 기준으로도 존재해야 함
              */
-            imageAssetsFolder={`lottie/lv${currentLevel}/images`}
+            imageAssetsFolder={
+              Platform.OS === 'ios'
+                ? `lottie/lv${currentLevel}`
+                : `lottie/lv${currentLevel}/images`
+            }
           />
         </View>
 

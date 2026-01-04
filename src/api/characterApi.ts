@@ -4,14 +4,36 @@
 
 import { useExperienceStore } from '../store/experienceStore';
 import client from './client';
+import { getUserInfo } from '../services/authService';
 
 /**
- * 캐릭터 정보 타입
+ * 레벨 기준 정보 타입
+ */
+export interface LevelStandard {
+  characterLevel: string;
+  characterName: string;
+  characterImgUrl: string;
+  exp: number;
+  lv1Message: string;
+}
+
+/**
+ * 캐릭터 레벨 API 응답 타입
+ */
+export interface CharacterLevelResponse {
+  currentUserExp: number;
+  characterLevel: string; // "LEVEL_1", "LEVEL_2", etc.
+  levelStandard: LevelStandard[];
+}
+
+/**
+ * 캐릭터 정보 타입 (화면에서 사용)
  */
 export interface CharacterData {
   currentLevel: number;
   currentExp: number;
   nextLevelExp: number;
+  levelStandard?: LevelStandard[];
 }
 
 /**
@@ -20,6 +42,57 @@ export interface CharacterData {
 export interface AttendanceData {
   day: string;
   attended: boolean;
+}
+
+/**
+ * 유저 성장 정보 타입
+ */
+export interface UserGrowthInfo {
+  levelName: string;
+  levelEnum: string;
+  characterVideoUrl: string;
+  progressPercent: number;
+  currentExp: number;
+  currentPoint: number;
+  showLevelUpModal: boolean;
+}
+
+/**
+ * 주간 출석 현황 타입
+ */
+export interface WeeklyAttendance {
+  monday: boolean;
+  tuesday: boolean;
+  wednesday: boolean;
+  thursday: boolean;
+  friday: boolean;
+  saturday: boolean;
+  sunday: boolean;
+}
+
+/**
+ * 미션 정보 타입 (통합 API용)
+ */
+export interface CharacterMission {
+  missionType: string;
+  title: string;
+  currentProgress: number;
+  targetGoal: number;
+  isCompleted: boolean;
+  isLocked: boolean;
+}
+
+/**
+ * 캐릭터 통합 정보 API 응답 타입
+ */
+export interface CharacterMeResponse {
+  status: number;
+  message?: string;
+  data: {
+    userGrowthInfo: UserGrowthInfo;
+    attendance: WeeklyAttendance;
+    missions: CharacterMission[];
+  };
 }
 
 /**
@@ -48,17 +121,90 @@ export interface CharacterRewardResponse {
 }
 
 /**
- * 캐릭터 정보 조회
+ * 레벨 문자열을 숫자로 변환 (예: "LEVEL_1" -> 1)
+ */
+const parseLevelNumber = (levelString: string | undefined): number => {
+  if (!levelString) {
+    return 1;
+  }
+  const match = levelString.match(/LEVEL_(\d+)/);
+  return match ? parseInt(match[1], 10) : 1;
+};
+
+/**
+ * 캐릭터 레벨 정보 조회
+ * @returns Promise<CharacterLevelResponse>
+ */
+export const fetchCharacterLevel =
+  async (): Promise<CharacterLevelResponse> => {
+    try {
+      const userInfo = await getUserInfo();
+      if (!userInfo || !userInfo.userId) {
+        throw new Error('사용자 정보가 없습니다');
+      }
+
+      const response = await client.get<CharacterLevelResponse>(
+        `/api/characters/standards/level?userId=${userInfo.userId}`,
+      );
+      return response.data;
+    } catch (error) {
+      if (__DEV__) {
+        console.error('[캐릭터 레벨 API] 에러:', error);
+      }
+      throw error;
+    }
+  };
+
+/**
+ * 캐릭터 정보 조회 (레벨 API 응답을 CharacterData로 변환)
  * @returns Promise<CharacterData>
  */
-
 export const fetchCharacterData = async (): Promise<CharacterData> => {
-  const { experience } = useExperienceStore.getState();
-  return {
-    currentLevel: 1,
-    currentExp: experience,
-    nextLevelExp: 100,
-  };
+  try {
+    const levelResponse = await fetchCharacterLevel();
+
+    // 응답 데이터 검증
+    if (!levelResponse || !levelResponse.characterLevel) {
+      throw new Error('레벨 정보가 없습니다');
+    }
+
+    const currentLevel = parseLevelNumber(levelResponse.characterLevel);
+    const currentExp = levelResponse.currentUserExp ?? 0;
+
+    // 다음 레벨의 경험치 찾기
+    const currentLevelStandard = levelResponse.levelStandard?.find(
+      std => std.characterLevel === levelResponse.characterLevel,
+    );
+    const nextLevelIndex =
+      levelResponse.levelStandard?.findIndex(
+        std => std.characterLevel === levelResponse.characterLevel,
+      ) ?? -1;
+    const nextLevelStandard =
+      nextLevelIndex >= 0 &&
+      nextLevelIndex < (levelResponse.levelStandard?.length ?? 0) - 1
+        ? levelResponse.levelStandard?.[nextLevelIndex + 1]
+        : null;
+    const nextLevelExp =
+      nextLevelStandard?.exp ?? currentLevelStandard?.exp ?? 100;
+
+    return {
+      currentLevel,
+      currentExp,
+      nextLevelExp,
+      levelStandard: levelResponse.levelStandard,
+    };
+  } catch (error) {
+    if (__DEV__) {
+      console.error('[캐릭터 정보 조회] 에러:', error);
+    }
+    // 에러 발생 시 기본값 반환
+    const { experience } = useExperienceStore.getState();
+    return {
+      currentLevel: 1,
+      currentExp: experience ?? 0,
+      nextLevelExp: 100,
+    };
+  }
 };
 
 /**
@@ -92,3 +238,69 @@ export const fetchCharacterReward =
       throw error;
     }
   };
+
+/**
+ * 캐릭터 통합 정보 조회 (성장 정보, 출석, 미션)
+ * @returns Promise<CharacterMeResponse>
+ */
+export const fetchCharacterMe = async (): Promise<CharacterMeResponse> => {
+  try {
+    const userInfo = await getUserInfo();
+    if (!userInfo || !userInfo.userId) {
+      throw new Error('사용자 정보가 없습니다');
+    }
+
+    const response = await client.get<CharacterMeResponse>(
+      `/api/characters/me?userId=${userInfo.userId}`,
+    );
+    return response.data;
+  } catch (error) {
+    if (__DEV__) {
+      console.error('[캐릭터 통합 정보 API] 에러:', error);
+    }
+    throw error;
+  }
+};
+
+/**
+ * CharacterMeResponse의 data를 추출하는 헬퍼 타입
+ */
+export type CharacterMeData = CharacterMeResponse['data'];
+
+/**
+ * WeeklyAttendance를 AttendanceData[]로 변환
+ */
+export const convertWeeklyAttendanceToAttendanceData = (
+  weeklyAttendance: WeeklyAttendance,
+): AttendanceData[] => {
+  const days = [
+    { key: 'monday', label: '월' },
+    { key: 'tuesday', label: '화' },
+    { key: 'wednesday', label: '수' },
+    { key: 'thursday', label: '목' },
+    { key: 'friday', label: '금' },
+    { key: 'saturday', label: '토' },
+    { key: 'sunday', label: '일' },
+  ] as const;
+
+  return days.map(day => ({
+    day: day.label,
+    attended: weeklyAttendance[day.key],
+  }));
+};
+
+/**
+ * CharacterMission을 Mission 형식으로 변환
+ */
+export const convertCharacterMissionToMission = (
+  mission: CharacterMission,
+  index: number,
+): any => {
+  return {
+    id: index + 1,
+    title: mission.title,
+    current: mission.currentProgress,
+    total: mission.targetGoal,
+    status: mission.isCompleted ? '완료' : mission.isLocked ? null : '진행 중',
+  };
+};
