@@ -49,7 +49,6 @@ import { useCharacterData, useAttendanceData } from '../../hooks/useCharacter';
 import { useMissions } from '../../hooks/useMissions';
 import { usePointStore } from '../../store/pointStore';
 import { ActivityIndicator } from 'react-native';
-import { useExperienceStore } from '../../store/experienceStore';
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { lv1Images } from '../../assets/lottie/lv1/preload';
@@ -109,10 +108,9 @@ const CharacterScreen = () => {
 
   // 포인트는 전역 스토어에서 가져오기
   const { points: currentPoints } = usePointStore();
-  const { experience } = useExperienceStore();
   // 기본값 설정
   const currentLevel = characterData?.currentLevel ?? 1;
-  const currentExp = experience ?? 0;
+  const currentExp = characterData?.currentExp ?? 0;
   const nextLevelExp = characterData?.nextLevelExp ?? 100;
 
   // 메모이제이션: 레벨 데이터
