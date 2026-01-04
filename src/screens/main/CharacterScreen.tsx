@@ -52,17 +52,6 @@ import {
 } from '../../hooks/useCharacter';
 import { ActivityIndicator } from 'react-native';
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-import { lv1Images } from '../../assets/lottie/lv1/preload';
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-import { lv2Images } from '../../assets/lottie/lv2/preload';
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-import { lv3Images } from '../../assets/lottie/lv3/preload';
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-import { lv4Images } from '../../assets/lottie/lv4/preload';
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-import { lv5Images } from '../../assets/lottie/lv5/preload';
-
 /**
  * 로티는 require() 번들 방식으로 고정한다.
  * 아래 JSON 파일들은 반드시 "src/assets/..." 경로에 실제로 존재해야 함.
