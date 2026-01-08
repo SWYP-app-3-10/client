@@ -73,7 +73,7 @@ const DifficultySettingScreen = () => {
     : {
         label: '초급',
         time: '1분',
-        description: '난이도 정보를 불러오는 중입니다...',
+        description: '',
       };
 
   return (

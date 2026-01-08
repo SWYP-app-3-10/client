@@ -82,7 +82,19 @@ const MissionScreen = () => {
   const backPressTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // 데이터 로딩
-  const { data: missionData, isLoading: missionsLoading } = useMissions();
+  const {
+    data: missionData,
+    isLoading: missionsLoading,
+    refetch: refetchMissions,
+  } = useMissions();
+
+  // 화면 포커스 시 API 요청
+  useFocusEffect(
+    useCallback(() => {
+      refetchMissions();
+    }, [refetchMissions]),
+  );
+
   const missions = useMemo(
     () => missionData?.missions || [],
     [missionData?.missions],
