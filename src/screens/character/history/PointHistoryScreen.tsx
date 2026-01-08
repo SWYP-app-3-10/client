@@ -27,7 +27,7 @@ const PointHistoryScreen = () => {
   /** 바텀시트 상태 */
   const [sheetVisible, setSheetVisible] = useState(false);
 
-  // ✅ 변경: 선택 기준을 날짜(dayKey) -> transactionId 로 바꿈
+  // 선택 기준을 날짜(dayKey) -> transactionId 로 바꿈
   const [selectedTxId, setSelectedTxId] = useState<string | null>(null);
 
   const openSheet = (txId: string) => {
@@ -61,7 +61,7 @@ const PointHistoryScreen = () => {
   }, []);
 
   /**
-   * ✅ 추가: 트랜잭션별 합산 리스트(FlatList용)
+   * 트랜잭션별 합산 리스트(FlatList용)
    * - 기존 DaySummaryItem과 동일한 역할인데 id/dayKey만 tx 기준으로 바뀜
    * - createdAt은 "트랜잭션 내 최신 시간"을 대표로 사용(기존 최신순 표기 유지)
    */
@@ -80,7 +80,7 @@ const PointHistoryScreen = () => {
     >();
 
     for (const it of earnedRawList) {
-      const key = it.transactionId; // ✅ 트랜잭션 기준
+      const key = it.transactionId; // 트랜잭션 기준
       const xp = Math.max(0, it.xpDelta);
       const pt = Math.max(0, it.ptDelta);
 
@@ -118,7 +118,7 @@ const PointHistoryScreen = () => {
   }, [earnedRawList]);
 
   /**
-   * ✅ 변경: 선택한 트랜잭션의 상세(원본 항목들)
+   * 선택한 트랜잭션의 상세(원본 항목들)
    * - 기존 bundledItems = dayKey 필터였는데
    * - 이제 bundledItems = transactionId 필터
    */
@@ -135,7 +135,7 @@ const PointHistoryScreen = () => {
     return (
       <Pressable
         style={styles.rowPressable}
-        onPress={() => openSheet(item.transactionId)} // ✅ 트랜잭션 id로 오픈
+        onPress={() => openSheet(item.transactionId)} // 트랜잭션 id로 오픈
       >
         <View style={styles.row}>
           {/* 1줄: 아이콘 + XP/P  |  우측 날짜 */}
@@ -157,7 +157,7 @@ const PointHistoryScreen = () => {
               </View>
             </View>
 
-            {/* ✅ 날짜 표시는 기존대로 유지: 대표 createdAt을 mm월 dd일로 */}
+            {/* 날짜 표시는 기존대로 유지: 대표 createdAt을 mm월 dd일로 */}
             <Text style={styles.shortDate}>{toShortDate(item.createdAt)}</Text>
           </View>
 
@@ -168,7 +168,7 @@ const PointHistoryScreen = () => {
     );
   };
 
-  /** ✅ 바텀시트 내부 항목(기존 UI/스타일 그대로) */
+  /** 바텀시트 내부 항목(기존 UI/스타일 그대로) */
   const renderSheetItem = ({ item }: { item: PointHistoryItem }) => {
     const hasXp = item.xpDelta > 0;
     const hasPt = item.ptDelta > 0;
