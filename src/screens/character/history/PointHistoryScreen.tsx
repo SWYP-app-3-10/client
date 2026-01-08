@@ -1,9 +1,6 @@
 import React, { useMemo, useState, useCallback } from 'react';
 import { View, Text, Pressable, FlatList, StyleSheet } from 'react-native';
-import {
-  pointHistoryMock,
-  PointHistoryItem,
-} from '../../../data/mock/characterData';
+import type { PointHistoryItem } from '../../../data/mock/characterData';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import BottomSheetModal from '../../../components/BottomSheetModal';
@@ -16,6 +13,9 @@ import {
   Body_16M,
 } from '../../../styles/global';
 import Header from '../../../components/Header';
+
+// 백엔드 연동 훅
+import { usePointHistory } from '../../../hooks/usePointHistory';
 
 /**
  * PointHistoryScreen
@@ -38,6 +38,9 @@ const PointHistoryScreen = () => {
     setSelectedTxId(null);
   };
 
+  /** 보상 획득 내역 조회 */
+  const { data: historyData } = usePointHistory();
+
   /** ISO → "12월 08일" */
   const toShortDate = useCallback((iso: string) => {
     const d = new Date(iso);
@@ -50,17 +53,16 @@ const PointHistoryScreen = () => {
 
   /** 받은 내역만 필터링 + 최신순 정렬(원본) */
   const earnedRawList = useMemo(() => {
-    return pointHistoryMock
+    return (historyData?.items ?? [])
       .filter(it => it.xpDelta > 0 || it.ptDelta > 0)
       .sort(
         (a, b) =>
           new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
       );
-  }, []);
+  }, [historyData?.items]);
 
   /**
    * 트랜잭션별 합산 리스트(FlatList용)
-   * - 기존 DaySummaryItem과 동일한 역할인데 id/dayKey만 tx 기준으로 바뀜
    * - createdAt은 "트랜잭션 내 최신 시간"을 대표로 사용(기존 최신순 표기 유지)
    */
   type TxSummaryItem = {
@@ -117,8 +119,7 @@ const PointHistoryScreen = () => {
 
   /**
    * 선택한 트랜잭션의 상세(원본 항목들)
-   * - 기존 bundledItems = dayKey 필터였는데
-   * - 이제 bundledItems = transactionId 필터
+   * - bundledItems = transactionId 필터
    */
   const bundledItems = useMemo(() => {
     if (!selectedTxId) return [];
