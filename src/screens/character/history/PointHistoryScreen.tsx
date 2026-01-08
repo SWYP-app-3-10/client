@@ -19,9 +19,7 @@ import Header from '../../../components/Header';
 
 /**
  * PointHistoryScreen
- *
- * - 리스트는 "날짜별 합산"으로 1일 = 1아이템만 노출 (기존 유지)
- * - 바텀시트는 "트랜잭션 기준"으로 묶인 상세 항목만 표시 (UI/스타일은 기존 그대로)
+ * - 리스트는 "트랜잭션" 기준으로 1아이템만 노출
  */
 const PointHistoryScreen = () => {
   /** 바텀시트 상태 */
