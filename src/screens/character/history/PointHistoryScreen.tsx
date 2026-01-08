@@ -1,9 +1,6 @@
 import React, { useMemo, useState, useCallback } from 'react';
 import { View, Text, Pressable, FlatList, StyleSheet } from 'react-native';
-import {
-  pointHistoryMock,
-  PointHistoryItem,
-} from '../../../data/mock/characterData';
+import type { PointHistoryItem } from '../../../data/mock/characterData';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import BottomSheetModal from '../../../components/BottomSheetModal';
@@ -17,17 +14,18 @@ import {
 } from '../../../styles/global';
 import Header from '../../../components/Header';
 
+// 백엔드 연동 훅
+import { usePointHistory } from '../../../hooks/usePointHistory';
+
 /**
  * PointHistoryScreen
- *
- * - 리스트는 "날짜별 합산"으로 1일 = 1아이템만 노출 (기존 유지)
- * - 바텀시트는 "트랜잭션 기준"으로 묶인 상세 항목만 표시 (UI/스타일은 기존 그대로)
+ * - 리스트는 "트랜잭션" 기준으로 1아이템만 노출
  */
 const PointHistoryScreen = () => {
   /** 바텀시트 상태 */
   const [sheetVisible, setSheetVisible] = useState(false);
 
-  // ✅ 변경: 선택 기준을 날짜(dayKey) -> transactionId 로 바꿈
+  // 선택 기준을 날짜(dayKey) -> transactionId 로 바꿈
   const [selectedTxId, setSelectedTxId] = useState<string | null>(null);
 
   const openSheet = (txId: string) => {
@@ -39,6 +37,9 @@ const PointHistoryScreen = () => {
     setSheetVisible(false);
     setSelectedTxId(null);
   };
+
+  /** 보상 획득 내역 조회 */
+  const { data: historyData } = usePointHistory();
 
   /** ISO → "12월 08일" */
   const toShortDate = useCallback((iso: string) => {
@@ -52,17 +53,16 @@ const PointHistoryScreen = () => {
 
   /** 받은 내역만 필터링 + 최신순 정렬(원본) */
   const earnedRawList = useMemo(() => {
-    return pointHistoryMock
+    return (historyData?.items ?? [])
       .filter(it => it.xpDelta > 0 || it.ptDelta > 0)
       .sort(
         (a, b) =>
           new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
       );
-  }, []);
+  }, [historyData?.items]);
 
   /**
-   * ✅ 추가: 트랜잭션별 합산 리스트(FlatList용)
-   * - 기존 DaySummaryItem과 동일한 역할인데 id/dayKey만 tx 기준으로 바뀜
+   * 트랜잭션별 합산 리스트(FlatList용)
    * - createdAt은 "트랜잭션 내 최신 시간"을 대표로 사용(기존 최신순 표기 유지)
    */
   type TxSummaryItem = {
@@ -80,7 +80,7 @@ const PointHistoryScreen = () => {
     >();
 
     for (const it of earnedRawList) {
-      const key = it.transactionId; // ✅ 트랜잭션 기준
+      const key = it.transactionId; // 트랜잭션 기준
       const xp = Math.max(0, it.xpDelta);
       const pt = Math.max(0, it.ptDelta);
 
@@ -118,9 +118,8 @@ const PointHistoryScreen = () => {
   }, [earnedRawList]);
 
   /**
-   * ✅ 변경: 선택한 트랜잭션의 상세(원본 항목들)
-   * - 기존 bundledItems = dayKey 필터였는데
-   * - 이제 bundledItems = transactionId 필터
+   * 선택한 트랜잭션의 상세(원본 항목들)
+   * - bundledItems = transactionId 필터
    */
   const bundledItems = useMemo(() => {
     if (!selectedTxId) return [];
@@ -135,7 +134,7 @@ const PointHistoryScreen = () => {
     return (
       <Pressable
         style={styles.rowPressable}
-        onPress={() => openSheet(item.transactionId)} // ✅ 트랜잭션 id로 오픈
+        onPress={() => openSheet(item.transactionId)} // 트랜잭션 id로 오픈
       >
         <View style={styles.row}>
           {/* 1줄: 아이콘 + XP/P  |  우측 날짜 */}
@@ -157,7 +156,7 @@ const PointHistoryScreen = () => {
               </View>
             </View>
 
-            {/* ✅ 날짜 표시는 기존대로 유지: 대표 createdAt을 mm월 dd일로 */}
+            {/* 날짜 표시는 기존대로 유지: 대표 createdAt을 mm월 dd일로 */}
             <Text style={styles.shortDate}>{toShortDate(item.createdAt)}</Text>
           </View>
 
@@ -168,7 +167,7 @@ const PointHistoryScreen = () => {
     );
   };
 
-  /** ✅ 바텀시트 내부 항목(기존 UI/스타일 그대로) */
+  /** 바텀시트 내부 항목(기존 UI/스타일 그대로) */
   const renderSheetItem = ({ item }: { item: PointHistoryItem }) => {
     const hasXp = item.xpDelta > 0;
     const hasPt = item.ptDelta > 0;
