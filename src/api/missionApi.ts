@@ -226,6 +226,10 @@ export const fetchContentDetail = async (
   contentId: number,
 ): Promise<ContentDetailResponse> => {
   try {
+    console.log(
+      `[글 상세 API] 요청: /api/content/${contentId}?userId=${userId}`,
+    );
+
     const response = await client.get<ContentDetailResponse>(
       `/api/content/${contentId}?userId=${userId}`,
     );
