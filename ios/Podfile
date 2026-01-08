@@ -22,7 +22,7 @@ target 'Neurous' do
 
   # react-native-permissions 설정
   permissions_path = '../node_modules/react-native-permissions/ios'
-  pod 'Permission-Notifications', :path => "#{permissions_path}/Notifications"
+
 
   use_react_native!(
     :path => config[:reactNativePath],
