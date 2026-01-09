@@ -87,7 +87,7 @@ const MissionScreen = () => {
     isLoading: missionsLoading,
     refetch: refetchMissions,
   } = useMissions();
-
+  console.log('contents', missionData);
   // 화면 포커스 시 API 요청
   useFocusEffect(
     useCallback(() => {
@@ -347,15 +347,15 @@ const MissionScreen = () => {
           {hasContents ? (
             contents.map((content, index) => {
               const article = convertMissionContentToArticle(content, index);
-              // contentId는 API 응답에 없으므로 임시로 인덱스 사용
-              // 실제로는 API에서 contentId를 제공해야 함
-              const contentId = index + 1; // 임시 ID
+              // // contentId는 API 응답에 없으므로 임시로 인덱스 사용
+              // // 실제로는 API에서 contentId를 제공해야 함
+              // const contentId = index + 1; // 임시 ID
 
               return (
                 <ArticleCard
                   key={article.id}
                   article={article}
-                  onPress={() => handleArticlePress(contentId)}
+                  onPress={() => handleArticlePress(272)}
                 />
               );
             })

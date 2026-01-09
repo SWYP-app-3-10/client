@@ -20,6 +20,10 @@ end
 target 'Neurous' do
   config = use_native_modules!
 
+  # react-native-permissions 설정
+  permissions_path = '../node_modules/react-native-permissions/ios'
+
+
   use_react_native!(
     :path => config[:reactNativePath],
     # An absolute path to your application root.
