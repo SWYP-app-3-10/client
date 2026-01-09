@@ -19,29 +19,39 @@ import { usePointHistory } from '../../../hooks/usePointHistory';
 
 /**
  * PointHistoryScreen
- * - 리스트는 "트랜잭션" 기준으로 1아이템만 노출
+ * - 보상 획득 내역을 최신순으로 표시하고, 탭 시 바텀시트로 상세를 보여줌
+ * - 리스트는 "트랜잭션(보상 1회)" 기준으로 XP/P를 합산해 1줄로 노출
+ * - 현재 트랜잭션 키(transactionId)가 백엔드에 실제 존재하는지/ historyId로 대체 가능한지 확인 대기 중
+ *  >> 현 시점은 usePointHistory에서 내려주는 transactionId로 묶고, 답변에 따라 추후 수정 예정.
  */
+
 const PointHistoryScreen = () => {
-  /** 바텀시트 상태 */
+  /** 바텀시트 노출 여부 */
   const [sheetVisible, setSheetVisible] = useState(false);
 
-  // 선택 기준을 날짜(dayKey) -> transactionId 로 바꿈
+  /**
+   * 선택된 트랜잭션 키
+   * - 현재는 transactionId로 취급
+   * - 실제 값은 hook(usePointHistory)에서 mapping한 값에 의존함
+   */
   const [selectedTxId, setSelectedTxId] = useState<string | null>(null);
 
+  /** 트랜잭션 상세 보기 오픈 */
   const openSheet = (txId: string) => {
     setSelectedTxId(txId);
     setSheetVisible(true);
   };
 
+  /** 트랜잭션 상세 보기 닫기 */
   const closeSheet = () => {
     setSheetVisible(false);
     setSelectedTxId(null);
   };
 
-  /** 보상 획득 내역 조회 */
+  /** 보상 획득 내역 조회 (hook 내부에서 API 호출 + 응답 mapping 수행) */
   const { data: historyData } = usePointHistory();
 
-  /** ISO → "12월 08일" */
+  /** ISO → "mm월 dd일" */
   const toShortDate = useCallback((iso: string) => {
     const d = new Date(iso);
     if (Number.isNaN(d.getTime())) return iso;
@@ -51,7 +61,11 @@ const PointHistoryScreen = () => {
     return `${mm}월 ${dd}일`;
   }, []);
 
-  /** 받은 내역만 필터링 + 최신순 정렬(원본) */
+  /**
+   * 원본 리스트
+   * - 획득 내역만(0 이하 제외)
+   * - 최신순 정렬
+   */
   const earnedRawList = useMemo(() => {
     return (historyData?.items ?? [])
       .filter(it => it.xpDelta > 0 || it.ptDelta > 0)
@@ -62,17 +76,23 @@ const PointHistoryScreen = () => {
   }, [historyData?.items]);
 
   /**
-   * 트랜잭션별 합산 리스트(FlatList용)
-   * - createdAt은 "트랜잭션 내 최신 시간"을 대표로 사용(기존 최신순 표기 유지)
+   * 리스트 렌더링용(요약) 타입
+   * - transactionId 기준으로 XP/P를 합산한 결과를 리스트에 1줄로 표시하기 위함
    */
   type TxSummaryItem = {
-    id: string; // transactionId
-    transactionId: string;
-    createdAt: string; // 대표 ISO (트랜잭션 내 최신)
-    xpSum: number;
-    ptSum: number;
+    id: string; // FlatList key 용
+    transactionId: string; // 그룹키(트랜잭션)
+    createdAt: string; // 트랜잭션 대표 시간(최신 createdAt)
+    xpSum: number; // 트랜잭션 내 XP 합
+    ptSum: number; // 트랜잭션 내 P 합
   };
 
+  /**
+   * 트랜잭션 요약 리스트
+   * - earnedRawList(원본 레코드)를 transactionId로 묶어서 합산한다.
+   * - transactionId가 "진짜 그룹키"인지 여부는 현재 백엔드 확인 대기 상태.
+   *   (확정되면 hook 매핑/필드 정의 쪽을 정리할 예정)
+   */
   const earnedList: TxSummaryItem[] = useMemo(() => {
     const map = new Map<
       string,
@@ -80,7 +100,7 @@ const PointHistoryScreen = () => {
     >();
 
     for (const it of earnedRawList) {
-      const key = it.transactionId; // 트랜잭션 기준
+      const key = it.transactionId;
       const xp = Math.max(0, it.xpDelta);
       const pt = Math.max(0, it.ptDelta);
 
@@ -93,6 +113,7 @@ const PointHistoryScreen = () => {
       prev.xpSum += xp;
       prev.ptSum += pt;
 
+      // 트랜잭션 대표 createdAt은 "가장 최신"으로 유지
       if (
         new Date(it.createdAt).getTime() > new Date(prev.latestIso).getTime()
       ) {
@@ -108,7 +129,7 @@ const PointHistoryScreen = () => {
       ptSum: v.ptSum,
     }));
 
-    // 최신 트랜잭션이 위로 (대표 latestIso 기준)
+    // 최신 트랜잭션이 위로
     list.sort(
       (a, b) =>
         new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
@@ -118,15 +139,15 @@ const PointHistoryScreen = () => {
   }, [earnedRawList]);
 
   /**
-   * 선택한 트랜잭션의 상세(원본 항목들)
-   * - bundledItems = transactionId 필터
+   * 선택된 트랜잭션의 상세 레코드 목록
+   * - 리스트에서 선택된 transactionId와 동일한 원본 레코드들을 바텀시트에 노출
    */
   const bundledItems = useMemo(() => {
     if (!selectedTxId) return [];
     return earnedRawList.filter(it => it.transactionId === selectedTxId);
   }, [selectedTxId, earnedRawList]);
 
-  /** 리스트 아이템(기존 UI/스타일 그대로) */
+  /** 리스트 아이템(트랜잭션 요약 1줄) */
   const renderItem = ({ item }: { item: TxSummaryItem }) => {
     const hasXp = item.xpSum > 0;
     const hasPt = item.ptSum > 0;
@@ -134,10 +155,10 @@ const PointHistoryScreen = () => {
     return (
       <Pressable
         style={styles.rowPressable}
-        onPress={() => openSheet(item.transactionId)} // 트랜잭션 id로 오픈
+        onPress={() => openSheet(item.transactionId)}
       >
         <View style={styles.row}>
-          {/* 1줄: 아이콘 + XP/P  |  우측 날짜 */}
+          {/* 1줄: 아이콘 + XP/P 합산  |  우측 날짜(대표 createdAt) */}
           <View style={styles.line1}>
             <View style={styles.leftGroup}>
               <View style={styles.icon} />
@@ -156,18 +177,17 @@ const PointHistoryScreen = () => {
               </View>
             </View>
 
-            {/* 날짜 표시는 기존대로 유지: 대표 createdAt을 mm월 dd일로 */}
             <Text style={styles.shortDate}>{toShortDate(item.createdAt)}</Text>
           </View>
 
-          {/* 2줄: 자세히 보기 */}
+          {/* 2줄: 상세 보기 */}
           <Text style={styles.detailHint}>자세히 보기</Text>
         </View>
       </Pressable>
     );
   };
 
-  /** 바텀시트 내부 항목(기존 UI/스타일 그대로) */
+  /** 바텀시트 내부 항목(원본 레코드 1개) */
   const renderSheetItem = ({ item }: { item: PointHistoryItem }) => {
     const hasXp = item.xpDelta > 0;
     const hasPt = item.ptDelta > 0;
@@ -200,7 +220,7 @@ const PointHistoryScreen = () => {
     );
   };
 
-  /** 바텀시트 콘텐츠: 기존처럼 "상세 리스트만" */
+  /** 바텀시트 콘텐츠(선택된 트랜잭션의 상세 레코드 리스트) */
   const SheetContent = () => {
     if (!selectedTxId) return null;
 
