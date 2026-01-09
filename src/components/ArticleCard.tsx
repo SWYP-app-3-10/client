@@ -23,6 +23,13 @@ interface ArticleCardProps {
   onPress: () => void;
 }
 
+const formatDate = (dateString: string): string => {
+  if (!dateString) {
+    return '';
+  }
+  return dateString.replace(/-/g, '.');
+};
+
 const ArticleCard = React.memo<ArticleCardProps>(({ article, onPress }) => {
   return (
     <TouchableOpacity style={styles.articleCardWrapper} onPress={onPress}>
@@ -50,7 +57,7 @@ const ArticleCard = React.memo<ArticleCardProps>(({ article, onPress }) => {
             {article.title}
           </Text>
           <Spacer num={12} />
-          <Text style={styles.articleDate}>{article.date}</Text>
+          <Text style={styles.articleDate}>{formatDate(article.date)}</Text>
         </View>
       </View>
     </TouchableOpacity>
@@ -70,6 +77,7 @@ const styles = StyleSheet.create({
       height: scaleWidth(2),
     },
     shadowOpacity: 0.2,
+    shadowRadius: scaleWidth(12),
     elevation: 2,
   },
   articleCard: {

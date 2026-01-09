@@ -67,18 +67,32 @@ const createTextStyle = (
 const TYPOGRAPHY = StyleSheet.create({
   // ========== Heading Styles ==========
   Heading_24EB_Round: {
-    fontFamily: 'Pretendard-ExtraBold',
-    ...(Platform.OS === 'ios' && { fontWeight: '800' }),
+    fontFamily: 'NanumSquareRoundEB',
     fontSize: scaleWidth(24),
     lineHeight: getLineHeight(24, 150),
     letterSpacing: getLetterSpacing(24, 0),
   },
-  Heading_20EB_Round: createTextStyle(20, 800, 150, 0),
+  Heading_20EB_Round: {
+    fontFamily: 'NanumSquareRoundEB',
+    fontSize: scaleWidth(20),
+    lineHeight: getLineHeight(20, 150),
+    letterSpacing: getLetterSpacing(20, 0),
+  },
   Heading_18B: createTextStyle(18, 700, 150, 0),
-  Heading_18EB_Round: createTextStyle(18, 800, 150, 0),
+  Heading_18EB_Round: {
+    fontFamily: 'NanumSquareRoundEB',
+    fontSize: scaleWidth(18),
+    lineHeight: getLineHeight(18, 150),
+    letterSpacing: getLetterSpacing(18, 0),
+  },
   Heading_18SB: createTextStyle(18, 600, 150, 0),
   Heading_16B: createTextStyle(16, 700, 150, 0),
-  Heading_16EB_Round: createTextStyle(16, 800, 150, 0),
+  Heading_16EB_Round: {
+    fontFamily: 'NanumSquareRoundEB',
+    fontSize: scaleWidth(16),
+    lineHeight: getLineHeight(16, 150),
+    letterSpacing: getLetterSpacing(16, 0),
+  },
   // ========== Body Styles ==========
   Body_18M: createTextStyle(18, 500, 150, 0),
   Body_16SB: createTextStyle(16, 600, 150, 0),

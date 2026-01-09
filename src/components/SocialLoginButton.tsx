@@ -29,15 +29,14 @@ const SocialLoginButton: React.FC<SocialLoginButtonProps> = ({
       case 'APPLE':
         return (
           <Button
-            variant="outline"
+            variant="primary"
             style={styles.appleButton}
             onPress={onPress}
             disabled={loading !== null}
           >
             <AppleIcon />
             <Spacer horizontal num={8} />
-
-            <Text style={[styles.socialButtonText, { color: COLORS.white }]}>
+            <Text style={[styles.socialButtonText, styles.appleButtonText]}>
               애플 계정으로 로그인
             </Text>
           </Button>
@@ -81,7 +80,7 @@ const SocialLoginButton: React.FC<SocialLoginButtonProps> = ({
             <NaverIcon />
             <Spacer horizontal num={8} />
             <Text style={[styles.socialButtonText, styles.naverButtonText]}>
-              Naver 계정으로 로그인
+              네이버 계정으로 로그인
             </Text>
           </Button>
         );
@@ -127,11 +126,10 @@ const styles = StyleSheet.create({
   },
   appleButton: {
     width: '100%',
-    height: scaleWidth(56),
     backgroundColor: COLORS.black,
+    borderWidth: 0,
   },
   outlineButton: {
-    borderColor: '#747775',
     backgroundColor: COLORS.white,
   },
   kakaoButton: {
@@ -142,13 +140,16 @@ const styles = StyleSheet.create({
   },
   socialButtonText: {
     fontFamily: 'Roboto-Medium',
-    fontSize: 16,
-    lineHeight: 16 * 1.5, // 150% (16 * 1.5 = 24)
+    fontSize: scaleWidth(16),
+    fontWeight: '500',
   },
   kakaoButtonText: {
     color: COLORS.black,
   },
   naverButtonText: {
+    color: COLORS.white,
+  },
+  appleButtonText: {
     color: COLORS.white,
   },
 });

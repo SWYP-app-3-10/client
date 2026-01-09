@@ -157,12 +157,13 @@ export const useArticleNavigation = ({
           // 포인트가 부족한 경우 - 광고 시청 모달
           showModal({
             title: '광고를 보고 포인트 받으시겠어요?',
-            description: `사용 가능한 포인트: ${currentPoints}p`,
+            description: `부족한 포인트: ${currentPoints}p`,
             descriptionColor: COLORS.gray600,
             closeButton: true,
             children: React.createElement(ArticlePointModalContentGet),
             primaryButton: {
-              title: '포인트 받기',
+              title: '포인트 받고 글 읽기',
+              textStyle: Heading_16B,
               onPress: () => {
                 navigation.navigate(RouteNames.FULL_SCREEN_STACK, {
                   screen: RouteNames.AD_LOADING,
