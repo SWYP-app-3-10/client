@@ -144,7 +144,7 @@ const PrivacyPolicyScreen = () => {
               )}
             </View>
 
-            <View style={styles.bulletList}>
+            <View style={[styles.bulletList, { marginLeft: scaleWidth(30) }]}>
               {renderItem('•', 'Android: 설정 > Google > 광고 > 광고 ID 삭제 또는 재설정')}
               {renderItem('•', 'iOS: 설정 > 개인정보 보호 및 보안 > 추적 > 앱의 추적 허용 해제')}
             </View>
@@ -175,10 +175,10 @@ const PrivacyPolicyScreen = () => {
 
               <View style={styles.tableRow}>
                 <Text style={[styles.tableCell, { flex: 1 }, styles.borderRight]}>
-                  NCP{'\n'}(Naver Cloud Platform)
+                  NCP(Naver Cloud Platform)
                 </Text>
                 <Text style={[styles.tableCell, { flex: 1 }, styles.borderRight]}>
-                  서비스 데이터 저장,{'\n'}시스템 및 서버 운영 관리
+                  서비스 데이터 저장, 시스템 및 서버 운영 관리
                 </Text>
                 <Text style={[styles.tableCell, { flex: 1 }]}>국내</Text>
               </View>
@@ -188,10 +188,10 @@ const PrivacyPolicyScreen = () => {
                   Google AdMob
                 </Text>
                 <Text style={[styles.tableCell, { flex: 1 }, styles.borderRight]}>
-                  보상형 광고 송출,{'\n'}광고 시청 여부 확인 및{'\n'}리워드(포인트) 지급 관리
+                  보상형 광고 송출, 광고 시청 여부 확인 및 리워드(포인트) 지급 관리
                 </Text>
                 <Text style={[styles.tableCell, { flex: 1 }]}>
-                  국외{'\n'}(미국)
+                  국외(미국)
                 </Text>
               </View>
             </View>
