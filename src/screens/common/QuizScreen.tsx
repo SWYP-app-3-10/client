@@ -273,6 +273,7 @@ const QuizScreen: React.FC = () => {
       <Header iconColor={COLORS.black} />
       <Spacer num={32} />
       <ScrollView
+        bounces={false}
         style={styles.scrollView}
         contentContainerStyle={styles.content}
         showsVerticalScrollIndicator={false}
@@ -328,9 +329,9 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    height: scaleWidth(68),
     gap: scaleWidth(20),
     paddingHorizontal: scaleWidth(24),
+    paddingVertical: scaleWidth(20),
     borderRadius: BORDER_RADIUS[16],
     backgroundColor: COLORS.gray100,
   },

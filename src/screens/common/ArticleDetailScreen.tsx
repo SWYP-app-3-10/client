@@ -365,7 +365,7 @@ const ArticleDetailScreen = () => {
   if (isLoading) {
     return (
       <SafeAreaView style={styles.container}>
-        <Header iconColor={COLORS.black} />
+        <Header iconColor={COLORS.gray800} />
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color={COLORS.puple.main} />
           <Spacer num={16} />
@@ -378,7 +378,7 @@ const ArticleDetailScreen = () => {
   if (error || !contentDetail) {
     return (
       <SafeAreaView style={styles.container}>
-        <Header iconColor={COLORS.black} />
+        <Header iconColor={COLORS.gray800} />
         <View style={styles.errorContainer}>
           <Text>{error || '기사를 찾을 수 없습니다.'}</Text>
         </View>
@@ -388,8 +388,9 @@ const ArticleDetailScreen = () => {
 
   return (
     <SafeAreaView style={styles.container}>
-      <Header iconColor={COLORS.black} />
+      <Header iconColor={COLORS.gray800} />
       <ScrollView
+        bounces={false}
         style={styles.scrollView}
         contentContainerStyle={styles.content}
         showsVerticalScrollIndicator={false}
@@ -397,22 +398,21 @@ const ArticleDetailScreen = () => {
         {/* 기사 내용 */}
         <ArticleContent content={contentDetail} />
         <Spacer num={48} />
-
-        {/* 하단 퀴즈 풀기 버튼 */}
-        <Button
-          title="퀴즈 풀기"
-          onPress={() => {
-            // @ts-ignore
-            const returnTo = route.params?.returnTo || 'mission';
-            navigation.navigate(RouteNames.QUIZ, {
-              articleId: articleId || 0,
-              returnTo,
-            });
-          }}
-          variant="primary"
-          style={styles.quizButton}
-        />
       </ScrollView>
+      {/* 하단 퀴즈 풀기 버튼 */}
+      <Button
+        title="퀴즈 풀기"
+        onPress={() => {
+          // @ts-ignore
+          const returnTo = route.params?.returnTo || 'mission';
+          navigation.navigate(RouteNames.QUIZ, {
+            articleId: articleId || 0,
+            returnTo,
+          });
+        }}
+        variant="primary"
+        style={styles.quizButton}
+      />
     </SafeAreaView>
   );
 };

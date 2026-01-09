@@ -201,7 +201,9 @@ const MissionScreen = () => {
 
   // 일일 출석 체크
   useEffect(() => {
-    if (hasCheckedDailyEntryRef.current) return;
+    if (hasCheckedDailyEntryRef.current) {
+      return;
+    }
     const checkDailyEntry = async () => {
       try {
         const today = new Date().toISOString().split('T')[0];
@@ -261,7 +263,7 @@ const MissionScreen = () => {
         <View style={missionScreenStyles.notificationButtonContainer}>
           <View style={missionScreenStyles.notificationButton} />
           <IconButton onPress={handleNavigateToNotification}>
-            <AlarmIcon />
+            <AlarmIcon color={COLORS.gray800} />
           </IconButton>
         </View>
         <View style={missionScreenStyles.header}>
@@ -274,7 +276,7 @@ const MissionScreen = () => {
           </View>
         </View>
 
-        <Spacer num={24} />
+        <Spacer num={38} />
 
         {/* 미션 진행 카드 캐러셀 (무한스크롤 제거 버전) */}
         {hasMissions ? (
@@ -312,7 +314,7 @@ const MissionScreen = () => {
               </ScrollView>
             </View>
 
-            <Spacer num={16} />
+            <Spacer num={21} />
 
             {/* 캐러셀 인디케이터 */}
             <View style={missionScreenStyles.carouselIndicators}>
@@ -340,7 +342,7 @@ const MissionScreen = () => {
           </>
         )}
 
-        <Spacer num={24} />
+        <Spacer num={47} />
 
         {/* 아티클 리스트 */}
         <View style={missionScreenStyles.articleList}>
@@ -390,7 +392,7 @@ export const missionScreenStyles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'flex-start',
     paddingHorizontal: scaleWidth(20),
-    paddingTop: scaleWidth(32),
+    paddingTop: scaleWidth(8),
   },
   headerLeft: {
     flex: 1,

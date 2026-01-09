@@ -10,6 +10,7 @@ import {
 } from '../styles/global';
 import Spacer from './Spacer';
 import { ContentDetail } from '../api/missionApi';
+import { ViewIcon } from '../icons';
 
 interface ArticleContentProps {
   content?: ContentDetail;
@@ -33,9 +34,16 @@ const ArticleContent: React.FC<ArticleContentProps> = ({ content }) => {
         </View>
         <Spacer num={8} />
         <Text style={styles.title}>{content?.title}</Text>
-        <Text style={styles.meta}>
-          {content?.contentDate} | 조회수 {content?.hits}
-        </Text>
+        <View style={styles.metaWrapper}>
+          <View style={styles.metaContainer}>
+            <Text style={styles.meta}>{content?.contentDate}</Text>
+            <Text style={styles.meta}> | </Text>
+            <View style={styles.viewIconContainer}>
+              <ViewIcon />
+            </View>
+            <Text style={styles.meta}> {content?.hits}</Text>
+          </View>
+        </View>
         <Spacer num={40} />
 
         {/* 본문 */}
@@ -79,9 +87,20 @@ const styles = StyleSheet.create({
     ...Caption_14R,
     color: COLORS.gray600,
   },
+  metaContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
   body: {
     ...Body_16R,
     color: COLORS.black,
+  },
+  viewIconContainer: {
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  metaWrapper: {
+    flex: 1,
   },
 });
 

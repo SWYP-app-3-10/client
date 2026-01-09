@@ -25,7 +25,6 @@ import {
   Heading_18EB_Round,
 } from '../../styles/global';
 import { Button, MissionCard } from '../../components';
-import IconButton from '../../components/IconButton';
 import {
   CharacterStackParamList,
   MainTabNavigationProp,
@@ -43,7 +42,6 @@ import {
   Level_5_Tooltip,
   RightArrowIcon,
   ProgressBarIcon,
-  AlarmIcon,
 } from '../../icons';
 import { Body_15M, Heading_16B } from '../../styles/typography';
 import {
@@ -191,13 +189,6 @@ const CharacterScreen = () => {
     };
   }, []);
 
-  // 네비게이션 핸들러들 메모이제이션
-  const handleNavigateToNotification = useCallback(() => {
-    rootNavigation.navigate(RouteNames.FULL_SCREEN_STACK, {
-      screen: RouteNames.CHARACTER_NOTIFICATION,
-    });
-  }, [rootNavigation]);
-
   const handleNavigateToCriteria = useCallback(() => {
     rootNavigation.navigate(RouteNames.FULL_SCREEN_STACK, {
       screen: RouteNames.CHARACTER_CRITERIA,
@@ -263,12 +254,6 @@ const CharacterScreen = () => {
           />
         </View>
 
-        <View style={styles.notificationButtonContainer}>
-          <IconButton onPress={handleNavigateToNotification}>
-            <AlarmIcon />
-          </IconButton>
-        </View>
-
         {/* 레벨 버튼 */}
         <View style={styles.levelButtonContainer}>
           <Button
@@ -279,7 +264,7 @@ const CharacterScreen = () => {
             <Text style={styles.levelButtonText}>
               {currentLevelData?.title || 'Lv. 1 아메바'}
             </Text>
-            <InfoIcon />
+            <InfoIcon color={COLORS.gray400} />
           </Button>
           {/* 툴팁 */}
           {showTooltip && (
@@ -423,7 +408,6 @@ const styles = StyleSheet.create({
   },
   tooltipContainer: {
     marginTop: scaleWidth(30),
-
     position: 'absolute',
     top: scaleWidth(46),
     alignItems: 'center',
@@ -434,11 +418,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: COLORS.overlayWhite,
-    paddingHorizontal: scaleWidth(16),
+    paddingHorizontal: scaleWidth(15),
     height: scaleWidth(42),
     borderRadius: BORDER_RADIUS[99],
-    gap: scaleWidth(2),
-    borderWidth: scaleWidth(3),
+    gap: scaleWidth(8),
+    borderWidth: scaleWidth(2),
     borderColor: COLORS.white,
   },
   levelButtonText: {
