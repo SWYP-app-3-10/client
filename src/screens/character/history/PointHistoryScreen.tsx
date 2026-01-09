@@ -13,6 +13,7 @@ import {
   Body_16M,
 } from '../../../styles/global';
 import Header from '../../../components/Header';
+import RewardIcon from '../../../assets/svg/RewardIcon.svg';
 
 // 백엔드 연동 훅
 import { usePointHistory } from '../../../hooks/usePointHistory';
@@ -161,7 +162,9 @@ const PointHistoryScreen = () => {
           {/* 1줄: 아이콘 + XP/P 합산  |  우측 날짜(대표 createdAt) */}
           <View style={styles.line1}>
             <View style={styles.leftGroup}>
-              <View style={styles.icon} />
+              <View style={styles.icon}>
+                <RewardIcon width={ICON_SIZE} height={ICON_SIZE} />
+              </View>
 
               <View style={styles.badgeLine}>
                 {hasXp && (
@@ -231,7 +234,6 @@ const PointHistoryScreen = () => {
           keyExtractor={it => it.id}
           renderItem={renderSheetItem}
           ItemSeparatorComponent={() => <View style={styles.sheetSeparator} />}
-          contentContainerStyle={styles.sheetListContent}
         />
       </View>
     );
@@ -259,7 +261,6 @@ const PointHistoryScreen = () => {
 export default PointHistoryScreen;
 
 const ICON_SIZE = scaleWidth(26);
-const ICON_GAP = scaleWidth(10);
 
 const styles = StyleSheet.create({
   container: {
@@ -298,14 +299,12 @@ const styles = StyleSheet.create({
   icon: {
     width: ICON_SIZE,
     height: ICON_SIZE,
-    borderRadius: BORDER_RADIUS[4],
-    backgroundColor: COLORS.gray200,
-    marginRight: ICON_GAP,
+    marginRight: scaleWidth(6),
   },
   badgeLine: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: scaleWidth(12),
+    gap: scaleWidth(4),
   },
   badgeText: {
     ...Heading_18SB,
@@ -327,9 +326,6 @@ const styles = StyleSheet.create({
   sheetContainer: {
     paddingBottom: scaleWidth(12),
   },
-  sheetListContent: {
-    paddingBottom: scaleWidth(48),
-  },
   sheetSeparator: {
     height: scaleWidth(1),
     backgroundColor: COLORS.gray200,
@@ -345,7 +341,7 @@ const styles = StyleSheet.create({
   sheetBadgeLine: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: scaleWidth(12),
+    gap: scaleWidth(6),
   },
   sheetBadgeText: {
     ...Heading_18SB,
