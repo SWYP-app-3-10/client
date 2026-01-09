@@ -1,6 +1,6 @@
 // PointCriteriaScreen.tsx
 import React, { memo } from 'react';
-import { ScrollView, View, Text, StyleSheet } from 'react-native';
+import { ScrollView, View, Text, StyleSheet, Image } from 'react-native';
 
 // 공통 컴포넌트
 import { Spacer } from '../../../../components';
@@ -17,8 +17,8 @@ import {
   Caption_14R,
 } from '../../../../styles/global';
 
-import XpIcon from '../../../../assets/svg/Coin_XP.svg';
-import PtIcon from '../../../../assets/svg/Coin_Pt.svg';
+import XpIcon from '../../../../assets/png/coin_xp.png';
+import PtIcon from '../../../../assets/png/coin_p.png';
 
 /**
  * 경험치/포인트 획득 기준 목록
@@ -85,10 +85,19 @@ const InfoItem = memo(
         {/* 아이콘 + 타이틀(한 줄 세트) */}
         <View style={styles.infoHead}>
           {iconType === 'XP' ? (
-            <XpIcon width={scaleWidth(36)} height={scaleWidth(36)} />
+            <Image
+              source={XpIcon}
+              resizeMode="contain"
+              style={styles.coinIcon}
+            />
           ) : (
-            <PtIcon width={scaleWidth(36)} height={scaleWidth(36)} />
+            <Image
+              source={PtIcon}
+              resizeMode="contain"
+              style={styles.coinIcon}
+            />
           )}
+
           <Text style={[styles.infoTitleBase, titleStyle]}>{title}</Text>
         </View>
 
@@ -299,5 +308,9 @@ const styles = StyleSheet.create({
   pillTextPt: {
     ...Body_16SB,
     color: COLORS.yellow.medium,
+  },
+  coinIcon: {
+    width: scaleWidth(44),
+    height: scaleWidth(44),
   },
 });
