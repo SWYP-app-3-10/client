@@ -7,6 +7,7 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
 import { RouteNames } from '../../routes';
 import { NewsCategory } from '../data/mock/searchData';
+import { SocialLoginProvider } from '../services/socialLoginService';
 
 // Onboarding Stack Param List
 export type OnboardingStackParamList = {
@@ -15,7 +16,14 @@ export type OnboardingStackParamList = {
   [RouteNames.INTRO_CARDLIST]: undefined;
   [RouteNames.INTRO_FUNCTION]: undefined;
   [RouteNames.INTRO_SEARCH]: undefined;
-  [RouteNames.SOCIAL_LOGIN]: undefined;
+  // 변경: 약관 화면에서 돌아올 때 agreedProvider를 params로 받을 수 있게 함(옵션)
+  [RouteNames.SOCIAL_LOGIN]:
+    | { agreedProvider?: SocialLoginProvider }
+    | undefined;
+  // 추가: 약관 동의 화면 진입 시 어떤 소셜인지 전달
+  [RouteNames.TERMS_AGREEMENT]: { provider: SocialLoginProvider };
+  [RouteNames.TERMS_OF_SERVICE]: undefined;
+  [RouteNames.PRIVACY_POLICY]: undefined;
 };
 
 // Mission Stack Param List

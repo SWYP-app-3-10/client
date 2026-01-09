@@ -8,7 +8,12 @@ import {
   Dimensions,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useNavigation } from '@react-navigation/native';
+import {
+  useNavigation,
+  useRoute,
+  RouteProp,
+  CommonActions,
+} from '@react-navigation/native';
 import { RouteNames } from '../../../routes';
 import {
   Body_16SB,
@@ -37,12 +42,17 @@ import {
 } from '../../store/onboardingStore';
 import { useNotificationPermission } from '../../hooks/useNotificationPermission';
 import { LoginBackground } from '../../icons/commonIcons/simpleImages';
-import { CommonActions } from '@react-navigation/native';
 
 type NavigationProp = NativeStackNavigationProp<OnboardingStackParamList>;
+type LoginRouteProp = RouteProp<
+  OnboardingStackParamList,
+  typeof RouteNames.SOCIAL_LOGIN
+>;
 
 const LoginScreen = () => {
   const navigation = useNavigation<NavigationProp>();
+  const route = useRoute<LoginRouteProp>();
+
   const [loading, setLoading] = useState<SocialLoginProvider | null>(null);
   const [recentLogin, setRecentLogin] = useState<RecentLoginInfo | null>(null);
   const showModal = useShowModal();
@@ -74,6 +84,18 @@ const LoginScreen = () => {
 
     return () => clearTimeout(timer);
   }, []);
+
+  // 약관 화면에서 agreedProvider를 넘겨서 돌아오면,
+  // 기존 handleSocialLogin 로직을 그대로 실행
+  useEffect(() => {
+    const agreedProvider = route.params?.agreedProvider;
+    if (!agreedProvider) return;
+
+    handleSocialLogin(agreedProvider);
+
+    // 재진입/리렌더 시 중복 실행 방지용으로 params를 비움
+    navigation.setParams({ agreedProvider: undefined });
+  }, [route.params?.agreedProvider]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleNotificationModal = async () => {
     const shouldShowModal = await checkPermission();
@@ -148,10 +170,16 @@ const LoginScreen = () => {
     }
   };
 
-  const handleGoogleLogin = () => handleSocialLogin('GOOGLE');
-  const handleKakaoLogin = () => handleSocialLogin('KAKAO');
-  const handleNaverLogin = () => handleSocialLogin('NAVER');
-  const handleAppleLogin = () => handleSocialLogin('APPLE');
+  // 로그인 버튼을 누르면 바로 로그인하지 않고 약관 화면으로 먼저 이동
+  // 약관에서 동의 완료 시 agreedProvider로 다시 돌아오고, 위 useEffect에서 handleSocialLogin이 실행
+  const goTermsAgreement = (provider: SocialLoginProvider) => {
+    navigation.navigate(RouteNames.TERMS_AGREEMENT, { provider });
+  };
+
+  const handleGoogleLogin = () => goTermsAgreement('GOOGLE');
+  const handleKakaoLogin = () => goTermsAgreement('KAKAO');
+  const handleNaverLogin = () => goTermsAgreement('NAVER');
+  const handleAppleLogin = () => goTermsAgreement('APPLE');
 
   return (
     <SafeAreaView style={styles.container}>
