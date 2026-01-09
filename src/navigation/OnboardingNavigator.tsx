@@ -8,6 +8,9 @@ import IntroCardList from '../screens/onboarding/IntroCardList';
 import IntroFuction from '../screens/onboarding/IntroFuction';
 import IntroSearch from '../screens/onboarding/IntroSearch';
 import { useOnboardingStore } from '../store/onboardingStore';
+import TermsOfServiceScreen from '../screens/myPage/TermOfServiceScreen';
+import PrivacyPolicyScreen from '../screens/myPage/PrivacyPolicyScreen';
+import TermsAgreementScreen from '../screens/onboarding/TermsAgreementScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -45,6 +48,18 @@ const OnboardingNavigator = () => {
       <Stack.Screen
         name={RouteNames.DIFFICULTY_SETTING}
         component={DifficultySettingScreen}
+      />
+      <Stack.Screen
+        name={RouteNames.TERMS_AGREEMENT}
+        component={TermsAgreementScreen}
+      />
+      <Stack.Screen
+        name={RouteNames.TERMS_OF_SERVICE}
+        component={TermsOfServiceScreen}
+      />
+      <Stack.Screen
+        name={RouteNames.PRIVACY_POLICY}
+        component={PrivacyPolicyScreen}
       />
     </Stack.Navigator>
   );

@@ -2,6 +2,9 @@ export const RouteNames = {
   // 스플래시
   SPLASH: 'splash' as const,
 
+  // 약관 화면
+  TERMS_AGREEMENT: 'terms-agreement' as const,
+
   // 온보딩
   ONBOARDING: 'onboarding' as const,
   INTRO_CARDLIST: 'intro-cardlist' as const,
