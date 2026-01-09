@@ -8,11 +8,14 @@ import {
   Pressable,
   LayoutChangeEvent,
   ListRenderItem,
+  Image,
 } from 'react-native';
 import { levelList, LevelCriteria } from './levelData';
 
-// XP 아이콘 SVG import
-import XpIcon from '../../../../assets/svg/Coin_XP.svg';
+// XP/P 아이콘 import
+import XpIcon from '../../../../assets/png/coin_xp.png';
+
+import { InfoIcon } from '../../../../icons';
 
 // 공통 디자인 시스템
 import {
@@ -169,7 +172,11 @@ function XpSummaryCard({
           <Text style={styles.xpUnit}> XP</Text>
 
           <View style={styles.xpInfoIcon} onLayout={tooltip.onLayoutIcon}>
-            <Text style={styles.xpInfoIconText}>i</Text>
+            <InfoIcon
+              width={scaleWidth(22)}
+              height={scaleWidth(22)}
+              color={COLORS.gray400}
+            />
           </View>
         </Pressable>
 
@@ -193,7 +200,7 @@ function XpSummaryCard({
       </View>
 
       <View style={styles.xpImg}>
-        <XpIcon width={scaleWidth(92)} height={scaleWidth(92)} />
+        <Image source={XpIcon} style={styles.xpImgIcon} resizeMode="contain" />
       </View>
     </View>
   );
@@ -340,7 +347,6 @@ const styles = StyleSheet.create({
     marginLeft: scaleWidth(12),
     width: scaleWidth(22),
     height: scaleWidth(22),
-    backgroundColor: COLORS.gray300,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -446,5 +452,10 @@ const styles = StyleSheet.create({
   summaryTitle: {
     ...Body_16M,
     color: COLORS.gray800,
+  },
+
+  xpImgIcon: {
+    width: scaleWidth(92),
+    height: scaleWidth(92),
   },
 });
