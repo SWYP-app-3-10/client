@@ -536,7 +536,7 @@ const styles = StyleSheet.create({
   },
 
   // 카테고리 탭 영역
-  tabsWrap: { paddingVertical: scaleWidth(20) },
+  tabsWrap: { paddingVertical: scaleWidth(25) },
 
   // 리스트 영역
   list: { flex: 1 },
