@@ -1,5 +1,12 @@
-import React, { useEffect, useState, useCallback } from 'react';
-import { View, Text, StyleSheet, Pressable, Alert } from 'react-native';
+import React, { useEffect, useState, useCallback, useRef } from 'react';
+import {
+  View,
+  Text,
+  StyleSheet,
+  Pressable,
+  Alert,
+  AppState,
+} from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
 
@@ -51,8 +58,15 @@ const SettingScreen = () => {
   // 공통 모달 호출(Store 기반)
   const showModal = useShowModal();
 
+  // 설정 대기 상태 추적
+  const waitingForSettingsRef = useRef(false);
+
   // 권한 상태 확인/요청 훅
-  const { checkPermission, requestPermission } = useNotificationPermission();
+  const { checkPermission, requestPermission } = useNotificationPermission({
+    onSettingsOpened: () => {
+      waitingForSettingsRef.current = true;
+    },
+  });
 
   // 화면 포커스 시, store에 메시지가 있으면 토스트로 표시 후 제거
   useFocusEffect(
@@ -71,6 +85,29 @@ const SettingScreen = () => {
   const handleHideToast = useCallback(() => {
     setToastVisible(false);
   }, []);
+
+  // 설정에서 돌아왔을 때 권한 상태 확인 및 토글 업데이트
+  useEffect(() => {
+    const subscription = AppState.addEventListener(
+      'change',
+      async nextAppState => {
+        if (nextAppState === 'active' && waitingForSettingsRef.current) {
+          // 설정에서 돌아왔을 때 권한 상태 확인 및 토글 업데이트
+          waitingForSettingsRef.current = false;
+          try {
+            const shouldShowModal = await checkPermission();
+            setIsAlarmOn(!shouldShowModal);
+          } catch (error) {
+            console.error('권한 확인 실패:', error);
+          }
+        }
+      },
+    );
+
+    return () => {
+      subscription.remove();
+    };
+  }, [checkPermission]);
 
   useEffect(() => {
     /**
@@ -126,15 +163,8 @@ const SettingScreen = () => {
               const granted = await requestPermission();
 
               // OS 권한 결과에 따라 토글 반영
-              setIsAlarmOn(!!granted);
 
-              // 거절된 경우 사용자에게 OS 설정 안내
-              if (!granted) {
-                Alert.alert(
-                  '알림이 꺼져 있어요',
-                  '기기 설정에서 알림 권한을 허용하면 사용할 수 있어요.',
-                );
-              }
+              setIsAlarmOn(!!granted);
             },
           },
 
