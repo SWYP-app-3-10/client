@@ -89,7 +89,9 @@ const LoginScreen = () => {
   // 기존 handleSocialLogin 로직을 그대로 실행
   useEffect(() => {
     const agreedProvider = route.params?.agreedProvider;
-    if (!agreedProvider) return;
+    if (!agreedProvider) {
+      return;
+    }
 
     handleSocialLogin(agreedProvider);
 
@@ -197,18 +199,21 @@ const LoginScreen = () => {
             loading={loading}
             recentLogin={recentLogin}
           />
+
           <SocialLoginButton
             provider="GOOGLE"
             onPress={handleGoogleLogin}
             loading={loading}
             recentLogin={recentLogin}
           />
+
           <SocialLoginButton
             provider="NAVER"
             onPress={handleNaverLogin}
             loading={loading}
             recentLogin={recentLogin}
           />
+
           {Platform.OS === 'ios' && (
             <SocialLoginButton
               provider="APPLE"

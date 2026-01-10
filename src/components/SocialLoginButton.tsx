@@ -120,7 +120,6 @@ const styles = StyleSheet.create({
     position: 'absolute',
     width: scaleWidth(163),
     height: scaleWidth(42),
-    backgroundColor: COLORS.white,
     borderRadius: BORDER_RADIUS[16],
     zIndex: -1,
   },
