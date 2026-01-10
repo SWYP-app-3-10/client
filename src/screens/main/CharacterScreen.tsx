@@ -342,7 +342,7 @@ const CharacterScreen = () => {
         {/* 주간 출석 기록 */}
         <View style={styles.attendanceSection}>
           <Text style={styles.sectionTitle}>주간 출석 기록</Text>
-          <Spacer num={12} />
+          <Spacer num={16} />
           <View style={styles.attendanceDays}>
             {attendanceData.map((item, index) => (
               <View key={index} style={styles.attendanceDay}>
@@ -355,7 +355,7 @@ const CharacterScreen = () => {
           </View>
         </View>
 
-        <Spacer num={24} />
+        <Spacer num={48} />
 
         {/* 오늘의 미션 */}
         <View style={styles.missionSection}>

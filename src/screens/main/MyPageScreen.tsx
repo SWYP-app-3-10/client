@@ -328,7 +328,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: scaleWidth(12),
+    marginBottom: scaleWidth(16),
   },
   sectionTitle: {
     ...Heading_18EB_Round,
