@@ -10,7 +10,8 @@ import {
 import { useNavigation } from '@react-navigation/native';
 
 import IconButton from '../../../components/IconButton';
-import { Ic_backIcon, CloseIcon } from '../../../icons';
+import { Ic_backIcon } from '../../../icons';
+import X_SearchInput from '../../../assets/svg/X_SearchInput.svg';
 import {
   Body_16M,
   BORDER_RADIUS,
@@ -95,7 +96,7 @@ export default function SearchHeader({
             <TextInput
               value={value}
               placeholder={placeholder}
-              placeholderTextColor={COLORS.gray400}
+              placeholderTextColor={COLORS.gray600}
               style={styles.searchInput}
               editable={false}
               showSoftInputOnFocus={false}
@@ -113,7 +114,7 @@ export default function SearchHeader({
               value={value}
               onChangeText={onChangeText}
               placeholder={placeholder}
-              placeholderTextColor={COLORS.gray400}
+              placeholderTextColor={COLORS.gray600}
               returnKeyType="search"
               onSubmitEditing={onSubmit}
               style={styles.searchInput}
@@ -130,7 +131,7 @@ export default function SearchHeader({
                 accessibilityRole="button"
                 accessibilityLabel="검색어 지우기"
               >
-                <CloseIcon color={COLORS.gray500} />
+                <X_SearchInput color={COLORS.gray500} />
               </Pressable>
             )}
           </View>
@@ -156,10 +157,10 @@ const styles = StyleSheet.create({
 
   searchBarWrap: {
     flex: 1,
-    height: scaleWidth(40),
+    height: scaleWidth(52),
     borderRadius: BORDER_RADIUS[16],
     backgroundColor: COLORS.gray100,
-    paddingHorizontal: scaleWidth(14),
+    paddingHorizontal: scaleWidth(25),
     justifyContent: 'center',
   },
 

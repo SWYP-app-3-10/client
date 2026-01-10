@@ -10,7 +10,7 @@ import RecentSearches from '../../components/RecentSearches';
 import SearchHeader from './components/SearchHeader';
 import SearchLiveResultOverlay from './SearchLiveResultOveraly';
 
-import { COLORS, scaleWidth } from '../../styles/global';
+import { COLORS, Heading_18SB, scaleWidth } from '../../styles/global';
 import {
   loadRecents,
   addRecent,
@@ -172,11 +172,9 @@ const styles = StyleSheet.create({
     position: 'relative', // 오버레이 기준이 되는 부모
   },
   sectionTitle: {
-    marginTop: scaleWidth(12),
-    marginBottom: scaleWidth(10),
-    fontSize: scaleWidth(14),
-    fontWeight: '600',
-    color: COLORS.gray700,
+    marginVertical: scaleWidth(20),
+    ...Heading_18SB,
+    color: COLORS.gray800,
   },
   chipsArea: {
     flex: 1,
@@ -189,6 +187,7 @@ const styles = StyleSheet.create({
   recentContainer: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: scaleWidth(10),
+    columnGap: scaleWidth(12),
+    rowGap: scaleWidth(16),
   },
 });
