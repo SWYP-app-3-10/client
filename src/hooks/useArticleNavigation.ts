@@ -64,10 +64,7 @@ export const useArticleNavigation = ({
           articleId,
         );
 
-        console.log(
-          '[useArticleNavigation] 접근 권한 응답:',
-          accessResponse.data,
-        );
+        // console.log('[useArticleNavigation] 접근 권한 응답:', accessResponse);
 
         const accessData = accessResponse.data;
 
@@ -78,6 +75,7 @@ export const useArticleNavigation = ({
             : storePoints;
 
         console.log('[useArticleNavigation] 포인트 확인:', {
+          // accessData,
           apiPoints: accessData.currentPoints,
           storePoints,
           currentPoints,

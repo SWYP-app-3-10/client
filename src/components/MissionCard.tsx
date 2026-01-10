@@ -171,7 +171,7 @@ MissionCard.displayName = 'MissionCard';
 
 const styles = StyleSheet.create({
   missionCard: {
-    width: scaleWidth(348),
+    width: '100%',
     borderRadius: BORDER_RADIUS[20],
     position: 'relative',
   },
@@ -211,8 +211,9 @@ const styles = StyleSheet.create({
     height: scaleWidth(24),
   },
   progressBarContainerWrapper: {
-    width: scaleWidth(274),
+    flex: 1,
     height: scaleWidth(14),
+    minWidth: 0,
   },
   progressBarContainer: {
     backgroundColor: COLORS.gray100,
@@ -242,6 +243,8 @@ const styles = StyleSheet.create({
   },
   progressTextContainer: {
     justifyContent: 'center',
+    minWidth: scaleWidth(40),
+    flexShrink: 0,
   },
   progressText: {
     ...Caption_14R,
