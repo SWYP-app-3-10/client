@@ -29,12 +29,7 @@ import SearchResultItem from './components/SearchResultItem';
 
 import { NewsCategory, NewsItems } from '../../data/mock/searchData';
 import { useArticleNavigation } from '../../hooks/useArticleNavigation';
-import {
-  Caption_12M,
-  COLORS,
-  Heading_24EB_Round,
-  scaleWidth,
-} from '../../styles/global';
+import { Caption_12M, COLORS, scaleWidth } from '../../styles/global';
 
 import InfoIcon from '../../assets/svg/Info.svg';
 import SearchIcon from '../../assets/svg/ExploreSearch.svg';
@@ -103,7 +98,6 @@ export default function SearchScreen() {
   }, [data]);
 
   // --- 타이머 & 툴팁 로직 ---
-  // ✅ 기존 동작 동일, 단 리렌더 범위 축소를 위해 Header 컴포넌트로 분리
   const { handleArticlePress } = useArticleNavigation({ returnTo: 'search' });
 
   const goToSearchInput = () => {
@@ -114,7 +108,7 @@ export default function SearchScreen() {
 
   if (isLoading) {
     return (
-      <SafeAreaView style={styles.safe} edges={['top']}>
+      <SafeAreaView style={styles.safe} edges={['top', 'bottom']}>
         <ExploreHeaderWithTimer onSearch={goToSearchInput} />
         <FlatList
           style={styles.list}
@@ -128,7 +122,7 @@ export default function SearchScreen() {
   }
 
   return (
-    <SafeAreaView style={styles.safe} edges={['top']}>
+    <SafeAreaView style={styles.safe} edges={['top', 'bottom']}>
       <View style={styles.container}>
         <ExploreHeaderWithTimer onSearch={goToSearchInput} />
 
@@ -198,7 +192,7 @@ export default function SearchScreen() {
   );
 }
 
-// ✅ 타이머/툴팁 전용 헤더 컴포넌트 (기존 동작 동일)
+// 타이머/툴팁 전용 헤더 컴포넌트
 const ExploreHeaderWithTimer = React.memo(function ExploreHeaderWithTimer({
   onSearch,
 }: {
@@ -313,9 +307,8 @@ const formatRemainText = (sec: number) => {
 
 const HeaderArea = ({ timerText, tooltip, tooltipMinutes, onSearch }: any) => (
   <View style={styles.exploreHeaderRow}>
-    <View style={styles.exploreTitleBtn}>
-      <Text style={styles.exploreTitleText}>탐색</Text>
-    </View>
+    <View style={styles.leftSpacer} />
+    {/* 타이머 & 툴팁 영역 */}
     <View style={styles.centerWrap} onLayout={tooltip.onLayoutArea}>
       <Pressable
         onPress={tooltip.toggle}
@@ -352,11 +345,7 @@ const HeaderArea = ({ timerText, tooltip, tooltipMinutes, onSearch }: any) => (
       hitSlop={HIT_SLOP}
     >
       <View style={styles.searchIconWrap}>
-        <SearchIcon
-          width={scaleWidth(48)}
-          height={scaleWidth(48)}
-          color={COLORS.gray400}
-        />
+        <SearchIcon />
       </View>
     </TouchableOpacity>
   </View>
@@ -374,8 +363,7 @@ const styles = StyleSheet.create({
     zIndex: 100,
     elevation: 100,
   },
-  exploreTitleBtn: { minWidth: scaleWidth(44), justifyContent: 'center' },
-  exploreTitleText: { ...Heading_24EB_Round, color: COLORS.puple?.main },
+  leftSpacer: { width: scaleWidth(48) },
   centerWrap: {
     flex: 1,
     alignItems: 'center',
