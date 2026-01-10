@@ -36,7 +36,6 @@ import {
 import { RouteNames } from '../../../routes';
 
 import {
-  AlarmIcon,
   Check_2Icon,
   Level_1_Profile,
   Level_2_Profile,
@@ -44,6 +43,7 @@ import {
   Level_4_Profile,
   Level_5_Profile,
   NoArticlesIcon,
+  SettingIcon,
   TriangleIcon,
 } from '../../icons';
 import { useShowBottomSheetModal, useHideModal } from '../../store/modalStore';
@@ -149,7 +149,7 @@ const MyPageScreen = () => {
               });
             }}
           >
-            <AlarmIcon />
+            <SettingIcon />
           </IconButton>
         </View>
         <Spacer num={20} />
