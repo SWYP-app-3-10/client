@@ -87,7 +87,7 @@ const MissionScreen = () => {
     isLoading: missionsLoading,
     refetch: refetchMissions,
   } = useMissions();
-  console.log('contents', missionData);
+  // console.log('contents', missionData);
   // 화면 포커스 시 API 요청
   useFocusEffect(
     useCallback(() => {
