@@ -128,7 +128,7 @@ export default function SearchScreen() {
   // 초기 로딩 상태: 헤더는 보여주고, 리스트는 스켈레톤 표시
   if (isLoading) {
     return (
-      <SafeAreaView style={styles.safe} edges={['top', 'bottom']}>
+      <SafeAreaView style={styles.safe} edges={['top']}>
         <ExploreHeaderWithTimer onSearch={goToSearchInput} />
         <FlatList
           style={styles.list}
@@ -143,7 +143,7 @@ export default function SearchScreen() {
 
   // 일반 상태: 헤더 + 카테고리 탭 + 리스트
   return (
-    <SafeAreaView style={styles.safe} edges={['top', 'bottom']}>
+    <SafeAreaView style={styles.safe} edges={['top']}>
       <View style={styles.container}>
         <ExploreHeaderWithTimer onSearch={goToSearchInput} />
 
