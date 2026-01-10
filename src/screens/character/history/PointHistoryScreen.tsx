@@ -324,7 +324,7 @@ const styles = StyleSheet.create({
 
   /* ================= 바텀시트 ================= */
   sheetContainer: {
-    paddingBottom: scaleWidth(12),
+    paddingBottom: scaleWidth(0),
   },
   sheetSeparator: {
     height: scaleWidth(1),
