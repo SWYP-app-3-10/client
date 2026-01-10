@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useState, useCallback, useRef } from 'react';
 import { View, Text, StyleSheet, Pressable, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
@@ -51,46 +51,46 @@ const SettingScreen = () => {
   // 공통 모달 호출(Store 기반)
   const showModal = useShowModal();
 
+  // 설정 대기 상태 추적
+  const waitingForSettingsRef = useRef(false);
+
   // 권한 상태 확인/요청 훅
-  const { checkPermission, requestPermission } = useNotificationPermission();
+  const { checkPermission, requestPermission } = useNotificationPermission({
+    onSettingsOpened: () => {
+      waitingForSettingsRef.current = true;
+    },
+  });
 
   // 화면 포커스 시, store에 메시지가 있으면 토스트로 표시 후 제거
+  // 그리고 권한 상태 확인하여 토글 동기화
   useFocusEffect(
     useCallback(() => {
+      // 토스트 메시지 처리
       if (storedToastMessage) {
         setToastMessage(storedToastMessage);
         setToastVisible(true);
-
-        // 중복 표시 방지
         clearToast();
       }
-    }, [storedToastMessage, clearToast]),
+
+      // 권한 상태 확인하여 토글 동기화
+      // (초기 진입 시, 설정에서 돌아왔을 때 모두 처리)
+      const syncAlarmToggle = async () => {
+        try {
+          const shouldShowModal = await checkPermission();
+          setIsAlarmOn(!shouldShowModal);
+        } catch (e) {
+          // 실패 시 기존 토글 상태 유지
+        }
+      };
+
+      syncAlarmToggle();
+    }, [storedToastMessage, clearToast, checkPermission]),
   );
 
   // 토스트 종료 콜백
   const handleHideToast = useCallback(() => {
     setToastVisible(false);
   }, []);
-
-  useEffect(() => {
-    /**
-     * 초기 진입 시, OS 알림 권한 상태를 조회하여 토글 UI를 동기화
-     *
-     * checkPermission() 반환 규칙(현재 훅 구현 기준)
-     * - true  : "권한이 아직 확정적으로 허용되지 않아서 안내/요청이 필요" → 토글 OFF
-     * - false : "이미 허용된 상태로 판단" → 토글 ON
-     */
-    const syncAlarmToggle = async () => {
-      try {
-        const shouldShowModal = await checkPermission();
-        setIsAlarmOn(!shouldShowModal);
-      } catch (e) {
-        // 실패 시 기존 토글 상태 유지
-      }
-    };
-
-    syncAlarmToggle();
-  }, [checkPermission]);
 
   /**
    * 알림 설정 Row(또는 Switch) 클릭 시 동작
@@ -126,15 +126,8 @@ const SettingScreen = () => {
               const granted = await requestPermission();
 
               // OS 권한 결과에 따라 토글 반영
-              setIsAlarmOn(!!granted);
 
-              // 거절된 경우 사용자에게 OS 설정 안내
-              if (!granted) {
-                Alert.alert(
-                  '알림이 꺼져 있어요',
-                  '기기 설정에서 알림 권한을 허용하면 사용할 수 있어요.',
-                );
-              }
+              setIsAlarmOn(!!granted);
             },
           },
 

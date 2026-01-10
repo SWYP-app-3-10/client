@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import {
   View,
   Text,
@@ -6,6 +6,7 @@ import {
   Alert,
   Platform,
   Dimensions,
+  AppState,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import {
@@ -60,7 +61,31 @@ const LoginScreen = () => {
     state => state.setOnboardingStep,
   );
   const completeOnboarding = useCompleteOnboarding();
-  const { checkPermission, requestPermission } = useNotificationPermission();
+  const waitingForSettingsRef = useRef(false);
+  const { checkPermission, requestPermission } = useNotificationPermission({
+    onSettingsOpened: () => {
+      waitingForSettingsRef.current = true;
+    },
+  });
+
+  // 설정에서 돌아왔을 때 관심분야 화면으로 이동 (권한 설정 여부와 관계없이)
+  useEffect(() => {
+    const subscription = AppState.addEventListener(
+      'change',
+      async nextAppState => {
+        if (nextAppState === 'active' && waitingForSettingsRef.current) {
+          // 설정에서 돌아왔을 때 무조건 관심분야 화면으로 이동
+          waitingForSettingsRef.current = false;
+          await setOnboardingStep('interests');
+          navigation.navigate(RouteNames.INTERESTS, {});
+        }
+      },
+    );
+
+    return () => {
+      subscription.remove();
+    };
+  }, [setOnboardingStep, navigation]);
 
   useEffect(() => {
     const initSocialLogin = async () => {
@@ -89,7 +114,9 @@ const LoginScreen = () => {
   // 기존 handleSocialLogin 로직을 그대로 실행
   useEffect(() => {
     const agreedProvider = route.params?.agreedProvider;
-    if (!agreedProvider) return;
+    if (!agreedProvider) {
+      return;
+    }
 
     handleSocialLogin(agreedProvider);
 
@@ -114,9 +141,12 @@ const LoginScreen = () => {
             const granted = await requestPermission();
             if (granted) {
               console.log('알림 권한이 허용되었습니다.');
+              await setOnboardingStep('interests');
+              navigation.navigate(RouteNames.INTERESTS, {});
+            } else {
+              // 권한이 거부되었거나 설정으로 이동한 경우
+              waitingForSettingsRef.current = true;
             }
-            await setOnboardingStep('interests');
-            navigation.navigate(RouteNames.INTERESTS, {});
           },
         },
         secondaryButton: {
@@ -197,18 +227,21 @@ const LoginScreen = () => {
             loading={loading}
             recentLogin={recentLogin}
           />
+
           <SocialLoginButton
             provider="GOOGLE"
             onPress={handleGoogleLogin}
             loading={loading}
             recentLogin={recentLogin}
           />
+
           <SocialLoginButton
             provider="NAVER"
             onPress={handleNaverLogin}
             loading={loading}
             recentLogin={recentLogin}
           />
+
           {Platform.OS === 'ios' && (
             <SocialLoginButton
               provider="APPLE"
