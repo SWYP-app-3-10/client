@@ -162,7 +162,14 @@ export default function SearchScreen() {
               ] as any
             }
             selected={selectedCategory as any}
-            onSelect={(cat: any) => setSelectedCategory(cat)}
+            onSelect={(cat: any) => {
+              // 같은 탭을 다시 누르면 새로고침(refetch)해서 "업데이트 이후" 최신을 다시 받게 함
+              if (cat === selectedCategory) {
+                refetch();
+                return;
+              }
+              setSelectedCategory(cat);
+            }}
           />
         </View>
 
