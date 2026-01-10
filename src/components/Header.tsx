@@ -41,7 +41,7 @@ const Header = ({
 
     return (
       <IconButton onPress={handleGoBack}>
-        <Ic_backIcon color={iconColor ?? COLORS.black} />
+        <Ic_backIcon color={iconColor ?? COLORS.gray800} />
       </IconButton>
     );
   };

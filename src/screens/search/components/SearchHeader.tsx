@@ -77,7 +77,7 @@ export default function SearchHeader({
       {/* 뒤로가기 버튼 영역 (기존 Header와 동일한 구조 유지) */}
       <View style={styles.leftArea}>
         <IconButton onPress={handleBack}>
-          <Ic_backIcon color={iconColor ?? COLORS.black} />
+          <Ic_backIcon color={iconColor ?? COLORS.gray800} />
         </IconButton>
       </View>
 
