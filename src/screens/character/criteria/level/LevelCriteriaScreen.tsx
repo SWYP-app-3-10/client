@@ -12,12 +12,11 @@ import {
 } from 'react-native';
 import { levelList, LevelCriteria } from './levelData';
 
-// XP/P 아이콘 import
 import XpIcon from '../../../../assets/png/coin_xp.png';
+import TooltipXP from '../../../../assets/png/Tooltip_XP.png';
 
 import { InfoIcon } from '../../../../icons';
 
-// 공통 디자인 시스템
 import {
   COLORS,
   BORDER_RADIUS,
@@ -31,42 +30,41 @@ import {
   Body_16M,
 } from '../../../../styles/global';
 
-/**
- * value를 min~max 범위로 제한
- * → 툴팁 위치가 부모 영역을 벗어나지 않도록 보정
- */
 const clamp = (value: number, min: number, max: number) =>
   Math.min(Math.max(value, min), max);
 
 /**
- * ======================================
- * useTooltip
- *
- * 툴팁 전용 커스텀 훅
- *
- * - 툴팁 표시/숨김 토글
- * - 자동 닫힘 타이머 관리
- * - 말풍선과 꼬리가 아이콘 중앙을 가리키도록 위치 계산
- * ======================================
+ * TooltipXP.png 기준
+ * - 원본: 490 x 146
+ * - "꼬리 tip"이 이미지 정중앙이 아니라 왼쪽에 있음 → tip X 기준으로 left 계산
+ *   (값이 조금 틀리면 TOOLTIP_TIP_X만 미세 조정하면 됨)
  */
-function useTooltip(autoHideMs: number) {
-  /** 툴팁 표시 여부 */
-  const [visible, setVisible] = useState(false);
+const TOOLTIP_ASSET_W = 490;
+const TOOLTIP_ASSET_H = 146;
 
-  /** 자동 닫힘 타이머 */
+// ✅ 꼬리 tip X(원본 px) : 대략 이 근처에서 시작
+// - 꼬리가 (i)보다 왼쪽이면 값을 "줄이면" 꼬리가 오른쪽으로 감
+// - 꼬리가 (i)보다 오른쪽이면 값을 "늘리면" 꼬리가 왼쪽으로 감
+const TOOLTIP_TIP_X = 143;
+
+// ✅ 기존 tooltipWrap maxWidth(260) 유지
+const TOOLTIP_W = scaleWidth(260);
+const TOOLTIP_H = scaleWidth((260 * TOOLTIP_ASSET_H) / TOOLTIP_ASSET_W);
+
+function useTooltip(autoHideMs: number) {
+  const [visible, setVisible] = useState(false);
   const hideTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  /**
-   * 레이아웃 측정 값들
-   * - leftAreaWidth : 툴팁이 포함된 영역 너비
-   * - iconCenterX   : 정보 아이콘 중앙 좌표
-   * - tooltipWidth  : 실제 툴팁 너비
-   */
+  // leftArea 기준 너비(툴팁 clamp용)
   const [leftAreaWidth, setLeftAreaWidth] = useState(0);
-  const [iconCenterX, setIconCenterX] = useState(0);
-  const [tooltipWidth, setTooltipWidth] = useState(0);
 
-  /** 기존 타이머 제거 */
+  // ✅ 좌표계를 "xpLeft" 기준으로 맞추기 위해
+  // - valueRowX: xpValueRow의 x (xpLeft 기준)
+  // - iconX/iconW: xpValueRow 내부에서 info icon의 x/width
+  const [valueRowX, setValueRowX] = useState(0);
+  const [iconX, setIconX] = useState(0);
+  const [iconW, setIconW] = useState(0);
+
   const clearTimer = useCallback(() => {
     if (hideTimerRef.current) {
       clearTimeout(hideTimerRef.current);
@@ -74,7 +72,6 @@ function useTooltip(autoHideMs: number) {
     }
   }, []);
 
-  /** 툴팁 열기 + 자동 닫힘 예약 */
   const openWithAutoHide = useCallback(() => {
     clearTimer();
     setVisible(true);
@@ -85,66 +82,54 @@ function useTooltip(autoHideMs: number) {
     }, autoHideMs);
   }, [autoHideMs, clearTimer]);
 
-  /**
-   * XP 영역 클릭 시 토글
-   * - 닫힘 → 열림 (+ 자동 닫힘)
-   * - 열림 → 닫힘
-   */
   const toggle = useCallback(() => {
     setVisible(prev => {
       const next = !prev;
       clearTimer();
-      if (next) {
-        openWithAutoHide();
-      }
+      if (next) openWithAutoHide();
       return next;
     });
   }, [clearTimer, openWithAutoHide]);
 
-  /**
-   * 툴팁 말풍선 좌측 위치
-   * - 아이콘 중앙 기준
-   * - 부모 영역 밖으로 나가지 않도록 clamp
-   */
+  // ✅ xpLeft 기준 iconCenterX
+  const iconCenterX = useMemo(
+    () => valueRowX + iconX + iconW / 2,
+    [valueRowX, iconX, iconW],
+  );
+
+  // ✅ "꼬리 tip"이 iconCenterX에 오도록 left 계산
   const tooltipLeft = useMemo(() => {
-    if (!leftAreaWidth || !tooltipWidth) {
-      return 0;
-    }
+    if (!leftAreaWidth) return 0;
 
-    const raw = iconCenterX - tooltipWidth / 2;
-    return clamp(raw, 0, leftAreaWidth - tooltipWidth);
-  }, [leftAreaWidth, tooltipWidth, iconCenterX]);
+    const tipOffsetX = (TOOLTIP_W * TOOLTIP_TIP_X) / TOOLTIP_ASSET_W;
+    const raw = iconCenterX - tipOffsetX;
 
-  /**
-   * 툴팁 꼬리 위치
-   * - 말풍선 내부 기준
-   * - 아이콘 중앙을 가리키도록 계산
-   */
-  const arrowLeft = useMemo(() => {
-    const ARROW_HALF = scaleWidth(6);
-    return Math.max(scaleWidth(10), iconCenterX - tooltipLeft - ARROW_HALF);
-  }, [iconCenterX, tooltipLeft]);
+    return clamp(raw, 0, leftAreaWidth - TOOLTIP_W);
+  }, [leftAreaWidth, iconCenterX]);
 
-  /** 레이아웃 측정 콜백 */
   const onLayoutLeftArea = (e: LayoutChangeEvent) =>
     setLeftAreaWidth(e.nativeEvent.layout.width);
 
-  const onLayoutIcon = (e: LayoutChangeEvent) => {
-    const { x, width } = e.nativeEvent.layout;
-    setIconCenterX(x + width / 2);
+  // xpValueRow의 x를 xpLeft 기준으로 저장
+  const onLayoutValueRow = (e: LayoutChangeEvent) => {
+    const { x } = e.nativeEvent.layout;
+    setValueRowX(x);
   };
 
-  const onLayoutTooltip = (e: LayoutChangeEvent) =>
-    setTooltipWidth(e.nativeEvent.layout.width);
+  // xpValueRow 내부에서 info icon의 x/width 저장
+  const onLayoutIcon = (e: LayoutChangeEvent) => {
+    const { x, width } = e.nativeEvent.layout;
+    setIconX(x);
+    setIconW(width);
+  };
 
   return {
     visible,
     toggle,
     tooltipLeft,
-    arrowLeft,
     onLayoutLeftArea,
+    onLayoutValueRow,
     onLayoutIcon,
-    onLayoutTooltip,
   };
 }
 
@@ -167,10 +152,16 @@ function XpSummaryCard({
       <View style={styles.xpLeft} onLayout={tooltip.onLayoutLeftArea}>
         <Text style={styles.xpQ}>현재 나의 경험치는?</Text>
 
-        <Pressable onPress={tooltip.toggle} style={styles.xpValueRow}>
+        {/* ✅ valueRow 좌표 측정 추가(기존 스타일/마진 유지) */}
+        <Pressable
+          onPress={tooltip.toggle}
+          style={styles.xpValueRow}
+          onLayout={tooltip.onLayoutValueRow}
+        >
           <Text style={styles.xpNumber}>{currentXp}</Text>
           <Text style={styles.xpUnit}> XP</Text>
 
+          {/* ✅ icon 좌표 측정은 icon wrapper에 */}
           <View style={styles.xpInfoIcon} onLayout={tooltip.onLayoutIcon}>
             <InfoIcon
               width={scaleWidth(22)}
@@ -180,16 +171,36 @@ function XpSummaryCard({
           </View>
         </Pressable>
 
+        {/* ✅ 툴팁: PNG만 적용 (top은 기존 tooltipWrap 그대로 사용) */}
         {tooltip.visible && (
           <View
-            style={[styles.tooltipWrap, { left: tooltip.tooltipLeft }]}
-            onLayout={tooltip.onLayoutTooltip}
+            style={[
+              styles.tooltipWrap,
+              {
+                left: tooltip.tooltipLeft,
+                width: TOOLTIP_W,
+                height: TOOLTIP_H,
+
+                // PNG를 쓰니까 툴팁 박스 스타일만 여기서 무력화
+                backgroundColor: 'transparent',
+                paddingHorizontal: 0,
+                paddingVertical: 0,
+                borderRadius: 0,
+                maxWidth: undefined,
+              },
+            ]}
+            pointerEvents="none"
           >
-            <Text style={styles.tooltipText}>
+            <Image
+              source={TooltipXP}
+              style={styles.tooltipPng}
+              resizeMode="stretch"
+            />
+
+            <Text style={styles.tooltipTextOverlay}>
               퀴즈, 글 읽기, 출석 등 다양한 활동으로{'\n'}
               경험치를 모을 수 있어요
             </Text>
-            <View style={[styles.tooltipArrow, { left: tooltip.arrowLeft }]} />
           </View>
         )}
 
@@ -212,10 +223,8 @@ function XpSummaryCard({
  * ======================================
  */
 function LevelRow({ item, isMine }: { item: LevelCriteria; isMine: boolean }) {
-  // levelData.ts에서 받은 SVG 컴포넌트
   return (
     <View style={styles.row}>
-      {/* 캐릭터 자리 */}
       <View style={styles.thumb}>{item.character()}</View>
       <View style={styles.textArea}>
         <View style={styles.rowTop}>
@@ -236,24 +245,15 @@ function LevelRow({ item, isMine }: { item: LevelCriteria; isMine: boolean }) {
   );
 }
 
-// FlatList 아이템 구분선
 const ItemSeparator = () => <View style={styles.separator} />;
 
-/**
- * ======================================
- * Screen
- * ======================================
- */
 const LevelCriteriaScreen = () => {
-  // TODO: 서버 연동 시 전역 상태로 교체
   const currentXp = 50;
   const currentLevelId = 1;
 
   const needXp = useMemo(() => {
     const next = levelList.find(l => l.id === currentLevelId + 1);
-    if (!next) {
-      return 0;
-    }
+    if (!next) return 0;
     return Math.max(0, next.requiredExp - currentXp);
   }, [currentLevelId, currentXp]);
 
@@ -287,11 +287,6 @@ const LevelCriteriaScreen = () => {
 
 export default LevelCriteriaScreen;
 
-/**
- * ======================================
- * styles
- * ======================================
- */
 const styles = StyleSheet.create({
   listContent: {
     marginHorizontal: scaleWidth(20),
@@ -356,6 +351,7 @@ const styles = StyleSheet.create({
     color: COLORS.white,
   },
 
+  // ✅ top/레이아웃은 기존 그대로 유지 (툴팁이 50XP 라인을 덮지 않게)
   tooltipWrap: {
     position: 'absolute',
     top: scaleWidth(84),
@@ -367,32 +363,36 @@ const styles = StyleSheet.create({
     zIndex: 10,
   },
 
-  tooltipText: {
-    ...Caption_12M,
-    color: COLORS.white,
+  tooltipPng: {
+    position: 'absolute',
+    left: 0,
+    top: 0,
+    width: '100%',
+    height: '100%',
   },
 
-  tooltipArrow: {
+  // PNG 내부 여백 기준 텍스트 위치(필요하면 top만 미세조정)
+  tooltipTextOverlay: {
     position: 'absolute',
-    top: -scaleWidth(6),
-    width: 0,
-    height: 0,
-    borderLeftWidth: scaleWidth(6),
-    borderRightWidth: scaleWidth(6),
-    borderBottomWidth: scaleWidth(6),
-    borderLeftColor: 'transparent',
-    borderRightColor: 'transparent',
-    borderBottomColor: COLORS.puple.light,
+    left: scaleWidth(18),
+    right: scaleWidth(18),
+    top: scaleWidth(44),
+    ...Caption_12M,
+    color: COLORS.white,
+    includeFontPadding: false,
   },
 
   xpHint: {
     ...Caption_14R,
     marginTop: scaleWidth(8),
     color: COLORS.gray700,
+    includeFontPadding: false,
   },
 
   xpHintStrong: {
     color: COLORS.puple.main,
+    lineHeight: scaleWidth(24),
+    includeFontPadding: false,
   },
 
   xpImg: {
@@ -441,7 +441,7 @@ const styles = StyleSheet.create({
     paddingVertical: scaleWidth(4),
     paddingHorizontal: scaleWidth(8),
     borderRadius: BORDER_RADIUS[30],
-    backgroundColor: COLORS.puple[3],
+    backgroundColor: COLORS.puple[2],
   },
 
   myLevelText: {

@@ -17,7 +17,7 @@ import {
 } from '../../styles/global';
 import { RouteNames } from '../../../routes';
 
-import { useShowModal } from '../../store/modalStore';
+// import { useShowModal } from '../../store/modalStore'; // ✅ (기존) 안내 모달 로직은 정책 변경으로 현재 미사용
 import { useNotificationPermission } from '../../hooks/useNotificationPermission';
 
 // Toast store
@@ -31,7 +31,10 @@ import { useToastMessage, useClearToast } from '../../store/toastStore'; // 경�
  * - 알림 토글은 "권한 상태"를 기반으로 UI를 동기화
  *
  * 알림 토글 UX 정책
- * - 토글 ON 시: 안내 모달 → OS 권한 요청 → 결과에 따라 토글 반영
+ * - 토글 ON 시: (정책 변경) ✅ 앱 내부 안내 팝업 없이 OS 흐름만 사용
+ *   - B) 한 번도 요청 안 했음: OS 권한 팝업 즉시 호출
+ *   - A) 과거 거부(재호출 불가): OS 앱 설정 화면으로 즉시 이동
+ *   - C) 이미 허용: 앱 내부 수신 로직만 ON
  * - 토글 OFF 시: 앱 내부에서 OFF 처리만(권한 자체 OFF는 OS 설정에서)
  */
 const SettingScreen = () => {
@@ -49,7 +52,7 @@ const SettingScreen = () => {
   const clearToast = useClearToast();
 
   // 공통 모달 호출(Store 기반)
-  const showModal = useShowModal();
+  // const showModal = useShowModal(); // ✅ (기존) 현재 정책상 사용하지 않음
 
   // 설정 대기 상태 추적
   const waitingForSettingsRef = useRef(false);
@@ -77,9 +80,17 @@ const SettingScreen = () => {
       const syncAlarmToggle = async () => {
         try {
           const shouldShowModal = await checkPermission();
+          // 기존 로직 유지:
+          // - shouldShowModal === true  -> 권한 미허용 상태(토글 OFF)
+          // - shouldShowModal === false -> 권한 허용 상태(토글 ON)
           setIsAlarmOn(!shouldShowModal);
         } catch (e) {
           // 실패 시 기존 토글 상태 유지
+        } finally {
+          // 설정 화면으로 갔다가 돌아온 경우 플래그 초기화(선택)
+          if (waitingForSettingsRef.current) {
+            waitingForSettingsRef.current = false;
+          }
         }
       };
 
@@ -97,8 +108,12 @@ const SettingScreen = () => {
    *
    * 1) 현재 ON이면: 앱 UI에서만 OFF 처리
    * 2) 현재 OFF이면:
-   *    - 권한이 필요하면: 안내 모달 → OS 권한 요청 → 결과 반영
-   *    - 이미 허용이면: 바로 ON 처리
+   *    - C) 이미 허용이면: 바로 ON 처리 (OS 설정 이동 ❌)
+   *    - B) 아직 요청한 적 없으면: OS 권한 팝업 즉시 호출 (설명 팝업 ❌)
+   *    - A) 과거 거부(재호출 불가)이면: OS 앱 설정 화면으로 즉시 이동 (설명 팝업 ❌)
+   *
+   * 주의
+   * - OS 설정으로 이동하기 전에는 토글을 임시로 ON 처리하지 않음
    */
   const handlePressAlarmRow = async () => {
     // 이미 ON 상태면, UX 상 "OFF" 처리만 해도 충분
@@ -109,46 +124,32 @@ const SettingScreen = () => {
     }
 
     try {
+      // ✅ 권한 상태 확인 (기존 반환값/로직 그대로 사용)
+      // - shouldShowModal === false: 이미 권한 허용됨(C)
+      // - shouldShowModal === true : 권한 미허용(A/B)
       const shouldShowModal = await checkPermission();
 
-      if (shouldShowModal) {
-        // 권한 요청이 필요한 상태 → 안내 모달 노출 후, 사용자가 동의하면 OS 권한 팝업 요청
-        showModal({
-          image: <></>,
-          title: '알림을 받으시겠어요?',
-          description:
-            '알림을 켜두면, 하루 두 번 문해력 루틴을 \n잊지 않고 챙길 수 있어요!',
-          descriptionColor: COLORS.gray600,
-          primaryButton: {
-            title: '알림 받을래요',
-            textStyle: { ...Heading_16B, color: COLORS.white },
-            onPress: async () => {
-              const granted = await requestPermission();
-
-              // OS 권한 결과에 따라 토글 반영
-
-              setIsAlarmOn(!!granted);
-            },
-          },
-
-          secondaryButton: {
-            title: '괜찮아요',
-            variant: 'outline',
-            textStyle: { color: COLORS.gray700, ...Heading_16B },
-            style: {
-              borderColor: COLORS.gray300,
-              height: scaleWidth(48),
-            },
-            onPress: async () => {
-              // 사용자가 모달에서 거절한 경우 토글 OFF 유지
-              setIsAlarmOn(false);
-            },
-          },
-        });
-      } else {
-        // 이미 권한이 허용된 상태로 판단되면 바로 토글 ON
+      if (!shouldShowModal) {
+        // ✅ C. 이미 알림 권한이 허용된 상태
+        // -> 앱 내부 알림 수신 로직만 제어
         setIsAlarmOn(true);
+        return;
       }
+
+      // ✅ A/B. 권한 미허용 상태
+      // 정책 변경:
+      // - 앱 내부 안내 모달 노출 ❌
+      // - requestPermission() 내부에서
+      //   - (B) OS 권한 팝업 호출
+      //   - (A) OS 앱 설정 화면으로 이동
+      // 을 처리하도록 위임
+      const granted = await requestPermission();
+
+      // OS 권한 결과(또는 설정 이동 후 즉시 false 반환 등)에 따라 토글 반영
+      // - B) 허용 -> true
+      // - B) 거부 -> false 유지
+      // - A) 설정 이동 -> 여기서는 false 유지(포그라운드 복귀 시 syncAlarmToggle에서 최종 반영)
+      setIsAlarmOn(!!granted);
     } catch (error: any) {
       Alert.alert(
         '오류',
@@ -191,7 +192,7 @@ const SettingScreen = () => {
         {/* 알림 */}
         <Text style={styles.sectionLabel}>알림</Text>
 
-        {/* Row 전체를 누르면: 모달 → OS 권한 → 토글 반영 */}
+        {/* Row 전체를 누르면: OS 권한/설정 → 토글 반영 */}
         <Pressable
           style={[styles.row, styles.alarmRow]}
           onPress={handlePressAlarmRow}

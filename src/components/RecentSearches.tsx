@@ -1,60 +1,77 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { Text, View } from 'react-native';
 
 import Button from './Button';
 import IconButton from './IconButton';
 import Spacer from './Spacer';
-import { CloseIcon } from '../icons';
 
+import XSearchIcon from '../assets/svg/X_Search.svg';
 import { scaleWidth, BORDER_RADIUS, COLORS } from '../styles/global';
 
 type Props = {
   index: number;
   item: { searchName: string };
 
-  // 검색어 클릭 시
+  // 검색어 클릭 시: 입력값 반영 + 검색 실행(혹은 화면 이동)
   setSearch: (text: string) => void;
-  recordSearch: (keyword: string) => void;
+  recordSearch: (keyword: string) => void | Promise<void>;
 
-  // X 버튼 클릭 시
-  removeSearchRecord: (name: string) => void;
+  // X 버튼 클릭 시: 해당 검색어 삭제
+  removeSearchRecord: (name: string) => void | Promise<void>;
 
   // 옵션
-  maxWidth?: number;
-  minWidth?: number;
   closeIconColor?: string;
 };
 
+// 표시 텍스트 규칙
+// - 최대 8자(공백 포함)
+// - 8자 초과 시: 8자 + '…' (총 9자)
+// - 말줄임표는 공백 없이 바로 붙임(끝 공백 제거)
+const toDisplayText = (text: string) => {
+  const chars = Array.from(text);
+  if (chars.length <= 8) return text;
+
+  const head = chars.slice(0, 8).join('').replace(/\s+$/, '');
+  return `${head}…`;
+};
+
 /**
- * RecentSearch
- *
- * - 최근 검색어 칩 버튼 컴포넌트
- * - 검색어 클릭: 검색 실행
+ * RecentSearches
+ * - 최근 검색어 칩 UI
+ * - 칩 클릭: 입력값 반영 + 검색 실행
  * - X 클릭: 해당 검색어 삭제
+ *
+ * 텍스트 노출 기준
+ * - 최대 8자(공백 포함), 초과 시 8자 + 말줄임표(…)를 공백 없이 뒤에 붙임
  */
-const RecentSearch = ({
+const RecentSearches = ({
   index,
   item,
   setSearch,
   recordSearch,
   removeSearchRecord,
-  maxWidth,
-  minWidth,
   closeIconColor,
 }: Props) => {
+  const displayName = useMemo(
+    () => toDisplayText(item.searchName),
+    [item.searchName],
+  );
+
   return (
     <Button
       key={index.toString()}
       onPress={() => {
-        // ✅ 검색어 클릭 → 입력값 반영 + 검색 실행
         setSearch(item.searchName);
         recordSearch(item.searchName);
       }}
       style={{
         borderRadius: BORDER_RADIUS[30],
-        width: 'auto',
-        minWidth: minWidth ?? undefined,
-        maxWidth: maxWidth ?? scaleWidth(133),
+
+        // 내용 기반(auto width)으로 보이게
+        alignSelf: 'flex-start',
+        flexGrow: 0,
+        flexShrink: 1,
+
         paddingHorizontal: scaleWidth(12),
         height: scaleWidth(40),
         backgroundColor: COLORS.gray100,
@@ -65,8 +82,12 @@ const RecentSearch = ({
       <>
         {/* 검색어 텍스트 */}
         <View style={{ flexShrink: 1 }}>
-          <Text style={{ color: COLORS.gray800 }} numberOfLines={1}>
-            {item.searchName}
+          <Text
+            style={{ color: COLORS.gray800 }}
+            numberOfLines={1}
+            ellipsizeMode="clip" // 우리가 만든 '…'만 보이게, RN이 다시 말줄임하지 않게
+          >
+            {displayName}
           </Text>
         </View>
 
@@ -74,11 +95,15 @@ const RecentSearch = ({
 
         {/* 삭제 버튼 */}
         <IconButton onPress={() => removeSearchRecord(item.searchName)}>
-          <CloseIcon color={closeIconColor ?? COLORS.gray500} />
+          <XSearchIcon
+            width={scaleWidth(18)}
+            height={scaleWidth(18)}
+            color={closeIconColor ?? COLORS.gray500}
+          />
         </IconButton>
       </>
     </Button>
   );
 };
 
-export default RecentSearch;
+export default RecentSearches;
