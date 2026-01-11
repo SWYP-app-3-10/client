@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo, useEffect, useRef } from 'react';
 import {
   View,
   Text,
@@ -8,9 +8,11 @@ import {
 } from 'react-native';
 
 import SearchResultItem from './components/SearchResultItem';
-import { NewsItems } from '../../data/mock/searchData';
+import type { NewsItems } from '../../data/mock/searchData';
 import { COLORS, scaleWidth } from '../../styles/global';
-import { useSearchContents } from '../../hooks/useSearchContents';
+
+// ✅ SearchResultScreen이랑 동일하게 useExploreContents로 통일
+import { useExploreContents } from '../../hooks/useExploreContents';
 
 type Props = {
   // 현재 입력 중인 검색어
@@ -25,33 +27,86 @@ export default function SearchLiveResultOverlay({
   keyword,
   onPressItem,
 }: Props) {
-  // 실제 API 호출 (keyword가 있을 때만 작동하도록 enabled 처리)
-  const { data, isLoading } = useSearchContents({
-    keyword: keyword.trim(),
-    enabled: keyword.trim().length > 0,
-  });
+  const trimmed = keyword.trim();
 
-  // 서버 응답 데이터를 NewsItems 형식으로 변환
-  const liveResults: NewsItems[] = (
-    data?.pages.flatMap(page => page) ?? []
-  ).map(item => ({
-    id: String(item.contentId),
-    category: item.categoryName as any,
-    title: item.title,
-    subtitle: '',
-    readTime: `${item.readingTime}분 소요`,
-    content: '',
-  }));
+  // ✅ "전체" 탐색 데이터를 받아오고, 프론트에서 keyword로 필터링
+  const {
+    data,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+    isLoading,
+    isError,
+    isRefetching,
+  } = useExploreContents(undefined);
 
-  // 검색어가 비어 있으면 오버레이 자체를 렌더링하지 않음
-  // (X 버튼으로 입력 삭제 시 자동으로 사라지게 하기 위함)
-  if (!keyword.trim()) return null;
+  // ✅ explore 응답(pages -> contents)을 UI 데이터로 변환
+  const allVisibleData: NewsItems[] = useMemo(() => {
+    const pages = data?.pages ?? [];
+    const allContents = pages.flatMap(p => p.contents ?? []);
+
+    return allContents.map(c => ({
+      id: String(c.contentId),
+      category: (c.categoryName || '전체') as any,
+      title: c.title || '',
+      subtitle: '',
+      readTime: `${c.readingTime ?? 0}분 소요`,
+      imageUrl: c.imgUrl || '',
+      content: '',
+    }));
+  }, [data]);
+
+  // ✅ keyword로 필터링 (제목 기준) - SearchResultScreen과 동일
+  const liveResults: NewsItems[] = useMemo(() => {
+    const kw = trimmed.toLowerCase();
+    if (!kw) return [];
+
+    return allVisibleData.filter(item =>
+      (item.title ?? '').toLowerCase().includes(kw),
+    );
+  }, [allVisibleData, trimmed]);
+
+  /**
+   * ✅ (나중에 백엔드 무한스크롤 붙었을 때) 결과가 없으면 자동으로 더 받아오기
+   * - 지금은 백엔드가 nextBatchTime을 안 주니까 hasNextPage=false로 동작 안 함(안전)
+   */
+  const autoFetchGuard = useRef(false);
+
+  useEffect(() => {
+    autoFetchGuard.current = false;
+  }, [trimmed]);
+
+  useEffect(() => {
+    if (!trimmed) return;
+    if (isLoading || isRefetching || isFetchingNextPage) return;
+    if (isError) return;
+
+    if (liveResults.length === 0 && hasNextPage && !autoFetchGuard.current) {
+      autoFetchGuard.current = true;
+      fetchNextPage().finally(() => {
+        autoFetchGuard.current = false;
+      });
+    }
+  }, [
+    trimmed,
+    liveResults.length,
+    hasNextPage,
+    fetchNextPage,
+    isLoading,
+    isRefetching,
+    isFetchingNextPage,
+    isError,
+  ]);
+
+  // ✅ 검색어가 비어 있으면 오버레이 자체를 렌더링하지 않음
+  if (!trimmed) return null;
+
+  // ✅ 초기 로딩만 로더 보여주고(데이터가 이미 있으면 바로 결과 렌더)
+  const showInitialLoading = isLoading && !data;
 
   return (
-    // absoluteFillObject를 사용해
-    // SearchInputScreen의 기존 UI 위를 "덮는" 오버레이 레이어
     <View style={styles.overlay} pointerEvents="auto">
-      {isLoading ? (
+      {showInitialLoading ? (
         <ActivityIndicator
           style={{ marginTop: 20 }}
           color={COLORS.puple.main}
@@ -65,8 +120,24 @@ export default function SearchLiveResultOverlay({
           )}
           contentContainerStyle={styles.listContent}
           keyboardShouldPersistTaps="handled"
+          ListFooterComponent={() =>
+            isFetchingNextPage ? (
+              <ActivityIndicator
+                style={{ margin: 20 }}
+                color={COLORS.puple.main}
+              />
+            ) : (
+              <View style={{ height: 20 }} />
+            )
+          }
           ListEmptyComponent={
-            <Text style={styles.emptyText}>검색 결과가 없습니다.</Text>
+            <Text style={styles.emptyText}>
+              {isError
+                ? '데이터를 불러오지 못했습니다.'
+                : hasNextPage
+                ? '검색 결과를 찾는 중입니다...'
+                : '검색 결과가 없습니다.'}
+            </Text>
           }
         />
       )}

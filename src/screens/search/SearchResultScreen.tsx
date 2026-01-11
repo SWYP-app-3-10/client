@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo, useEffect, useRef } from 'react';
 import {
   View,
   Text,
@@ -18,18 +18,14 @@ import type { FullScreenStackParamList } from '../../navigation/types';
 import SearchHeader from './components/SearchHeader';
 import SearchResultItem from './components/SearchResultItem';
 
-import { NewsItems } from '../../data/mock/searchData';
+import type { NewsItems } from '../../data/mock/searchData';
 import { useArticleNavigation } from '../../hooks/useArticleNavigation';
-import { useSearchContents } from '../../hooks/useSearchContents';
+
+// ✅ 이걸로 통일
+import { useExploreContents } from '../../hooks/useExploreContents';
 
 import { COLORS, scaleWidth } from '../../styles/global';
 
-/**
- * SearchResultScreen
- *
- * - 검색 결과 화면 (탭바 없음, FullScreenStack)
- * - route.params.keyword로 필터링
- */
 export default function SearchResultScreen() {
   const navigation =
     useNavigation<NativeStackNavigationProp<FullScreenStackParamList>>();
@@ -39,9 +35,7 @@ export default function SearchResultScreen() {
     >();
   const { keyword } = route.params;
 
-  /**
-   * 실제 API 무한 스크롤 호출
-   */
+  // ✅ "전체" 탐색 데이터를 받아오고, 프론트에서 검색 필터링
   const {
     data,
     fetchNextPage,
@@ -49,29 +43,79 @@ export default function SearchResultScreen() {
     isFetchingNextPage,
     isLoading,
     isError,
-  } = useSearchContents({ keyword });
+    isRefetching,
+  } = useExploreContents(undefined);
+
+  // 기사 클릭 처리
+  const { handleArticlePress } = useArticleNavigation({ returnTo: 'search' });
+
+  // ✅ explore 응답(pages -> contents)을 UI 데이터로 변환
+  const allVisibleData: NewsItems[] = useMemo(() => {
+    const pages = data?.pages ?? [];
+    const allContents = pages.flatMap(p => p.contents ?? []);
+
+    return allContents.map(c => ({
+      id: String(c.contentId),
+      category: (c.categoryName || '전체') as any,
+      title: c.title || '',
+      subtitle: '',
+      readTime: `${c.readingTime ?? 0}분 소요`,
+      imageUrl: c.imgUrl || '', // ✅ 썸네일
+      content: '',
+    }));
+  }, [data]);
+
+  // ✅ keyword로 필터링 (제목 기준)
+  const filteredData: NewsItems[] = useMemo(() => {
+    const kw = (keyword ?? '').trim().toLowerCase();
+    if (!kw) return [];
+
+    return allVisibleData.filter(item =>
+      (item.title ?? '').toLowerCase().includes(kw),
+    );
+  }, [allVisibleData, keyword]);
 
   /**
-   * 서버 데이터를 UI 규격에 맞춰 가공
+   * ✅ 핵심 포인트
+   * - 첫 페이지에 검색 결과가 없으면 "결과 없음"으로 보이니까
+   * - 결과가 나올 때까지(또는 끝까지) 다음 페이지를 자동으로 더 가져오게 함
    */
-  const visibleData: NewsItems[] = (
-    data?.pages.flatMap(page => page) ?? []
-  ).map(item => ({
-    id: String(item.contentId),
-    category: item.categoryName as any,
-    title: item.title,
-    subtitle: '',
-    readTime: `${item.readingTime}분 소요`,
-    content: '',
-  }));
+  const autoFetchGuard = useRef(false);
 
-  /** 기사 클릭 처리 */
-  const { handleArticlePress } = useArticleNavigation({ returnTo: 'search' });
+  useEffect(() => {
+    // keyword 바뀌면 가드 해제
+    autoFetchGuard.current = false;
+  }, [keyword]);
+
+  useEffect(() => {
+    if (isLoading || isRefetching || isFetchingNextPage) return;
+    if (isError) return;
+
+    const kw = (keyword ?? '').trim();
+    if (!kw) return;
+
+    // 결과가 아직 없고 다음 페이지가 있으면, 자동으로 더 받아오기
+    if (filteredData.length === 0 && hasNextPage && !autoFetchGuard.current) {
+      autoFetchGuard.current = true;
+      fetchNextPage().finally(() => {
+        // 다음 페이지를 받아온 뒤 다시 조건 평가할 수 있게 가드 해제
+        autoFetchGuard.current = false;
+      });
+    }
+  }, [
+    keyword,
+    filteredData.length,
+    hasNextPage,
+    fetchNextPage,
+    isLoading,
+    isRefetching,
+    isFetchingNextPage,
+    isError,
+  ]);
 
   return (
     <SafeAreaView style={styles.safe} edges={['top', 'bottom']}>
       <View style={styles.container}>
-        {/* SearchInputScreen과 동일한 헤더 모양(읽기 전용) */}
         <SearchHeader
           value={keyword ?? ''}
           readOnly
@@ -87,7 +131,7 @@ export default function SearchResultScreen() {
         ) : (
           <FlatList
             style={styles.list}
-            data={visibleData}
+            data={filteredData}
             keyExtractor={item => item.id}
             renderItem={({ item }) => (
               <SearchResultItem
@@ -101,7 +145,10 @@ export default function SearchResultScreen() {
             )}
             contentContainerStyle={styles.listContent}
             onEndReachedThreshold={0.5}
-            onEndReached={() => hasNextPage && fetchNextPage()}
+            onEndReached={() => {
+              // 사용자가 더 내릴 때도 추가 로드
+              if (hasNextPage && !isFetchingNextPage) fetchNextPage();
+            }}
             ListFooterComponent={() =>
               isFetchingNextPage ? (
                 <ActivityIndicator
@@ -116,6 +163,8 @@ export default function SearchResultScreen() {
               <Text style={styles.empty}>
                 {isError
                   ? '데이터를 불러오지 못했습니다.'
+                  : hasNextPage
+                  ? '검색 결과를 찾는 중입니다...'
                   : '검색 결과가 없습니다.'}
               </Text>
             }
