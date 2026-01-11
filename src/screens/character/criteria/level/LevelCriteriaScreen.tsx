@@ -8,19 +8,22 @@ import {
   Pressable,
   LayoutChangeEvent,
   ListRenderItem,
+  Image,
+  findNodeHandle,
+  ActivityIndicator,
 } from 'react-native';
 import { levelList, LevelCriteria } from './levelData';
 
-// XP 아이콘 SVG import
-import XpIcon from '../../../../assets/svg/Coin_XP.svg';
+import XpIcon from '../../../../assets/png/coin_xp.png';
+import TooltipXP from '../../../../assets/png/Tooltip_XP.png';
 
-// 공통 디자인 시스템
+import { InfoIcon } from '../../../../icons';
+
 import {
   COLORS,
   BORDER_RADIUS,
   scaleWidth,
   Body_16SB,
-  Caption_12M,
   Heading_24EB_Round,
   Caption_14R,
   Heading_18EB_Round,
@@ -28,42 +31,34 @@ import {
   Body_16M,
 } from '../../../../styles/global';
 
-/**
- * value를 min~max 범위로 제한
- * → 툴팁 위치가 부모 영역을 벗어나지 않도록 보정
- */
+// CharacterScreen과 동일한 데이터 소스 사용
+import { useCharacterMe } from '../../../../hooks/useCharacter';
+
 const clamp = (value: number, min: number, max: number) =>
   Math.min(Math.max(value, min), max);
 
 /**
- * ======================================
+ * TooltipXP.png 기준 (그대로)
+ */
+const TOOLTIP_ASSET_W = 490;
+const TOOLTIP_ASSET_H = 146;
+const TOOLTIP_TIP_X = 147;
+
+const TOOLTIP_W = scaleWidth(260);
+const TOOLTIP_H = scaleWidth((260 * TOOLTIP_ASSET_H) / TOOLTIP_ASSET_W);
+
+/**
  * useTooltip
- *
- * 툴팁 전용 커스텀 훅
- *
- * - 툴팁 표시/숨김 토글
- * - 자동 닫힘 타이머 관리
- * - 말풍선과 꼬리가 아이콘 중앙을 가리키도록 위치 계산
- * ======================================
+ * - iconCenterX를 card 기준으로 실측 후, PNG tipOffsetX로 left 역산
+ * - clamp는 카드 폭 기준
  */
 function useTooltip(autoHideMs: number) {
-  /** 툴팁 표시 여부 */
   const [visible, setVisible] = useState(false);
-
-  /** 자동 닫힘 타이머 */
   const hideTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  /**
-   * 레이아웃 측정 값들
-   * - leftAreaWidth : 툴팁이 포함된 영역 너비
-   * - iconCenterX   : 정보 아이콘 중앙 좌표
-   * - tooltipWidth  : 실제 툴팁 너비
-   */
-  const [leftAreaWidth, setLeftAreaWidth] = useState(0);
+  const [cardWidth, setCardWidth] = useState(0);
   const [iconCenterX, setIconCenterX] = useState(0);
-  const [tooltipWidth, setTooltipWidth] = useState(0);
 
-  /** 기존 타이머 제거 */
   const clearTimer = useCallback(() => {
     if (hideTimerRef.current) {
       clearTimeout(hideTimerRef.current);
@@ -71,7 +66,6 @@ function useTooltip(autoHideMs: number) {
     }
   }, []);
 
-  /** 툴팁 열기 + 자동 닫힘 예약 */
   const openWithAutoHide = useCallback(() => {
     clearTimer();
     setVisible(true);
@@ -82,134 +76,158 @@ function useTooltip(autoHideMs: number) {
     }, autoHideMs);
   }, [autoHideMs, clearTimer]);
 
-  /**
-   * XP 영역 클릭 시 토글
-   * - 닫힘 → 열림 (+ 자동 닫힘)
-   * - 열림 → 닫힘
-   */
-  const toggle = useCallback(() => {
-    setVisible(prev => {
-      const next = !prev;
-      clearTimer();
-      if (next) {
-        openWithAutoHide();
+  const close = useCallback(() => {
+    clearTimer();
+    setVisible(false);
+  }, [clearTimer]);
+
+  const toggle = useCallback(
+    (cardRef: React.RefObject<View>, iconRef: React.RefObject<View>) => {
+      if (visible) {
+        close();
+        return;
       }
-      return next;
-    });
-  }, [clearTimer, openWithAutoHide]);
 
-  /**
-   * 툴팁 말풍선 좌측 위치
-   * - 아이콘 중앙 기준
-   * - 부모 영역 밖으로 나가지 않도록 clamp
-   */
+      const cardNode = cardRef.current ? findNodeHandle(cardRef.current) : null;
+      if (!cardNode || !iconRef.current?.measureLayout) {
+        setIconCenterX(0);
+        openWithAutoHide();
+        return;
+      }
+
+      iconRef.current.measureLayout(
+        cardNode,
+        (x, _y, w) => {
+          setIconCenterX(x + w / 2);
+          openWithAutoHide();
+        },
+        () => {
+          setIconCenterX(0);
+          openWithAutoHide();
+        },
+      );
+    },
+    [visible, close, openWithAutoHide],
+  );
+
   const tooltipLeft = useMemo(() => {
-    if (!leftAreaWidth || !tooltipWidth) {
-      return 0;
-    }
+    if (!cardWidth) return 0;
 
-    const raw = iconCenterX - tooltipWidth / 2;
-    return clamp(raw, 0, leftAreaWidth - tooltipWidth);
-  }, [leftAreaWidth, tooltipWidth, iconCenterX]);
+    const tipOffsetX = (TOOLTIP_W * TOOLTIP_TIP_X) / TOOLTIP_ASSET_W;
+    const raw = iconCenterX - tipOffsetX;
 
-  /**
-   * 툴팁 꼬리 위치
-   * - 말풍선 내부 기준
-   * - 아이콘 중앙을 가리키도록 계산
-   */
-  const arrowLeft = useMemo(() => {
-    const ARROW_HALF = scaleWidth(6);
-    return Math.max(scaleWidth(10), iconCenterX - tooltipLeft - ARROW_HALF);
-  }, [iconCenterX, tooltipLeft]);
+    return clamp(raw, 0, cardWidth - TOOLTIP_W);
+  }, [cardWidth, iconCenterX]);
 
-  /** 레이아웃 측정 콜백 */
-  const onLayoutLeftArea = (e: LayoutChangeEvent) =>
-    setLeftAreaWidth(e.nativeEvent.layout.width);
-
-  const onLayoutIcon = (e: LayoutChangeEvent) => {
-    const { x, width } = e.nativeEvent.layout;
-    setIconCenterX(x + width / 2);
-  };
-
-  const onLayoutTooltip = (e: LayoutChangeEvent) =>
-    setTooltipWidth(e.nativeEvent.layout.width);
+  const onLayoutCard = (e: LayoutChangeEvent) =>
+    setCardWidth(e.nativeEvent.layout.width);
 
   return {
     visible,
     toggle,
     tooltipLeft,
-    arrowLeft,
-    onLayoutLeftArea,
-    onLayoutIcon,
-    onLayoutTooltip,
+    onLayoutCard,
   };
 }
 
-/**
- * ======================================
- * 상단 XP 요약 카드
- * ======================================
- */
 function XpSummaryCard({
   currentXp,
   needXp,
+  isLoading,
 }: {
   currentXp: number;
   needXp: number;
+  isLoading: boolean;
 }) {
   const tooltip = useTooltip(1500);
 
+  const cardRef = useRef<View>(null);
+  const iconRef = useRef<View>(null);
+
   return (
-    <View style={styles.xpCard}>
-      <View style={styles.xpLeft} onLayout={tooltip.onLayoutLeftArea}>
+    <View ref={cardRef} style={styles.xpCard} onLayout={tooltip.onLayoutCard}>
+      <View style={styles.xpLeft}>
         <Text style={styles.xpQ}>현재 나의 경험치는?</Text>
 
-        <Pressable onPress={tooltip.toggle} style={styles.xpValueRow}>
-          <Text style={styles.xpNumber}>{currentXp}</Text>
-          <Text style={styles.xpUnit}> XP</Text>
+        <Pressable
+          onPress={() => {
+            if (isLoading) return;
+            tooltip.toggle(cardRef, iconRef);
+          }}
+          style={styles.xpValueRow}
+        >
+          {isLoading ? (
+            <ActivityIndicator color={COLORS.puple.main} />
+          ) : (
+            <>
+              <Text style={styles.xpNumber}>{currentXp}</Text>
+              <Text style={styles.xpUnit}> XP</Text>
+            </>
+          )}
 
-          <View style={styles.xpInfoIcon} onLayout={tooltip.onLayoutIcon}>
-            <Text style={styles.xpInfoIconText}>i</Text>
+          <View ref={iconRef} style={styles.xpInfoIcon}>
+            <InfoIcon
+              width={scaleWidth(22)}
+              height={scaleWidth(22)}
+              color={COLORS.gray400}
+            />
           </View>
         </Pressable>
 
-        {tooltip.visible && (
-          <View
-            style={[styles.tooltipWrap, { left: tooltip.tooltipLeft }]}
-            onLayout={tooltip.onLayoutTooltip}
-          >
-            <Text style={styles.tooltipText}>
-              퀴즈, 글 읽기, 출석 등 다양한 활동으로{'\n'}
-              경험치를 모을 수 있어요
-            </Text>
-            <View style={[styles.tooltipArrow, { left: tooltip.arrowLeft }]} />
-          </View>
-        )}
-
         <Text style={styles.xpHint}>
-          다음 단계 달성을 위해서는{'\n'}
-          <Text style={styles.xpHintStrong}>{needXp}XP</Text>가 더 필요해요
+          {isLoading ? (
+            '경험치를 불러오는 중이에요'
+          ) : (
+            <>
+              다음 단계 달성을 위해서는{'\n'}
+              <Text style={styles.xpHintStrong}>{needXp}XP</Text>가 더 필요해요
+            </>
+          )}
         </Text>
       </View>
 
       <View style={styles.xpImg}>
-        <XpIcon width={scaleWidth(92)} height={scaleWidth(92)} />
+        <Image source={XpIcon} style={styles.xpImgIcon} resizeMode="contain" />
       </View>
+
+      {tooltip.visible && !isLoading && (
+        <View
+          style={[
+            styles.tooltipWrap,
+            {
+              left: tooltip.tooltipLeft,
+              width: TOOLTIP_W,
+              height: TOOLTIP_H,
+              backgroundColor: 'transparent',
+              paddingHorizontal: 0,
+              paddingVertical: 0,
+              borderRadius: 0,
+              maxWidth: undefined,
+            },
+          ]}
+          pointerEvents="none"
+        >
+          <Image
+            source={TooltipXP}
+            style={styles.tooltipPng}
+            resizeMode="stretch"
+          />
+
+          <Text style={styles.tooltipTextOverlay}>
+            퀴즈, 글 읽기, 출석 등 다양한 활동으로{'\n'}
+            경험치를 모을 수 있어요
+          </Text>
+        </View>
+      )}
     </View>
   );
 }
 
-/**
- * ======================================
- * 레벨 리스트 아이템
- * ======================================
- */
 function LevelRow({ item, isMine }: { item: LevelCriteria; isMine: boolean }) {
-  // levelData.ts에서 받은 SVG 컴포넌트
   return (
     <View style={styles.row}>
-      {/* 캐릭터 자리 */}
       <View style={styles.thumb}>{item.character()}</View>
+
       <View style={styles.textArea}>
         <View style={styles.rowTop}>
           <Text style={styles.title} numberOfLines={1}>
@@ -229,24 +247,25 @@ function LevelRow({ item, isMine }: { item: LevelCriteria; isMine: boolean }) {
   );
 }
 
-// FlatList 아이템 구분선
 const ItemSeparator = () => <View style={styles.separator} />;
 
-/**
- * ======================================
- * Screen
- * ======================================
- */
 const LevelCriteriaScreen = () => {
-  // TODO: 서버 연동 시 전역 상태로 교체
-  const currentXp = 50;
-  const currentLevelId = 1;
+  // CharacterScreen과 동일하게 내 성장 정보(userGrowthInfo)로 현재 레벨/경험치 표시
+  const { data: characterMeResponse, isLoading: meLoading } = useCharacterMe();
+  const userGrowthInfo = characterMeResponse?.data?.userGrowthInfo;
+
+  const currentXp = userGrowthInfo?.currentExp ?? 0;
+
+  const currentLevelId = useMemo(() => {
+    const raw = userGrowthInfo?.levelEnum;
+    if (!raw) return 1;
+    const match = raw.match(/LEVEL_(\d+)/);
+    return match ? parseInt(match[1], 10) : 1;
+  }, [userGrowthInfo?.levelEnum]);
 
   const needXp = useMemo(() => {
     const next = levelList.find(l => l.id === currentLevelId + 1);
-    if (!next) {
-      return 0;
-    }
+    if (!next) return 0; // 마지막 레벨이면 0
     return Math.max(0, next.requiredExp - currentXp);
   }, [currentLevelId, currentXp]);
 
@@ -258,11 +277,15 @@ const LevelCriteriaScreen = () => {
   const Header = useMemo(
     () => (
       <>
-        <XpSummaryCard currentXp={currentXp} needXp={needXp} />
+        <XpSummaryCard
+          currentXp={currentXp}
+          needXp={needXp}
+          isLoading={meLoading}
+        />
         <View style={styles.headerSpace} />
       </>
     ),
-    [currentXp, needXp],
+    [currentXp, needXp, meLoading],
   );
 
   return (
@@ -280,11 +303,6 @@ const LevelCriteriaScreen = () => {
 
 export default LevelCriteriaScreen;
 
-/**
- * ======================================
- * styles
- * ======================================
- */
 const styles = StyleSheet.create({
   listContent: {
     marginHorizontal: scaleWidth(20),
@@ -308,11 +326,11 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.white,
     flexDirection: 'row',
     alignItems: 'center',
+    position: 'relative',
   },
 
   xpLeft: {
     flex: 1,
-    position: 'relative',
   },
 
   xpQ: {
@@ -340,53 +358,45 @@ const styles = StyleSheet.create({
     marginLeft: scaleWidth(12),
     width: scaleWidth(22),
     height: scaleWidth(22),
-    backgroundColor: COLORS.gray300,
     alignItems: 'center',
     justifyContent: 'center',
   },
 
-  xpInfoIconText: {
-    ...Caption_12SB,
-    color: COLORS.white,
-  },
-
   tooltipWrap: {
     position: 'absolute',
-    top: scaleWidth(84),
-    backgroundColor: COLORS.puple.light,
-    paddingHorizontal: scaleWidth(12),
-    paddingVertical: scaleWidth(8),
-    borderRadius: BORDER_RADIUS[12],
-    maxWidth: scaleWidth(260),
+    top: scaleWidth(88),
     zIndex: 10,
+    elevation: 0,
   },
 
-  tooltipText: {
-    ...Caption_12M,
-    color: COLORS.white,
-  },
-
-  tooltipArrow: {
+  tooltipPng: {
     position: 'absolute',
-    top: -scaleWidth(6),
-    width: 0,
-    height: 0,
-    borderLeftWidth: scaleWidth(6),
-    borderRightWidth: scaleWidth(6),
-    borderBottomWidth: scaleWidth(6),
-    borderLeftColor: 'transparent',
-    borderRightColor: 'transparent',
-    borderBottomColor: COLORS.puple.light,
+    left: 0,
+    top: 0,
+    width: '100%',
+    height: '100%',
+  },
+
+  tooltipTextOverlay: {
+    position: 'absolute',
+    left: scaleWidth(20),
+    top: scaleWidth(26),
+    ...Caption_14R,
+    color: COLORS.white,
+    lineHeight: scaleWidth(20),
   },
 
   xpHint: {
     ...Caption_14R,
     marginTop: scaleWidth(8),
     color: COLORS.gray700,
+    includeFontPadding: false,
   },
 
   xpHintStrong: {
     color: COLORS.puple.main,
+    lineHeight: scaleWidth(24),
+    includeFontPadding: false,
   },
 
   xpImg: {
@@ -395,6 +405,11 @@ const styles = StyleSheet.create({
     borderRadius: BORDER_RADIUS[12],
     alignItems: 'center',
     justifyContent: 'center',
+  },
+
+  xpImgIcon: {
+    width: scaleWidth(92),
+    height: scaleWidth(92),
   },
 
   row: {
@@ -435,7 +450,7 @@ const styles = StyleSheet.create({
     paddingVertical: scaleWidth(4),
     paddingHorizontal: scaleWidth(8),
     borderRadius: BORDER_RADIUS[30],
-    backgroundColor: COLORS.puple[3],
+    backgroundColor: COLORS.puple[2],
   },
 
   myLevelText: {

@@ -30,7 +30,7 @@ import {
 import Spacer from '../../components/Spacer';
 import { useMissions } from '../../hooks/useMissions';
 import { MissionCard, ArticleCard } from '../../components';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { useArticleNavigation } from '../../hooks/useArticleNavigation';
 import { convertMissionContentToArticle } from '../../api/missionApi';
 import {
@@ -69,6 +69,7 @@ export {
 
 const MissionScreen = () => {
   const scrollViewRef = useRef<ScrollView>(null);
+  const verticalScrollViewRef = useRef<ScrollView>(null);
   const [currentIndex, setCurrentIndex] = useState(0);
   const navigation =
     useNavigation<MainTabNavigationProp<MissionStackParamList>>();
@@ -79,13 +80,65 @@ const MissionScreen = () => {
   const { addPoints } = usePointStore();
   const { addExperience } = useExperienceStore();
   const hasCheckedDailyEntryRef = useRef(false);
+  const backPressTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // 데이터 로딩
-  const { data: missionData, isLoading: missionsLoading } = useMissions();
-  const missions = useMemo(
-    () => missionData?.missions || [],
-    [missionData?.missions],
+  const {
+    data: missionData,
+    isLoading: missionsLoading,
+    refetch: refetchMissions,
+  } = useMissions();
+  // 화면 포커스 시 API 요청 및 스크롤 맨 위로 이동
+  useFocusEffect(
+    useCallback(() => {
+      refetchMissions();
+      // 탭 전환 시 스크롤을 맨 위로 이동
+      verticalScrollViewRef.current?.scrollTo({ y: 0, animated: false });
+    }, [refetchMissions]),
   );
+
+  const missions = useMemo(() => {
+    if (!missionData?.missions) {
+      return [];
+    }
+
+    // 정렬: 진행 중 -> 완료 -> 잠긴
+    return [...missionData.missions].sort((a, b) => {
+      // 진행 중 (status === '진행 중') 우선
+      if (a.status === '진행 중' && b.status !== '진행 중') {
+        return -1;
+      }
+      if (b.status === '진행 중' && a.status !== '진행 중') {
+        return 1;
+      }
+
+      // 완료 (status === '완료') 다음
+      if (
+        a.status === '완료' &&
+        b.status !== '완료' &&
+        b.status !== '진행 중'
+      ) {
+        return -1;
+      }
+      if (
+        b.status === '완료' &&
+        a.status !== '완료' &&
+        a.status !== '진행 중'
+      ) {
+        return 1;
+      }
+
+      // 잠긴 (status === null) 마지막
+      if (a.status === null && b.status !== null) {
+        return 1;
+      }
+      if (b.status === null && a.status !== null) {
+        return -1;
+      }
+
+      return 0;
+    });
+  }, [missionData?.missions]);
   const contents = useMemo(
     () => missionData?.contents || [],
     [missionData?.contents],
@@ -134,30 +187,63 @@ const MissionScreen = () => {
     });
   }, [navigation]);
 
-  // 안드로이드 뒤로가기 종료 처리
-  useEffect(() => {
-    if (Platform.OS !== 'android') return;
-    const backAction = () => {
-      showToastModal({
-        message: "'뒤로' 버튼을 한번 더 누르시면 종료됩니다.",
-        position: 'center',
-        backgroundColor: COLORS.blackOpacity60,
-        height: scaleWidth(67),
-        width: scaleWidth(353),
-        borderRadius: BORDER_RADIUS[16],
-      });
-      return true;
-    };
-    const backHandler = BackHandler.addEventListener(
-      'hardwareBackPress',
-      backAction,
-    );
-    return () => backHandler.remove();
-  }, [showToastModal]);
+  // 안드로이드 뒤로가기 종료 처리 (화면이 포커스되어 있을 때만)
+  useFocusEffect(
+    useCallback(() => {
+      if (Platform.OS !== 'android') {
+        return;
+      }
+      const backAction = () => {
+        // 뒤로가기할 페이지가 있으면 기본 동작 (뒤로가기)
+        if (navigation.canGoBack()) {
+          return false; // 기본 동작 허용
+        }
+
+        // 뒤로가기할 페이지가 없으면
+        // 타이머가 있으면 (2초 내 두 번째 백키) 앱 종료
+        if (backPressTimerRef.current) {
+          clearTimeout(backPressTimerRef.current);
+          backPressTimerRef.current = null;
+          BackHandler.exitApp();
+          return true;
+        }
+
+        // 첫 번째 백키: 토스트 표시
+        showToastModal({
+          message: "'뒤로' 버튼을 한번 더 누르시면 종료됩니다.",
+          position: 'center',
+          backgroundColor: COLORS.blackOpacity60,
+          height: scaleWidth(67),
+          width: scaleWidth(353),
+          borderRadius: BORDER_RADIUS[16],
+        });
+
+        // 2초 후 타이머 초기화
+        backPressTimerRef.current = setTimeout(() => {
+          backPressTimerRef.current = null;
+        }, 2000);
+
+        return true; // 기본 동작 차단
+      };
+      const backHandler = BackHandler.addEventListener(
+        'hardwareBackPress',
+        backAction,
+      );
+      return () => {
+        backHandler.remove();
+        if (backPressTimerRef.current) {
+          clearTimeout(backPressTimerRef.current);
+          backPressTimerRef.current = null;
+        }
+      };
+    }, [navigation, showToastModal]),
+  );
 
   // 일일 출석 체크
   useEffect(() => {
-    if (hasCheckedDailyEntryRef.current) return;
+    if (hasCheckedDailyEntryRef.current) {
+      return;
+    }
     const checkDailyEntry = async () => {
       try {
         const today = new Date().toISOString().split('T')[0];
@@ -209,6 +295,7 @@ const MissionScreen = () => {
   return (
     <SafeAreaView style={missionScreenStyles.container} edges={['top']}>
       <ScrollView
+        ref={verticalScrollViewRef}
         showsVerticalScrollIndicator={false}
         nestedScrollEnabled={true}
         contentContainerStyle={missionScreenStyles.scrollContent}
@@ -217,7 +304,7 @@ const MissionScreen = () => {
         <View style={missionScreenStyles.notificationButtonContainer}>
           <View style={missionScreenStyles.notificationButton} />
           <IconButton onPress={handleNavigateToNotification}>
-            <AlarmIcon />
+            <AlarmIcon color={COLORS.gray800} />
           </IconButton>
         </View>
         <View style={missionScreenStyles.header}>
@@ -230,7 +317,7 @@ const MissionScreen = () => {
           </View>
         </View>
 
-        <Spacer num={24} />
+        <Spacer num={38} />
 
         {/* 미션 진행 카드 캐러셀 (무한스크롤 제거 버전) */}
         {hasMissions ? (
@@ -268,7 +355,7 @@ const MissionScreen = () => {
               </ScrollView>
             </View>
 
-            <Spacer num={16} />
+            <Spacer num={21} />
 
             {/* 캐러셀 인디케이터 */}
             <View style={missionScreenStyles.carouselIndicators}>
@@ -296,22 +383,19 @@ const MissionScreen = () => {
           </>
         )}
 
-        <Spacer num={24} />
+        <Spacer num={47} />
 
         {/* 아티클 리스트 */}
         <View style={missionScreenStyles.articleList}>
           {hasContents ? (
             contents.map((content, index) => {
               const article = convertMissionContentToArticle(content, index);
-              // contentId는 API 응답에 없으므로 임시로 인덱스 사용
-              // 실제로는 API에서 contentId를 제공해야 함
-              const contentId = index + 1; // 임시 ID
 
               return (
                 <ArticleCard
                   key={article.id}
                   article={article}
-                  onPress={() => handleArticlePress(contentId)}
+                  onPress={() => handleArticlePress(article.contentId)}
                 />
               );
             })
@@ -346,7 +430,7 @@ export const missionScreenStyles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'flex-start',
     paddingHorizontal: scaleWidth(20),
-    paddingTop: scaleWidth(32),
+    paddingTop: scaleWidth(8),
   },
   headerLeft: {
     flex: 1,

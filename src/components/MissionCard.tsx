@@ -12,11 +12,10 @@ import {
   Body_16M,
 } from '../styles/global';
 import Spacer from './Spacer';
-import { Mission } from '../data/mock/missionData';
 import { LockIcon } from '../icons/commonIcons/simpleImages';
 
 const MissionCard = React.memo(
-  ({ mission, myPage = false }: { mission: Mission; myPage?: boolean }) => {
+  ({ mission, myPage = false }: { mission: any; myPage?: boolean }) => {
     const progressPercentage =
       mission.status === '완료' ? 100 : (mission.current / mission.total) * 100;
     const isNotStarted = mission.status === null;
@@ -172,7 +171,7 @@ MissionCard.displayName = 'MissionCard';
 
 const styles = StyleSheet.create({
   missionCard: {
-    width: scaleWidth(348),
+    width: '100%',
     borderRadius: BORDER_RADIUS[20],
     position: 'relative',
   },
@@ -212,8 +211,9 @@ const styles = StyleSheet.create({
     height: scaleWidth(24),
   },
   progressBarContainerWrapper: {
-    width: scaleWidth(274),
+    flex: 1,
     height: scaleWidth(14),
+    minWidth: 0,
   },
   progressBarContainer: {
     backgroundColor: COLORS.gray100,
@@ -243,6 +243,8 @@ const styles = StyleSheet.create({
   },
   progressTextContainer: {
     justifyContent: 'center',
+    minWidth: scaleWidth(40),
+    flexShrink: 0,
   },
   progressText: {
     ...Caption_14R,

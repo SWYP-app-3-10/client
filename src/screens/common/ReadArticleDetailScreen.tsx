@@ -126,7 +126,7 @@ const ReadArticleDetailScreen = () => {
   if (isLoading) {
     return (
       <SafeAreaView style={styles.container}>
-        <Header iconColor={COLORS.black} />
+        <Header iconColor={COLORS.gray800} />
         <View style={styles.errorContainer}>
           <ActivityIndicator size="large" color={COLORS.puple.main} />
           <Spacer num={16} />
@@ -140,7 +140,7 @@ const ReadArticleDetailScreen = () => {
   if (error || !contentDetail) {
     return (
       <SafeAreaView style={styles.container}>
-        <Header iconColor={COLORS.black} />
+        <Header iconColor={COLORS.gray800} />
         <View style={styles.errorContainer}>
           <Text>{error || '기사를 찾을 수 없습니다.'}</Text>
         </View>
@@ -150,7 +150,7 @@ const ReadArticleDetailScreen = () => {
 
   return (
     <SafeAreaView style={styles.container}>
-      <Header iconColor={COLORS.black} />
+      <Header iconColor={COLORS.gray800} />
       <ScrollView
         bounces={false}
         ref={scrollViewRef}

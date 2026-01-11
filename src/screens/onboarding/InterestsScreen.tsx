@@ -223,7 +223,7 @@ const InterestsScreen = () => {
   }, [navigation, setOnboardingStep, editMode, selectedInterests]);
 
   const isNextButtonActive = useMemo(
-    () => selectedInterests.size >= 2,
+    () => selectedInterests.size >= 1,
     [selectedInterests.size],
   );
 

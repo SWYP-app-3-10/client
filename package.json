@@ -9,7 +9,7 @@
     "start": "react-native start",
     "test": "jest",
     "lottie:sync:android": "powershell -NoProfile -ExecutionPolicy Bypass -Command \"if (Test-Path android/app/src/main/assets/lottie) { Remove-Item -Recurse -Force android/app/src/main/assets/lottie }; New-Item -ItemType Directory -Force android/app/src/main/assets/lottie | Out-Null; Copy-Item -Recurse -Force src/assets/lottie/* android/app/src/main/assets/lottie\"",
-    "lottie:sync:ios": "bash -lc \"mkdir -p ios/NewsLens/lottie && rsync -a --delete src/assets/lottie/ ios/NewsLens/lottie/\""
+    "lottie:sync:ios": "bash -lc \"mkdir -p ios/Neurous/lottie && rsync -a --delete src/assets/lottie/ ios/Neurous/lottie/\""
   },
   "dependencies": {
     "@invertase/react-native-apple-authentication": "^2.5.0",
@@ -35,8 +35,10 @@
     "react-native-permissions": "^5.4.4",
     "react-native-safe-area-context": "^4.9.0",
     "react-native-screens": "3.29.0",
+    "react-native-sse": "^1.2.1",
     "react-native-svg": "^14.1.0",
     "react-native-svg-transformer": "^1.3.0",
+    "react-native-url-polyfill": "^3.0.0",
     "zustand": "^5.0.9"
   },
   "devDependencies": {

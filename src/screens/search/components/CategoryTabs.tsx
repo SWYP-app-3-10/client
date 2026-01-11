@@ -2,7 +2,7 @@ import React from 'react';
 import { ScrollView, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import type { NewsCategory } from '../../../data/mock/searchData';
 import {
-  Body_18M,
+  Body_16M,
   BORDER_RADIUS,
   COLORS,
   scaleWidth,
@@ -85,7 +85,7 @@ const styles = StyleSheet.create({
 
   /** 기본 카테고리 텍스트 */
   text: {
-    ...Body_18M,
+    ...Body_16M,
     color: COLORS.puple.main, // 기본 텍스트(보라)
     includeFontPadding: true, // 안드로이드 상하 여백
     textAlignVertical: 'center', // (안드로이드) 수직 중앙 느낌
@@ -93,7 +93,7 @@ const styles = StyleSheet.create({
 
   /** 선택된 카테고리 텍스트 */
   activeText: {
-    ...Body_18M,
+    ...Body_16M,
     color: 'white', // 선택 텍스트 흰색
   },
 });

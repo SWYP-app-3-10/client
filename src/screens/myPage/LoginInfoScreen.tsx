@@ -17,7 +17,11 @@ import RightArrow from '../../assets/svg/RightArrow.svg';
 import NotificationModal from '../../components/NotificationModal';
 
 import { RouteNames } from '../../../routes';
-import { clearAllAuthData } from '../../services/authService';
+import {
+  clearAllAuthData,
+  getUserInfo,
+  logout,
+} from '../../services/authService';
 import { useOnboardingStore } from '../../store/onboardingStore';
 
 /**
@@ -52,13 +56,17 @@ const LoginInfoScreen = () => {
     setLogoutModalVisible(false);
 
     try {
-      // 1) 로컬 인증/유저 데이터 초기화
-      await clearAllAuthData();
+      // 1) 저장된 provider 조회
+      const userInfo = await getUserInfo();
+      const provider = userInfo?.provider;
 
-      // 2) 온보딩 상태 초기화
+      // 2) 기존에 구현해둔 logout 사용 (소셜 로그아웃 + 로컬 정리)
+      await logout(provider);
+
+      // 3) 온보딩 상태 초기화
       await resetOnboarding();
 
-      // 3) 네비게이션 스택 리셋 → 온보딩 이동
+      // 4) 네비게이션 스택 리셋 → 온보딩 이동
       navigation.dispatch(
         CommonActions.reset({
           index: 0,

@@ -11,7 +11,14 @@
 		81AB9BB82411601600AC10FF /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */; };
 		D576F6482EF8ECFE005AACF6 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = D576F6472EF8ECFE005AACF6 /* main.m */; };
 		D576F6492EF8ECFE005AACF6 /* AppDelegate.mm in Sources */ = {isa = PBXBuildFile; fileRef = D576F6462EF8ECFE005AACF6 /* AppDelegate.mm */; };
+		D5B3C3812F1142AA00FA8E02 /* NanumSquareRoundEB.ttf in Resources */ = {isa = PBXBuildFile; fileRef = D5B3C3802F1142AA00FA8E02 /* NanumSquareRoundEB.ttf */; };
 		D5D7B8E42EF99BD300D2419D /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = D5D7B8E32EF99BD300D2419D /* GoogleService-Info.plist */; };
+		D5DBEADE2F0A6D1B00DCF284 /* Pretendard-ExtraBold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = D5DBEAD82F0A6D1B00DCF284 /* Pretendard-ExtraBold.ttf */; };
+		D5DBEADF2F0A6D1B00DCF284 /* Pretendard-SemiBold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = D5DBEAD92F0A6D1B00DCF284 /* Pretendard-SemiBold.ttf */; };
+		D5DBEAE02F0A6D1B00DCF284 /* Roboto-Medium.ttf in Resources */ = {isa = PBXBuildFile; fileRef = D5DBEADA2F0A6D1B00DCF284 /* Roboto-Medium.ttf */; };
+		D5DBEAE12F0A6D1B00DCF284 /* Pretendard-Medium.ttf in Resources */ = {isa = PBXBuildFile; fileRef = D5DBEADB2F0A6D1B00DCF284 /* Pretendard-Medium.ttf */; };
+		D5DBEAE22F0A6D1B00DCF284 /* Pretendard-Bold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = D5DBEADC2F0A6D1B00DCF284 /* Pretendard-Bold.ttf */; };
+		D5DBEAE32F0A6D1B00DCF284 /* Pretendard-Regular.ttf in Resources */ = {isa = PBXBuildFile; fileRef = D5DBEADD2F0A6D1B00DCF284 /* Pretendard-Regular.ttf */; };
 		FC83779323598F0F60B8D306 /* Pods_Neurous.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AB5579D5B9806199DDE14FE9 /* Pods_Neurous.framework */; };
 /* End PBXBuildFile section */
 
@@ -27,7 +34,14 @@
 		D576F6452EF8ECFE005AACF6 /* AppDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AppDelegate.h; sourceTree = "<group>"; };
 		D576F6462EF8ECFE005AACF6 /* AppDelegate.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = AppDelegate.mm; sourceTree = "<group>"; };
 		D576F6472EF8ECFE005AACF6 /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
+		D5B3C3802F1142AA00FA8E02 /* NanumSquareRoundEB.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = NanumSquareRoundEB.ttf; sourceTree = "<group>"; };
 		D5D7B8E32EF99BD300D2419D /* GoogleService-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
+		D5DBEAD82F0A6D1B00DCF284 /* Pretendard-ExtraBold.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "Pretendard-ExtraBold.ttf"; sourceTree = "<group>"; };
+		D5DBEAD92F0A6D1B00DCF284 /* Pretendard-SemiBold.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "Pretendard-SemiBold.ttf"; sourceTree = "<group>"; };
+		D5DBEADA2F0A6D1B00DCF284 /* Roboto-Medium.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "Roboto-Medium.ttf"; sourceTree = "<group>"; };
+		D5DBEADB2F0A6D1B00DCF284 /* Pretendard-Medium.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "Pretendard-Medium.ttf"; sourceTree = "<group>"; };
+		D5DBEADC2F0A6D1B00DCF284 /* Pretendard-Bold.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "Pretendard-Bold.ttf"; sourceTree = "<group>"; };
+		D5DBEADD2F0A6D1B00DCF284 /* Pretendard-Regular.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "Pretendard-Regular.ttf"; sourceTree = "<group>"; };
 		ED297162215061F000B7C4FE /* JavaScriptCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = JavaScriptCore.framework; path = System/Library/Frameworks/JavaScriptCore.framework; sourceTree = SDKROOT; };
 /* End PBXFileReference section */
 
@@ -77,6 +91,13 @@
 		83CBB9F61A601CBA00E9B192 = {
 			isa = PBXGroup;
 			children = (
+				D5B3C3802F1142AA00FA8E02 /* NanumSquareRoundEB.ttf */,
+				D5DBEADC2F0A6D1B00DCF284 /* Pretendard-Bold.ttf */,
+				D5DBEAD82F0A6D1B00DCF284 /* Pretendard-ExtraBold.ttf */,
+				D5DBEADB2F0A6D1B00DCF284 /* Pretendard-Medium.ttf */,
+				D5DBEADD2F0A6D1B00DCF284 /* Pretendard-Regular.ttf */,
+				D5DBEAD92F0A6D1B00DCF284 /* Pretendard-SemiBold.ttf */,
+				D5DBEADA2F0A6D1B00DCF284 /* Roboto-Medium.ttf */,
 				13B07FAE1A68108700A75B9A /* Neurous */,
 				832341AE1AAA6A7D00B99B32 /* Libraries */,
 				83CBBA001A601CBA00E9B192 /* Products */,
@@ -171,6 +192,13 @@
 				81AB9BB82411601600AC10FF /* LaunchScreen.storyboard in Resources */,
 				13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */,
 				D5D7B8E42EF99BD300D2419D /* GoogleService-Info.plist in Resources */,
+				D5DBEADE2F0A6D1B00DCF284 /* Pretendard-ExtraBold.ttf in Resources */,
+				D5DBEADF2F0A6D1B00DCF284 /* Pretendard-SemiBold.ttf in Resources */,
+				D5DBEAE02F0A6D1B00DCF284 /* Roboto-Medium.ttf in Resources */,
+				D5DBEAE12F0A6D1B00DCF284 /* Pretendard-Medium.ttf in Resources */,
+				D5DBEAE22F0A6D1B00DCF284 /* Pretendard-Bold.ttf in Resources */,
+				D5B3C3812F1142AA00FA8E02 /* NanumSquareRoundEB.ttf in Resources */,
+				D5DBEAE32F0A6D1B00DCF284 /* Pretendard-Regular.ttf in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -258,10 +286,11 @@
 			outputFileListPaths = (
 			);
 			outputPaths = (
+				"${DWARF_DSYM_FOLDER_PATH}/${DWARF_DSYM_FILE_NAME}/Contents/Resources/DWARF/hermes",
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "# Hermes dSYM 파일을 찾아서 아카이브 폴더로 복사하는 스크립트\necho \"Searching for hermes.framework.dSYM...\"\nfind \"${PODS_ROOT}/hermes-engine\" -name \"hermes.framework.dSYM\" -print0 | xargs -0 -I {} cp -r {} \"${DWARF_DSYM_FOLDER_PATH}\"\necho \"Copied hermes.framework.dSYM to ${DWARF_DSYM_FOLDER_PATH}\"\n";
+			shellScript = "# Hermes dSYM 파일을 찾아서 아카이브 폴더로 복사하는 스크립트\nset -e\n\nHERMES_DSYM_PATH=\"${PODS_ROOT}/hermes-engine/destroot/hermes.framework.dSYM\"\n\nif [ -d \"${HERMES_DSYM_PATH}\" ]; then\n  echo \"Found hermes.framework.dSYM at ${HERMES_DSYM_PATH}\"\n  \n  # dSYM 폴더가 없으면 생성\n  if [ ! -d \"${DWARF_DSYM_FOLDER_PATH}/${DWARF_DSYM_FILE_NAME}\" ]; then\n    mkdir -p \"${DWARF_DSYM_FOLDER_PATH}/${DWARF_DSYM_FILE_NAME}\"\n  fi\n  \n  # hermes.framework.dSYM을 복사\n  cp -R \"${HERMES_DSYM_PATH}\" \"${DWARF_DSYM_FOLDER_PATH}/${DWARF_DSYM_FILE_NAME}/\"\n  echo \"Copied hermes.framework.dSYM to ${DWARF_DSYM_FOLDER_PATH}/${DWARF_DSYM_FILE_NAME}/\"\nelse\n  echo \"Warning: hermes.framework.dSYM not found at ${HERMES_DSYM_PATH}\"\n  # 대체 경로 시도\n  ALTERNATIVE_PATH=$(find \"${PODS_ROOT}/hermes-engine\" -name \"hermes.framework.dSYM\" -type d | head -1)\n  if [ -n \"${ALTERNATIVE_PATH}\" ]; then\n    echo \"Found hermes.framework.dSYM at alternative path: ${ALTERNATIVE_PATH}\"\n    cp -R \"${ALTERNATIVE_PATH}\" \"${DWARF_DSYM_FOLDER_PATH}/${DWARF_DSYM_FILE_NAME}/\"\n    echo \"Copied hermes.framework.dSYM from alternative path\"\n  else\n    echo \"Error: Could not find hermes.framework.dSYM\"\n  fi\nfi\n";
 		};
 		E235C05ADACE081382539298 /* [CP] Copy Pods Resources */ = {
 			isa = PBXShellScriptBuildPhase;

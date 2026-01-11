@@ -1,5 +1,5 @@
-import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import React, { useMemo, useState } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, Image } from 'react-native';
 import type { NewsItems } from '../../../data/mock/searchData';
 import {
   Body_16M,
@@ -9,48 +9,108 @@ import {
   scaleWidth,
 } from '../../../styles/global';
 
-type Props = {
-  /** 표시할 뉴스 데이터 */
-  item: NewsItems;
+import ViewIcon from '../../../assets/svg/View.svg';
+import ClockIcon from '../../../assets/svg/clock.svg';
+import ExploreResultDivider from '../../../assets/svg/ExploreResultDivider.svg';
 
-  /** 카드 클릭 시 호출되는 이벤트 (선택 사항) */
+type Props = {
+  item: NewsItems;
   onPress?: () => void;
 };
 
-/**
- * SearchResultItem
- *
- * - 검색 결과로 노출되는 단일 뉴스 카드 컴포넌트
- * - 제목 / 부제목 / 읽기 시간 정보 표시
- * - 카드 전체를 터치 영역으로 사용
- */
 export default function SearchResultItem({ item, onPress }: Props) {
+  const [imgError, setImgError] = useState(false);
+
+  const shouldShowImage = useMemo(() => {
+    return !!item.imageUrl && item.imageUrl.trim().length > 0 && !imgError;
+  }, [item.imageUrl, imgError]);
+
+  // "5분 소요" -> "5분" 형태로 표시
+  const readTimeText = useMemo(() => {
+    const raw = item.readTime ?? '';
+    const match = raw.match(/(\d+)\s*분/);
+    return match ? `${match[1]}분` : raw;
+  }, [item.readTime]);
+
+  // 조회수는 임시값(추후 hits로 교체 예정)
+  const viewText = useMemo(() => {
+    // @ts-ignore
+    const views = item.views;
+    return views === undefined || views === null ? '200' : String(views);
+  }, [item]);
+
   return (
     <TouchableOpacity style={styles.card} onPress={onPress}>
-      {/* 좌측 텍스트 영역 */}
+      {/* 텍스트 영역 */}
       <View style={styles.left}>
-        {/* 뉴스 제목 (1줄 제한) */}
-        <Text style={styles.title} numberOfLines={1}>
+        {/* 제목(2줄) */}
+        <Text style={styles.title} numberOfLines={2}>
           {item.title}
         </Text>
 
-        {/* 뉴스 부제목 (2줄 제한) */}
-        <Text style={styles.sub} numberOfLines={2}>
-          {item.subtitle}
-        </Text>
+        {/* 메타: 시간 / 구분선 / 조회수 */}
+        <View style={styles.metaRow}>
+          {/* 시간 블록 */}
+          <View style={styles.metaGroup}>
+            <ClockIcon
+              width={ICON_SIZE}
+              height={ICON_SIZE}
+              color={COLORS.gray600}
+            />
+            <Text style={styles.metaText}>{readTimeText}</Text>
+          </View>
 
-        {/* 읽기 시간 / 메타 정보 */}
-        <Text style={styles.meta}>{item.readTime}</Text>
+          {/* 구분선 (1x8) */}
+          <ExploreResultDivider
+            width={DIVIDER_W}
+            height={DIVIDER_H}
+            color={COLORS.gray600}
+          />
+
+          {/* 조회수 블록 */}
+          <View style={styles.metaGroup}>
+            <ViewIcon
+              width={ICON_SIZE}
+              height={ICON_SIZE}
+              color={COLORS.gray600}
+            />
+            <Text style={styles.metaText}>{viewText}</Text>
+          </View>
+        </View>
       </View>
 
-      {/* 우측 썸네일 영역 (이미지 자리) */}
-      <View style={styles.thumb} />
+      {/* 썸네일 */}
+      <View style={styles.thumb}>
+        {shouldShowImage ? (
+          <Image
+            source={{ uri: item.imageUrl }}
+            style={styles.thumbImage}
+            resizeMode="cover"
+            onError={() => setImgError(true)}
+          />
+        ) : (
+          <View style={styles.thumbPlaceholder} />
+        )}
+      </View>
     </TouchableOpacity>
   );
 }
 
+const THUMB_SIZE = scaleWidth(85);
+const THUMB_RADIUS = BORDER_RADIUS[16];
+
+const ICON_SIZE = scaleWidth(18);
+
+// 구분선 크기: 1x8
+const DIVIDER_W = scaleWidth(1);
+const DIVIDER_H = scaleWidth(8);
+
+// 간격 규칙
+const GAP_ICON_TEXT = scaleWidth(4); // 아이콘 <-> 텍스트
+const GAP_GROUPS = scaleWidth(10); // 시간 전체 <-> 구분선 <-> 뷰 전체
+const GAP_TITLE_META = scaleWidth(8); // 제목 <-> 메타
+
 const styles = StyleSheet.create({
-  /** 카드 전체 컨테이너 */
   card: {
     flexDirection: 'row',
     paddingHorizontal: 16,
@@ -58,37 +118,51 @@ const styles = StyleSheet.create({
     paddingBottom: 14,
     alignItems: 'center',
   },
-
-  /** 텍스트 영역 */
   left: {
     flex: 1,
   },
 
-  /** 뉴스 제목 */
+  // 제목 2줄
   title: {
     ...Body_16M,
     color: COLORS.black,
     paddingRight: scaleWidth(20),
+    marginBottom: GAP_TITLE_META,
   },
 
-  /** 뉴스 부제목 */
-  sub: {
-    ...Body_16M,
-    color: COLORS.black,
+  // 메타 한 줄 (시간 / 구분선 / 조회수)
+  metaRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    columnGap: GAP_GROUPS,
   },
 
-  /** 읽기 시간 등 메타 정보 */
-  meta: {
+  // 시간 전체/조회수 전체 블록
+  metaGroup: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    columnGap: GAP_ICON_TEXT,
+  },
+
+  metaText: {
     ...Caption_14R,
     color: COLORS.gray700,
-    marginTop: scaleWidth(8),
   },
 
-  /** 썸네일 영역 (이미지 적용 예정) */
+  // 썸네일 (기존 유지)
   thumb: {
-    width: scaleWidth(85),
-    height: scaleWidth(85),
+    width: THUMB_SIZE,
+    height: THUMB_SIZE,
+    borderRadius: THUMB_RADIUS,
+    overflow: 'hidden',
     backgroundColor: COLORS.gray300,
-    borderRadius: BORDER_RADIUS[16],
+  },
+  thumbImage: {
+    width: '100%',
+    height: '100%',
+  },
+  thumbPlaceholder: {
+    flex: 1,
+    backgroundColor: COLORS.gray300,
   },
 });

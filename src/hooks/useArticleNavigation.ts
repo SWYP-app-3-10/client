@@ -1,8 +1,8 @@
 import React, { useCallback, useRef } from 'react';
-import { Alert } from 'react-native';
+import { Alert, ActivityIndicator, View } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { useShowModal } from '../store/modalStore';
+import { useShowModal, useHideModal } from '../store/modalStore';
 import { RouteNames } from '../../routes';
 import { RootStackParamList } from '../navigation/types';
 import { ARTICLE_READ_POINT_COST } from '../config/rewards';
@@ -37,6 +37,7 @@ export const useArticleNavigation = ({
 } => {
   const navigation = useNavigation<NavigationProp>();
   const showModal = useShowModal();
+  const hideModal = useHideModal();
   const isProcessingRef = useRef(false);
   const { points: storePoints } = usePointStore();
 
@@ -64,10 +65,7 @@ export const useArticleNavigation = ({
           articleId,
         );
 
-        console.log(
-          '[useArticleNavigation] 접근 권한 응답:',
-          accessResponse.data,
-        );
+        // console.log('[useArticleNavigation] 접근 권한 응답:', accessResponse);
 
         const accessData = accessResponse.data;
 
@@ -78,6 +76,7 @@ export const useArticleNavigation = ({
             : storePoints;
 
         console.log('[useArticleNavigation] 포인트 확인:', {
+          accessData,
           apiPoints: accessData.currentPoints,
           storePoints,
           currentPoints,
@@ -102,16 +101,47 @@ export const useArticleNavigation = ({
                   console.log(
                     '[useArticleNavigation] 포인트 구매 이미 처리 중, 중복 호출 방지',
                   );
+                  // 로딩 모달 표시
+                  showModal({
+                    title: '처리 중...',
+                    children: React.createElement(
+                      View,
+                      { style: { paddingVertical: 20, alignItems: 'center' } },
+                      React.createElement(ActivityIndicator, {
+                        size: 'large',
+                        color: COLORS.puple.main,
+                      }),
+                    ),
+                    closeButton: false,
+                    closeOnBackdropPress: false,
+                  });
                   return;
                 }
 
                 isProcessingRef.current = true;
 
+                // 로딩 모달 표시
+                showModal({
+                  title: '처리 중...',
+                  children: React.createElement(
+                    View,
+                    { style: { paddingVertical: 20, alignItems: 'center' } },
+                    React.createElement(ActivityIndicator, {
+                      size: 'large',
+                      color: COLORS.puple.main,
+                    }),
+                  ),
+                  closeButton: false,
+                  closeOnBackdropPress: false,
+                });
+
                 try {
                   // 사용자 정보 가져오기
                   const purchaseUserInfo = await getUserInfo();
                   if (!purchaseUserInfo) {
+                    hideModal();
                     Alert.alert('오류', '사용자 정보를 찾을 수 없습니다.');
+                    isProcessingRef.current = false;
                     return;
                   }
 
@@ -139,12 +169,15 @@ export const useArticleNavigation = ({
                     '[useArticleNavigation] 포인트 구매 에러:',
                     error,
                   );
+                  hideModal();
                   Alert.alert(
                     '오류',
                     error.response?.data?.message ||
                       '포인트 구매에 실패했습니다.',
                   );
                 } finally {
+                  // 로딩 모달 닫기
+                  hideModal();
                   // 네비게이션 후 리셋 (다음 기사 읽기 가능하도록)
                   setTimeout(() => {
                     isProcessingRef.current = false;
@@ -157,12 +190,13 @@ export const useArticleNavigation = ({
           // 포인트가 부족한 경우 - 광고 시청 모달
           showModal({
             title: '광고를 보고 포인트 받으시겠어요?',
-            description: `사용 가능한 포인트: ${currentPoints}p`,
+            description: `부족한 포인트: ${currentPoints}p`,
             descriptionColor: COLORS.gray600,
             closeButton: true,
             children: React.createElement(ArticlePointModalContentGet),
             primaryButton: {
-              title: '포인트 받기',
+              title: '포인트 받고 글 읽기',
+              textStyle: Heading_16B,
               onPress: () => {
                 navigation.navigate(RouteNames.FULL_SCREEN_STACK, {
                   screen: RouteNames.AD_LOADING,
@@ -185,7 +219,7 @@ export const useArticleNavigation = ({
         }, 1000);
       }
     },
-    [showModal, navigation, returnTo, storePoints],
+    [showModal, hideModal, navigation, returnTo, storePoints],
   );
 
   return { handleArticlePress };

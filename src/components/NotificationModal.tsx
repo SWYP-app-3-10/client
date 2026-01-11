@@ -129,7 +129,7 @@ const NotificationModal: React.FC<NotificationModalProps> = ({
                   styles.modalContent,
                   {
                     paddingTop: closeButton
-                      ? scaleWidth(23)
+                      ? scaleWidth(14)
                       : image
                       ? imagePaddingTop
                       : scaleWidth(48),
@@ -247,7 +247,7 @@ const styles = StyleSheet.create({
   closeButtonContainer: {
     width: '100%',
     alignItems: 'flex-end',
-    marginBottom: scaleWidth(15),
+    marginBottom: scaleWidth(6),
   },
 
   title: {

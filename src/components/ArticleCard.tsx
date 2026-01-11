@@ -23,6 +23,13 @@ interface ArticleCardProps {
   onPress: () => void;
 }
 
+const formatDate = (dateString: string): string => {
+  if (!dateString) {
+    return '';
+  }
+  return dateString.replace(/-/g, '.');
+};
+
 const ArticleCard = React.memo<ArticleCardProps>(({ article, onPress }) => {
   return (
     <TouchableOpacity style={styles.articleCardWrapper} onPress={onPress}>
@@ -39,9 +46,9 @@ const ArticleCard = React.memo<ArticleCardProps>(({ article, onPress }) => {
             <View style={styles.articleImagePlaceholder} />
           )}
           <View style={styles.articleTag}>
-            <Text style={styles.articleTagText}>
-              {article.category} | {article.readTime}
-            </Text>
+            <Text style={styles.articleTagText}>{article.category}</Text>
+            <Text style={styles.articleTagDivider}>|</Text>
+            <Text style={styles.articleTagText}>{article.readTime}</Text>
           </View>
         </View>
         {/* 아티클 정보 */}
@@ -50,7 +57,7 @@ const ArticleCard = React.memo<ArticleCardProps>(({ article, onPress }) => {
             {article.title}
           </Text>
           <Spacer num={12} />
-          <Text style={styles.articleDate}>{article.date}</Text>
+          <Text style={styles.articleDate}>{formatDate(article.date)}</Text>
         </View>
       </View>
     </TouchableOpacity>
@@ -70,13 +77,13 @@ const styles = StyleSheet.create({
       height: scaleWidth(2),
     },
     shadowOpacity: 0.2,
+    shadowRadius: scaleWidth(12),
     elevation: 2,
   },
   articleCard: {
     borderRadius: BORDER_RADIUS[16],
     overflow: 'hidden',
     backgroundColor: COLORS.white,
-    height: scaleWidth(292),
   },
   articleImageContainer: {
     position: 'relative',
@@ -100,6 +107,12 @@ const styles = StyleSheet.create({
     paddingVertical: scaleWidth(8),
     backgroundColor: COLORS.puple[3],
     borderRadius: BORDER_RADIUS[30],
+    flexDirection: 'row',
+  },
+  articleTagDivider: {
+    ...Caption_14R,
+    color: COLORS.gray700,
+    marginHorizontal: scaleWidth(8),
   },
   articleTagText: {
     ...Caption_14R,
