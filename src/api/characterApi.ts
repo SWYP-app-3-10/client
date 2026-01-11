@@ -143,10 +143,30 @@ export const fetchCharacterLevel =
         throw new Error('사용자 정보가 없습니다');
       }
 
-      const response = await client.get<CharacterLevelResponse>(
+      const response = await client.get<any>(
         `/api/characters/standards/level?userId=${userInfo.userId}`,
       );
-      return response.data;
+
+      // API 응답 구조 확인 및 로깅
+      if (__DEV__) {
+        console.log(
+          '[캐릭터 레벨 API] 응답:',
+          JSON.stringify(response.data, null, 2),
+        );
+      }
+
+      // data 래퍼가 있는 경우 처리
+      const responseData = response.data?.data || response.data;
+
+      if (!responseData) {
+        console.error(
+          '[캐릭터 레벨 API] 응답 데이터가 없습니다:',
+          response.data,
+        );
+        throw new Error('응답 데이터가 없습니다');
+      }
+
+      return responseData as CharacterLevelResponse;
     } catch (error) {
       if (__DEV__) {
         console.error('[캐릭터 레벨 API] 에러:', error);
@@ -164,28 +184,72 @@ export const fetchCharacterData = async (): Promise<CharacterData> => {
     const levelResponse = await fetchCharacterLevel();
 
     // 응답 데이터 검증
-    if (!levelResponse || !levelResponse.characterLevel) {
+    if (!levelResponse) {
+      console.error('[캐릭터 정보 조회] levelResponse가 없습니다');
+      throw new Error('레벨 정보가 없습니다');
+    }
+
+    if (!levelResponse.characterLevel) {
+      console.error(
+        '[캐릭터 정보 조회] characterLevel이 없습니다. 응답:',
+        JSON.stringify(levelResponse, null, 2),
+      );
       throw new Error('레벨 정보가 없습니다');
     }
 
     const currentLevel = parseLevelNumber(levelResponse.characterLevel);
     const currentExp = levelResponse.currentUserExp ?? 0;
 
-    // 다음 레벨의 경험치 찾기
-    const currentLevelStandard = levelResponse.levelStandard?.find(
-      std => std.characterLevel === levelResponse.characterLevel,
-    );
-    const nextLevelIndex =
-      levelResponse.levelStandard?.findIndex(
-        std => std.characterLevel === levelResponse.characterLevel,
-      ) ?? -1;
+    // currentUserExp를 기준으로 포함하는 레벨 찾기
+    if (__DEV__) {
+      console.log(
+        '[캐릭터 정보 조회] levelStandard:',
+        levelResponse.levelStandard,
+      );
+      console.log('[캐릭터 정보 조회] currentUserExp:', currentExp);
+    }
+
+    // levelStandard 배열을 역순으로 순회하여 currentUserExp를 포함하는 레벨 찾기
+    const levelStandardArray = levelResponse.levelStandard || [];
+    let currentLevelStandard: LevelStandard | null = null;
+
+    // 역순으로 순회 (높은 레벨부터)
+    for (let i = levelStandardArray.length - 1; i >= 0; i--) {
+      const standard = levelStandardArray[i];
+      if (currentExp >= standard.exp) {
+        currentLevelStandard = standard;
+        break;
+      }
+    }
+
+    // 다음 레벨 찾기
+    const currentLevelIndex = currentLevelStandard
+      ? levelStandardArray.findIndex(
+          std => std.characterLevel === currentLevelStandard!.characterLevel,
+        )
+      : -1;
+
     const nextLevelStandard =
-      nextLevelIndex >= 0 &&
-      nextLevelIndex < (levelResponse.levelStandard?.length ?? 0) - 1
-        ? levelResponse.levelStandard?.[nextLevelIndex + 1]
+      currentLevelIndex >= 0 &&
+      currentLevelIndex < levelStandardArray.length - 1
+        ? levelStandardArray[currentLevelIndex + 1]
         : null;
+
+    if (__DEV__) {
+      console.log(
+        '[캐릭터 정보 조회] currentLevelStandard:',
+        currentLevelStandard,
+      );
+      console.log('[캐릭터 정보 조회] currentLevelIndex:', currentLevelIndex);
+      console.log('[캐릭터 정보 조회] nextLevelStandard:', nextLevelStandard);
+    }
+
     const nextLevelExp =
       nextLevelStandard?.exp ?? currentLevelStandard?.exp ?? 100;
+
+    if (__DEV__) {
+      console.log('[캐릭터 정보 조회] nextLevelExp:', nextLevelExp);
+    }
 
     return {
       currentLevel,

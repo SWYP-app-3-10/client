@@ -2,7 +2,7 @@
  * 캐릭터 관련 React Query hooks
  */
 
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
 import {
   fetchCharacterData,
   fetchAttendanceData,
