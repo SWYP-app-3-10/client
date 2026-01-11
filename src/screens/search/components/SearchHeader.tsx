@@ -6,6 +6,7 @@ import {
   TouchableOpacity,
   TextInputProps,
   Pressable,
+  Platform,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 
@@ -22,7 +23,7 @@ import {
 type Props = {
   value: string;
 
-  // 검색 입력 화면에서만 사용
+  // 입력 화면에서만 사용
   onChangeText?: (text: string) => void;
   onSubmit?: () => void;
 
@@ -30,19 +31,18 @@ type Props = {
   goBackAction?: () => void;
   iconColor?: string;
 
-  // 검색 결과 화면 등에서 동일한 UI로 "표시만" 할 때 사용
+  // 결과 화면 등에서 "표시만" 할 때 사용
   readOnly?: boolean;
-
-  // readOnly 상태에서 검색바를 눌렀을 때 실행할 액션
-  // (ex. SearchInputScreen으로 이동)
   onPressBar?: () => void;
 
-  // TextInput에 추가 옵션이 필요할 경우 전달
   inputProps?: Omit<
     TextInputProps,
     'value' | 'onChangeText' | 'onSubmitEditing'
   >;
 };
+
+const HEADER_HEIGHT = scaleWidth(52);
+const SEARCH_BAR_HEIGHT = scaleWidth(52);
 
 export default function SearchHeader({
   value,
@@ -57,37 +57,28 @@ export default function SearchHeader({
 }: Props) {
   const navigation = useNavigation();
 
-  // 뒤로가기 처리
-  // goBackAction이 있으면 우선 실행, 없으면 기본 navigation.goBack()
   const handleBack = () => {
-    if (goBackAction) {
-      goBackAction();
-      return;
-    }
+    if (goBackAction) return goBackAction();
     navigation.goBack();
   };
 
-  // X 버튼 클릭 시 입력값 전체 초기화
   const handleClear = () => {
     onChangeText?.('');
   };
 
   return (
     <View style={styles.container}>
-      {/* 뒤로가기 버튼 영역 (기존 Header와 동일한 구조 유지) */}
+      {/* 뒤로가기 버튼 */}
       <View style={styles.leftArea}>
         <IconButton onPress={handleBack}>
           <Ic_backIcon color={iconColor ?? COLORS.gray800} />
         </IconButton>
       </View>
 
-      {/* 검색바 영역 */}
+      {/* 검색바 */}
       <View style={styles.searchBarWrap}>
         {readOnly ? (
-          // readOnly 모드
-          // - 실제 입력은 막고
-          // - 동일한 UI로만 보여줌
-          // - 전체 영역을 눌렀을 때 onPressBar 실행
+          // readOnly: 입력은 막고, 탭 시 onPressBar만 실행
           <TouchableOpacity
             activeOpacity={0.9}
             style={styles.readOnlyPressArea}
@@ -106,9 +97,7 @@ export default function SearchHeader({
             />
           </TouchableOpacity>
         ) : (
-          // 입력 모드
-          // - 실제 검색어 입력 가능
-          // - 입력값이 있으면 X 버튼 노출
+          // 입력 모드: 텍스트 입력 + 값 있을 때 X 버튼
           <View style={styles.inputRow}>
             <TextInput
               value={value}
@@ -118,11 +107,9 @@ export default function SearchHeader({
               returnKeyType="search"
               onSubmitEditing={onSubmit}
               style={styles.searchInput}
-              editable={!readOnly}
               {...inputProps}
             />
 
-            {/* 입력값이 있을 때만 X 버튼 표시 */}
             {!!value?.length && (
               <Pressable
                 onPress={handleClear}
@@ -145,7 +132,7 @@ const styles = StyleSheet.create({
   container: {
     flexDirection: 'row',
     alignItems: 'center',
-    height: scaleWidth(52),
+    height: HEADER_HEIGHT,
     paddingHorizontal: scaleWidth(20),
     marginTop: scaleWidth(8),
     backgroundColor: COLORS.white,
@@ -157,7 +144,7 @@ const styles = StyleSheet.create({
 
   searchBarWrap: {
     flex: 1,
-    height: scaleWidth(52),
+    height: SEARCH_BAR_HEIGHT,
     borderRadius: BORDER_RADIUS[16],
     backgroundColor: COLORS.gray100,
     paddingHorizontal: scaleWidth(25),
@@ -172,13 +159,26 @@ const styles = StyleSheet.create({
   inputRow: {
     flexDirection: 'row',
     alignItems: 'center',
+    height: '100%',
   },
 
+  // 커서가 길어지는 원인(lineHeight를 높이로 주는 것) 제거
   searchInput: {
     flex: 1,
     ...Body_16M,
     color: COLORS.black,
+
+    height: '100%',
+    paddingVertical: 0,
+    paddingHorizontal: 0,
     padding: 0,
+
+    ...(Platform.OS === 'android'
+      ? {
+          includeFontPadding: false,
+          textAlignVertical: 'center',
+        }
+      : {}),
   },
 
   clearBtn: {
