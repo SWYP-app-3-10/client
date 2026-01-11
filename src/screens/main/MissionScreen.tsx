@@ -69,6 +69,7 @@ export {
 
 const MissionScreen = () => {
   const scrollViewRef = useRef<ScrollView>(null);
+  const verticalScrollViewRef = useRef<ScrollView>(null);
   const [currentIndex, setCurrentIndex] = useState(0);
   const navigation =
     useNavigation<MainTabNavigationProp<MissionStackParamList>>();
@@ -87,10 +88,12 @@ const MissionScreen = () => {
     isLoading: missionsLoading,
     refetch: refetchMissions,
   } = useMissions();
-  // 화면 포커스 시 API 요청
+  // 화면 포커스 시 API 요청 및 스크롤 맨 위로 이동
   useFocusEffect(
     useCallback(() => {
       refetchMissions();
+      // 탭 전환 시 스크롤을 맨 위로 이동
+      verticalScrollViewRef.current?.scrollTo({ y: 0, animated: false });
     }, [refetchMissions]),
   );
 
@@ -254,6 +257,7 @@ const MissionScreen = () => {
   return (
     <SafeAreaView style={missionScreenStyles.container} edges={['top']}>
       <ScrollView
+        ref={verticalScrollViewRef}
         showsVerticalScrollIndicator={false}
         nestedScrollEnabled={true}
         contentContainerStyle={missionScreenStyles.scrollContent}
