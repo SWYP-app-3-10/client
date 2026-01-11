@@ -508,7 +508,8 @@ const styles = StyleSheet.create({
   levelButtonContainer: {
     position: 'absolute',
     top: scaleWidth(60),
-    left: scaleWidth(111),
+    left: 0,
+    right: 0,
     alignItems: 'center',
   },
   tooltipContainer: {
