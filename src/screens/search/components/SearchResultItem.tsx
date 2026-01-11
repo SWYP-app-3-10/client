@@ -9,21 +9,15 @@ import {
   scaleWidth,
 } from '../../../styles/global';
 
-type Props = {
-  /** 표시할 뉴스 데이터 */
-  item: NewsItems;
+import ViewIcon from '../../../assets/svg/View.svg';
+import ClockIcon from '../../../assets/svg/clock.svg';
+import ExploreResultDivider from '../../../assets/svg/ExploreResultDivider.svg';
 
-  /** 카드 클릭 시 호출되는 이벤트 (선택 사항) */
+type Props = {
+  item: NewsItems;
   onPress?: () => void;
 };
 
-/**
- * SearchResultItem
- * - 제목: 2줄
- * - 메타: [시간 아이콘] n분 | [뷰 아이콘] 200
- * - 아이콘은 자리(View)만 마련 (추후 SVG 삽입)
- * - 기존 카드/썸네일 크기, 패딩 유지
- */
 export default function SearchResultItem({ item, onPress }: Props) {
   const [imgError, setImgError] = useState(false);
 
@@ -31,15 +25,14 @@ export default function SearchResultItem({ item, onPress }: Props) {
     return !!item.imageUrl && item.imageUrl.trim().length > 0 && !imgError;
   }, [item.imageUrl, imgError]);
 
-  // readTime이 "5분 소요" 형태면 "5분"으로 정리해서 표시
+  // "5분 소요" -> "5분" 형태로 표시
   const readTimeText = useMemo(() => {
     const raw = item.readTime ?? '';
     const match = raw.match(/(\d+)\s*분/);
     return match ? `${match[1]}분` : raw;
   }, [item.readTime]);
 
-  // 조회수는 타입에 없을 수 있어서 우선 placeholder로 처리
-  // (나중에 item.views 같은 값이 생기면 여기만 바꾸면 됨)
+  // 조회수는 임시값(추후 hits로 교체 예정)
   const viewText = useMemo(() => {
     // @ts-ignore
     const views = item.views;
@@ -48,28 +41,45 @@ export default function SearchResultItem({ item, onPress }: Props) {
 
   return (
     <TouchableOpacity style={styles.card} onPress={onPress}>
-      {/* 좌측 텍스트 영역 */}
+      {/* 텍스트 영역 */}
       <View style={styles.left}>
-        {/* 뉴스 제목 (2줄 제한) */}
+        {/* 제목(2줄) */}
         <Text style={styles.title} numberOfLines={2}>
           {item.title}
         </Text>
 
-        {/* 메타: 시간 아이콘 n분 | 뷰 아이콘 200 */}
+        {/* 메타: 시간 / 구분선 / 조회수 */}
         <View style={styles.metaRow}>
-          {/* 시간 아이콘 자리 */}
-          <View style={styles.iconBox} />
-          <Text style={styles.metaText}>{readTimeText}</Text>
+          {/* 시간 블록 */}
+          <View style={styles.metaGroup}>
+            <ClockIcon
+              width={ICON_SIZE}
+              height={ICON_SIZE}
+              color={COLORS.gray600}
+            />
+            <Text style={styles.metaText}>{readTimeText}</Text>
+          </View>
 
-          <Text style={styles.metaDivider}> | </Text>
+          {/* 구분선 (1x8) */}
+          <ExploreResultDivider
+            width={DIVIDER_W}
+            height={DIVIDER_H}
+            color={COLORS.gray600}
+          />
 
-          {/* 뷰 아이콘 자리 */}
-          <View style={styles.iconBox} />
-          <Text style={styles.metaText}>{viewText}</Text>
+          {/* 조회수 블록 */}
+          <View style={styles.metaGroup}>
+            <ViewIcon
+              width={ICON_SIZE}
+              height={ICON_SIZE}
+              color={COLORS.gray600}
+            />
+            <Text style={styles.metaText}>{viewText}</Text>
+          </View>
         </View>
       </View>
 
-      {/* 우측 썸네일 영역 */}
+      {/* 썸네일 */}
       <View style={styles.thumb}>
         {shouldShowImage ? (
           <Image
@@ -88,10 +98,19 @@ export default function SearchResultItem({ item, onPress }: Props) {
 
 const THUMB_SIZE = scaleWidth(85);
 const THUMB_RADIUS = BORDER_RADIUS[16];
-const ICON_SIZE = scaleWidth(14);
+
+const ICON_SIZE = scaleWidth(18);
+
+// 구분선 크기: 1x8
+const DIVIDER_W = scaleWidth(1);
+const DIVIDER_H = scaleWidth(8);
+
+// 간격 규칙
+const GAP_ICON_TEXT = scaleWidth(4); // 아이콘 <-> 텍스트
+const GAP_GROUPS = scaleWidth(10); // 시간 전체 <-> 구분선 <-> 뷰 전체
+const GAP_TITLE_META = scaleWidth(8); // 제목 <-> 메타
 
 const styles = StyleSheet.create({
-  /** 카드 전체 컨테이너 (기존 유지) */
   card: {
     flexDirection: 'row',
     paddingHorizontal: 16,
@@ -99,64 +118,49 @@ const styles = StyleSheet.create({
     paddingBottom: 14,
     alignItems: 'center',
   },
-
-  /** 텍스트 영역 (기존 유지) */
   left: {
     flex: 1,
   },
 
-  /** 뉴스 제목: 2줄로 변경 */
+  // 제목 2줄
   title: {
     ...Body_16M,
     color: COLORS.black,
-    paddingRight: scaleWidth(20), // 기존 유지
+    paddingRight: scaleWidth(20),
+    marginBottom: GAP_TITLE_META,
   },
 
-  /** 메타 줄 (기존 meta를 row로 변경) */
+  // 메타 한 줄 (시간 / 구분선 / 조회수)
   metaRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginTop: scaleWidth(8), // 기존 meta marginTop 유지
+    columnGap: GAP_GROUPS,
   },
 
-  /** 아이콘 자리 */
-  iconBox: {
-    width: ICON_SIZE,
-    height: ICON_SIZE,
-    marginRight: scaleWidth(4),
+  // 시간 전체/조회수 전체 블록
+  metaGroup: {
+    flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
+    columnGap: GAP_ICON_TEXT,
   },
 
-  /** 메타 텍스트 (기존 meta 스타일 기반) */
   metaText: {
     ...Caption_14R,
     color: COLORS.gray700,
   },
 
-  /** 구분자 */
-  metaDivider: {
-    ...Caption_14R,
-    color: COLORS.gray700,
-    marginHorizontal: scaleWidth(4),
-  },
-
-  /** 썸네일 컨테이너 (기존 유지) */
+  // 썸네일 (기존 유지)
   thumb: {
     width: THUMB_SIZE,
     height: THUMB_SIZE,
     borderRadius: THUMB_RADIUS,
     overflow: 'hidden',
-    backgroundColor: COLORS.gray300, // 이미지 여백/투명 대비용 (원치 않으면 제거 가능)
+    backgroundColor: COLORS.gray300,
   },
-
-  /** 실제 이미지 (기존 유지) */
   thumbImage: {
     width: '100%',
     height: '100%',
   },
-
-  /** 이미지 없을 때 회색 placeholder (기존 유지) */
   thumbPlaceholder: {
     flex: 1,
     backgroundColor: COLORS.gray300,
