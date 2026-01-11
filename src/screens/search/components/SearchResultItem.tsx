@@ -1,5 +1,5 @@
-import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import React, { useMemo, useState } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, Image } from 'react-native';
 import type { NewsItems } from '../../../data/mock/searchData';
 import {
   Body_16M,
@@ -25,6 +25,13 @@ type Props = {
  * - 카드 전체를 터치 영역으로 사용
  */
 export default function SearchResultItem({ item, onPress }: Props) {
+  const [imgError, setImgError] = useState(false);
+
+  // imageUrl이 비어있거나 에러난 경우엔 placeholder를 보여줌
+  const shouldShowImage = useMemo(() => {
+    return !!item.imageUrl && item.imageUrl.trim().length > 0 && !imgError;
+  }, [item.imageUrl, imgError]);
+
   return (
     <TouchableOpacity style={styles.card} onPress={onPress}>
       {/* 좌측 텍스트 영역 */}
@@ -43,11 +50,25 @@ export default function SearchResultItem({ item, onPress }: Props) {
         <Text style={styles.meta}>{item.readTime}</Text>
       </View>
 
-      {/* 우측 썸네일 영역 (이미지 자리) */}
-      <View style={styles.thumb} />
+      {/* 우측 썸네일 영역 */}
+      <View style={styles.thumb}>
+        {shouldShowImage ? (
+          <Image
+            source={{ uri: item.imageUrl }}
+            style={styles.thumbImage}
+            resizeMode="cover"
+            onError={() => setImgError(true)}
+          />
+        ) : (
+          <View style={styles.thumbPlaceholder} />
+        )}
+      </View>
     </TouchableOpacity>
   );
 }
+
+const THUMB_SIZE = scaleWidth(85);
+const THUMB_RADIUS = BORDER_RADIUS[16];
 
 const styles = StyleSheet.create({
   /** 카드 전체 컨테이너 */
@@ -84,11 +105,23 @@ const styles = StyleSheet.create({
     marginTop: scaleWidth(8),
   },
 
-  /** 썸네일 영역 (이미지 적용 예정) */
+  /** 썸네일 컨테이너 */
   thumb: {
-    width: scaleWidth(85),
-    height: scaleWidth(85),
+    width: THUMB_SIZE,
+    height: THUMB_SIZE,
+    borderRadius: THUMB_RADIUS,
+    overflow: 'hidden', // radius 적용되게
+  },
+
+  /** 실제 이미지 */
+  thumbImage: {
+    width: '100%',
+    height: '100%',
+  },
+
+  /** 이미지 없을 때 회색 placeholder */
+  thumbPlaceholder: {
+    flex: 1,
     backgroundColor: COLORS.gray300,
-    borderRadius: BORDER_RADIUS[16],
   },
 });
