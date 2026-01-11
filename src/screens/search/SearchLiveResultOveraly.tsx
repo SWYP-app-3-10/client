@@ -5,6 +5,7 @@ import {
   StyleSheet,
   FlatList,
   ActivityIndicator,
+  Keyboard,
 } from 'react-native';
 
 import SearchResultItem from './components/SearchResultItem';
@@ -12,24 +13,19 @@ import type { NewsItems } from '../../data/mock/searchData';
 import { COLORS, scaleWidth } from '../../styles/global';
 
 import { useExploreContents } from '../../hooks/useExploreContents';
+import { useArticleNavigation } from '../../hooks/useArticleNavigation';
 
 type Props = {
-  // 현재 입력 중인 검색어
   keyword: string;
-
-  // 아이템 클릭 시(기사 이동/검색어 저장 등) 상위에서 처리
+  // 상위에서: 검색어 저장/오버레이 닫기/최근검색어 처리 등에 사용
   onPressItem: (item: NewsItems) => void;
 };
 
 /**
  * SearchLiveResultOverlay
- * - SearchResultScreen과 동일하게 explore(전체)를 받아온 뒤, 프론트에서 keyword로 필터링
- * - SearchInputScreen 위를 absolute overlay로 덮어 "입력 중 결과"를 보여줌
- *
- * ✅참고
- * - 현재 백엔드 무한스크롤 미적용 상태: explore 전체가 1페이지(예: 10개)만 내려올 수 있음
- * - 이 경우 라이브 검색 결과도 첫 페이지 데이터 범위에서만 매칭됨
- * - 백엔드가 nextBatchTime 기반으로 페이지네이션을 붙이면 자동 fetch 로직이 동작하도록 구성됨
+ * - SearchInputScreen 위를 absolute overlay로 덮어 "입력 중 실시간 결과"를 노출
+ * - explore(전체) 데이터를 누적 로드한 뒤, 프론트에서 keyword로 필터링
+ * - 결과가 없고 hasNextPage가 true면 다음 페이지를 자동 로드하며 결과를 탐색
  */
 export default function SearchLiveResultOverlay({
   keyword,
@@ -37,7 +33,10 @@ export default function SearchLiveResultOverlay({
 }: Props) {
   const trimmed = keyword.trim();
 
-  // explore "전체" 데이터 조회
+  // 기사 클릭 시 상세 이동(포인트/구매/모달/네비게이션 로직 포함)
+  const { handleArticlePress } = useArticleNavigation({ returnTo: 'search' });
+
+  // explore "전체" 데이터 조회(무한 스크롤)
   const {
     data,
     fetchNextPage,
@@ -48,7 +47,7 @@ export default function SearchLiveResultOverlay({
     isRefetching,
   } = useExploreContents(undefined);
 
-  // explore 응답(pages -> contents)을 UI 모델로 변환
+  // pages -> contents -> UI 모델 변환
   const allVisibleData: NewsItems[] = useMemo(() => {
     const pages = data?.pages ?? [];
     const allContents = pages.flatMap(p => p.contents ?? []);
@@ -64,24 +63,24 @@ export default function SearchLiveResultOverlay({
     }));
   }, [data]);
 
-  // 입력값 기준(제목 포함)으로 필터링
+  // 입력값 기준으로 제목 필터링
   const liveResults: NewsItems[] = useMemo(() => {
     const kw = trimmed.toLowerCase();
     if (!kw) return [];
-
     return allVisibleData.filter(item =>
       (item.title ?? '').toLowerCase().includes(kw),
     );
   }, [allVisibleData, trimmed]);
 
-  // 결과가 없고 다음 페이지가 있으면 추가 페이지를 가져오도록 준비
-  // (현재 백엔드 미적용이면 hasNextPage=false라 동작하지 않음)
+  // "결과 없음" 상태에서 fetchNextPage가 과도하게 연속 호출되는 것 방지
   const autoFetchGuard = useRef(false);
 
+  // 키워드가 바뀌면 가드 초기화
   useEffect(() => {
     autoFetchGuard.current = false;
   }, [trimmed]);
 
+  // 결과가 없고 다음 페이지가 있다면 자동으로 더 가져옴(페이지네이션 적용 시에만 의미 있음)
   useEffect(() => {
     if (!trimmed) return;
     if (isLoading || isRefetching || isFetchingNextPage) return;
@@ -104,10 +103,10 @@ export default function SearchLiveResultOverlay({
     isError,
   ]);
 
-  // 검색어가 없으면 오버레이를 렌더링하지 않음
+  // 입력이 없으면 오버레이 숨김
   if (!trimmed) return null;
 
-  // 최초 로딩만 로더 노출(이미 캐시가 있으면 바로 리스트 표시)
+  // 최초 로딩만 로더 노출(캐시가 있으면 리스트 바로 표시)
   const showInitialLoading = isLoading && !data;
 
   return (
@@ -122,7 +121,21 @@ export default function SearchLiveResultOverlay({
           data={liveResults}
           keyExtractor={item => item.id}
           renderItem={({ item }) => (
-            <SearchResultItem item={item} onPress={() => onPressItem(item)} />
+            <SearchResultItem
+              item={item}
+              onPress={() => {
+                // 키보드 내려서 터치/화면전환 안정화
+                Keyboard.dismiss();
+
+                // 상위 처리(최근검색어 저장/오버레이 닫기 등)
+                onPressItem(item);
+
+                // 상세 페이지 이동(로직은 useArticleNavigation 내부)
+                const contentId = Number(item.id);
+                if (Number.isNaN(contentId)) return;
+                handleArticlePress(contentId);
+              }}
+            />
           )}
           contentContainerStyle={styles.listContent}
           keyboardShouldPersistTaps="handled"
@@ -157,7 +170,7 @@ const styles = StyleSheet.create({
     ...StyleSheet.absoluteFillObject,
     backgroundColor: COLORS.white,
   },
-  // 기존 리스트 여백/간격 유지
+  // 리스트 여백/간격
   listContent: {
     paddingTop: scaleWidth(12),
     paddingBottom: scaleWidth(24),
