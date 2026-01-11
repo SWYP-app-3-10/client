@@ -46,9 +46,9 @@ const ArticleCard = React.memo<ArticleCardProps>(({ article, onPress }) => {
             <View style={styles.articleImagePlaceholder} />
           )}
           <View style={styles.articleTag}>
-            <Text style={styles.articleTagText}>
-              {article.category} | {article.readTime}
-            </Text>
+            <Text style={styles.articleTagText}>{article.category}</Text>
+            <Text style={styles.articleTagDivider}>|</Text>
+            <Text style={styles.articleTagText}>{article.readTime}</Text>
           </View>
         </View>
         {/* 아티클 정보 */}
@@ -84,7 +84,6 @@ const styles = StyleSheet.create({
     borderRadius: BORDER_RADIUS[16],
     overflow: 'hidden',
     backgroundColor: COLORS.white,
-    height: scaleWidth(292),
   },
   articleImageContainer: {
     position: 'relative',
@@ -108,6 +107,12 @@ const styles = StyleSheet.create({
     paddingVertical: scaleWidth(8),
     backgroundColor: COLORS.puple[3],
     borderRadius: BORDER_RADIUS[30],
+    flexDirection: 'row',
+  },
+  articleTagDivider: {
+    ...Caption_14R,
+    color: COLORS.gray700,
+    marginHorizontal: scaleWidth(8),
   },
   articleTagText: {
     ...Caption_14R,

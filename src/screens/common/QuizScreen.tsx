@@ -1,11 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  TouchableOpacity,
-  ScrollView,
-} from 'react-native';
+import { View, Text, StyleSheet, ScrollView, Pressable } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import {
   COLORS,
@@ -57,6 +51,10 @@ const QuizScreen: React.FC = () => {
   const [quizState, setQuizState] = useState<QuizState>('question');
   const [selectedDifficulty, setSelectedDifficulty] =
     useState<Difficulty | null>(null);
+  const [quizResult, setQuizResult] = useState<{
+    correctChoiceNo: number;
+    isAnswerCorrect: boolean;
+  } | null>(null);
   const showModal = useShowModal();
   const hideModal = useHideModal();
   const navigation = useNavigation();
@@ -77,7 +75,18 @@ const QuizScreen: React.FC = () => {
         }
 
         const response = await fetchQuiz(userInfo.userId, articleId);
+        console.log('[퀴즈 조회 API] 요청:', {
+          userId: userInfo.userId,
+          articleId,
+        });
+        console.log('[퀴즈 조회 API] 응답:', JSON.stringify(response, null, 2));
         if (response.data) {
+          console.log('[퀴즈 조회 API] 데이터:', {
+            quizId: response.data.quizId,
+            quizContent: response.data.quizContent,
+            choicesCount: response.data.choices?.length,
+            choices: response.data.choices,
+          });
           setQuizData(response.data);
         }
       } catch (err: any) {
@@ -117,14 +126,37 @@ const QuizScreen: React.FC = () => {
       }
 
       // 퀴즈 제출 API 호출
-      const response = await submitQuiz(userInfo.userId, {
+      const submitRequest = {
         quizId: quiz.id,
         selectedNo: selectedChoice.choiceNo,
         readContentId: articleId,
+      };
+      console.log('[퀴즈 제출 API] 요청:', {
+        userId: userInfo.userId,
+        request: submitRequest,
       });
+
+      const response = await submitQuiz(userInfo.userId, submitRequest);
+      console.log('[퀴즈 제출 API] 응답:', JSON.stringify(response, null, 2));
 
       const { quizResultResponse, rewardResponse, userLevelInformation } =
         response.data;
+
+      console.log('[퀴즈 제출 API] 데이터:', {
+        isAnswerCorrect: quizResultResponse?.isAnswerCorrect,
+        correctChoiceNo: quizResultResponse?.correctChoiceNo,
+        earnedPoint: rewardResponse?.earnedPoint,
+        earnedExp: rewardResponse?.earnedExp,
+        userLevelInformation,
+      });
+
+      // 퀴즈 결과 저장 (피드백 화면에서 정답 판단용)
+      if (quizResultResponse) {
+        setQuizResult({
+          correctChoiceNo: quizResultResponse.correctChoiceNo,
+          isAnswerCorrect: quizResultResponse.isAnswerCorrect,
+        });
+      }
 
       // 포인트 및 경험치 추가
       addPoints(rewardResponse.earnedPoint);
@@ -207,14 +239,22 @@ const QuizScreen: React.FC = () => {
     });
   };
 
+  // 마지막 마침표 제거 유틸리티 함수
+  const removeTrailingPeriod = (text: string | undefined): string => {
+    if (!text) {
+      return '';
+    }
+    return text.endsWith('.') ? text.slice(0, -1) : text;
+  };
+
   // API 응답을 기존 Quiz 구조로 변환
   const quiz = quizData
     ? {
         id: quizData.quizId,
-        question: quizData.quizContent, // question -> quizContent 수정
+        question: removeTrailingPeriod(quizData.quizContent), // question -> quizContent 수정, 마지막 마침표 제거
         options: quizData.choices.map(choice => ({
           id: choice.quizChoiceId,
-          text: choice.choiceText,
+          text: removeTrailingPeriod(choice.choiceText), // 마지막 마침표 제거
         })),
         correctAnswerId:
           quizData.choices.find(choice => choice.correct)?.quizChoiceId || 0,
@@ -222,9 +262,20 @@ const QuizScreen: React.FC = () => {
     : null;
 
   const isCorrect = (optionId: number) => {
-    if (!quiz) {
+    if (!quiz || !quizData) {
       return false;
     }
+
+    // 피드백 화면에서는 API 응답의 correctChoiceNo 사용
+    if (quizState === 'feedback' && quizResult) {
+      // choiceNo로 정답 찾기
+      const option = quizData.choices.find(
+        choice => choice.quizChoiceId === optionId,
+      );
+      return option?.choiceNo === quizResult.correctChoiceNo;
+    }
+
+    // 문제 화면에서는 초기 데이터의 correct 필드 사용
     return optionId === quiz.correctAnswerId;
   };
 
@@ -233,7 +284,7 @@ const QuizScreen: React.FC = () => {
       // 문제 화면: 선택 여부에 따라 스타일 변경
       const isSelected = selectedOptionId === option.id;
       return (
-        <TouchableOpacity
+        <Pressable
           key={option.id}
           style={[styles.optionCard, isSelected && styles.optionCardSelected]}
           onPress={() => handleOptionSelect(option.id)}
@@ -253,7 +304,7 @@ const QuizScreen: React.FC = () => {
               <CheckIcon color={isSelected ? COLORS.white : COLORS.gray100} />
             </View>
           </View>
-        </TouchableOpacity>
+        </Pressable>
       );
     } else {
       // 피드백 화면: 정답/오답에 따라 스타일 변경
@@ -270,7 +321,7 @@ const QuizScreen: React.FC = () => {
 
   return (
     <SafeAreaView style={styles.container}>
-      <Header iconColor={COLORS.black} />
+      <Header iconColor={COLORS.gray800} />
       <Spacer num={32} />
       <ScrollView
         bounces={false}
@@ -334,11 +385,12 @@ const styles = StyleSheet.create({
     paddingVertical: scaleWidth(20),
     borderRadius: BORDER_RADIUS[16],
     backgroundColor: COLORS.gray100,
+    borderWidth: 1,
+    borderColor: 'transparent', // 기본적으로 투명한 border로 크기 유지
   },
   optionCardSelected: {
     borderColor: COLORS.puple.main,
     backgroundColor: COLORS.puple[3],
-    borderWidth: 1,
   },
   optionCardCorrect: {
     borderColor: COLORS.blue.main,

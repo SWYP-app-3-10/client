@@ -68,6 +68,7 @@ const ArticleDetailScreen = () => {
   const isFocused = useIsFocused();
   const screenEnterTimeRef = useRef<number | null>(null);
   const hasCheckedReadStatusRef = useRef(false);
+  const hasShownNewArticleToastRef = useRef(false);
 
   // @ts-ignore - route params 타입은 나중에 추가
   const articleId = route.params?.articleId;
@@ -145,24 +146,8 @@ const ArticleDetailScreen = () => {
         toastTimerRef.current = null;
       }
       isScreenFocusedRef.current = true;
-      hasEarnedExperienceRef.current = false;
-      hasCheckedReadStatusRef.current = false;
-      screenEnterTimeRef.current = Date.now(); // 화면 진입 시간 기록
-
-      // 토스트 모달 표시 (광고를 보고 들어왔을 때만)
-      if (fromAd) {
-        toastTimerRef.current = setTimeout(() => {
-          showToastModal({
-            message: '새로운 글이 열렸어요',
-            position: 'center',
-            backgroundColor: COLORS.gray800Opacity80,
-            height: scaleWidth(39),
-            width: scaleWidth(148),
-            borderRadius: BORDER_RADIUS[8],
-          });
-          toastTimerRef.current = null;
-        }, 500);
-      }
+      // 토스트 모달은 이미 표시되었으면 다시 표시하지 않음
+      // hasShownNewArticleToastRef는 리셋하지 않음
 
       return () => {
         isScreenFocusedRef.current = false;
@@ -175,8 +160,34 @@ const ArticleDetailScreen = () => {
           toastTimerRef.current = null;
         }
       };
-    }, [showToastModal, fromAd]),
+    }, []),
   );
+
+  // 초기 마운트 시에만 토스트 모달 표시
+  useEffect(() => {
+    // 토스트 모달 표시 (광고를 보고 들어왔을 때만, 한 번만 표시)
+    if (fromAd && !hasShownNewArticleToastRef.current) {
+      hasShownNewArticleToastRef.current = true;
+      toastTimerRef.current = setTimeout(() => {
+        showToastModal({
+          message: '새로운 글이 열렸어요',
+          position: 'center',
+          backgroundColor: COLORS.gray800Opacity80,
+          height: scaleWidth(39),
+          width: scaleWidth(148),
+          borderRadius: BORDER_RADIUS[8],
+        });
+        toastTimerRef.current = null;
+      }, 500);
+    }
+
+    return () => {
+      if (toastTimerRef.current) {
+        clearTimeout(toastTimerRef.current);
+        toastTimerRef.current = null;
+      }
+    };
+  }, [fromAd, showToastModal]);
 
   // articleId가 변경되면 경험치 획득 상태 리셋
   useEffect(() => {
@@ -187,6 +198,7 @@ const ArticleDetailScreen = () => {
     }
     hasEarnedExperienceRef.current = false;
     hasCheckedReadStatusRef.current = false;
+    hasShownNewArticleToastRef.current = false; // articleId 변경 시 토스트 모달 표시 상태 리셋
     screenEnterTimeRef.current = Date.now(); // articleId 변경 시 진입 시간 리셋
     isScreenFocusedRef.current = isFocused;
   }, [articleId, isFocused]);

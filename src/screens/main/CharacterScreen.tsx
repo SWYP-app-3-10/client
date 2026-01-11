@@ -40,7 +40,6 @@ import Spacer from '../../components/Spacer';
 import LottieView from 'lottie-react-native';
 import {
   Check_3DIcon,
-  InfoIcon,
   Level_1_Tooltip,
   Level_2_Tooltip,
   Level_3_Tooltip,
@@ -48,10 +47,14 @@ import {
   Level_5_Tooltip,
   RightArrowIcon,
   ProgressBarIcon,
+  InfoIcon,
+  PIcon,
+  XPIcon,
 } from '../../icons';
 import { Body_15M, Heading_16B } from '../../styles/typography';
 import {
   useCharacterMe,
+  useCharacterData,
   convertWeeklyAttendanceToAttendanceData,
   convertCharacterMissionToMission,
 } from '../../hooks/useCharacter';
@@ -80,19 +83,38 @@ const CharacterScreen = () => {
     null,
   );
 
-  // 탭 전환 시 스크롤을 맨 위로 이동
-  useFocusEffect(
-    useCallback(() => {
-      scrollViewRef.current?.scrollTo({ y: 0, animated: false });
-    }, []),
-  );
-
   // React Query hooks - 통합 API 사용
   const {
     data: characterMeResponse,
     isLoading: characterLoading,
     error: characterError,
+    refetch: refetchCharacterMe,
   } = useCharacterMe();
+
+  // 다음 레벨 경험치를 가져오기 위한 별도 API 호출
+  const {
+    data: characterData,
+    refetch: refetchCharacterData,
+    isLoading: characterDataLoading,
+  } = useCharacterData();
+
+  // characterData 로딩 상태 로깅
+  if (__DEV__) {
+    console.log('[CharacterScreen] characterData 상태:', {
+      characterData,
+      characterDataLoading,
+      hasNextLevelExp: !!characterData?.nextLevelExp,
+    });
+  }
+
+  // 탭 전환 시 스크롤을 맨 위로 이동 및 최신 데이터 조회
+  useFocusEffect(
+    useCallback(() => {
+      scrollViewRef.current?.scrollTo({ y: 0, animated: false });
+      refetchCharacterMe();
+      refetchCharacterData(); // 다음 레벨 경험치도 최신 데이터로 갱신
+    }, [refetchCharacterMe, refetchCharacterData]),
+  );
 
   // data 래퍼에서 실제 데이터 추출
   const characterMeData = characterMeResponse?.data;
@@ -106,15 +128,52 @@ const CharacterScreen = () => {
     [characterMeData?.attendance],
   );
 
-  const missions = useMemo(
-    () =>
-      characterMeData?.missions
-        ? characterMeData.missions.map((mission, index) =>
-            convertCharacterMissionToMission(mission, index),
-          )
-        : [],
-    [characterMeData?.missions],
-  );
+  const missions = useMemo(() => {
+    if (!characterMeData?.missions) {
+      return [];
+    }
+
+    const convertedMissions = characterMeData.missions.map((mission, index) =>
+      convertCharacterMissionToMission(mission, index),
+    );
+
+    // 정렬: 진행 중 -> 완료 -> 잠긴
+    return convertedMissions.sort((a, b) => {
+      // 진행 중 (status === '진행 중') 우선
+      if (a.status === '진행 중' && b.status !== '진행 중') {
+        return -1;
+      }
+      if (b.status === '진행 중' && a.status !== '진행 중') {
+        return 1;
+      }
+
+      // 완료 (status === '완료') 다음
+      if (
+        a.status === '완료' &&
+        b.status !== '완료' &&
+        b.status !== '진행 중'
+      ) {
+        return -1;
+      }
+      if (
+        b.status === '완료' &&
+        a.status !== '완료' &&
+        a.status !== '진행 중'
+      ) {
+        return 1;
+      }
+
+      // 잠긴 (status === null) 마지막
+      if (a.status === null && b.status !== null) {
+        return 1;
+      }
+      if (b.status === null && a.status !== null) {
+        return -1;
+      }
+
+      return 0;
+    });
+  }, [characterMeData?.missions]);
 
   // 기본값 설정
   const userGrowthInfo = characterMeData?.userGrowthInfo;
@@ -129,12 +188,38 @@ const CharacterScreen = () => {
   const currentPoints = userGrowthInfo?.currentPoint ?? 0;
   const progressPercent = userGrowthInfo?.progressPercent ?? 0;
   const nextLevelExp = useMemo(() => {
-    // progressPercent를 기반으로 다음 레벨 경험치 계산
-    if (progressPercent === 100 || currentExp === 0) {
+    // API에서 받은 다음 레벨 경험치 사용
+    console.log('[CharacterScreen] characterData 전체:', characterData);
+    if (characterData?.nextLevelExp) {
+      console.log(
+        '[CharacterScreen] nextLevelExp from API:',
+        characterData.nextLevelExp,
+      );
+      return characterData.nextLevelExp;
+    }
+    console.log(
+      '[CharacterScreen] characterData?.nextLevelExp 없음, fallback 계산 사용',
+      {
+        characterData,
+        hasNextLevelExp: !!characterData?.nextLevelExp,
+      },
+    );
+    // API 데이터가 없으면 progressPercent를 기반으로 계산
+    if (progressPercent === 100) {
+      // 최대 레벨에 도달한 경우
+      return currentExp;
+    }
+    if (currentExp === 0 || progressPercent === 0) {
+      // 경험치가 0이거나 progressPercent가 0인 경우 기본값 반환
       return 100;
     }
-    return Math.round((currentExp / progressPercent) * 100);
-  }, [currentExp, progressPercent]);
+    const calculated = Math.round((currentExp / progressPercent) * 100);
+    // Infinity나 NaN 체크
+    if (!isFinite(calculated) || isNaN(calculated)) {
+      return 100;
+    }
+    return calculated;
+  }, [characterData, currentExp, progressPercent]);
 
   // 메모이제이션: 레벨 데이터
   const currentLevelData = useMemo(
@@ -276,7 +361,7 @@ const CharacterScreen = () => {
             onPress={handleCharacterInfoPress}
             variant="ghost"
           >
-            <Text style={styles.levelButtonText}>
+            <Text style={[styles.levelButtonText]}>
               {currentLevelData?.title || 'Lv. 1 아메바'}
             </Text>
             <InfoIcon color={COLORS.gray400} />
@@ -289,13 +374,14 @@ const CharacterScreen = () => {
           )}
         </View>
 
-        <Spacer num={24} />
-
         {/* 레벨 진행 카드 */}
         <View style={styles.levelCard}>
           <View style={styles.levelCardHeader}>
             <Text style={styles.levelCardTitle}>Lv. {currentLevel}</Text>
-            <TouchableOpacity onPress={handleNavigateToCriteria}>
+            <TouchableOpacity
+              onPress={handleNavigateToCriteria}
+              activeOpacity={1}
+            >
               <View style={styles.levelCriteriaLinkWrapper}>
                 <Text style={styles.levelCriteriaLink}>레벨 기준 확인하기</Text>
               </View>
@@ -334,18 +420,23 @@ const CharacterScreen = () => {
           <TouchableOpacity
             style={styles.statsRowContainer}
             onPress={handleNavigateToPointHistory}
+            activeOpacity={1}
           >
             <View style={styles.statsRowContainerWrapper}>
               <View style={styles.statsRow}>
-                <Text style={styles.statsLabel}>포인트</Text>
+                <Text style={styles.statsLabel}>경험치</Text>
                 <View style={styles.statsValueContainer}>
-                  <Text style={styles.statsValue}>{currentPoints} P</Text>
+                  <XPIcon />
+                  <Text style={styles.statsValue}>{currentExp} XP</Text>
                 </View>
               </View>
 
               <View style={styles.statsRow}>
-                <Text style={styles.statsLabel}>경험치</Text>
-                <Text style={styles.statsValue}>{currentExp} XP</Text>
+                <Text style={styles.statsLabel}>포인트</Text>
+                <View style={styles.statsValueContainer}>
+                  <PIcon />
+                  <Text style={styles.statsValue}>{currentPoints} P</Text>
+                </View>
               </View>
             </View>
             <RightArrowIcon color={COLORS.gray700} />
@@ -415,7 +506,6 @@ const styles = StyleSheet.create({
     height: '100%',
   },
   levelButtonContainer: {
-    marginTop: scaleWidth(30),
     position: 'absolute',
     top: scaleWidth(60),
     left: scaleWidth(111),
@@ -433,8 +523,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: COLORS.overlayWhite,
-    paddingHorizontal: scaleWidth(15),
-    height: scaleWidth(42),
+    paddingHorizontal: scaleWidth(16),
+    height: scaleWidth(44),
     borderRadius: BORDER_RADIUS[99],
     gap: scaleWidth(8),
     borderWidth: scaleWidth(2),
@@ -544,8 +634,25 @@ const styles = StyleSheet.create({
     gap: scaleWidth(8),
   },
   statsValue: {
-    ...Heading_16B,
+    ...Heading_18EB_Round,
     color: COLORS.black,
+  },
+  xpIconBox: {
+    width: scaleWidth(26),
+    height: scaleWidth(26),
+    borderRadius: BORDER_RADIUS[99],
+    backgroundColor: COLORS.blue[5],
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+
+  pointIconBox: {
+    width: scaleWidth(26),
+    height: scaleWidth(26),
+    borderRadius: BORDER_RADIUS[99],
+    backgroundColor: COLORS.yellow[1],
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   attendanceSection: {
     position: 'absolute',

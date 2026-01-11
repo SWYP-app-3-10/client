@@ -97,10 +97,48 @@ const MissionScreen = () => {
     }, [refetchMissions]),
   );
 
-  const missions = useMemo(
-    () => missionData?.missions || [],
-    [missionData?.missions],
-  );
+  const missions = useMemo(() => {
+    if (!missionData?.missions) {
+      return [];
+    }
+
+    // 정렬: 진행 중 -> 완료 -> 잠긴
+    return [...missionData.missions].sort((a, b) => {
+      // 진행 중 (status === '진행 중') 우선
+      if (a.status === '진행 중' && b.status !== '진행 중') {
+        return -1;
+      }
+      if (b.status === '진행 중' && a.status !== '진행 중') {
+        return 1;
+      }
+
+      // 완료 (status === '완료') 다음
+      if (
+        a.status === '완료' &&
+        b.status !== '완료' &&
+        b.status !== '진행 중'
+      ) {
+        return -1;
+      }
+      if (
+        b.status === '완료' &&
+        a.status !== '완료' &&
+        a.status !== '진행 중'
+      ) {
+        return 1;
+      }
+
+      // 잠긴 (status === null) 마지막
+      if (a.status === null && b.status !== null) {
+        return 1;
+      }
+      if (b.status === null && a.status !== null) {
+        return -1;
+      }
+
+      return 0;
+    });
+  }, [missionData?.missions]);
   const contents = useMemo(
     () => missionData?.contents || [],
     [missionData?.contents],

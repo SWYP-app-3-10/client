@@ -16,6 +16,13 @@ interface ArticleContentProps {
   content?: ContentDetail;
 }
 
+const formatDate = (dateString: string | undefined): string => {
+  if (!dateString) {
+    return '';
+  }
+  return dateString.replace(/-/g, '.');
+};
+
 const ArticleContent: React.FC<ArticleContentProps> = ({ content }) => {
   return (
     <>
@@ -36,7 +43,7 @@ const ArticleContent: React.FC<ArticleContentProps> = ({ content }) => {
         <Text style={styles.title}>{content?.title}</Text>
         <View style={styles.metaWrapper}>
           <View style={styles.metaContainer}>
-            <Text style={styles.meta}>{content?.contentDate}</Text>
+            <Text style={styles.meta}>{formatDate(content?.contentDate)}</Text>
             <Text style={styles.meta}> | </Text>
             <View style={styles.viewIconContainer}>
               <ViewIcon />
@@ -67,7 +74,8 @@ const styles = StyleSheet.create({
     paddingTop: scaleWidth(27),
   },
   categoryContainer: {
-    width: scaleWidth(49),
+    alignSelf: 'flex-start',
+    paddingHorizontal: scaleWidth(12),
     height: scaleWidth(35),
     backgroundColor: COLORS.puple[3],
     borderRadius: BORDER_RADIUS[30],
