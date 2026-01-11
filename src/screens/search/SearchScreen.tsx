@@ -125,22 +125,6 @@ export default function SearchScreen() {
     });
   };
 
-  // 초기 로딩 상태: 헤더는 보여주고, 리스트는 스켈레톤 표시
-  if (isLoading) {
-    return (
-      <SafeAreaView style={styles.safe} edges={['top']}>
-        <ExploreHeaderWithTimer onSearch={goToSearchInput} />
-        <FlatList
-          style={styles.list}
-          data={[1, 2, 3, 4, 5]}
-          keyExtractor={(_, i) => `sk-${i}`}
-          renderItem={() => <SearchResultSkeleton />}
-          contentContainerStyle={styles.listContent}
-        />
-      </SafeAreaView>
-    );
-  }
-
   // 일반 상태: 헤더 + 카테고리 탭 + 리스트
   return (
     <SafeAreaView style={styles.safe} edges={['top']}>
@@ -173,49 +157,57 @@ export default function SearchScreen() {
           />
         </View>
 
-        {/* 결과 리스트 */}
-        <FlatList
-          style={styles.list}
-          data={visibleData}
-          keyExtractor={item => item.id}
-          renderItem={({ item }) => (
-            <SearchResultItem
-              item={item}
-              onPress={() => handleArticlePress(Number(item.id))}
-            />
-          )}
-          contentContainerStyle={styles.listContent}
-          onEndReached={() => {
-            if (hasNextPage && !isFetchingNextPage) {
-              fetchNextPage();
-            }
-          }}
-          onEndReachedThreshold={0.5}
-          ListFooterComponent={() =>
-            isFetchingNextPage ? (
-              <ActivityIndicator
-                style={{ margin: 20 }}
-                color={COLORS.puple.main}
+        {/* 리스트 영역만 스켈레톤/결과를 스위칭 */}
+        {isLoading ? (
+          <FlatList
+            style={styles.list}
+            data={[1, 2, 3, 4, 5]}
+            keyExtractor={(_, i) => `sk-${i}`}
+            renderItem={() => <SearchResultSkeleton />}
+            contentContainerStyle={styles.listContent}
+          />
+        ) : (
+          <FlatList
+            style={styles.list}
+            data={visibleData}
+            keyExtractor={item => item.id}
+            renderItem={({ item }) => (
+              <SearchResultItem
+                item={item}
+                onPress={() => handleArticlePress(Number(item.id))}
               />
-            ) : (
-              <View style={{ height: 20 }} />
-            )
-          }
-          refreshControl={
-            <RefreshControl
-              refreshing={isRefetching}
-              onRefresh={refetch}
-              tintColor={COLORS.puple.main}
-            />
-          }
-          ListEmptyComponent={
-            <Text style={styles.empty}>
-              {isError
-                ? '데이터를 가져오지 못했습니다.'
-                : '해당 카테고리의 글이 없습니다.'}
-            </Text>
-          }
-        />
+            )}
+            contentContainerStyle={styles.listContent}
+            onEndReached={() => {
+              if (hasNextPage && !isFetchingNextPage) fetchNextPage();
+            }}
+            onEndReachedThreshold={0.5}
+            ListFooterComponent={() =>
+              isFetchingNextPage ? (
+                <ActivityIndicator
+                  style={{ margin: 20 }}
+                  color={COLORS.puple.main}
+                />
+              ) : (
+                <View style={{ height: 20 }} />
+              )
+            }
+            refreshControl={
+              <RefreshControl
+                refreshing={isRefetching}
+                onRefresh={refetch}
+                tintColor={COLORS.puple.main}
+              />
+            }
+            ListEmptyComponent={
+              <Text style={styles.empty}>
+                {isError
+                  ? '데이터를 가져오지 못했습니다.'
+                  : '해당 카테고리의 글이 없습니다.'}
+              </Text>
+            }
+          />
+        )}
       </View>
     </SafeAreaView>
   );
