@@ -11,25 +11,33 @@ import SearchResultItem from './components/SearchResultItem';
 import type { NewsItems } from '../../data/mock/searchData';
 import { COLORS, scaleWidth } from '../../styles/global';
 
-// ✅ SearchResultScreen이랑 동일하게 useExploreContents로 통일
 import { useExploreContents } from '../../hooks/useExploreContents';
 
 type Props = {
   // 현재 입력 중인 검색어
   keyword: string;
 
-  // 검색 결과 아이템 클릭 시 실행할 핸들러
-  // (SearchInputScreen에서 기사 이동 / 검색어 저장 등을 처리)
+  // 아이템 클릭 시(기사 이동/검색어 저장 등) 상위에서 처리
   onPressItem: (item: NewsItems) => void;
 };
 
+/**
+ * SearchLiveResultOverlay
+ * - SearchResultScreen과 동일하게 explore(전체)를 받아온 뒤, 프론트에서 keyword로 필터링
+ * - SearchInputScreen 위를 absolute overlay로 덮어 "입력 중 결과"를 보여줌
+ *
+ * ✅참고
+ * - 현재 백엔드 무한스크롤 미적용 상태: explore 전체가 1페이지(예: 10개)만 내려올 수 있음
+ * - 이 경우 라이브 검색 결과도 첫 페이지 데이터 범위에서만 매칭됨
+ * - 백엔드가 nextBatchTime 기반으로 페이지네이션을 붙이면 자동 fetch 로직이 동작하도록 구성됨
+ */
 export default function SearchLiveResultOverlay({
   keyword,
   onPressItem,
 }: Props) {
   const trimmed = keyword.trim();
 
-  // ✅ "전체" 탐색 데이터를 받아오고, 프론트에서 keyword로 필터링
+  // explore "전체" 데이터 조회
   const {
     data,
     fetchNextPage,
@@ -40,7 +48,7 @@ export default function SearchLiveResultOverlay({
     isRefetching,
   } = useExploreContents(undefined);
 
-  // ✅ explore 응답(pages -> contents)을 UI 데이터로 변환
+  // explore 응답(pages -> contents)을 UI 모델로 변환
   const allVisibleData: NewsItems[] = useMemo(() => {
     const pages = data?.pages ?? [];
     const allContents = pages.flatMap(p => p.contents ?? []);
@@ -56,7 +64,7 @@ export default function SearchLiveResultOverlay({
     }));
   }, [data]);
 
-  // ✅ keyword로 필터링 (제목 기준) - SearchResultScreen과 동일
+  // 입력값 기준(제목 포함)으로 필터링
   const liveResults: NewsItems[] = useMemo(() => {
     const kw = trimmed.toLowerCase();
     if (!kw) return [];
@@ -66,10 +74,8 @@ export default function SearchLiveResultOverlay({
     );
   }, [allVisibleData, trimmed]);
 
-  /**
-   * ✅ (나중에 백엔드 무한스크롤 붙었을 때) 결과가 없으면 자동으로 더 받아오기
-   * - 지금은 백엔드가 nextBatchTime을 안 주니까 hasNextPage=false로 동작 안 함(안전)
-   */
+  // 결과가 없고 다음 페이지가 있으면 추가 페이지를 가져오도록 준비
+  // (현재 백엔드 미적용이면 hasNextPage=false라 동작하지 않음)
   const autoFetchGuard = useRef(false);
 
   useEffect(() => {
@@ -98,10 +104,10 @@ export default function SearchLiveResultOverlay({
     isError,
   ]);
 
-  // ✅ 검색어가 비어 있으면 오버레이 자체를 렌더링하지 않음
+  // 검색어가 없으면 오버레이를 렌더링하지 않음
   if (!trimmed) return null;
 
-  // ✅ 초기 로딩만 로더 보여주고(데이터가 이미 있으면 바로 결과 렌더)
+  // 최초 로딩만 로더 노출(이미 캐시가 있으면 바로 리스트 표시)
   const showInitialLoading = isLoading && !data;
 
   return (
@@ -146,10 +152,12 @@ export default function SearchLiveResultOverlay({
 }
 
 const styles = StyleSheet.create({
+  // SearchInputScreen 위를 덮는 오버레이 레이어
   overlay: {
     ...StyleSheet.absoluteFillObject,
     backgroundColor: COLORS.white,
   },
+  // 기존 리스트 여백/간격 유지
   listContent: {
     paddingTop: scaleWidth(12),
     paddingBottom: scaleWidth(24),

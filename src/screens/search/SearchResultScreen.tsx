@@ -21,11 +21,21 @@ import SearchResultItem from './components/SearchResultItem';
 import type { NewsItems } from '../../data/mock/searchData';
 import { useArticleNavigation } from '../../hooks/useArticleNavigation';
 
-// ✅ 이걸로 통일
 import { useExploreContents } from '../../hooks/useExploreContents';
 
 import { COLORS, scaleWidth } from '../../styles/global';
 
+/**
+ * SearchResultScreen
+ * - 검색 확정(엔터/검색 버튼) 후 결과 화면
+ * - explore(전체) 데이터를 가져온 뒤 프론트에서 keyword로 필터링
+ *
+ * ✅참고
+ * - 현재 백엔드 무한스크롤 미적용 상태: explore 전체가 1페이지(예: 10개)만 내려올 수 있음
+ * - 이 경우 검색 결과도 첫 페이지 데이터 범위에서만 매칭됨
+ * - 백엔드가 nextBatchTime 기반 페이지네이션을 붙이면 hasNextPage가 true가 되고,
+ *   아래 자동 fetchNextPage 로직으로 "결과가 나올 때까지" 추가 로드 가능
+ */
 export default function SearchResultScreen() {
   const navigation =
     useNavigation<NativeStackNavigationProp<FullScreenStackParamList>>();
@@ -35,7 +45,7 @@ export default function SearchResultScreen() {
     >();
   const { keyword } = route.params;
 
-  // ✅ "전체" 탐색 데이터를 받아오고, 프론트에서 검색 필터링
+  // explore "전체" 데이터 조회
   const {
     data,
     fetchNextPage,
@@ -46,10 +56,10 @@ export default function SearchResultScreen() {
     isRefetching,
   } = useExploreContents(undefined);
 
-  // 기사 클릭 처리
+  // 기사 클릭 시 상세 이동(포인트/구매/모달 로직 포함)
   const { handleArticlePress } = useArticleNavigation({ returnTo: 'search' });
 
-  // ✅ explore 응답(pages -> contents)을 UI 데이터로 변환
+  // explore 응답(pages -> contents)을 UI 모델로 변환
   const allVisibleData: NewsItems[] = useMemo(() => {
     const pages = data?.pages ?? [];
     const allContents = pages.flatMap(p => p.contents ?? []);
@@ -60,12 +70,12 @@ export default function SearchResultScreen() {
       title: c.title || '',
       subtitle: '',
       readTime: `${c.readingTime ?? 0}분 소요`,
-      imageUrl: c.imgUrl || '', // ✅ 썸네일
+      imageUrl: c.imgUrl || '',
       content: '',
     }));
   }, [data]);
 
-  // ✅ keyword로 필터링 (제목 기준)
+  // keyword 기준(제목 포함)으로 필터링
   const filteredData: NewsItems[] = useMemo(() => {
     const kw = (keyword ?? '').trim().toLowerCase();
     if (!kw) return [];
@@ -75,15 +85,11 @@ export default function SearchResultScreen() {
     );
   }, [allVisibleData, keyword]);
 
-  /**
-   * ✅ 핵심 포인트
-   * - 첫 페이지에 검색 결과가 없으면 "결과 없음"으로 보이니까
-   * - 결과가 나올 때까지(또는 끝까지) 다음 페이지를 자동으로 더 가져오게 함
-   */
+  // 첫 페이지에 결과가 없을 때 다음 페이지를 자동으로 더 받아오도록 준비
+  // (현재 백엔드 미적용이면 hasNextPage=false라 동작하지 않음)
   const autoFetchGuard = useRef(false);
 
   useEffect(() => {
-    // keyword 바뀌면 가드 해제
     autoFetchGuard.current = false;
   }, [keyword]);
 
@@ -94,11 +100,9 @@ export default function SearchResultScreen() {
     const kw = (keyword ?? '').trim();
     if (!kw) return;
 
-    // 결과가 아직 없고 다음 페이지가 있으면, 자동으로 더 받아오기
     if (filteredData.length === 0 && hasNextPage && !autoFetchGuard.current) {
       autoFetchGuard.current = true;
       fetchNextPage().finally(() => {
-        // 다음 페이지를 받아온 뒤 다시 조건 평가할 수 있게 가드 해제
         autoFetchGuard.current = false;
       });
     }
@@ -146,7 +150,7 @@ export default function SearchResultScreen() {
             contentContainerStyle={styles.listContent}
             onEndReachedThreshold={0.5}
             onEndReached={() => {
-              // 사용자가 더 내릴 때도 추가 로드
+              // 사용자 스크롤로 추가 로드(백엔드 페이지네이션 적용 시에만 의미 있음)
               if (hasNextPage && !isFetchingNextPage) fetchNextPage();
             }}
             ListFooterComponent={() =>
