@@ -11,16 +11,31 @@ export interface ContentResponse {
   publishedDate: string;
 }
 
+/**
+ * 탐색 응답 (page/size 기반)
+ * - 서버가 Spring Page(content/number/last/totalPages)로 내려줄 수도 있고
+ * - 기존처럼 contents로 내려줄 수도 있어 둘 다 매핑해서 통일 반환
+ */
 export interface ExploreResponse {
   contents: ContentResponse[];
-  nextBatchTime: string | null;
-  updatedContent: boolean;
+
+  // paging meta
+  page: number; // 0-base
+  size: number;
+  totalPages?: number;
+  last?: boolean;
+  totalElements?: number;
+
+  // 구버전 필드(남아있을 수도 있어 optional)
+  nextBatchTime?: string | null;
+  updatedContent?: boolean;
 }
 
-/** [GET] 탐색 목록 가져오기 */
+/** [GET] 탐색 목록 조회 */
 export const fetchExploreContents = async (params: {
   category?: string;
-  nextBatchTime?: string | null;
+  page?: number;
+  size?: number;
 }): Promise<ExploreResponse> => {
   try {
     const userInfo = await getUserInfo();
@@ -29,40 +44,60 @@ export const fetchExploreContents = async (params: {
       throw new Error('사용자 정보가 없습니다');
     }
 
+    const page = params.page ?? 0;
+    const size = params.size ?? 10;
+
     const url = params.category
       ? `/api/content/explore/${params.category}`
       : '/api/content/explore';
 
     console.log(
-      `[API Request] URL: ${url} | nextBatchTime: ${
-        params.nextBatchTime ?? 'null(첫 요청)'
-      } | Category: ${params.category || '전체'}`,
+      `[API Request] URL: ${url} | page: ${page} | size: ${size} | Category: ${
+        params.category || '전체'
+      }`,
     );
 
-    // Swagger 상 필수는 userId
     const response = await client.get<any>(url, {
       params: {
         userId: userInfo.userId,
-        ...(params.nextBatchTime
-          ? { nextBatchTime: params.nextBatchTime }
-          : {}),
+        page,
+        size,
       },
     });
 
-    // 서버 로그 기반으로 실제 데이터 추출 (response.data 내부에 data가 또 있음)
-    const actualData: ExploreResponse = response.data.data;
+    // data 래핑/비래핑 모두 대응
+    const raw = response.data?.data ?? response.data;
 
-    // 서버 응답 데이터 상세 확인
+    // 리스트 필드: contents(구형) / content(Spring Page)
+    const list: ContentResponse[] = (raw?.contents ??
+      raw?.content ??
+      []) as any;
+
+    // 페이지 필드: page(커스텀) / number(Spring Page)
+    const mapped: ExploreResponse = {
+      contents: list,
+      page: (raw?.page ?? raw?.number ?? page) as number,
+      size: (raw?.size ?? size) as number,
+      totalPages: raw?.totalPages,
+      last: raw?.last,
+      totalElements: raw?.totalElements,
+
+      // 혹시 남아있으면 보존
+      nextBatchTime: raw?.nextBatchTime ?? null,
+      updatedContent: raw?.updatedContent ?? undefined,
+    };
+
     console.log('[API Response Success]:', {
-      contentCount: actualData?.contents?.length,
-      firstItem: actualData?.contents?.[0],
-      nextBatchTime: actualData?.nextBatchTime,
-      raw: response.data,
+      contentCount: mapped.contents?.length,
+      firstItem: mapped.contents?.[0],
+      page: mapped.page,
+      size: mapped.size,
+      totalPages: mapped.totalPages,
+      last: mapped.last,
     });
 
-    return actualData;
+    return mapped;
   } catch (error: any) {
-    // 에러 발생 시 상태 코드와 메시지 상세 로그
     console.error('[API Response Error]:', {
       status: error.response?.status,
       message: error.response?.data?.message || error.message,
