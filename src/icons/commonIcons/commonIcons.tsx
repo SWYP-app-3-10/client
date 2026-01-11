@@ -31,10 +31,12 @@ import Clock from '../../assets/svg/clock.svg';
 import NoArticles from '../../assets/svg/noArticles.svg';
 import Search_tab from '../../assets/svg/search_tab.svg';
 import View from '../../assets/svg/View.svg';
-
+import P_Icon from '../../assets/svg/P_Icon.svg';
+import XP_Icon from '../../assets/svg/XP_Icon.svg';
 export const Ic_backIcon = createIconComponent(Icon_back, ICON_SIZES.XL);
 export const CircleIcon = createIconComponent(Circle, scaleWidth(14));
 export const InfoIcon = createIconComponent(Info, ICON_SIZES.L);
+export const InfoIcon_M = createIconComponent(Info, ICON_SIZES.M);
 export const CloseIcon = createIconComponent(Close, scaleWidth(28));
 export const ViewIcon = createIconComponent(View, scaleWidth(18));
 export const TriangleIcon = createIconComponent(Triangle, ICON_SIZES.X3L);
@@ -51,7 +53,8 @@ export const CharacterIcon = createIconComponent(Character, scaleWidth(28));
 export const MyPageIcon = createIconComponent(MyPage, scaleWidth(28));
 export const NoteIcon = createIconComponent(Note, scaleWidth(26));
 export const ClockIcon = createIconComponent(Clock, scaleWidth(26));
-
+export const PIcon = createIconComponent(P_Icon, scaleWidth(26));
+export const XPIcon = createIconComponent(XP_Icon, scaleWidth(26));
 //  가로, 세로 크기 다름
 export const CheckIcon = createRectangleIconComponent(
   Check,

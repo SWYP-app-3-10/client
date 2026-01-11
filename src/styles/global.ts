@@ -48,6 +48,7 @@ export const COLORS = {
   gray700: '#9EA5BB',
   gray800: '#767C91',
   gray800Opacity80: 'rgba(118, 124, 145, 0.8)',
+  gray800Opacity95: 'rgba(118, 124, 145, 0.95)',
   black: '#19181E',
   blackOpacity60: 'rgba(0, 0, 0, 0.6) ',
   // 메인
