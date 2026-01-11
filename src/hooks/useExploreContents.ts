@@ -6,46 +6,45 @@ export const exploreKeys = {
   list: (category?: string) => [...exploreKeys.all, { category }] as const,
 };
 
+const DEFAULT_PAGE_SIZE = 10;
+
 export const useExploreContents = (category?: string) => {
   return useInfiniteQuery<ExploreResponse, Error>({
     queryKey: exploreKeys.list(category),
 
-    // 페이지 기반이 아니라 커서(nextBatchTime) 기반
-    initialPageParam: null as string | null,
+    // page 기반: 첫 페이지는 0
+    initialPageParam: 0 as number,
 
     queryFn: ({ pageParam }) => {
       console.log(
-        `[React Query] 호출 시작 - Category: ${category}, nextBatchTime: ${pageParam}`,
+        `[React Query] 호출 시작 - Category: ${
+          category ?? '전체'
+        }, page: ${pageParam}`,
       );
+
       return fetchExploreContents({
         category,
-        nextBatchTime: pageParam as string | null,
+        page: pageParam as number,
+        size: DEFAULT_PAGE_SIZE,
       });
     },
 
-    getNextPageParam: (lastPage, allPages) => {
-      // 기존 로직 유지: lastPage.contents가 존재할 때만 length를 확인합니다.
-      const isLast = !lastPage?.contents || lastPage.contents.length === 0;
+    getNextPageParam: lastPage => {
+      // 1) 서버가 last=true를 주면 그걸 최우선으로 신뢰
+      if (lastPage?.last === true) return undefined;
 
-      // 다음 커서는 서버가 내려주는 nextBatchTime
-      const next = lastPage?.nextBatchTime ?? null;
+      // 2) totalPages가 있으면 page+1이 totalPages 미만일 때만 다음 페이지
+      if (typeof lastPage?.totalPages === 'number') {
+        const next = (lastPage.page ?? 0) + 1;
+        return next < lastPage.totalPages ? next : undefined;
+      }
 
-      // 무한루프 방지: next가 없거나, 이전과 같으면 종료
-      const prev =
-        allPages.length >= 2
-          ? allPages[allPages.length - 2]?.nextBatchTime
-          : null;
-      const isSameAsPrev = !!next && !!prev && next === prev;
+      // 3) 메타가 없으면 "이번에 받은 데이터가 size보다 적으면 마지막"으로 판단
+      const count = lastPage?.contents?.length ?? 0;
+      const pageSize = lastPage?.size ?? DEFAULT_PAGE_SIZE;
+      const isLastByCount = count < pageSize;
 
-      console.log(
-        `[React Query] 다음 페이지 체크: ${
-          isLast || !next || isSameAsPrev
-            ? '마지막 페이지임'
-            : `다음 커서: ${next}`
-        }`,
-      );
-
-      return isLast || !next || isSameAsPrev ? undefined : next;
+      return isLastByCount ? undefined : (lastPage.page ?? 0) + 1;
     },
 
     staleTime: 1000 * 60 * 1,
