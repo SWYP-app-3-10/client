@@ -75,7 +75,7 @@ export const useArticleNavigation = ({
             : storePoints;
 
         console.log('[useArticleNavigation] 포인트 확인:', {
-          // accessData,
+          accessData,
           apiPoints: accessData.currentPoints,
           storePoints,
           currentPoints,

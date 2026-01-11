@@ -9,17 +9,18 @@ import { getUserInfo } from '../services/authService';
  * 오늘의 미션 화면 컨텐츠
  */
 export interface MissionContent {
+  contentId: number;
   contentTile: string;
   contentImg: string;
   contentCategory: string;
-  contentDate: string; // "2026-01-02"
+  contentDate: string;
 }
 
 /**
  * 오늘의 미션
  */
 export interface MissionToday {
-  missionType: string; // "EXPLORE_READ"
+  missionType: string;
   title: string;
   currentProgress: number;
   targetGoal: number;
@@ -103,7 +104,7 @@ export const convertMissionContentToArticle = (
   readTime: string;
   date: string;
   imageUrl: string;
-  contentId?: number;
+  contentId: number;
 } => {
   const categoryMap: Record<string, string> = {
     LIFE_CULTURE: '생활/문화',
@@ -121,6 +122,7 @@ export const convertMissionContentToArticle = (
     readTime: '5분', // 기본값 (실제 읽기 시간이 있다면 사용)
     date: content.contentDate,
     imageUrl: content.contentImg,
+    contentId: content.contentId,
   };
 };
 
