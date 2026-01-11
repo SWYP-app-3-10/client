@@ -84,6 +84,7 @@ export const TimelineGroup: React.FC<TimelineGroupProps> = ({
           {displayedArticles.map((article, articleIndex) => (
             <React.Fragment key={article.contentId}>
               <TouchableOpacity
+                disabled={true}
                 style={[
                   styles.articleCard,
                   articleIndex === displayedArticles.length - 1 &&
@@ -103,29 +104,31 @@ export const TimelineGroup: React.FC<TimelineGroupProps> = ({
                       </Text>
                     </View>
 
-                    <View
-                      style={[
-                        styles.quizBadge,
-                        article.isQuizCorrect
-                          ? styles.quizBadgeCorrect
-                          : styles.quizBadgeIncorrect,
-                      ]}
-                    >
-                      <Text
+                    {article.isQuizCorrect !== null && (
+                      <View
                         style={[
-                          styles.quizBadgeText,
+                          styles.quizBadge,
                           article.isQuizCorrect
-                            ? styles.quizBadgeTextCorrect
-                            : styles.quizBadgeTextIncorrect,
+                            ? styles.quizBadgeCorrect
+                            : styles.quizBadgeIncorrect,
                         ]}
                       >
-                        Q - {article.isQuizCorrect ? '정답' : '오답'}
-                      </Text>
-                    </View>
+                        <Text
+                          style={[
+                            styles.quizBadgeText,
+                            article.isQuizCorrect
+                              ? styles.quizBadgeTextCorrect
+                              : styles.quizBadgeTextIncorrect,
+                          ]}
+                        >
+                          Q - {article.isQuizCorrect ? '정답' : '오답'}
+                        </Text>
+                      </View>
+                    )}
                   </View>
                 </View>
 
-                <RightArrowIcon color={COLORS.gray700} />
+                {false && <RightArrowIcon color={COLORS.gray700} />}
               </TouchableOpacity>
               {articleIndex !== displayedArticles.length - 1 && (
                 <Spacer num={16} />
