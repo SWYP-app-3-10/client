@@ -491,7 +491,7 @@ const styles = StyleSheet.create({
     height: scaleWidth(34),
     borderRadius: scaleWidth(999),
     borderWidth: 1,
-    borderColor: COLORS.gray500,
+    borderColor: COLORS.gray300,
     backgroundColor: COLORS.white,
     paddingHorizontal: scaleWidth(12),
   },
