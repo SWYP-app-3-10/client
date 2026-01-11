@@ -23,7 +23,6 @@ import {
   BORDER_RADIUS,
   scaleWidth,
   Body_16SB,
-  Caption_12M,
   Heading_24EB_Round,
   Caption_14R,
   Heading_18EB_Round,
