@@ -5,11 +5,22 @@ import { initializeApp, getApps, getApp } from '@react-native-firebase/app';
 import RootNavigator from './src/navigation/RootNavigator';
 import { queryClient } from './src/config/queryClient';
 import { useOnboardingStore } from './src/store/onboardingStore';
+import { Platform, StatusBar } from 'react-native';
 
 const App = () => {
   const loadOnboardingStatus = useOnboardingStore(
     state => state.loadOnboardingStatus,
   );
+
+  // 전역 StatusBar 기본값
+  useEffect(() => {
+    StatusBar.setHidden(false);
+    StatusBar.setBarStyle('dark-content');
+    if (Platform.OS === 'android') {
+      StatusBar.setTranslucent(false);
+      StatusBar.setBackgroundColor('#FFFFFF');
+    }
+  }, []);
 
   useEffect(() => {
     try {
