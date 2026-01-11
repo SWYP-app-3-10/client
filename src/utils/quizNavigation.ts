@@ -9,6 +9,11 @@ type ReturnTo = 'mission' | 'search';
 export const createQuizCompleteNavigation = (
   returnTo: ReturnTo,
 ): ReturnType<typeof CommonActions.reset> => {
+  const targetTab =
+    returnTo === 'search' ? RouteNames.SEARCH_TAB : RouteNames.MISSION_TAB;
+  const targetScreen =
+    returnTo === 'search' ? RouteNames.SEARCH : RouteNames.MISSION;
+
   return CommonActions.reset({
     index: 0,
     routes: [
@@ -17,17 +22,11 @@ export const createQuizCompleteNavigation = (
         state: {
           routes: [
             {
-              name:
-                returnTo === 'search'
-                  ? RouteNames.SEARCH_TAB
-                  : RouteNames.MISSION_TAB,
+              name: targetTab,
               state: {
                 routes: [
                   {
-                    name:
-                      returnTo === 'search'
-                        ? RouteNames.SEARCH
-                        : RouteNames.MISSION,
+                    name: targetScreen,
                   },
                 ],
               },

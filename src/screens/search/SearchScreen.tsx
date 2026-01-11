@@ -17,7 +17,7 @@ import {
   Image,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useNavigation } from '@react-navigation/native';
+import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import { RouteNames } from '../../../routes';
 import type {
   MainTabNavigationProp,
@@ -70,11 +70,19 @@ export default function SearchScreen() {
   // 네비게이션 (탐색 탭 내부)
   const navigation =
     useNavigation<MainTabNavigationProp<SearchStackParamList>>();
+  const flatListRef = useRef<FlatList>(null);
 
   // 카테고리 상태
   const [selectedCategory, setSelectedCategory] = useState<
     NewsCategory | '전체'
   >('전체');
+
+  // 탭 전환 시 스크롤을 맨 위로 이동
+  useFocusEffect(
+    useCallback(() => {
+      flatListRef.current?.scrollToOffset({ offset: 0, animated: false });
+    }, []),
+  );
 
   // 선택된 카테고리를 서버 파라미터(enum)로 변환
   const categoryParam = useMemo(
@@ -168,6 +176,7 @@ export default function SearchScreen() {
           />
         ) : (
           <FlatList
+            ref={flatListRef}
             style={styles.list}
             data={visibleData}
             keyExtractor={item => item.id}
@@ -179,7 +188,9 @@ export default function SearchScreen() {
             )}
             contentContainerStyle={styles.listContent}
             onEndReached={() => {
-              if (hasNextPage && !isFetchingNextPage) fetchNextPage();
+              if (hasNextPage && !isFetchingNextPage) {
+                fetchNextPage();
+              }
             }}
             onEndReachedThreshold={0.5}
             ListFooterComponent={() =>

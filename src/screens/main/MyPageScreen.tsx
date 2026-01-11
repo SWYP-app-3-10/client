@@ -1,5 +1,5 @@
 // MyPageScreen.tsx
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useRef, useCallback } from 'react';
 import {
   View,
   Text,
@@ -26,6 +26,7 @@ import IconButton from '../../components/IconButton';
 import {
   useNavigation,
   CompositeNavigationProp,
+  useFocusEffect,
 } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import {
@@ -68,6 +69,7 @@ type MyPageNavigationProp = CompositeNavigationProp<
 >;
 
 const MyPageScreen = () => {
+  const scrollViewRef = useRef<ScrollView>(null);
   const [selectedWeek, setSelectedWeek] = useState(0);
   // 날짜 범위 계산
   const currentWeekRange = useMemo(
@@ -89,6 +91,13 @@ const MyPageScreen = () => {
   const navigation = useNavigation<MyPageNavigationProp>();
   const { data: characterData } = useCharacterData();
   const currentLevel = characterData?.currentLevel ?? 1;
+
+  // 탭 전환 시 스크롤을 맨 위로 이동
+  useFocusEffect(
+    useCallback(() => {
+      scrollViewRef.current?.scrollTo({ y: 0, animated: false });
+    }, []),
+  );
   const ProfileImage = useMemo(() => {
     switch (currentLevel) {
       case 1:
@@ -133,7 +142,11 @@ const MyPageScreen = () => {
 
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
-      <ScrollView bounces={false} showsVerticalScrollIndicator={false}>
+      <ScrollView
+        ref={scrollViewRef}
+        bounces={false}
+        showsVerticalScrollIndicator={false}
+      >
         <View
           style={{
             paddingHorizontal: scaleWidth(20),

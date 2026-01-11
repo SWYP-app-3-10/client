@@ -1,4 +1,10 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
+  useRef,
+} from 'react';
 import {
   Text,
   View,
@@ -8,7 +14,7 @@ import {
   StatusBar,
   Platform,
 } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { RouteNames } from '../../../routes';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useBottomTabBarHeight } from '@react-navigation/bottom-tabs';
@@ -64,6 +70,7 @@ const LOTTIE_BY_LEVEL: Record<number, any> = {
 };
 
 const CharacterScreen = () => {
+  const scrollViewRef = useRef<ScrollView>(null);
   const rootNavigation =
     useNavigation<MainTabNavigationProp<CharacterStackParamList>>();
   const tabBarHeight = useBottomTabBarHeight(); // 탭바 높이
@@ -71,6 +78,13 @@ const CharacterScreen = () => {
   const [showTooltip, setShowTooltip] = useState(false);
   const tooltipTimerRef = React.useRef<ReturnType<typeof setTimeout> | null>(
     null,
+  );
+
+  // 탭 전환 시 스크롤을 맨 위로 이동
+  useFocusEffect(
+    useCallback(() => {
+      scrollViewRef.current?.scrollTo({ y: 0, animated: false });
+    }, []),
   );
 
   // React Query hooks - 통합 API 사용
@@ -228,6 +242,7 @@ const CharacterScreen = () => {
       <StatusBar translucent backgroundColor="transparent" />
 
       <ScrollView
+        ref={scrollViewRef}
         bounces={false}
         style={styles.scrollView}
         showsVerticalScrollIndicator={false}

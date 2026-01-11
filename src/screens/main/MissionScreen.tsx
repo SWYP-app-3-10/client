@@ -69,6 +69,7 @@ export {
 
 const MissionScreen = () => {
   const scrollViewRef = useRef<ScrollView>(null);
+  const verticalScrollViewRef = useRef<ScrollView>(null);
   const [currentIndex, setCurrentIndex] = useState(0);
   const navigation =
     useNavigation<MainTabNavigationProp<MissionStackParamList>>();
@@ -87,11 +88,12 @@ const MissionScreen = () => {
     isLoading: missionsLoading,
     refetch: refetchMissions,
   } = useMissions();
-  // console.log('contents', missionData);
-  // 화면 포커스 시 API 요청
+  // 화면 포커스 시 API 요청 및 스크롤 맨 위로 이동
   useFocusEffect(
     useCallback(() => {
       refetchMissions();
+      // 탭 전환 시 스크롤을 맨 위로 이동
+      verticalScrollViewRef.current?.scrollTo({ y: 0, animated: false });
     }, [refetchMissions]),
   );
 
@@ -255,6 +257,7 @@ const MissionScreen = () => {
   return (
     <SafeAreaView style={missionScreenStyles.container} edges={['top']}>
       <ScrollView
+        ref={verticalScrollViewRef}
         showsVerticalScrollIndicator={false}
         nestedScrollEnabled={true}
         contentContainerStyle={missionScreenStyles.scrollContent}
@@ -349,15 +352,12 @@ const MissionScreen = () => {
           {hasContents ? (
             contents.map((content, index) => {
               const article = convertMissionContentToArticle(content, index);
-              // // contentId는 API 응답에 없으므로 임시로 인덱스 사용
-              // // 실제로는 API에서 contentId를 제공해야 함
-              // const contentId = index + 1; // 임시 ID
 
               return (
                 <ArticleCard
                   key={article.id}
                   article={article}
-                  onPress={() => handleArticlePress(272)}
+                  onPress={() => handleArticlePress(article.contentId)}
                 />
               );
             })
