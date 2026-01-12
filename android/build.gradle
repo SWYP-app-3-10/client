@@ -19,3 +19,10 @@ buildscript {
 }
 
 apply plugin: "com.facebook.react.rootproject"
+
+// 모든 서브프로젝트에 Node.js 경로 설정
+// allprojects {
+//     tasks.withType(Exec) {
+//         environment "PATH", "/opt/homebrew/bin:${System.getenv("PATH")}"
+//     }
+// }
