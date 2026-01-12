@@ -12,13 +12,8 @@ import {
   ViewStyle,
   TextStyle,
 } from 'react-native';
-import {
-  BORDER_RADIUS,
-  COLORS,
-  Heading_18EB_Round,
-  Caption_14R,
-  scaleWidth,
-} from '../styles/global';
+import { BORDER_RADIUS, COLORS, scaleWidth } from '../styles/global';
+import { Heading_18EB_Round, Caption_14R } from '../styles/typography';
 import Button, { ButtonVariant } from './Button';
 import IconButton from './IconButton';
 import { CloseIcon } from '../icons';

@@ -19,17 +19,15 @@ import TooltipXP from '../../../../assets/png/Tooltip_XP.png';
 
 import { InfoIcon } from '../../../../icons';
 
+import { COLORS, BORDER_RADIUS, scaleWidth } from '../../../../styles/global';
 import {
-  COLORS,
-  BORDER_RADIUS,
-  scaleWidth,
   Body_16SB,
   Heading_24EB_Round,
   Caption_14R,
   Heading_18EB_Round,
   Caption_12SB,
   Body_16M,
-} from '../../../../styles/global';
+} from '../../../../styles/typography';
 
 // CharacterScreen과 동일한 데이터 소스 사용
 import { useCharacterMe } from '../../../../hooks/useCharacter';

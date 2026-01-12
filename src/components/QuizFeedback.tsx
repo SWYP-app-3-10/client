@@ -1,11 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
-import {
-  COLORS,
-  scaleWidth,
-  BORDER_RADIUS,
-  Caption_14R,
-} from '../styles/global';
+import { COLORS, scaleWidth, BORDER_RADIUS } from '../styles/global';
+import { Caption_14R } from '../styles/typography';
 import Spacer from './Spacer';
 import QuizOptionCard from './QuizOptionCard';
 import QuizQuestion from './QuizQuestion';

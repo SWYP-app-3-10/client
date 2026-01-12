@@ -1,11 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react'; // ✅ useState 추가
 import { Animated, StyleSheet, Text, LayoutChangeEvent } from 'react-native'; // ✅ LayoutChangeEvent 추가
-import {
-  COLORS,
-  scaleWidth,
-  Caption_14R,
-  BORDER_RADIUS,
-} from '../styles/global';
+import { COLORS, scaleWidth, BORDER_RADIUS } from '../styles/global';
+import { Caption_14R } from '../styles/typography';
 
 type Props = {
   visible: boolean; // 토스트 표시 여부

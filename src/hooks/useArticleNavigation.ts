@@ -10,7 +10,8 @@ import {
   ArticlePointModalContent,
   ArticlePointModalContentGet,
 } from '../components/ArticlePointModalContent';
-import { COLORS, Heading_16B } from '../styles/global';
+import { COLORS } from '../styles/global';
+import { Heading_16B } from '../styles/typography';
 import {
   fetchContentAccess,
   purchaseContentWithPoint,

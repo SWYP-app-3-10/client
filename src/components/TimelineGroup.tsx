@@ -1,14 +1,12 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { COLORS, scaleWidth, BORDER_RADIUS } from '../styles/global';
 import {
-  COLORS,
-  scaleWidth,
-  BORDER_RADIUS,
   Body_16M,
   Caption_14R,
   Caption_12M,
   Body_16SB,
-} from '../styles/global';
+} from '../styles/typography';
 import Button from './Button';
 import Spacer from './Spacer';
 import { RightArrowIcon } from '../icons';

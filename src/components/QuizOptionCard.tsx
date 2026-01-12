@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
-import { COLORS, scaleWidth, BORDER_RADIUS, Body_16M } from '../styles/global';
+import { COLORS, scaleWidth, BORDER_RADIUS } from '../styles/global';
+import { Body_16M } from '../styles/typography';
 import { CircleIcon, CloseIcon } from '../icons/commonIcons/commonIcons';
 interface QuizOption {
   id: number;

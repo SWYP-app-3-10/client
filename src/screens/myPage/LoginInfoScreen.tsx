@@ -4,13 +4,8 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation, CommonActions } from '@react-navigation/native';
 
 import Header from '../../components/Header';
-import {
-  Body_16SB,
-  Caption_14R,
-  COLORS,
-  Heading_16B,
-  scaleWidth,
-} from '../../styles/global';
+import { COLORS, scaleWidth } from '../../styles/global';
+import { Body_16SB, Caption_14R, Heading_16B } from '../../styles/typography';
 import RightArrow from '../../assets/svg/RightArrow.svg';
 
 // 공통 모달

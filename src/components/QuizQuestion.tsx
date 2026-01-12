@@ -1,12 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
-import {
-  COLORS,
-  scaleWidth,
-  Heading_24EB_Round,
-  Heading_20EB_Round,
-} from '../styles/global';
-
+import { COLORS, scaleWidth } from '../styles/global';
+import { Heading_24EB_Round, Heading_20EB_Round } from '../styles/typography';
 interface QuizQuestionProps {
   question: string;
   Q_color?: string;

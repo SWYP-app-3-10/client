@@ -107,7 +107,7 @@ const styles = StyleSheet.create({
     borderColor: COLORS.puple.main,
   },
   error: {
-    borderColor: COLORS.red,
+    borderColor: COLORS.red.main,
   },
   // Input
   input: {

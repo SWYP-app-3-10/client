@@ -4,14 +4,12 @@ import type { PointHistoryItem } from '../../../data/mock/characterData';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import BottomSheetModal from '../../../components/BottomSheetModal';
+import { COLORS, scaleWidth, BORDER_RADIUS } from '../../../styles/global';
 import {
   Caption_14R,
-  COLORS,
   Heading_18SB,
-  scaleWidth,
-  BORDER_RADIUS,
   Body_16M,
-} from '../../../styles/global';
+} from '../../../styles/typography';
 import Header from '../../../components/Header';
 import RewardIcon from '../../../assets/svg/RewardIcon.svg';
 

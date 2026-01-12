@@ -11,13 +11,8 @@ import {
   DAILY_ATTENDANCE_EXPERIENCE,
 } from '../config/rewards';
 
-import {
-  COLORS,
-  scaleWidth,
-  BORDER_RADIUS,
-  Heading_20EB_Round,
-  Body_16SB,
-} from '../styles/global';
+import { COLORS, scaleWidth, BORDER_RADIUS } from '../styles/global';
+import { Heading_20EB_Round, Body_16SB } from '../styles/typography';
 import { levelDetailMap } from '../data/mock/characterData';
 
 export const ArticlePointModalContent: React.FC = () => {

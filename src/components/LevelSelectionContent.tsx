@@ -1,12 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
-import {
-  COLORS,
-  scaleWidth,
-  Body_16M,
-  Body_18M,
-  Heading_18B,
-} from '../styles/global';
+import { COLORS, scaleWidth } from '../styles/global';
+import { Body_16M, Body_18M, Heading_18B } from '../styles/typography';
 import { BottomModalCheckIcon, ClockIcon, NoteIcon } from '../icons';
 import { LevelCategory } from '../types/interests';
 
