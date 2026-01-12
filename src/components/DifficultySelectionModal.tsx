@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
-import { COLORS, scaleWidth, BORDER_RADIUS, Body_16SB } from '../styles/global';
+import { COLORS, scaleWidth, BORDER_RADIUS } from '../styles/global';
+import { Body_16SB } from '../styles/typography';
 import { CheckIcon } from '../icons/commonIcons/commonIcons';
 import Spacer from './Spacer';
 

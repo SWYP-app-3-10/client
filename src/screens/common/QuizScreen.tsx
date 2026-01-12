@@ -1,15 +1,13 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { View, Text, StyleSheet, ScrollView, Pressable } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { COLORS, scaleWidth, BORDER_RADIUS } from '../../styles/global';
 import {
-  COLORS,
-  scaleWidth,
-  BORDER_RADIUS,
   Body_16M,
   Body_16SB,
   Heading_18EB_Round,
   Heading_20EB_Round,
-} from '../../styles/global';
+} from '../../styles/typography';
 import Header from '../../components/Header';
 import Button from '../../components/Button';
 import QuizOptionCard from '../../components/QuizOptionCard';

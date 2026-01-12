@@ -19,12 +19,8 @@ import {
   useFocusEffect,
   useIsFocused,
 } from '@react-navigation/native';
-import {
-  COLORS,
-  scaleWidth,
-  BORDER_RADIUS,
-  Heading_20EB_Round,
-} from '../../styles/global';
+import { COLORS, scaleWidth, BORDER_RADIUS } from '../../styles/global';
+import { Heading_20EB_Round } from '../../styles/typography';
 import Header from '../../components/Header';
 import Button from '../../components/Button';
 import Spacer from '../../components/Spacer';

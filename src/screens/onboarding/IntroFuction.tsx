@@ -4,18 +4,16 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RouteNames } from '../../../routes';
-import {
-  BORDER_RADIUS,
-  COLORS,
-  Heading_18EB_Round,
-  Heading_24EB_Round,
-  scaleWidth,
-} from '../../styles/global';
+import { BORDER_RADIUS, COLORS, scaleWidth } from '../../styles/global';
 import { OnboardingStackParamList } from '../../navigation/types';
 import Header from '../../components/Header';
 import Spacer from '../../components/Spacer';
 import ActivityIndicator from '../../components/ActivityIndicator';
-import { Body_15M } from '../../styles/typography';
+import {
+  Body_15M,
+  Heading_18EB_Round,
+  Heading_24EB_Round,
+} from '../../styles/typography';
 import { Intro_Fuction } from '../../icons/commonIcons/simpleImages';
 type NavigationProp = NativeStackNavigationProp<OnboardingStackParamList>;
 

@@ -19,17 +19,15 @@ import { RouteNames } from '../../../routes';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useBottomTabBarHeight } from '@react-navigation/bottom-tabs';
 
+import { COLORS, scaleWidth, BORDER_RADIUS } from '../../styles/global';
 import {
-  COLORS,
-  scaleWidth,
-  BORDER_RADIUS,
-  Heading_20EB_Round,
   Body_16R,
   Caption_14R,
-  Heading_24EB_Round,
   Caption_12M,
+  Heading_20EB_Round,
+  Heading_24EB_Round,
   Heading_18EB_Round,
-} from '../../styles/global';
+} from '../../styles/typography';
 import { Button, MissionCard } from '../../components';
 import {
   CharacterStackParamList,

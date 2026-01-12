@@ -8,13 +8,8 @@ import PointCriteriaScreen from './expAndPoint/PointCriteriaScreen';
 import Header from '../../../components/Header';
 
 // 공통 디자인 시스템
-import {
-  COLORS,
-  BORDER_RADIUS,
-  scaleWidth,
-  Body_16SB,
-  Heading_16B,
-} from '../../../styles/global';
+import { COLORS, BORDER_RADIUS, scaleWidth } from '../../../styles/global';
+import { Body_16SB, Heading_16B } from '../../../styles/typography';
 
 /** 상단 세그먼트 탭 키 */
 type TabKey = 'LEVEL' | 'POINT';

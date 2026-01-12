@@ -3,12 +3,14 @@ import { View, Text, StyleSheet, ScrollView, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { RouteNames } from '../../../routes';
+import { scaleWidth, COLORS, BORDER_RADIUS } from '../../styles/global';
 import {
-  Body_16M,
-  COLORS,
   Heading_24EB_Round,
-  scaleWidth,
-} from '../../styles/global';
+  Body_15M,
+  Body_18M,
+  Heading_18SB,
+  Body_16M,
+} from '../../styles/typography';
 import {
   MainTabNavigationProp,
   OnboardingStackParamList,
@@ -16,7 +18,6 @@ import {
 import Spacer from '../../components/Spacer';
 import ProgressBar from '../../components/ProgressBar';
 import { Button } from '../../components';
-import { BORDER_RADIUS } from '../../styles/global';
 import { useOnboardingStore } from '../../store/onboardingStore';
 import { useShowToastModal } from '../../store/modalStore';
 import {
@@ -25,7 +26,6 @@ import {
   SecondIcon,
   ThirdIcon,
 } from '../../icons/commonIcons/commonIcons';
-import { Body_15M, Body_18M, Heading_18SB } from '../../styles/typography';
 import Header from '../../components/Header';
 import { Interest, INTERESTS, InterestCategory } from '../../types/interests';
 import { updateUserInterests } from '../../api/userApi';

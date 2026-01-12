@@ -16,12 +16,8 @@ import {
   CommonActions,
 } from '@react-navigation/native';
 import { RouteNames } from '../../../routes';
-import {
-  Body_16SB,
-  COLORS,
-  Heading_16B,
-  scaleWidth,
-} from '../../styles/global';
+import { COLORS, scaleWidth } from '../../styles/global';
+import { Body_16SB, Heading_16B } from '../../styles/typography';
 import {
   signInWithSocial,
   initializeGoogleSignIn,

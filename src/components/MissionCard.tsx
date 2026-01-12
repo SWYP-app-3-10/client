@@ -1,16 +1,14 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
+import { COLORS, scaleWidth, BORDER_RADIUS } from '../styles/global';
 import {
-  COLORS,
-  scaleWidth,
-  BORDER_RADIUS,
-  Caption_12SB,
-  Caption_14R,
   Heading_16EB_Round,
   Body_16SB,
   Body_16M,
-} from '../styles/global';
+  Caption_12SB,
+  Caption_14R,
+} from '../styles/typography';
 import Spacer from './Spacer';
 import { LockIcon } from '../icons/commonIcons/simpleImages';
 

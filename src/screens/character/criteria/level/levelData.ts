@@ -1,7 +1,6 @@
 // levelData.ts
 import React from 'react';
-import { StyleProp } from 'react-native';
-import { ImageStyle } from 'react-native-fast-image';
+import { ImageStyle, StyleProp } from 'react-native';
 import { scaleWidth } from '../../../../styles/global';
 import {
   Level_1_Profile,

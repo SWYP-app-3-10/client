@@ -6,16 +6,14 @@ import { ScrollView, View, Text, StyleSheet, Image } from 'react-native';
 import { Spacer } from '../../../../components';
 
 // 공통 디자인 시스템 (색/스케일/라운드/타이포)
+import { COLORS, BORDER_RADIUS, scaleWidth } from '../../../../styles/global';
 import {
-  COLORS,
-  BORDER_RADIUS,
-  scaleWidth,
   Body_16SB,
   Heading_24EB_Round,
   Heading_18EB_Round,
   Heading_18B,
   Caption_14R,
-} from '../../../../styles/global';
+} from '../../../../styles/typography';
 
 import XpIcon from '../../../../assets/png/coin_xp.png';
 import PtIcon from '../../../../assets/png/coin_p.png';

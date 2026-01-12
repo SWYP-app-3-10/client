@@ -36,7 +36,8 @@ import { NewsCategory, NewsItems } from '../../data/mock/searchData';
 import { useArticleNavigation } from '../../hooks/useArticleNavigation';
 
 // 공통 스타일 토큰
-import { Caption_12M, COLORS, scaleWidth } from '../../styles/global';
+import { COLORS, scaleWidth } from '../../styles/global';
+import { Caption_12M } from '../../styles/typography';
 
 // SVG 아이콘
 import InfoIcon from '../../assets/svg/Info_Search.svg';

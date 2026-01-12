@@ -19,13 +19,5 @@ class MainActivity : ReactActivity() {
    * which allows you to enable New Architecture with a single boolean flags [fabricEnabled]
    */
   override fun createReactActivityDelegate(): ReactActivityDelegate =
-      DefaultReactActivityDelegate(this, mainComponentName, fabricEnabled)
-
-  override fun onCreate(savedInstanceState: Bundle?) {
-    // Set splash theme before super.onCreate
-    setTheme(R.style.SplashTheme)
-    super.onCreate(savedInstanceState)
-    // Switch back to AppTheme after React Native is loaded
-    setTheme(R.style.AppTheme)
-  }
+      DefaultReactActivityDelegate(this, mainComponentName, BuildConfig.IS_NEW_ARCHITECTURE_ENABLED)
 }

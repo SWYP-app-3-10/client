@@ -1,13 +1,11 @@
 import React from 'react';
 import { View, Text, StyleSheet, Image } from 'react-native';
+import { COLORS, scaleWidth, BORDER_RADIUS } from '../styles/global';
 import {
-  COLORS,
-  scaleWidth,
   Body_16R,
   Caption_14R,
-  BORDER_RADIUS,
   Heading_20EB_Round,
-} from '../styles/global';
+} from '../styles/typography';
 import Spacer from './Spacer';
 import { ContentDetail } from '../api/missionApi';
 import { ViewIcon } from '../icons';

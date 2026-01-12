@@ -10,7 +10,8 @@ import RecentSearches from '../../components/RecentSearches';
 import SearchHeader from './components/SearchHeader';
 import SearchLiveResultOverlay from './SearchLiveResultOveraly';
 
-import { COLORS, Heading_18SB, scaleWidth } from '../../styles/global';
+import { COLORS, scaleWidth } from '../../styles/global';
+import { Heading_18SB } from '../../styles/typography';
 import {
   loadRecents,
   addRecent,

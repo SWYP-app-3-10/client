@@ -7,16 +7,13 @@ import Header from '../../components/Header';
 // import Input from '../../components/Input';
 // import Button from '../../components/Button';
 
+import { COLORS, scaleWidth } from '../../styles/global';
 import {
-  COLORS,
-  scaleWidth,
   Heading_16B,
   Heading_20EB_Round,
   Caption_14R,
   Heading_18SB,
-  // BORDER_RADIUS,
-  // Heading_18SB,
-} from '../../styles/global';
+} from '../../styles/typography';
 
 // import { useShowToast } from '../../store/toastStore';
 // import { getUserInfo } from '../../services/authService';

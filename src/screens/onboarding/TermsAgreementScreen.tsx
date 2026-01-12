@@ -7,14 +7,12 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RouteNames } from '../../../routes';
 import { OnboardingStackParamList } from '../../navigation/types';
 import { SocialLoginProvider } from '../../services/socialLoginService';
+import { COLORS, scaleWidth, BORDER_RADIUS } from '../../styles/global';
 import {
-  COLORS,
   Heading_24EB_Round,
-  scaleWidth,
-  BORDER_RADIUS,
-  Body_16M,
   Heading_18B,
-} from '../../styles/global';
+  Body_16M,
+} from '../../styles/typography';
 
 import Header from '../../components/Header';
 import { CheckIcon } from '../../icons';

@@ -8,13 +8,8 @@ import RightArrow from '../../assets/svg/RightArrow.svg';
 import Toast from '../../components/Toast';
 import Toggle from '../../components/Toggle';
 
-import {
-  COLORS,
-  scaleWidth,
-  Heading_16B,
-  Caption_14R,
-  Body_16SB,
-} from '../../styles/global';
+import { COLORS, scaleWidth } from '../../styles/global';
+import { Heading_16B, Caption_14R, Body_16SB } from '../../styles/typography';
 import { RouteNames } from '../../../routes';
 
 // import { useShowModal } from '../../store/modalStore'; // ✅ (기존) 안내 모달 로직은 정책 변경으로 현재 미사용
@@ -84,7 +79,9 @@ const SettingScreen = () => {
           // - shouldShowModal === true  -> 권한 미허용 상태(토글 OFF)
           // - shouldShowModal === false -> 권한 허용 상태(토글 ON)
           setIsAlarmOn(!shouldShowModal);
-        } catch (e) {
+        } catch (error) {
+          // 알림 설정 중 오류가 발생했습니다.
+          console.error(error);
           // 실패 시 기존 토글 상태 유지
         } finally {
           // 설정 화면으로 갔다가 돌아온 경우 플래그 초기화(선택)
