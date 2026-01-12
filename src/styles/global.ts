@@ -101,22 +101,3 @@ export const COLORS = {
   gold: '#FFD700',
   iconDefault: '#171717',
 };
-
-// 타이포그래피 스타일 export
-export {
-  Heading_24EB_Round,
-  Heading_20EB_Round,
-  Heading_18B,
-  Heading_18EB_Round,
-  Heading_18SB,
-  Heading_16B,
-  Heading_16EB_Round,
-  Body_18M,
-  Body_16SB,
-  Body_16M,
-  Body_16R,
-  Body_15M,
-  Caption_14R,
-  Caption_12SB,
-  Caption_12M,
-} from './typography';
