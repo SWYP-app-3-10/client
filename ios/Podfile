@@ -1,5 +1,6 @@
 # Resolve react_native_pods.rb with node to allow for hoisting
 def node_require(script)
+  # Resolve script with node to allow for hoisting
   require Pod::Executable.execute_command('node', ['-p',
     "require.resolve(
       '#{script}',
@@ -8,12 +9,17 @@ def node_require(script)
 end
 
 node_require('react-native/scripts/react_native_pods.rb')
-require_relative '../node_modules/react-native-permissions/scripts/setup.rb'
+node_require('react-native-permissions/scripts/setup.rb')
 
 platform :ios, '15.1'
 
 ENV['RNFirebaseAsStaticFramework'] = 'true'
 prepare_react_native_project!
+
+# react-native-permissions 설정 (use_native_modules! 전에 호출)
+setup_permissions([
+  'Notifications',
+])
 
 linkage = ENV['USE_FRAMEWORKS']
 if linkage != nil
@@ -21,17 +27,22 @@ if linkage != nil
   use_frameworks! :linkage => linkage.to_sym
 else
   use_frameworks! :linkage => :static
+  use_modular_headers!
 end
-target 'Neurous' do
-  config = use_native_modules!
 
-  # react-native-permissions 설정
-  setup_permissions([
-    'Notifications',
-  ])
+target 'Neurous' do
+  begin
+    config = use_native_modules!
+    react_native_path = config && config[:reactNativePath] ? config[:reactNativePath] : '../node_modules/react-native'
+  rescue => e
+    Pod::UI.warn "use_native_modules! failed: #{e.message}"
+    Pod::UI.warn "Using default React Native path"
+    react_native_path = '../node_modules/react-native'
+    config = { :reactNativePath => react_native_path }
+  end
 
   use_react_native!(
-    :path => config[:reactNativePath],
+    :path => react_native_path,
     # An absolute path to your application root.
     :app_path => "#{Pod::Config.instance.installation_root}/.."
   )
@@ -39,7 +50,7 @@ target 'Neurous' do
   post_install do |installer|
     react_native_post_install(
       installer,
-      config[:reactNativePath],
+      react_native_path,
       :mac_catalyst_enabled => false,
       # :ccache_enabled => true
     )
