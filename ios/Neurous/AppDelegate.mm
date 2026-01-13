@@ -23,5 +23,14 @@
   }
   return [super application:app openURL:url options:options];
 }
-
+- (NSURL *)bundleURL
+{
+#if DEBUG
+  // 개발 모드: Metro Bundler(서버)에서 불러옴
+  return [[RCTBundleURLProvider sharedSettings] jsBundleURLForBundleRoot:@"index"];
+#else
+  // 배포 모드: 기기 내부에 저장된 파일에서 불러옴
+  return [[NSBundle mainBundle] URLForResource:@"main" withExtension:@"jsbundle"];
+#endif
+}
 @end
