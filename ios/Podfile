@@ -19,6 +19,7 @@ prepare_react_native_project!
 # react-native-permissions 설정 (use_native_modules! 전에 호출)
 setup_permissions([
   'Notifications',
+  'AppTrackingTransparency',
 ])
 
 linkage = ENV['USE_FRAMEWORKS']
