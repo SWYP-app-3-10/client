@@ -149,11 +149,20 @@ export const signInWithGoogle = async (): Promise<SocialLoginResult> => {
 // 구글 로그아웃
 export const signOutGoogle = async (): Promise<void> => {
   try {
+    // 로그아웃 전에 Google Sign-In SDK 초기화 확인
+    try {
+      // 이미 초기화되어 있는지 확인하고, 필요시 재초기화
+      initializeGoogleSignIn();
+    } catch (initError) {
+      console.warn('구글 로그인 초기화 실패 (로그아웃 시도):', initError);
+    }
+
     await GoogleSignin.signOut();
     const authInstance = getAuth();
     await signOut(authInstance);
   } catch (error) {
     console.error('구글 로그아웃 실패:', error);
+    // 에러가 발생해도 계속 진행 (로컬 로그아웃은 완료)
   }
 };
 
