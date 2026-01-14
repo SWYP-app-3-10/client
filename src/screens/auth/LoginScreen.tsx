@@ -50,6 +50,7 @@ const LoginScreen = () => {
 
   const [loading, setLoading] = useState<SocialLoginProvider | null>(null);
   const [recentLogin, setRecentLogin] = useState<RecentLoginInfo | null>(null);
+  const trackingModalShownRef = useRef<boolean>(false); // 중복 호출 방지
   const showModal = useShowModal();
   const setOnboardingStep = useOnboardingStore(
     state => state.setOnboardingStep,
@@ -147,18 +148,32 @@ const LoginScreen = () => {
   const handleTrackingModal = useCallback(async () => {
     if (Platform.OS !== 'ios') return;
 
+    // 중복 호출 방지: 이미 모달이 표시된 경우 스킵
+    if (trackingModalShownRef.current) {
+      console.log(
+        '[handleTrackingModal] 이미 모달이 표시되었습니다. 중복 호출 방지',
+      );
+      return;
+    }
+
     console.log('[handleTrackingModal] iOS 추적 권한 체크 시작');
     try {
       const hasPermission = await checkTrackingPermission();
 
       if (!hasPermission) {
-        console.log('[handleTrackingModal] 권한 요청 시도');
+        console.log(
+          '[handleTrackingModal] 권한 요청 시도 - 네이티브 ATT 모달 표시',
+        );
+        trackingModalShownRef.current = true; // 모달 표시 플래그 설정
         await requestTrackingPermission();
+        console.log('[handleTrackingModal] ATT 모달 닫힘');
       } else {
         console.log('[handleTrackingModal] 이미 권한이 허용되어 있습니다.');
+        trackingModalShownRef.current = true; // 이미 권한이 있으면 플래그 설정
       }
     } catch (error) {
       console.warn('추적 권한 처리 중 오류 (무시하고 진행):', error);
+      trackingModalShownRef.current = false; // 에러 발생 시 플래그 리셋
     }
   }, [checkTrackingPermission, requestTrackingPermission]);
 
