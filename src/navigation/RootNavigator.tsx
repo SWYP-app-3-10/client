@@ -41,7 +41,8 @@ const Stack = createNativeStackNavigator();
  */
 const RootNavigatorContent: React.FC<{
   navigationRef: React.RefObject<any>;
-}> = ({ navigationRef }) => {
+  isReady?: boolean;
+}> = ({ navigationRef, isReady = false }) => {
   // zustand: modalState만 구독 (리렌더링 최적화)
   const modalState = useModalState();
   const hideModal = useModalStore(state => state.hideModal);
@@ -60,21 +61,37 @@ const RootNavigatorContent: React.FC<{
   const hasCheckedPendingLevelUpRef = useRef<boolean>(false);
 
   // 온보딩 완료 시 메인 화면으로 자동 전환
+  // 온보딩 미완료 시 로그인 화면으로 자동 전환 (401 에러 등으로 인한 로그아웃 처리)
   useEffect(() => {
-    if (
-      isOnboardingCompleted &&
-      !prevOnboardingCompletedRef.current &&
-      navigationRef.current
-    ) {
-      navigationRef.current.dispatch(
-        CommonActions.reset({
-          index: 0,
-          routes: [{ name: RouteNames.MAIN_TAB }],
-        }),
-      );
+    if (!navigationRef.current || !isReady) {
+      return;
     }
+
+    try {
+      if (isOnboardingCompleted && !prevOnboardingCompletedRef.current) {
+        // 온보딩 완료 → 메인 화면으로 이동
+        navigationRef.current.dispatch(
+          CommonActions.reset({
+            index: 0,
+            routes: [{ name: RouteNames.MAIN_TAB }],
+          }),
+        );
+      } else if (!isOnboardingCompleted && prevOnboardingCompletedRef.current) {
+        // 온보딩 미완료로 변경됨 (401 에러 등) → 로그인 화면으로 이동
+        navigationRef.current.dispatch(
+          CommonActions.reset({
+            index: 0,
+            routes: [{ name: RouteNames.ONBOARDING }],
+          }),
+        );
+      }
+    } catch (error) {
+      // 네비게이션이 아직 준비되지 않은 경우 무시
+      console.warn('네비게이션 리셋 실패:', error);
+    }
+
     prevOnboardingCompletedRef.current = isOnboardingCompleted;
-  }, [isOnboardingCompleted, navigationRef]);
+  }, [isOnboardingCompleted, navigationRef, isReady]);
 
   // 경험치 변경 시 characterData refetch
   useEffect(() => {
@@ -281,10 +298,16 @@ const RootNavigatorContent: React.FC<{
  */
 const RootNavigator: React.FC = () => {
   const navigationRef = React.useRef<any>(null);
+  const [isReady, setIsReady] = React.useState(false);
 
   return (
-    <NavigationContainer ref={navigationRef}>
-      <RootNavigatorContent navigationRef={navigationRef} />
+    <NavigationContainer
+      ref={navigationRef}
+      onReady={() => {
+        setIsReady(true);
+      }}
+    >
+      <RootNavigatorContent navigationRef={navigationRef} isReady={isReady} />
     </NavigationContainer>
   );
 };
