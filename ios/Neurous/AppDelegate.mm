@@ -2,9 +2,8 @@
 
 #import <React/RCTBundleURLProvider.h>
 #import <ReactAppDependencyProvider/RCTAppDependencyProvider.h>
-
-// ✅ 라이브러리 헤더 (이거 하나면 충분합니다)
-#import <RNKakaoLogins.h>
+#import <React/RCTLinkingManager.h> 
+#import <RNKakaoLogins.h>           
 
 @implementation AppDelegate
 
@@ -17,20 +16,26 @@
   return [super application:application didFinishLaunchingWithOptions:launchOptions];
 }
 
-- (BOOL)application:(UIApplication *)app openURL:(NSURL *)url options:(NSDictionary<UIApplicationOpenURLOptionsKey,id> *)options {
+- (BOOL)application:(UIApplication *)application
+   openURL:(NSURL *)url
+   options:(NSDictionary<UIApplicationOpenURLOptionsKey,id> *)options
+{
+  // 1. 카카오 로그인 URL인지 먼저 확인
   if ([RNKakaoLogins isKakaoTalkLoginUrl:url]) {
-      return [RNKakaoLogins handleOpenUrl:url];
+    return [RNKakaoLogins handleOpenUrl:url];
   }
-  return [super application:app openURL:url options:options];
+
+  // 2. 카카오가 아니라면, React Native LinkingManager가 처리 (네이버, 구글, 딥링크 등)
+  return [RCTLinkingManager application:application openURL:url options:options];
 }
+
 - (NSURL *)bundleURL
 {
 #if DEBUG
-  // 개발 모드: Metro Bundler(서버)에서 불러옴
   return [[RCTBundleURLProvider sharedSettings] jsBundleURLForBundleRoot:@"index"];
 #else
-  // 배포 모드: 기기 내부에 저장된 파일에서 불러옴
   return [[NSBundle mainBundle] URLForResource:@"main" withExtension:@"jsbundle"];
 #endif
 }
+
 @end

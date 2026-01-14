@@ -344,6 +344,7 @@ const MissionScreen = () => {
                       style={{
                         width: isEdge ? WIDTH_EDGE : WIDTH_MID,
                         marginRight: index === missions.length - 1 ? 0 : GAP,
+                        height: scaleWidth(105),
                       }}
                     >
                       <MissionCard mission={mission} />

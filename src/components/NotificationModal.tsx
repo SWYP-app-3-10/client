@@ -127,7 +127,7 @@ const NotificationModal: React.FC<NotificationModalProps> = ({
                       ? scaleWidth(14)
                       : image
                       ? imagePaddingTop
-                      : scaleWidth(48),
+                      : scaleWidth(40),
                   },
                 ]}
               >

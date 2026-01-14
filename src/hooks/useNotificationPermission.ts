@@ -7,14 +7,15 @@ import {
 } from 'react-native-permissions';
 
 interface UseNotificationPermissionOptions {
-  onSettingsOpened?: () => void;
+  onSettingsOpened?: (isExistingUser?: boolean) => void;
+  onCancel?: () => void;
 }
 
 export const useNotificationPermission = (
   options?: UseNotificationPermissionOptions,
 ) => {
   const [isChecking, setIsChecking] = useState(false);
-  const { onSettingsOpened } = options || {};
+  const { onSettingsOpened, onCancel } = options || {};
 
   const checkPermission = useCallback(async (): Promise<boolean> => {
     try {
@@ -43,13 +44,59 @@ export const useNotificationPermission = (
             : true;
 
         if (Platform.OS === 'ios' && !isNotificationEnabled) {
+          return new Promise<boolean>(resolve => {
+            Alert.alert(
+              '알림 설정 필요',
+              '기기 알림이 꺼져있어요.\n설정에서 알림을 켜주세요.',
+              [
+                {
+                  text: '취소',
+                  style: 'cancel',
+                  onPress: () => {
+                    onCancel?.();
+                    resolve(false);
+                  },
+                },
+                {
+                  text: '설정으로 이동',
+                  onPress: async () => {
+                    try {
+                      onSettingsOpened?.();
+                      await Linking.openSettings();
+                      // 설정 화면으로 이동했으므로 false 반환 (AppState에서 처리)
+                      resolve(false);
+                    } catch (error) {
+                      console.error('설정 열기 실패:', error);
+                      // 최종 fallback
+                      try {
+                        await Linking.openSettings();
+                        resolve(false);
+                      } catch (err) {
+                        console.error('설정 열기 실패 (fallback):', err);
+                        resolve(false);
+                      }
+                    }
+                  },
+                },
+              ],
+            );
+          });
+        }
+
+        return true;
+      } else if (status === RESULTS.BLOCKED) {
+        return new Promise<boolean>(resolve => {
           Alert.alert(
-            '알림 설정 필요',
-            '기기 알림이 꺼져있어요.\n설정에서 알림을 켜주세요.',
+            "'뉴로스'에서 알림을 보내고자 합니다.",
+            '경고, 사운드 및 아이콘 배지가 알림에 포함될 수 있습니다. 설정에서 이를 구성할 수 있습니다',
             [
               {
                 text: '취소',
                 style: 'cancel',
+                onPress: () => {
+                  onCancel?.();
+                  resolve(false);
+                },
               },
               {
                 text: '설정으로 이동',
@@ -57,52 +104,24 @@ export const useNotificationPermission = (
                   try {
                     onSettingsOpened?.();
                     await Linking.openSettings();
+                    // 설정 화면으로 이동했으므로 false 반환 (AppState에서 처리)
+                    resolve(false);
                   } catch (error) {
                     console.error('설정 열기 실패:', error);
                     // 최종 fallback
                     try {
                       await Linking.openSettings();
+                      resolve(false);
                     } catch (err) {
                       console.error('설정 열기 실패 (fallback):', err);
+                      resolve(false);
                     }
                   }
                 },
               },
             ],
           );
-          return false;
-        }
-
-        return true;
-      } else if (status === RESULTS.BLOCKED) {
-        Alert.alert(
-          "'뉴로스'에서 알림을 보내고자 합니다.",
-          '경고, 사운드 및 아이콘 배지가 알림에 포함될 수 있습니다. 설정에서 이를 구성할 수 있습니다',
-          [
-            {
-              text: '취소',
-              style: 'cancel',
-            },
-            {
-              text: '설정으로 이동',
-              onPress: async () => {
-                try {
-                  onSettingsOpened?.();
-                  await Linking.openSettings();
-                } catch (error) {
-                  console.error('설정 열기 실패:', error);
-                  // 최종 fallback
-                  try {
-                    await Linking.openSettings();
-                  } catch (err) {
-                    console.error('설정 열기 실패 (fallback):', err);
-                  }
-                }
-              },
-            },
-          ],
-        );
-        return false;
+        });
       }
 
       return false;
@@ -112,7 +131,7 @@ export const useNotificationPermission = (
     } finally {
       setIsChecking(false);
     }
-  }, [onSettingsOpened]);
+  }, [onSettingsOpened, onCancel]);
 
   return {
     checkPermission,

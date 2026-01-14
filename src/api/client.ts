@@ -7,6 +7,7 @@ import {
 } from '../services/authService';
 import { refreshToken } from './authApi';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useOnboardingStore } from '../store/onboardingStore';
 
 const PROD_URL = 'http://175.45.193.98:8080';
 // const PROD_URL = 'https://api.your-backend.com';
@@ -35,13 +36,9 @@ client.interceptors.request.use(
       }
     } else {
       // AsyncStorage에서 토큰을 가져와서 헤더에 추가
-      try {
-        const token = await getAuthToken();
-        if (token && config.headers) {
-          config.headers.Authorization = `Bearer ${token}`;
-        }
-      } catch (error) {
-        // 토큰 가져오기 실패 시 무시
+      const token = await getAuthToken();
+      if (token && config.headers) {
+        config.headers.Authorization = `Bearer ${token}`;
       }
     }
     return config;
@@ -68,18 +65,16 @@ client.interceptors.response.use(
       // 토큰 재발급 API 자체가 401을 반환하면 무한 루프 방지
 
       // 401 에러 발생 시 토큰 삭제 및 온보딩 상태 초기화
-      try {
-        await AsyncStorage.multiRemove([
-          '@auth_token',
-          '@refresh_token',
-          '@user_info',
-        ]);
-        // 온보딩 상태 초기화 (로그인 화면으로 이동하기 위해)
-        await AsyncStorage.setItem('@onboarding_completed', 'false');
-        await AsyncStorage.setItem('@onboarding_step', 'login');
-      } catch (clearError) {
-        // 토큰 삭제 실패 시 무시
-      }
+      await AsyncStorage.multiRemove([
+        '@auth_token',
+        '@refresh_token',
+        '@user_info',
+      ]);
+      // 온보딩 상태 초기화 (로그인 화면으로 이동하기 위해)
+      await AsyncStorage.setItem('@onboarding_completed', 'false');
+      await AsyncStorage.setItem('@onboarding_step', 'login');
+      // Zustand store도 업데이트하여 RootNavigator가 감지하도록 함
+      useOnboardingStore.getState().resetOnboarding();
 
       return Promise.reject(error);
     }
@@ -93,18 +88,16 @@ client.interceptors.response.use(
       // 토큰 재발급 API 자체가 403을 반환하면 무한 루프 방지
       if (originalRequest.url?.includes('/api/auth/refresh')) {
         // 403 에러 발생 시 토큰 삭제 및 온보딩 상태 초기화
-        try {
-          await AsyncStorage.multiRemove([
-            '@auth_token',
-            '@refresh_token',
-            '@user_info',
-          ]);
-          // 온보딩 상태 초기화 (로그인 화면으로 이동하기 위해)
-          await AsyncStorage.setItem('@onboarding_completed', 'false');
-          await AsyncStorage.setItem('@onboarding_step', 'login');
-        } catch (clearError) {
-          // 토큰 삭제 실패 시 무시
-        }
+        await AsyncStorage.multiRemove([
+          '@auth_token',
+          '@refresh_token',
+          '@user_info',
+        ]);
+        // 온보딩 상태 초기화 (로그인 화면으로 이동하기 위해)
+        await AsyncStorage.setItem('@onboarding_completed', 'false');
+        await AsyncStorage.setItem('@onboarding_step', 'login');
+        // Zustand store도 업데이트하여 RootNavigator가 감지하도록 함
+        useOnboardingStore.getState().resetOnboarding();
 
         return Promise.reject(error);
       }
@@ -149,18 +142,16 @@ client.interceptors.response.use(
           refreshError.response?.status === 401 ||
           refreshError.response?.status === 403
         ) {
-          try {
-            await AsyncStorage.multiRemove([
-              '@auth_token',
-              '@refresh_token',
-              '@user_info',
-            ]);
-            // 온보딩 상태 초기화 (로그인 화면으로 이동하기 위해)
-            await AsyncStorage.setItem('@onboarding_completed', 'false');
-            await AsyncStorage.setItem('@onboarding_step', 'login');
-          } catch (clearError) {
-            // 토큰 삭제 실패 시 무시
-          }
+          await AsyncStorage.multiRemove([
+            '@auth_token',
+            '@refresh_token',
+            '@user_info',
+          ]);
+          // 온보딩 상태 초기화 (로그인 화면으로 이동하기 위해)
+          await AsyncStorage.setItem('@onboarding_completed', 'false');
+          await AsyncStorage.setItem('@onboarding_step', 'login');
+          // Zustand store도 업데이트하여 RootNavigator가 감지하도록 함
+          useOnboardingStore.getState().resetOnboarding();
         }
 
         if (refreshError.response?.status === 500) {
