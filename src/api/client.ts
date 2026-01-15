@@ -60,34 +60,15 @@ client.interceptors.response.use(
         })
       | undefined;
 
-    // 401 에러 발생 시 바로 로그인 화면으로 이동
-    if (error.response?.status === 401 && originalRequest) {
-      // 토큰 재발급 API 자체가 401을 반환하면 무한 루프 방지
-
-      // 401 에러 발생 시 토큰 삭제 및 온보딩 상태 초기화
-      await AsyncStorage.multiRemove([
-        '@auth_token',
-        '@refresh_token',
-        '@user_info',
-      ]);
-      // 온보딩 상태 초기화 (로그인 화면으로 이동하기 위해)
-      await AsyncStorage.setItem('@onboarding_completed', 'false');
-      await AsyncStorage.setItem('@onboarding_step', 'login');
-      // Zustand store도 업데이트하여 RootNavigator가 감지하도록 함
-      useOnboardingStore.getState().resetOnboarding();
-
-      return Promise.reject(error);
-    }
-
-    // 403 에러 발생 시 토큰 재발급 시도
+    // 401/403 에러 발생 시 토큰 재발급 시도
     if (
-      error.response?.status === 403 &&
+      (error.response?.status === 401 || error.response?.status === 403) &&
       originalRequest &&
       !originalRequest._retry
     ) {
-      // 토큰 재발급 API 자체가 403을 반환하면 무한 루프 방지
+      // 토큰 재발급 API 자체가 401/403을 반환하면 무한 루프 방지
       if (originalRequest.url?.includes('/api/auth/refresh')) {
-        // 403 에러 발생 시 토큰 삭제 및 온보딩 상태 초기화
+        // 재발급 API 자체가 실패하면 토큰 삭제 및 온보딩 상태 초기화
         await AsyncStorage.multiRemove([
           '@auth_token',
           '@refresh_token',
@@ -114,6 +95,15 @@ client.interceptors.response.use(
         const refreshTokenValue = await getRefreshToken();
         if (!refreshTokenValue) {
           isRefreshing = false;
+          // 리프레시 토큰이 없으면 로그아웃 처리
+          await AsyncStorage.multiRemove([
+            '@auth_token',
+            '@refresh_token',
+            '@user_info',
+          ]);
+          await AsyncStorage.setItem('@onboarding_completed', 'false');
+          await AsyncStorage.setItem('@onboarding_step', 'login');
+          useOnboardingStore.getState().resetOnboarding();
           return Promise.reject(error);
         }
 
@@ -134,13 +124,21 @@ client.interceptors.response.use(
         if (newRefreshToken) {
           await saveRefreshToken(newRefreshToken);
         }
+
+        // 재발급 성공 시 원래 요청 재시도
+        isRefreshing = false;
+        if (originalRequest.headers) {
+          originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
+        }
+        return client(originalRequest);
       } catch (refreshError: any) {
         isRefreshing = false;
 
-        // 401/403 에러 발생 시 토큰 삭제 및 온보딩 상태 초기화
+        // 재발급 실패 시 토큰 삭제 및 온보딩 상태 초기화
         if (
           refreshError.response?.status === 401 ||
-          refreshError.response?.status === 403
+          refreshError.response?.status === 403 ||
+          !refreshError.response // 네트워크 에러 등
         ) {
           await AsyncStorage.multiRemove([
             '@auth_token',
