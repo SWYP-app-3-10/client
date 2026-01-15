@@ -1,6 +1,5 @@
 /**
  * 온보딩 관련 서비스
- * 서버 API 연동 시 이 파일을 수정하여 실제 온보딩 로직 구현
  */
 
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -27,35 +26,6 @@ export interface OnboardingData {
  */
 export const getOnboardingStatus = async (): Promise<OnboardingData> => {
   try {
-    // 토큰이 있으면 자동으로 온보딩 완료 상태로 간주
-    const token = await getAuthToken();
-    if (token) {
-      // 토큰이 있으면 온보딩 완료 상태로 설정 (로컬 저장소에도 반영)
-      const completed = await AsyncStorage.getItem(ONBOARDING_COMPLETED_KEY);
-      if (completed !== 'true') {
-        await AsyncStorage.setItem(ONBOARDING_COMPLETED_KEY, 'true');
-        await AsyncStorage.setItem(ONBOARDING_STEP_KEY, 'completed');
-      }
-
-      const interestsStr = await AsyncStorage.getItem(INTERESTS_KEY);
-      const difficultyStr = await AsyncStorage.getItem(DIFFICULTY_KEY);
-      const difficulty: LevelCategory | null = difficultyStr
-        ? (JSON.parse(difficultyStr) as LevelCategory)
-        : null;
-
-      const interests: InterestsData | null = interestsStr
-        ? JSON.parse(interestsStr)
-        : null;
-
-      return {
-        isCompleted: true,
-        step: 'completed',
-        interests,
-        difficulty,
-      };
-    }
-
-    // 토큰이 없으면 기존 로직대로 진행
     const completed = await AsyncStorage.getItem(ONBOARDING_COMPLETED_KEY);
     const step = (await AsyncStorage.getItem(
       ONBOARDING_STEP_KEY,
@@ -70,28 +40,51 @@ export const getOnboardingStatus = async (): Promise<OnboardingData> => {
       ? JSON.parse(interestsStr)
       : null;
 
-    if (completed === 'true') {
+    // 온보딩 완료 여부 확인
+    if (completed === 'true' && interests && difficulty) {
       return {
         isCompleted: true,
         step: 'completed',
         interests,
         difficulty,
       };
-    } else if (step) {
+    }
+
+    // 토큰이 있지만 온보딩이 완료되지 않은 경우
+    // (관심분야나 난이도가 없는 경우)
+    const token = await getAuthToken();
+    if (token && (!interests || !difficulty)) {
+      // 온보딩 미완료 상태로 리셋
+      await AsyncStorage.removeItem(ONBOARDING_COMPLETED_KEY);
+      if (!step || step === 'completed') {
+        await AsyncStorage.setItem(ONBOARDING_STEP_KEY, 'interests');
+      }
+
+      return {
+        isCompleted: false,
+        step: step === 'difficulty' ? 'difficulty' : 'interests',
+        interests,
+        difficulty,
+      };
+    }
+
+    // 온보딩 진행 중인 경우
+    if (step) {
       return {
         isCompleted: false,
         step,
         interests,
         difficulty,
       };
-    } else {
-      return {
-        isCompleted: false,
-        step: 'login',
-        interests: null,
-        difficulty: null,
-      };
     }
+
+    // 온보딩 시작 전
+    return {
+      isCompleted: false,
+      step: 'login',
+      interests: null,
+      difficulty: null,
+    };
   } catch (error) {
     console.error('온보딩 상태 조회 실패:', error);
     return {
