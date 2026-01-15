@@ -5,13 +5,11 @@
 import { useQuery } from '@tanstack/react-query';
 import {
   fetchCharacterData,
-  fetchAttendanceData,
   fetchCharacterReward,
   fetchCharacterMe,
   convertWeeklyAttendanceToAttendanceData,
   convertCharacterMissionToMission,
   CharacterData,
-  AttendanceData,
   CharacterRewardResponse,
   CharacterMeResponse,
 } from '../api/characterApi';
@@ -32,18 +30,6 @@ export const useCharacterData = () => {
   return useQuery<CharacterData>({
     queryKey: characterKeys.data(),
     queryFn: fetchCharacterData,
-    staleTime: 1000 * 60 * 5, // 5분간 fresh 상태 유지
-    gcTime: 1000 * 60 * 10, // 10분간 캐시 유지
-  });
-};
-
-/**
- * 주간 출석 기록 조회
- */
-export const useAttendanceData = () => {
-  return useQuery<AttendanceData[]>({
-    queryKey: characterKeys.attendance(),
-    queryFn: fetchAttendanceData,
     staleTime: 1000 * 60 * 5, // 5분간 fresh 상태 유지
     gcTime: 1000 * 60 * 10, // 10분간 캐시 유지
   });
