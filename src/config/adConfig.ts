@@ -10,10 +10,6 @@ import { TestIds } from 'react-native-google-mobile-ads';
 export const REWARDED_AD_UNIT_ID = __DEV__
   ? TestIds.REWARDED
   : Platform.select({
-      android: 'ca-app-pub-2195740935444660/8657864344',
-      ios: 'ca-app-pub-2195740935444660/8267622737',
+      android: 'ca-app-pub-5312046759396775/6312225428',
+      ios: 'ca-app-pub-5312046759396775/2738784252',
     }) || TestIds.REWARDED;
-
-// TODO: 다른 광고 타입도 필요하면 추가
-// export const BANNER_AD_UNIT_ID = ...
-// export const INTERSTITIAL_AD_UNIT_ID = ...
