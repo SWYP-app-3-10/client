@@ -41,9 +41,28 @@ client.interceptors.request.use(
         config.headers.Authorization = `Bearer ${token}`;
       }
     }
+
+    // 개발 모드에서 요청 로깅
+    if (__DEV__) {
+      const fullUrl = `${config.baseURL}${config.url}`;
+      console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+      console.log(`[API 요청] ${config.method?.toUpperCase()} ${fullUrl}`);
+      if (config.params) {
+        console.log('[요청 파라미터]:', config.params);
+      }
+      if (config.data) {
+        console.log('[요청 데이터]:', JSON.stringify(config.data, null, 2));
+      }
+      console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+    }
+
     return config;
   },
   error => {
+    // 개발 모드에서 요청 에러 로깅
+    if (__DEV__) {
+      console.error('[API 요청 에러]:', error);
+    }
     return Promise.reject(error);
   },
 );
@@ -51,6 +70,16 @@ client.interceptors.request.use(
 // 4. 응답 인터셉터 (Response Interceptor)
 client.interceptors.response.use(
   response => {
+    // 개발 모드에서 응답 로깅
+    if (__DEV__) {
+      const fullUrl = `${response.config.baseURL}${response.config.url}`;
+      console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+      console.log(
+        `[API 응답] ${response.config.method?.toUpperCase()} ${fullUrl}`,
+      );
+      console.log('[응답 데이터]:', JSON.stringify(response.data, null, 2));
+      console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+    }
     return response;
   },
   async (error: AxiosError) => {
@@ -158,6 +187,34 @@ client.interceptors.response.use(
 
         return Promise.reject(error);
       }
+    }
+
+    // 개발 모드에서 에러 응답 로깅
+    if (__DEV__) {
+      const fullUrl = originalRequest
+        ? `${originalRequest.baseURL}${originalRequest.url}`
+        : '알 수 없음';
+      console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+      console.error(
+        `[API 에러 응답] ${
+          originalRequest?.method?.toUpperCase() || 'UNKNOWN'
+        } ${fullUrl}`,
+      );
+      console.error(
+        '[에러 상태]:',
+        error.response?.status,
+        error.response?.statusText,
+      );
+      if (error.response?.data) {
+        console.error(
+          '[에러 데이터]:',
+          JSON.stringify(error.response.data, null, 2),
+        );
+      }
+      if (error.message) {
+        console.error('[에러 메시지]:', error.message);
+      }
+      console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
     }
 
     return Promise.reject(error);
