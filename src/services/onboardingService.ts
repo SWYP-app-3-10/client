@@ -41,7 +41,7 @@ export const getOnboardingStatus = async (): Promise<OnboardingData> => {
       : null;
 
     // 온보딩 완료 여부 확인
-    if (completed === 'true' && interests && difficulty) {
+    if (completed === 'true') {
       return {
         isCompleted: true,
         step: 'completed',
