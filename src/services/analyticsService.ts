@@ -8,6 +8,9 @@ import { IS_PRODUCTION } from '../config/adConfig';
  *
  * IS_PRODUCTION 설정에 따라 로그가 기록됩니다.
  * adConfig.ts에서 IS_PRODUCTION 값을 변경하세요.
+ *
+ * 화면 이름을 직접 이벤트 이름으로 사용합니다.
+ * (Firebase의 자동 screen_view 이벤트 대신)
  */
 
 /**
@@ -18,7 +21,7 @@ const screenNameMap: Record<string, string> = {
   [RouteNames.INTRO_CARDLIST]: 'Onboarding_Function01_CardList',
   [RouteNames.INTRO_FUNCTION]: 'Onboarding_Function02_Character',
   [RouteNames.INTRO_SEARCH]: 'Onboarding_Function03_Explore',
-  [RouteNames.SOCIAL_LOGIN]: 'Onboarding_SocialLogin',
+  [RouteNames.SOCIAL_LOGIN]: 'Onboarding_SocialLogin_TEST',
   [RouteNames.TERMS_AGREEMENT]: 'AgreeToTerms',
 
   // 미션
@@ -88,10 +91,9 @@ export const logScreenView = async (
 
     // 매핑된 이름이 있으면 사용, 없으면 원래 이름 사용 (forceLog인 경우)
     const finalScreenName = mappedName || screenName;
-    await analytics().logScreenView({
-      screen_name: finalScreenName,
-      screen_class: screenClass || finalScreenName,
-    });
+
+    // 화면 이름을 직접 이벤트 이름으로 사용 (Firebase 자동 screen_view 대신)
+    await analytics().logEvent(finalScreenName);
   } catch (error) {
     console.error('Analytics logScreenView 오류:', error);
   }

@@ -359,7 +359,7 @@ const LoginScreen = () => {
             provider="NAVER"
             onPress={() => {
               goTermsAgreement('NAVER');
-              logEvent('NAVER_login_Onboarding_SocialLogin');
+              logEvent('NAVER_login_Onboarding_SocialLogin_TEST');
             }}
             loading={loading}
             recentLogin={recentLogin}

@@ -8,7 +8,8 @@ import { RouteNames } from '../../routes';
 const SplashScreen = () => {
   useEffect(() => {
     // 스플래시 화면 조회 로그
-    logScreenView(RouteNames.SPLASH, undefined, true);
+    logScreenView('SplashScreen_TEST', undefined, true);
+    // logScreenView(RouteNames.SPLASH, undefined, true);
   }, []);
 
   return (
