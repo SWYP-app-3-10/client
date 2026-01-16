@@ -55,6 +55,7 @@ const HIT_SLOP = { top: 10, bottom: 10, left: 10, right: 10 };
 // PNG 툴팁 고정 사이즈 (에셋 원본 270x55 기준)
 const TOOLTIP_W = scaleWidth(270);
 const TOOLTIP_H = scaleWidth(55);
+const TOOLTIP_TAIL_H = scaleWidth(13);
 
 // UI 카테고리(한글) -> 서버 enum 매핑
 const SERVER_CATEGORY_MAP: Record<string, string | undefined> = {
@@ -437,11 +438,14 @@ const HeaderArea = ({
           />
 
           {/* PNG 위에 텍스트를 absolute로 얹음 */}
-          <Text style={styles.tooltipTextOverlay}>
-            {isNow
-              ? '지금 새로운 글을 확인할 수 있어요!'
-              : `${tooltipMinutes} 뒤에 새로운 글을 확인할 수 있어요!`}
-          </Text>
+          <View style={styles.tooltipTextBox} pointerEvents="none">
+            <Text style={styles.tooltipText}>
+              {isNow
+                ? '지금 새로운 글을 확인할 수 있어요!'
+                : `${tooltipMinutes} 뒤에 새로운 글을 확인할 수 있어요!`}
+            </Text>
+          </View>
+
         </View>
       )}
     </View>
@@ -519,19 +523,20 @@ const styles = StyleSheet.create({
     height: TOOLTIP_H,
   },
 
-  // PNG(270x55)에서 텍스트 영역(rect y=13, height=42)에 맞춰 정렬
-  tooltipTextOverlay: {
+  tooltipTextBox: {
     position: 'absolute',
     left: scaleWidth(12),
     right: scaleWidth(12),
-    top: scaleWidth(13),
-    height: scaleWidth(42),
+    top: TOOLTIP_TAIL_H,
+    height: TOOLTIP_H - TOOLTIP_TAIL_H,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
 
+  tooltipText: {
     ...Caption_12M,
     color: COLORS.white,
-
     textAlign: 'center',
-    textAlignVertical: 'center',
   },
 
   // 오른쪽 검색 버튼 영역
