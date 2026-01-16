@@ -70,6 +70,7 @@ export default function SearchResultScreen() {
       readTime: `${c.readingTime ?? 0}분 소요`,
       imageUrl: c.imgUrl || '',
       content: '',
+      hits: (c as any).hits ?? 0,
     }));
   }, [data]);
 

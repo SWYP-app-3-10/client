@@ -121,6 +121,7 @@ export default function SearchScreen() {
       readTime: `${c.readingTime ?? 0}분 소요`,
       imageUrl: c.imgUrl || '',
       content: '',
+      hits: c.hits ?? 0,
     }));
   }, [data]);
 
