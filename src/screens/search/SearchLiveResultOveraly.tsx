@@ -60,6 +60,7 @@ export default function SearchLiveResultOverlay({
       readTime: `${c.readingTime ?? 0}분 소요`,
       imageUrl: c.imgUrl || '',
       content: '',
+      hits: (c as any).hits ?? (c as any).hits ?? 0,
     }));
   }, [data]);
 
