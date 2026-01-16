@@ -8,6 +8,7 @@ import MyPageStackNavigator from './MyPageStackNavigator';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { CharacterIcon, HomeIcon, Search_tab_Icon, MyPageIcon } from '../icons';
 import { COLORS } from '../styles/global';
+import { logEvent } from '../services/analyticsService';
 
 const Tab = createBottomTabNavigator();
 
@@ -40,12 +41,22 @@ const MainTabNavigator = () => {
         options={{
           tabBarIcon: createTabBarIcon(HomeIcon),
         }}
+        listeners={{
+          tabPress: () => {
+            logEvent('home_nav');
+          },
+        }}
       />
       <Tab.Screen
         name={RouteNames.CHARACTER_TAB}
         component={CharacterStackNavigator}
         options={{
           tabBarIcon: createTabBarIcon(CharacterIcon),
+        }}
+        listeners={{
+          tabPress: () => {
+            logEvent('character_nav');
+          },
         }}
       />
       <Tab.Screen
@@ -54,12 +65,22 @@ const MainTabNavigator = () => {
         options={{
           tabBarIcon: createTabBarIcon(Search_tab_Icon),
         }}
+        listeners={{
+          tabPress: () => {
+            logEvent('explore_nav');
+          },
+        }}
       />
       <Tab.Screen
         name={RouteNames.MY_PAGE_TAB}
         component={MyPageStackNavigator}
         options={{
           tabBarIcon: createTabBarIcon(MyPageIcon),
+        }}
+        listeners={{
+          tabPress: () => {
+            logEvent('my_nav');
+          },
         }}
       />
     </Tab.Navigator>

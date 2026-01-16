@@ -37,6 +37,7 @@ import { useTrackingPermission } from '../../hooks/useTrackingPermission';
 import Spacer from '../../components/Spacer';
 import { SocialLoginButton } from '../../components';
 import { LoginBackground } from '../../icons/commonIcons/simpleImages';
+import { logEvent, logScreenView } from '../../services/analyticsService';
 
 type NavigationProp = NativeStackNavigationProp<OnboardingStackParamList>;
 type LoginRouteProp = RouteProp<
@@ -67,8 +68,6 @@ const LoginScreen = () => {
     requestPermission: requestNotiPermission,
   } = useNotificationPermission({
     onSettingsOpened: () => {
-      // onSettingsOpened는 알림 권한 모달에서만 호출되므로
-      // 이미 handleNotificationModal에서 설정한 isExistingUser 정보를 사용
       waitingForSettingsRef.current.isWaiting = true;
       console.log(
         '[LoginScreen] ✅ 설정 화면으로 이동 - 기존 사용자 여부:',
@@ -195,6 +194,7 @@ const LoginScreen = () => {
         const shouldShowModal = await checkNotiPermission();
 
         if (shouldShowModal) {
+          logScreenView('Popup_App_Notification', undefined, true);
           showModal({
             title: '알림을 받으시겠어요?',
             description:
@@ -221,6 +221,7 @@ const LoginScreen = () => {
                   '[LoginScreen] 권한 허용 또는 취소 - proceedNext 호출',
                 );
                 await proceedNext();
+                logEvent('EnableNotifications_Popup_App_Notification');
               },
             },
             secondaryButton: {
@@ -230,6 +231,7 @@ const LoginScreen = () => {
               style: { borderColor: COLORS.gray300, height: scaleWidth(48) },
               onPress: async () => {
                 await proceedNext();
+                logEvent('Dismiss_Popup_App_Notification');
               },
             },
           });
@@ -337,26 +339,38 @@ const LoginScreen = () => {
         <View style={styles.buttonContainer}>
           <SocialLoginButton
             provider="KAKAO"
-            onPress={() => goTermsAgreement('KAKAO')}
+            onPress={() => {
+              goTermsAgreement('KAKAO');
+              logEvent('kakao_login_Onboarding_SocialLogin');
+            }}
             loading={loading}
             recentLogin={recentLogin}
           />
           <SocialLoginButton
             provider="GOOGLE"
-            onPress={() => goTermsAgreement('GOOGLE')}
+            onPress={() => {
+              goTermsAgreement('GOOGLE');
+              logEvent('Google_login_Onboarding_SocialLogin');
+            }}
             loading={loading}
             recentLogin={recentLogin}
           />
           <SocialLoginButton
             provider="NAVER"
-            onPress={() => goTermsAgreement('NAVER')}
+            onPress={() => {
+              goTermsAgreement('NAVER');
+              logEvent('NAVER_login_Onboarding_SocialLogin');
+            }}
             loading={loading}
             recentLogin={recentLogin}
           />
           {Platform.OS === 'ios' && (
             <SocialLoginButton
               provider="APPLE"
-              onPress={() => goTermsAgreement('APPLE')}
+              onPress={() => {
+                goTermsAgreement('APPLE');
+                logEvent('apple_login_Onboarding_SocialLogin');
+              }}
               loading={loading}
               recentLogin={recentLogin}
             />

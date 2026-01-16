@@ -6,7 +6,6 @@ import RootNavigator from './src/navigation/RootNavigator';
 import { queryClient } from './src/config/queryClient';
 import { useOnboardingStore } from './src/store/onboardingStore';
 import { Platform, StatusBar } from 'react-native';
-import { logAppOpen } from './src/services/analyticsService';
 
 const App = () => {
   const loadOnboardingStatus = useOnboardingStore(
@@ -53,8 +52,6 @@ const App = () => {
       try {
         await Promise.all([loadOnboardingStatus()]);
         setIsInitialized(true);
-        // 앱 시작 이벤트 로깅
-        await logAppOpen();
       } catch (error) {
         console.error('앱 초기화 중 오류:', error);
         // 에러가 나도 앱은 실행되도록 (최소한 로그인 화면은 보여줌)

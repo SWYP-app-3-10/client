@@ -18,7 +18,7 @@ import {
 } from '../api/missionApi';
 import { getUserInfo } from '../services/authService';
 import { usePointStore } from '../store/pointStore';
-import { logScreenView } from '../services/analyticsService';
+import { logEvent, logScreenView } from '../services/analyticsService';
 
 type ReturnTo = 'mission' | 'search';
 
@@ -102,6 +102,7 @@ export const useArticleNavigation = ({
               textStyle: Heading_16B,
               onPress: async () => {
                 // 중복 호출 방지
+
                 if (isProcessingRef.current) {
                   console.log(
                     '[useArticleNavigation] 포인트 구매 이미 처리 중, 중복 호출 방지',
@@ -120,6 +121,7 @@ export const useArticleNavigation = ({
                     closeButton: false,
                     closeOnBackdropPress: false,
                   });
+                  logEvent('ReadNewArticle_Popup_Reading');
                   return;
                 }
 
@@ -206,6 +208,7 @@ export const useArticleNavigation = ({
               title: '포인트 받고 글 읽기',
               textStyle: Heading_16B,
               onPress: () => {
+                logEvent('GetAndRead_Popup_Advertisement');
                 navigation.navigate(RouteNames.FULL_SCREEN_STACK, {
                   screen: RouteNames.AD_LOADING,
                   params: {

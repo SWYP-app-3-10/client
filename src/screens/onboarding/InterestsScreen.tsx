@@ -30,7 +30,7 @@ import Header from '../../components/Header';
 import { Interest, INTERESTS, InterestCategory } from '../../types/interests';
 import { updateUserInterests } from '../../api/userApi';
 import { getUserInfo } from '../../services/authService';
-import { logScreenView } from '../../services/analyticsService';
+import { logEvent, logScreenView } from '../../services/analyticsService';
 
 const FIRST_ROW_INTERESTS = INTERESTS.slice(0, 3);
 const SECOND_ROW_INTERESTS = INTERESTS.slice(3, 6);
@@ -75,7 +75,22 @@ const InterestTag: React.FC<InterestTagProps> = ({
         variant="ghost"
         textStyle={styles.tagText}
         style={[styles.tag, isSelected && styles.tagSelected]}
-        onPress={() => onPress(interest.id)}
+        onPress={() => {
+          onPress(interest.id);
+          if (interest.name === '정치') {
+            logEvent('InterestTag_Politics_Onboarding');
+          } else if (interest.name === '경제') {
+            logEvent('InterestTag_Economy_Onboarding');
+          } else if (interest.name === '사회') {
+            logEvent('InterestTag_Society_Onboarding');
+          } else if (interest.name.includes('생활')) {
+            logEvent('InterestTag_LifeCulture_Onboarding');
+          } else if (interest.name.includes('IT')) {
+            logEvent('InterestTag_It/Science_Onboarding');
+          } else if (interest.name === '세계') {
+            logEvent('InterestTag_World_Onboarding');
+          }
+        }}
       >
         <Text style={[styles.tagText, isSelected && styles.tagTextSelected]}>
           {interest.name}
@@ -123,8 +138,6 @@ const InterestsScreen = () => {
     }
   }, [savedInterests]);
 
-  // 관심사 선택 상태에 따라 애널리틱스 로그 기록
-  // editMode일 때는 EditInterest만 로그 기록
   useEffect(() => {
     if (editMode) {
       logScreenView('EditInterest', undefined, true);
@@ -202,7 +215,6 @@ const InterestsScreen = () => {
     const interestsArray = Array.from(selectedInterests.entries())
       .sort((a, b) => a[1] - b[1]) // 순서대로 정렬
       .map(([category]) => category); // InterestCategory만 추출
-
     // 서버 API 호출
     try {
       // userId 가져오기 (사용자 정보에서)
@@ -215,9 +227,7 @@ const InterestsScreen = () => {
         return; // 로컬 저장 중단
       }
 
-      console.log('[관심분야 업데이트] API 호출 시작');
       await updateUserInterests(userInfo.userId, interestsArray);
-      console.log('[관심분야 업데이트] API 호출 성공');
     } catch (error) {
       console.error('[관심분야 업데이트] 서버 업데이트 실패:', error);
       Alert.alert(
@@ -230,9 +240,11 @@ const InterestsScreen = () => {
     if (editMode) {
       // 편집 모드: 뒤로가기만
       navigation.goBack();
+      logEvent('Complete_EditInterest');
     } else {
       // 온보딩 모드: 다음 단계로
       await setOnboardingStep('difficulty');
+      logEvent('Next_Onboarding_Interest02');
       navigation.navigate(RouteNames.DIFFICULTY_SETTING);
     }
   }, [navigation, setOnboardingStep, editMode, selectedInterests]);

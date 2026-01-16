@@ -15,7 +15,7 @@ import RewardIcon from '../../../assets/svg/RewardIcon.svg';
 
 // 백엔드 연동 훅
 import { usePointHistory } from '../../../hooks/usePointHistory';
-import { logScreenView } from '../../../services/analyticsService';
+import { logEvent, logScreenView } from '../../../services/analyticsService';
 
 /**
  * PointHistoryScreen
@@ -155,7 +155,10 @@ const PointHistoryScreen = () => {
     return (
       <Pressable
         style={styles.rowPressable}
-        onPress={() => openSheet(item.transactionId)}
+        onPress={() => {
+          openSheet(item.transactionId);
+          logEvent('list_ConfirmEarnedHistory');
+        }}
       >
         <View style={styles.row}>
           {/* 1줄: 아이콘 + XP/P 합산  |  우측 날짜(대표 createdAt) */}

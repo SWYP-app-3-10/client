@@ -20,6 +20,7 @@ import {
 
 import type { NewsItems } from '../../data/mock/searchData';
 import { useArticleNavigation } from '../../hooks/useArticleNavigation';
+import { logEvent } from '../../services/analyticsService';
 
 type Props = NativeStackScreenProps<
   FullScreenStackParamList,
@@ -95,6 +96,7 @@ export default function SearchInputScreen({ navigation }: Props) {
   const removeSearchRecordFn = useCallback(async (name: string) => {
     try {
       const updated = await removeRecent(name);
+      logEvent('ClearRecentSearches_Search');
       setSearchRecord(convertToSearchRecords(updated));
     } catch (error) {
       console.error('검색어 삭제 실패:', error);

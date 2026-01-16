@@ -17,6 +17,7 @@ import {
 import Header from '../../components/Header';
 import { CheckIcon } from '../../icons';
 import RightArrow from '../../assets/svg/RightArrow.svg';
+import { logEvent } from '../../services/analyticsService';
 
 type NavigationProp = NativeStackNavigationProp<OnboardingStackParamList>;
 type RouteP = RouteProp<
@@ -50,6 +51,7 @@ const TermsAgreementScreen = () => {
 
   // "모두 동의하기" 토글
   const toggleAll = () => {
+    logEvent('AgreeAll_AgreeToTerms');
     const next = !(age14 && tos && privacy);
     setAge14(next);
     setTos(next);

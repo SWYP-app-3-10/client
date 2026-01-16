@@ -10,6 +10,7 @@ import Header from '../../../components/Header';
 // 공통 디자인 시스템
 import { COLORS, BORDER_RADIUS, scaleWidth } from '../../../styles/global';
 import { Body_16SB, Heading_16B } from '../../../styles/typography';
+import { logEvent } from '../../../services/analyticsService';
 
 /** 상단 세그먼트 탭 키 */
 type TabKey = 'LEVEL' | 'POINT';
@@ -35,7 +36,10 @@ const CriteriaCheckScreen = () => {
       <View style={styles.segmentWrap}>
         {/* 레벨 탭 */}
         <Pressable
-          onPress={() => setTab('LEVEL')}
+          onPress={() => {
+            setTab('LEVEL');
+            logEvent('Level_ConfirmLevelStandard');
+          }}
           style={[
             styles.segmentBtn,
             tab === 'LEVEL' && styles.segmentBtnActive,
@@ -53,7 +57,10 @@ const CriteriaCheckScreen = () => {
 
         {/* 경험치 / 포인트 탭 */}
         <Pressable
-          onPress={() => setTab('POINT')}
+          onPress={() => {
+            setTab('POINT');
+            logEvent('Xp/p_ConfirmLevelStandard');
+          }}
           style={[
             styles.segmentBtn,
             tab === 'POINT' && styles.segmentBtnActive,

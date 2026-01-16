@@ -30,7 +30,7 @@ import { createQuizCompleteNavigation } from '../../utils/quizNavigation';
 import { fetchQuiz, QuizResponse, submitQuiz } from '../../api/missionApi';
 import { getUserInfo } from '../../services/authService';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { logScreenView } from '../../services/analyticsService';
+import { logEvent, logScreenView } from '../../services/analyticsService';
 
 type QuizState = 'question' | 'feedback';
 
@@ -138,10 +138,7 @@ const QuizScreen: React.FC = () => {
         selectedNo: selectedChoice.choiceNo,
         readContentId: articleId,
       };
-      console.log('[퀴즈 제출 API] 요청:', {
-        userId: userInfo.userId,
-        request: submitRequest,
-      });
+      logEvent('Next_Quiz');
 
       const response = await submitQuiz(userInfo.userId, submitRequest);
       console.log('[퀴즈 제출 API] 응답:', JSON.stringify(response, null, 2));
@@ -215,6 +212,7 @@ const QuizScreen: React.FC = () => {
       navigation.dispatch(createQuizCompleteNavigation(returnTo));
       return;
     }
+    logEvent('Complete_Quiz_Answer');
 
     // 난이도 선택 모달 표시
     showModal({
@@ -239,7 +237,7 @@ const QuizScreen: React.FC = () => {
             setTimeout(() => {
               hideModal();
               navigation.dispatch(createQuizCompleteNavigation(returnTo));
-            }, 2000);
+            }, 200);
           }}
         />
       ),

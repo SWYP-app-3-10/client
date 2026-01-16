@@ -25,7 +25,7 @@ import Header from '../../components/Header';
 import { getUserInfo } from '../../services/authService';
 import { updateUserLevel } from '../../api/userApi';
 import { useDifficultyInfo } from '../../hooks/useDifficultyInfo';
-import { logScreenView } from '../../services/analyticsService';
+import { logEvent, logScreenView } from '../../services/analyticsService';
 
 const DifficultySettingScreen = () => {
   const savedDifficulty = useOnboardingStore(state => state.difficulty);
@@ -42,6 +42,13 @@ const DifficultySettingScreen = () => {
     (difficulty: LevelCategory) => {
       setSelectedDifficulty(difficulty);
       setDifficulty(difficulty);
+      if (difficulty === LevelCategory.BEGINNER) {
+        logEvent('Btn_Easy_Onboarding');
+      } else if (difficulty === LevelCategory.INTERMEDIATE) {
+        logEvent('Btn_Medium_Onboarding');
+      } else if (difficulty === LevelCategory.ADVANCED) {
+        logEvent('Btn_Hard_Onboarding');
+      }
     },
     [setDifficulty],
   );
@@ -52,12 +59,12 @@ const DifficultySettingScreen = () => {
         : selectedDifficulty === LevelCategory.INTERMEDIATE
         ? 'Onboarding_Difficulty_Medium'
         : 'Onboarding_Difficulty_Hard';
-    logScreenView(screenName);
+    logScreenView(screenName, undefined, true);
   }, [selectedDifficulty]);
 
   const handleNext = async () => {
     // 온보딩 완료 처리 및 메인 화면으로 이동
-
+    logEvent('Next_Onboarding_Difficulty_Medium');
     const userInfo = await getUserInfo();
     if (!userInfo || !userInfo.userId) {
       Alert.alert(

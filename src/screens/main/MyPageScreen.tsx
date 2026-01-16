@@ -59,7 +59,7 @@ import {
   convertToYYYYMMDD,
   convertMyPageContentsToReadArticles,
 } from '../../utils/myPageUtils';
-import { logScreenView } from '../../services/analyticsService';
+import { logEvent, logScreenView } from '../../services/analyticsService';
 
 // MyPageStack + RootStack 합친 네비게이션 타입
 type MyPageNavigationProp = CompositeNavigationProp<
@@ -159,6 +159,7 @@ const MyPageScreen = () => {
               navigation.getParent()?.navigate(RouteNames.FULL_SCREEN_STACK, {
                 screen: RouteNames.SETTINGS,
               });
+              logEvent('Setting_My');
             }}
           >
             <SettingIcon />
@@ -188,6 +189,7 @@ const MyPageScreen = () => {
                   screen: RouteNames.INTERESTS,
                   params: { editMode: true },
                 });
+                logEvent('EditInterest_My');
               }}
             >
               <Text style={styles.editButton}>편집</Text>
@@ -225,6 +227,7 @@ const MyPageScreen = () => {
                 }),
                 paddingHorizontal: 0,
               });
+              logEvent('EditLevel_My');
             }}
           >
             <Text style={styles.levelText}>

@@ -42,6 +42,7 @@ import { getUserInfo } from '../../services/authService';
 import ArticleContent from '../../components/ArticleContent';
 import { Modal_IMG } from '../../icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { logEvent } from '../../services/analyticsService';
 
 type NavigationProp = NativeStackNavigationProp<FullScreenStackParamList>;
 
@@ -411,6 +412,7 @@ const ArticleDetailScreen = () => {
       <Button
         title="퀴즈 풀기"
         onPress={() => {
+          logEvent('StartQuiz_Reading');
           // @ts-ignore
           const returnTo = route.params?.returnTo || 'mission';
           navigation.navigate(RouteNames.QUIZ, {

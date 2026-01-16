@@ -15,6 +15,7 @@ import {
   Heading_24EB_Round,
 } from '../../styles/typography';
 import { Intro_Search } from '../../icons/commonIcons/simpleImages';
+import { logEvent } from '../../services/analyticsService';
 type NavigationProp = NativeStackNavigationProp<OnboardingStackParamList>;
 
 const IntroSearch = () => {
@@ -56,7 +57,10 @@ const IntroSearch = () => {
           backgroundColor: COLORS.puple.main,
           marginHorizontal: scaleWidth(20),
         }}
-        onPress={() => navigation.navigate(RouteNames.SOCIAL_LOGIN)}
+        onPress={() => {
+          navigation.navigate(RouteNames.SOCIAL_LOGIN);
+          logEvent('Next_Onboarding_Function03_Explore');
+        }}
       >
         <Text style={[Heading_18EB_Round, { color: COLORS.white }]}>다음</Text>
       </TouchableOpacity>
