@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { QueryClientProvider } from '@tanstack/react-query';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { initializeApp, getApps, getApp } from '@react-native-firebase/app';
@@ -11,6 +11,7 @@ const App = () => {
   const loadOnboardingStatus = useOnboardingStore(
     state => state.loadOnboardingStatus,
   );
+  const [isInitialized, setIsInitialized] = useState(false);
 
   // 전역 StatusBar 기본값
   useEffect(() => {
@@ -50,13 +51,21 @@ const App = () => {
     const initializeAppData = async () => {
       try {
         await Promise.all([loadOnboardingStatus()]);
+        setIsInitialized(true);
       } catch (error) {
         console.error('앱 초기화 중 오류:', error);
+        // 에러가 나도 앱은 실행되도록 (최소한 로그인 화면은 보여줌)
+        setIsInitialized(true);
       }
     };
 
     initializeAppData();
   }, [loadOnboardingStatus]);
+
+  // 초기화가 완료될 때까지 렌더링 지연
+  if (!isInitialized) {
+    return null;
+  }
 
   return (
     <SafeAreaProvider>

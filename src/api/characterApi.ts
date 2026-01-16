@@ -147,30 +147,15 @@ export const fetchCharacterLevel =
         `/api/characters/standards/level?userId=${userInfo.userId}`,
       );
 
-      // API 응답 구조 확인 및 로깅
-      if (__DEV__) {
-        console.log(
-          '[캐릭터 레벨 API] 응답:',
-          JSON.stringify(response.data, null, 2),
-        );
-      }
-
       // data 래퍼가 있는 경우 처리
       const responseData = response.data?.data || response.data;
 
       if (!responseData) {
-        console.error(
-          '[캐릭터 레벨 API] 응답 데이터가 없습니다:',
-          response.data,
-        );
         throw new Error('응답 데이터가 없습니다');
       }
 
       return responseData as CharacterLevelResponse;
     } catch (error) {
-      if (__DEV__) {
-        console.error('[캐릭터 레벨 API] 에러:', error);
-      }
       throw error;
     }
   };
@@ -183,31 +168,12 @@ export const fetchCharacterData = async (): Promise<CharacterData> => {
   try {
     const levelResponse = await fetchCharacterLevel();
 
-    // 응답 데이터 검증
-    if (!levelResponse) {
-      console.error('[캐릭터 정보 조회] levelResponse가 없습니다');
-      throw new Error('레벨 정보가 없습니다');
-    }
-
     if (!levelResponse.characterLevel) {
-      console.error(
-        '[캐릭터 정보 조회] characterLevel이 없습니다. 응답:',
-        JSON.stringify(levelResponse, null, 2),
-      );
       throw new Error('레벨 정보가 없습니다');
     }
 
     const currentLevel = parseLevelNumber(levelResponse.characterLevel);
     const currentExp = levelResponse.currentUserExp ?? 0;
-
-    // currentUserExp를 기준으로 포함하는 레벨 찾기
-    if (__DEV__) {
-      console.log(
-        '[캐릭터 정보 조회] levelStandard:',
-        levelResponse.levelStandard,
-      );
-      console.log('[캐릭터 정보 조회] currentUserExp:', currentExp);
-    }
 
     // levelStandard 배열을 역순으로 순회하여 currentUserExp를 포함하는 레벨 찾기
     const levelStandardArray = levelResponse.levelStandard || [];
@@ -235,21 +201,8 @@ export const fetchCharacterData = async (): Promise<CharacterData> => {
         ? levelStandardArray[currentLevelIndex + 1]
         : null;
 
-    if (__DEV__) {
-      console.log(
-        '[캐릭터 정보 조회] currentLevelStandard:',
-        currentLevelStandard,
-      );
-      console.log('[캐릭터 정보 조회] currentLevelIndex:', currentLevelIndex);
-      console.log('[캐릭터 정보 조회] nextLevelStandard:', nextLevelStandard);
-    }
-
     const nextLevelExp =
       nextLevelStandard?.exp ?? currentLevelStandard?.exp ?? 100;
-
-    if (__DEV__) {
-      console.log('[캐릭터 정보 조회] nextLevelExp:', nextLevelExp);
-    }
 
     return {
       currentLevel,
@@ -258,10 +211,7 @@ export const fetchCharacterData = async (): Promise<CharacterData> => {
       levelStandard: levelResponse.levelStandard,
     };
   } catch (error) {
-    if (__DEV__) {
-      console.error('[캐릭터 정보 조회] 에러:', error);
-    }
-    // 에러 발생 시 기본값 반환
+    console.error('[캐릭터 정보 조회] 에러:', error);
     const { experience } = useExperienceStore.getState();
     return {
       currentLevel: 1,
@@ -269,19 +219,6 @@ export const fetchCharacterData = async (): Promise<CharacterData> => {
       nextLevelExp: 100,
     };
   }
-};
-
-/**
- * 주간 출석 기록 조회
- * @returns Promise<AttendanceData[]>
- */
-export const fetchAttendanceData = async (): Promise<AttendanceData[]> => {
-  try {
-    // 서버 API 호출
-    // const response = await client.get<AttendanceData[]>('/user/attendance');
-    // return response.data;
-  } catch (error) {}
-  return [];
 };
 
 /**
@@ -296,9 +233,7 @@ export const fetchCharacterReward =
       );
       return response.data;
     } catch (error) {
-      if (__DEV__) {
-        console.error('[캐릭터 리워드 API] 에러:', error);
-      }
+      console.error('[캐릭터 리워드 API] 에러:', error);
       throw error;
     }
   };
@@ -319,9 +254,7 @@ export const fetchCharacterMe = async (): Promise<CharacterMeResponse> => {
     );
     return response.data;
   } catch (error) {
-    if (__DEV__) {
-      console.error('[캐릭터 통합 정보 API] 에러:', error);
-    }
+    console.error('[캐릭터 통합 정보 API] 에러:', error);
     throw error;
   }
 };

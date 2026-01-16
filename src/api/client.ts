@@ -41,9 +41,28 @@ client.interceptors.request.use(
         config.headers.Authorization = `Bearer ${token}`;
       }
     }
+
+    // 개발 모드에서 요청 로깅
+    if (__DEV__) {
+      const fullUrl = `${config.baseURL}${config.url}`;
+      console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+      console.log(`[API 요청] ${config.method?.toUpperCase()} ${fullUrl}`);
+      if (config.params) {
+        console.log('[요청 파라미터]:', config.params);
+      }
+      if (config.data) {
+        console.log('[요청 데이터]:', JSON.stringify(config.data, null, 2));
+      }
+      console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+    }
+
     return config;
   },
   error => {
+    // 개발 모드에서 요청 에러 로깅
+    if (__DEV__) {
+      console.error('[API 요청 에러]:', error);
+    }
     return Promise.reject(error);
   },
 );
@@ -51,6 +70,16 @@ client.interceptors.request.use(
 // 4. 응답 인터셉터 (Response Interceptor)
 client.interceptors.response.use(
   response => {
+    // 개발 모드에서 응답 로깅
+    if (__DEV__) {
+      const fullUrl = `${response.config.baseURL}${response.config.url}`;
+      console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+      console.log(
+        `[API 응답] ${response.config.method?.toUpperCase()} ${fullUrl}`,
+      );
+      console.log('[응답 데이터]:', JSON.stringify(response.data, null, 2));
+      console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+    }
     return response;
   },
   async (error: AxiosError) => {
@@ -60,34 +89,15 @@ client.interceptors.response.use(
         })
       | undefined;
 
-    // 401 에러 발생 시 바로 로그인 화면으로 이동
-    if (error.response?.status === 401 && originalRequest) {
-      // 토큰 재발급 API 자체가 401을 반환하면 무한 루프 방지
-
-      // 401 에러 발생 시 토큰 삭제 및 온보딩 상태 초기화
-      await AsyncStorage.multiRemove([
-        '@auth_token',
-        '@refresh_token',
-        '@user_info',
-      ]);
-      // 온보딩 상태 초기화 (로그인 화면으로 이동하기 위해)
-      await AsyncStorage.setItem('@onboarding_completed', 'false');
-      await AsyncStorage.setItem('@onboarding_step', 'login');
-      // Zustand store도 업데이트하여 RootNavigator가 감지하도록 함
-      useOnboardingStore.getState().resetOnboarding();
-
-      return Promise.reject(error);
-    }
-
-    // 403 에러 발생 시 토큰 재발급 시도
+    // 401/403 에러 발생 시 토큰 재발급 시도
     if (
-      error.response?.status === 403 &&
+      (error.response?.status === 401 || error.response?.status === 403) &&
       originalRequest &&
       !originalRequest._retry
     ) {
-      // 토큰 재발급 API 자체가 403을 반환하면 무한 루프 방지
+      // 토큰 재발급 API 자체가 401/403을 반환하면 무한 루프 방지
       if (originalRequest.url?.includes('/api/auth/refresh')) {
-        // 403 에러 발생 시 토큰 삭제 및 온보딩 상태 초기화
+        // 재발급 API 자체가 실패하면 토큰 삭제 및 온보딩 상태 초기화
         await AsyncStorage.multiRemove([
           '@auth_token',
           '@refresh_token',
@@ -114,6 +124,15 @@ client.interceptors.response.use(
         const refreshTokenValue = await getRefreshToken();
         if (!refreshTokenValue) {
           isRefreshing = false;
+          // 리프레시 토큰이 없으면 로그아웃 처리
+          await AsyncStorage.multiRemove([
+            '@auth_token',
+            '@refresh_token',
+            '@user_info',
+          ]);
+          await AsyncStorage.setItem('@onboarding_completed', 'false');
+          await AsyncStorage.setItem('@onboarding_step', 'login');
+          useOnboardingStore.getState().resetOnboarding();
           return Promise.reject(error);
         }
 
@@ -134,13 +153,21 @@ client.interceptors.response.use(
         if (newRefreshToken) {
           await saveRefreshToken(newRefreshToken);
         }
+
+        // 재발급 성공 시 원래 요청 재시도
+        isRefreshing = false;
+        if (originalRequest.headers) {
+          originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
+        }
+        return client(originalRequest);
       } catch (refreshError: any) {
         isRefreshing = false;
 
-        // 401/403 에러 발생 시 토큰 삭제 및 온보딩 상태 초기화
+        // 재발급 실패 시 토큰 삭제 및 온보딩 상태 초기화
         if (
           refreshError.response?.status === 401 ||
-          refreshError.response?.status === 403
+          refreshError.response?.status === 403 ||
+          !refreshError.response // 네트워크 에러 등
         ) {
           await AsyncStorage.multiRemove([
             '@auth_token',
@@ -160,6 +187,34 @@ client.interceptors.response.use(
 
         return Promise.reject(error);
       }
+    }
+
+    // 개발 모드에서 에러 응답 로깅
+    if (__DEV__) {
+      const fullUrl = originalRequest
+        ? `${originalRequest.baseURL}${originalRequest.url}`
+        : '알 수 없음';
+      console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+      console.error(
+        `[API 에러 응답] ${
+          originalRequest?.method?.toUpperCase() || 'UNKNOWN'
+        } ${fullUrl}`,
+      );
+      console.error(
+        '[에러 상태]:',
+        error.response?.status,
+        error.response?.statusText,
+      );
+      if (error.response?.data) {
+        console.error(
+          '[에러 데이터]:',
+          JSON.stringify(error.response.data, null, 2),
+        );
+      }
+      if (error.message) {
+        console.error('[에러 메시지]:', error.message);
+      }
+      console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
     }
 
     return Promise.reject(error);

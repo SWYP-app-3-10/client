@@ -33,9 +33,10 @@ export const TimelineGroup: React.FC<TimelineGroupProps> = ({
   const [contentHeight, setContentHeight] = useState(0);
   const [showAll, setShowAll] = useState(false);
 
-  const dashCount = Math.ceil(
-    (contentHeight - scaleWidth(10) - scaleWidth(6) + scaleWidth(6)) /
-      (scaleWidth(2.5) + scaleWidth(2.5)),
+  // 점선 높이 계산
+  const dashedLineHeight = Math.max(0, contentHeight - scaleWidth(16));
+  const dashCount = Math.floor(
+    (dashedLineHeight - scaleWidth(2.5)) / (scaleWidth(2.5) + scaleWidth(2.5)),
   );
 
   const displayedArticles = showAll
@@ -51,90 +52,97 @@ export const TimelineGroup: React.FC<TimelineGroupProps> = ({
           {/* 상단 원형 마커 */}
           <View style={styles.timelineDot} />
           {/* 점선 - 게시글 길이에 맞춰 동적으로 생성 */}
-          <View style={styles.timelineDashedLineContainer}>
-            {Array.from({ length: Math.max(dashCount, 50) }).map((_, index) => (
-              <View key={index} style={styles.timelineDash} />
-            ))}
-          </View>
+          {contentHeight > 0 && (
+            <View
+              style={[
+                styles.timelineDashedLineContainer,
+                { height: dashedLineHeight },
+              ]}
+            >
+              {Array.from({ length: Math.max(dashCount, 0) }).map(
+                (_, index) => (
+                  <View key={index} style={styles.timelineDash} />
+                ),
+              )}
+            </View>
+          )}
         </View>
 
         {/* 오른쪽 컨텐츠 */}
-        <View
-          style={styles.timelineContent}
-          onLayout={event => {
-            const { height } = event.nativeEvent.layout;
-            if (dateGroup.articles.length > 5) {
-              setContentHeight(height - scaleWidth(56));
-            } else {
+        <View style={styles.timelineContent} key={`content-${showAll}`}>
+          {/* 날짜 헤더와 카드들을 감싸는 컨테이너 - 높이 측정용 */}
+          <View
+            onLayout={event => {
+              const { height } = event.nativeEvent.layout;
               setContentHeight(height);
-            }
-          }}
-        >
-          {/* 날짜 헤더 */}
-          <View style={styles.timelineHeader}>
-            <Text style={styles.timelineDate}>
-              {formatDate(dateGroup.date, dateGroup.dayOfWeek)}
-            </Text>
-            <Text style={styles.timelineCount}>{dateGroup.count}개</Text>
-          </View>
+            }}
+          >
+            {/* 날짜 헤더 */}
+            <View style={styles.timelineHeader}>
+              <Text style={styles.timelineDate}>
+                {formatDate(dateGroup.date, dateGroup.dayOfWeek)}
+              </Text>
+              <Text style={styles.timelineCount}>{dateGroup.count}개</Text>
+            </View>
 
-          {/* 글 카드들 */}
-          {displayedArticles.map((article, articleIndex) => (
-            <React.Fragment key={article.contentId}>
-              <TouchableOpacity
-                disabled={true}
-                style={[
-                  styles.articleCard,
-                  articleIndex === displayedArticles.length - 1 &&
-                    styles.articleCardLast,
-                ]}
-                onPress={() => onArticlePress(article.contentId)}
-              >
-                <View style={styles.articleContent}>
-                  <Text style={styles.articleTitle} numberOfLines={2}>
-                    {article.title}
-                  </Text>
+            {/* 글 카드들 */}
+            {displayedArticles.map((article, articleIndex) => (
+              <React.Fragment key={article.contentId}>
+                <TouchableOpacity
+                  disabled={true}
+                  style={[
+                    styles.articleCard,
+                    articleIndex === displayedArticles.length - 1 &&
+                      styles.articleCardLast,
+                  ]}
+                  onPress={() => onArticlePress(article.contentId)}
+                >
+                  <View style={styles.articleContent}>
+                    <Text style={styles.articleTitle} numberOfLines={2}>
+                      {article.title}
+                    </Text>
 
-                  <View style={styles.articleFooter}>
-                    <View style={styles.categoryTag}>
-                      <Text style={styles.categoryTagText}>
-                        {article.category}
-                      </Text>
-                    </View>
-
-                    {article.isQuizCorrect !== null && (
-                      <View
-                        style={[
-                          styles.quizBadge,
-                          article.isQuizCorrect
-                            ? styles.quizBadgeCorrect
-                            : styles.quizBadgeIncorrect,
-                        ]}
-                      >
-                        <Text
-                          style={[
-                            styles.quizBadgeText,
-                            article.isQuizCorrect
-                              ? styles.quizBadgeTextCorrect
-                              : styles.quizBadgeTextIncorrect,
-                          ]}
-                        >
-                          Q - {article.isQuizCorrect ? '정답' : '오답'}
+                    <View style={styles.articleFooter}>
+                      <View style={styles.categoryTag}>
+                        <Text style={styles.categoryTagText}>
+                          {article.category}
                         </Text>
                       </View>
-                    )}
+
+                      {article.isQuizCorrect !== null && (
+                        <View
+                          style={[
+                            styles.quizBadge,
+                            article.isQuizCorrect
+                              ? styles.quizBadgeCorrect
+                              : styles.quizBadgeIncorrect,
+                          ]}
+                        >
+                          <Text
+                            style={[
+                              styles.quizBadgeText,
+                              article.isQuizCorrect
+                                ? styles.quizBadgeTextCorrect
+                                : styles.quizBadgeTextIncorrect,
+                            ]}
+                          >
+                            Q - {article.isQuizCorrect ? '정답' : '오답'}
+                          </Text>
+                        </View>
+                      )}
+                    </View>
                   </View>
-                </View>
 
-                {false && <RightArrowIcon color={COLORS.gray700} />}
-              </TouchableOpacity>
-              {articleIndex !== displayedArticles.length - 1 && (
-                <Spacer num={16} />
-              )}
-            </React.Fragment>
-          ))}
+                  {false && <RightArrowIcon color={COLORS.gray700} />}
+                </TouchableOpacity>
+                {articleIndex !== displayedArticles.length - 1 && (
+                  <Spacer num={16} />
+                )}
+              </React.Fragment>
+            ))}
+          </View>
 
-          {/* 전체 보기 버튼 */}
+          {/* 전체 보기 버튼 (높이 측정에서 제외) */}
           {dateGroup.articles.length > 5 &&
             (!showAll ? (
               <>
@@ -184,10 +192,11 @@ const styles = StyleSheet.create({
     position: 'relative',
   },
   timelineDashedLineContainer: {
-    flex: 1,
     alignItems: 'center',
     position: 'absolute',
-    top: scaleWidth(6),
+    top: scaleWidth(16), // 도트 높이(10) + 여백(6)
+    width: scaleWidth(1),
+    overflow: 'hidden', // 높이를 넘어서는 점선 숨김
   },
   timelineDash: {
     width: scaleWidth(1),

@@ -2,7 +2,7 @@ import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { COLORS, scaleWidth, BORDER_RADIUS } from '../styles/global';
 import { Body_16M } from '../styles/typography';
-import { CircleIcon, CloseIcon } from '../icons/commonIcons/commonIcons';
+import { CircleIcon, XIcon } from '../icons/commonIcons/commonIcons';
 interface QuizOption {
   id: number;
   text: string;
@@ -31,7 +31,7 @@ const QuizOptionCard: React.FC<QuizOptionCardProps> = ({
         </View>
       ) : (
         <View style={styles.incorrectIconContainer}>
-          <CloseIcon color={COLORS.white} />
+          <XIcon color={COLORS.white} />
         </View>
       )}
     </View>

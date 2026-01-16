@@ -22,6 +22,7 @@ import ToastModal from '../components/ToastModal';
 
 import { useExperienceStore } from '../store/experienceStore';
 import { characterKeys } from '../hooks/useCharacter';
+import { missionKeys } from '../hooks/useMissions';
 import { LevelUpModalContent } from '../components/ArticlePointModalContent';
 import { useQueryClient } from '@tanstack/react-query';
 import { Heading_24EB_Round } from '../styles/typography';
@@ -76,6 +77,8 @@ const RootNavigatorContent: React.FC<{
             routes: [{ name: RouteNames.MAIN_TAB }],
           }),
         );
+        // 온보딩 완료 후 미션 쿼리 무효화하여 자동으로 refetch되도록 함
+        queryClient.invalidateQueries({ queryKey: missionKeys.lists() });
       } else if (!isOnboardingCompleted && prevOnboardingCompletedRef.current) {
         // 온보딩 미완료로 변경됨 (401 에러 등) → 로그인 화면으로 이동
         navigationRef.current.dispatch(
@@ -91,7 +94,7 @@ const RootNavigatorContent: React.FC<{
     }
 
     prevOnboardingCompletedRef.current = isOnboardingCompleted;
-  }, [isOnboardingCompleted, navigationRef, isReady]);
+  }, [isOnboardingCompleted, navigationRef, isReady, queryClient]);
 
   // 경험치 변경 시 characterData refetch
   useEffect(() => {
