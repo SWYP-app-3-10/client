@@ -30,7 +30,7 @@ import { useArticleNavigation } from '../../hooks/useArticleNavigation';
 
 // 공통 스타일 토큰
 import { BORDER_RADIUS, COLORS, scaleWidth } from '../../styles/global';
-import { Caption_12M } from '../../styles/typography';
+import { Caption_12M, Caption_14R } from '../../styles/typography';
 
 // SVG 아이콘
 import InfoIcon from '../../assets/svg/Info_Search.svg';
@@ -481,14 +481,14 @@ const styles = StyleSheet.create({
   tooltipBody: {
     backgroundColor: TOOLTIP_BG,
     borderRadius: BORDER_RADIUS[12],
-    paddingHorizontal: scaleWidth(14),
-    paddingVertical: scaleWidth(10),
+    paddingHorizontal: scaleWidth(18),
+    paddingVertical: scaleWidth(12),
     alignItems: 'center',
     justifyContent: 'center',
     marginTop: -2,
   },
   tooltipText: {
-    ...Caption_12M,
+    ...Caption_14R,
     color: COLORS.white,
     textAlign: 'center',
   },
