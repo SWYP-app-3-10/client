@@ -1,5 +1,5 @@
 // PointCriteriaScreen.tsx
-import React, { memo } from 'react';
+import React, { memo, useEffect } from 'react';
 import { ScrollView, View, Text, StyleSheet, Image } from 'react-native';
 
 // 공통 컴포넌트
@@ -17,6 +17,7 @@ import {
 
 import XpIcon from '../../../../assets/png/coin_xp.png';
 import PtIcon from '../../../../assets/png/coin_p.png';
+import { logScreenView } from '../../../../services/analyticsService';
 
 /**
  * 경험치/포인트 획득 기준 목록
@@ -108,6 +109,9 @@ const InfoItem = memo(
 InfoItem.displayName = 'InfoItem';
 
 const PointCriteriaScreen = () => {
+  useEffect(() => {
+    logScreenView('ConfirmStandard_Xp/P', undefined, true);
+  }, []);
   return (
     <ScrollView
       style={styles.scroll} // 스크롤 컨테이너

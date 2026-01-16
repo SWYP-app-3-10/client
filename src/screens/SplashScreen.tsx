@@ -1,9 +1,16 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { View, StyleSheet, Image } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { COLORS } from '../styles/global';
+import { logScreenView } from '../services/analyticsService';
+import { RouteNames } from '../../routes';
 
 const SplashScreen = () => {
+  useEffect(() => {
+    // 스플래시 화면 조회 로그
+    logScreenView(RouteNames.SPLASH);
+  }, []);
+
   return (
     <SafeAreaView style={styles.container} edges={[]}>
       <View style={styles.content}>

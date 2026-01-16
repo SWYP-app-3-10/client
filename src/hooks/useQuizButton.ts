@@ -3,6 +3,7 @@
  */
 
 import { useMemo, useCallback } from 'react';
+import { logScreenView } from '../services/analyticsService';
 
 interface UseQuizButtonOptions {
   showQuiz: boolean;
@@ -35,6 +36,8 @@ export const useQuizButton = ({
     if (showQuiz) {
       onScrollToTop();
     } else {
+      // '퀴즈 보기' 버튼을 눌렀을 때만 로그 기록
+      logScreenView('ReadingDetails_Quiz', undefined, true);
       onScrollToQuiz();
     }
   }, [showQuiz, onScrollToQuiz, onScrollToTop]);

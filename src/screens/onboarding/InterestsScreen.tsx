@@ -30,6 +30,7 @@ import Header from '../../components/Header';
 import { Interest, INTERESTS, InterestCategory } from '../../types/interests';
 import { updateUserInterests } from '../../api/userApi';
 import { getUserInfo } from '../../services/authService';
+import { logScreenView } from '../../services/analyticsService';
 
 const FIRST_ROW_INTERESTS = INTERESTS.slice(0, 3);
 const SECOND_ROW_INTERESTS = INTERESTS.slice(3, 6);
@@ -122,6 +123,20 @@ const InterestsScreen = () => {
     }
   }, [savedInterests]);
 
+  // 관심사 선택 상태에 따라 애널리틱스 로그 기록
+  // editMode일 때는 EditInterest만 로그 기록
+  useEffect(() => {
+    if (editMode) {
+      logScreenView('EditInterest', undefined, true);
+    } else {
+      // 온보딩 모드일 때만 선택 상태에 따른 로그 기록
+      const screenName =
+        selectedInterests.size > 0
+          ? 'Onboarding_Interest02'
+          : 'Onboarding_Interest01';
+      logScreenView(screenName, undefined, true);
+    }
+  }, [selectedInterests.size, editMode]);
   const toggleInterest = useCallback(
     (id: InterestCategory) => {
       // 먼저 현재 상태를 확인하여 3개 제한 체크

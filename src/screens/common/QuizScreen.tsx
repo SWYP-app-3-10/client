@@ -30,6 +30,7 @@ import { createQuizCompleteNavigation } from '../../utils/quizNavigation';
 import { fetchQuiz, QuizResponse, submitQuiz } from '../../api/missionApi';
 import { getUserInfo } from '../../services/authService';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { logScreenView } from '../../services/analyticsService';
 
 type QuizState = 'question' | 'feedback';
 
@@ -58,6 +59,14 @@ const QuizScreen: React.FC = () => {
   const navigation = useNavigation();
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const { submitDifficultyToServer } = useDifficultySubmit();
+
+  // quizState가 'feedback'으로 변경될 때만 로그 기록
+  // 'question' 상태는 RootNavigator에서 이미 '퀴즈'로 자동 로그가 기록됨
+  useEffect(() => {
+    if (quizState === 'feedback') {
+      logScreenView('Quiz_Answer', undefined, true);
+    }
+  }, [quizState]);
 
   // 퀴즈 데이터 로드
   useEffect(() => {

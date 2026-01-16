@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import { View, Text, StyleSheet, ScrollView, Alert } from 'react-native';
 import {
   SafeAreaView,
@@ -25,6 +25,7 @@ import Header from '../../components/Header';
 import { getUserInfo } from '../../services/authService';
 import { updateUserLevel } from '../../api/userApi';
 import { useDifficultyInfo } from '../../hooks/useDifficultyInfo';
+import { logScreenView } from '../../services/analyticsService';
 
 const DifficultySettingScreen = () => {
   const savedDifficulty = useOnboardingStore(state => state.difficulty);
@@ -44,6 +45,15 @@ const DifficultySettingScreen = () => {
     },
     [setDifficulty],
   );
+  useEffect(() => {
+    const screenName =
+      selectedDifficulty === LevelCategory.BEGINNER
+        ? 'Onboarding_Difficulty_Easy'
+        : selectedDifficulty === LevelCategory.INTERMEDIATE
+        ? 'Onboarding_Difficulty_Medium'
+        : 'Onboarding_Difficulty_Hard';
+    logScreenView(screenName);
+  }, [selectedDifficulty]);
 
   const handleNext = async () => {
     // 온보딩 완료 처리 및 메인 화면으로 이동

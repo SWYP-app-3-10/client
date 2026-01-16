@@ -1,5 +1,11 @@
 // LevelCriteriaScreen.tsx
-import React, { useCallback, useMemo, useRef, useState } from 'react';
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
 import {
   View,
   Text,
@@ -28,6 +34,7 @@ import {
   Caption_12SB,
   Body_16M,
 } from '../../../../styles/typography';
+import { logScreenView } from '../../../../services/analyticsService';
 
 // CharacterScreen과 동일한 데이터 소스 사용
 import { useCharacterMe } from '../../../../hooks/useCharacter';
@@ -253,7 +260,9 @@ const LevelCriteriaScreen = () => {
   const userGrowthInfo = characterMeResponse?.data?.userGrowthInfo;
 
   const currentXp = userGrowthInfo?.currentExp ?? 0;
-
+  useEffect(() => {
+    logScreenView('ConfirmStandard_Level', undefined, true);
+  }, []);
   const currentLevelId = useMemo(() => {
     const raw = userGrowthInfo?.levelEnum;
     if (!raw) return 1;

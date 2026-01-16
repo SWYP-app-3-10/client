@@ -59,6 +59,7 @@ import {
   convertToYYYYMMDD,
   convertMyPageContentsToReadArticles,
 } from '../../utils/myPageUtils';
+import { logScreenView } from '../../services/analyticsService';
 
 // MyPageStack + RootStack 합친 네비게이션 타입
 type MyPageNavigationProp = CompositeNavigationProp<
@@ -216,6 +217,7 @@ const MyPageScreen = () => {
           <TouchableOpacity
             style={styles.levelButton}
             onPress={() => {
+              logScreenView('EditLevelModal', undefined, true);
               showBottomSheetModal({
                 children: React.createElement(LevelSelectionContent, {
                   selectedLevel: currentDifficulty,

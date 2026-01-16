@@ -18,6 +18,7 @@ import {
 } from '../api/missionApi';
 import { getUserInfo } from '../services/authService';
 import { usePointStore } from '../store/pointStore';
+import { logScreenView } from '../services/analyticsService';
 
 type ReturnTo = 'mission' | 'search';
 
@@ -87,6 +88,9 @@ export const useArticleNavigation = ({
         // 포인트 확인
         if (currentPoints >= ARTICLE_READ_POINT_COST) {
           // 포인트가 충분한 경우 - 포인트 사용 모달
+          // 모달 표시 시 애널리틱스 로그
+          await logScreenView('Popup_Reading', undefined, true);
+
           showModal({
             title: '새로운 글을 읽으시겠어요?',
             description: `사용 가능한 포인트: ${currentPoints}p`,
@@ -189,6 +193,9 @@ export const useArticleNavigation = ({
           });
         } else {
           // 포인트가 부족한 경우 - 광고 시청 모달
+          // 모달 표시 시 애널리틱스 로그
+          await logScreenView('Popup_Advertisement', undefined, true);
+
           showModal({
             title: '광고를 보고 포인트 받으시겠어요?',
             description: `부족한 포인트: ${currentPoints}p`,

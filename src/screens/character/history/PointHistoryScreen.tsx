@@ -15,6 +15,7 @@ import RewardIcon from '../../../assets/svg/RewardIcon.svg';
 
 // 백엔드 연동 훅
 import { usePointHistory } from '../../../hooks/usePointHistory';
+import { logScreenView } from '../../../services/analyticsService';
 
 /**
  * PointHistoryScreen
@@ -223,8 +224,7 @@ const PointHistoryScreen = () => {
 
   /** 바텀시트 콘텐츠(선택된 트랜잭션의 상세 레코드 리스트) */
   const SheetContent = () => {
-    if (!selectedTxId) return null;
-
+    logScreenView('ConfirmEarnedHistoryModal', undefined, true);
     return (
       <View style={styles.sheetContainer}>
         <FlatList
