@@ -1,12 +1,8 @@
 import React, { useEffect, useRef, useCallback } from 'react';
 import { View, Text, StyleSheet, Modal, Animated } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import {
-  COLORS,
-  scaleWidth,
-  Caption_14R,
-  BORDER_RADIUS,
-} from '../styles/global';
+import { COLORS, scaleWidth, BORDER_RADIUS } from '../styles/global';
+import { Caption_14R } from '../styles/typography';
 
 export type ToastPosition = 'bottom' | 'center';
 

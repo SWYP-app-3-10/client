@@ -1,13 +1,8 @@
 import React, { useMemo, useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Image } from 'react-native';
 import type { NewsItems } from '../../../data/mock/searchData';
-import {
-  Body_16M,
-  BORDER_RADIUS,
-  Caption_14R,
-  COLORS,
-  scaleWidth,
-} from '../../../styles/global';
+import { BORDER_RADIUS, COLORS, scaleWidth } from '../../../styles/global';
+import { Body_16M, Caption_14R } from '../../../styles/typography';
 
 import ViewIcon from '../../../assets/svg/View.svg';
 import ClockIcon from '../../../assets/svg/clock.svg';

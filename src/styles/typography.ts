@@ -1,4 +1,4 @@
-import { StyleSheet, TextStyle, Platform } from 'react-native';
+import { StyleSheet, TextStyle } from 'react-native';
 import { scaleWidth } from './global';
 
 const getFontFamily = (weight: number): string => {
@@ -18,23 +18,10 @@ const getFontFamily = (weight: number): string => {
   }
 };
 
-const getFontWeight = (weight: number): TextStyle['fontWeight'] => {
-  // iOS에서 폰트 두께를 명시적으로 지정
-  if (Platform.OS === 'ios') {
-    if (weight === 800) {
-      return '800';
-    } else if (weight === 700) {
-      return '700';
-    } else if (weight === 600) {
-      return '600';
-    } else if (weight === 500) {
-      return '500';
-    } else {
-      return '400';
-    }
-  }
-  return undefined;
-};
+// 커스텀 폰트를 사용할 때는 fontWeight를 지정하지 않음
+// 커스텀 폰트 파일 자체가 이미 특정 굵기로 되어 있어서 fontWeight를 지정하면
+// iOS/Android 모두에서 시스템이 폰트를 찾지 못하거나 잘못된 폰트가 적용될 수 있음
+// 각 굵기별 폰트 파일(Pretendard-SemiBold, Pretendard-Bold 등)을 fontFamily로 직접 지정하는 것이 안전함
 
 const getLineHeight = (fontSize: number, lineHeightPercent: number): number => {
   return scaleWidth((fontSize * lineHeightPercent) / 100);
@@ -54,10 +41,8 @@ const createTextStyle = (
   letterSpacingPercent: number = 0,
 ): TextStyle => {
   const fontSize = scaleWidth(size);
-  const fontWeight = getFontWeight(weight);
   return {
     fontFamily: getFontFamily(weight),
-    ...(fontWeight && { fontWeight }),
     fontSize,
     lineHeight: getLineHeight(size, lineHeightPercent),
     letterSpacing: getLetterSpacing(size, letterSpacingPercent),

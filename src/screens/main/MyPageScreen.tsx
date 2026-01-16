@@ -9,15 +9,13 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { COLORS, scaleWidth, BORDER_RADIUS } from '../../styles/global';
 import {
-  COLORS,
-  scaleWidth,
-  BORDER_RADIUS,
   Heading_18EB_Round,
   Body_16M,
   Caption_14R,
   Heading_18SB,
-} from '../../styles/global';
+} from '../../styles/typography';
 
 import Spacer from '../../components/Spacer';
 import { TimelineGroup } from '../../components/TimelineGroup';

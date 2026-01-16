@@ -13,12 +13,8 @@ import { useNavigation } from '@react-navigation/native';
 import IconButton from '../../../components/IconButton';
 import { Ic_backIcon } from '../../../icons';
 import X_SearchInput from '../../../assets/svg/X_SearchInput.svg';
-import {
-  Body_16M,
-  BORDER_RADIUS,
-  COLORS,
-  scaleWidth,
-} from '../../../styles/global';
+import { BORDER_RADIUS, COLORS, scaleWidth } from '../../../styles/global';
+import { Body_16M } from '../../../styles/typography';
 
 type Props = {
   value: string;

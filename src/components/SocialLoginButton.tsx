@@ -140,7 +140,6 @@ const styles = StyleSheet.create({
   socialButtonText: {
     fontFamily: 'Roboto-Medium',
     fontSize: scaleWidth(16),
-    fontWeight: '500',
   },
   kakaoButtonText: {
     color: COLORS.black,

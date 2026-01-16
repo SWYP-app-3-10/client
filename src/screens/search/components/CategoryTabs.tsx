@@ -1,12 +1,8 @@
 import React from 'react';
 import { ScrollView, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import type { NewsCategory } from '../../../data/mock/searchData';
-import {
-  Body_16M,
-  BORDER_RADIUS,
-  COLORS,
-  scaleWidth,
-} from '../../../styles/global'; // 프로젝트 경로에 맞게 유지/조정
+import { BORDER_RADIUS, COLORS, scaleWidth } from '../../../styles/global'; // 프로젝트 경로에 맞게 유지/조정
+import { Body_16M } from '../../../styles/typography';
 
 type Props = {
   /** 전체 카테고리 목록 */

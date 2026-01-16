@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState, useRef, useCallback } from 'react';
 import {
   View,
   Text,
@@ -9,29 +9,19 @@ import {
   AppState,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import {
-  useNavigation,
-  useRoute,
-  RouteProp,
-  CommonActions,
-} from '@react-navigation/native';
+import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+
 import { RouteNames } from '../../../routes';
-import {
-  Body_16SB,
-  COLORS,
-  Heading_16B,
-  scaleWidth,
-} from '../../styles/global';
+import { OnboardingStackParamList } from '../../navigation/types';
+import { COLORS, scaleWidth } from '../../styles/global';
+import { Body_16SB, Heading_16B } from '../../styles/typography';
 import {
   signInWithSocial,
   initializeGoogleSignIn,
   initializeNaverLogin,
   SocialLoginProvider,
 } from '../../services/socialLoginService';
-import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { OnboardingStackParamList } from '../../navigation/types';
-import Spacer from '../../components/Spacer';
-import { SocialLoginButton } from '../../components';
 import {
   getRecentLogin,
   RecentLoginInfo,
@@ -42,6 +32,10 @@ import {
   useCompleteOnboarding,
 } from '../../store/onboardingStore';
 import { useNotificationPermission } from '../../hooks/useNotificationPermission';
+import { useTrackingPermission } from '../../hooks/useTrackingPermission';
+
+import Spacer from '../../components/Spacer';
+import { SocialLoginButton } from '../../components';
 import { LoginBackground } from '../../icons/commonIcons/simpleImages';
 
 type NavigationProp = NativeStackNavigationProp<OnboardingStackParamList>;
@@ -56,37 +50,77 @@ const LoginScreen = () => {
 
   const [loading, setLoading] = useState<SocialLoginProvider | null>(null);
   const [recentLogin, setRecentLogin] = useState<RecentLoginInfo | null>(null);
+  const trackingModalShownRef = useRef<boolean>(false); // 중복 호출 방지
   const showModal = useShowModal();
   const setOnboardingStep = useOnboardingStore(
     state => state.setOnboardingStep,
   );
   const completeOnboarding = useCompleteOnboarding();
-  const waitingForSettingsRef = useRef(false);
-  const { checkPermission, requestPermission } = useNotificationPermission({
+  const waitingForSettingsRef = useRef<{
+    isWaiting: boolean;
+    isExistingUser?: boolean;
+  }>({ isWaiting: false });
+
+  // Hooks
+  const {
+    checkPermission: checkNotiPermission,
+    requestPermission: requestNotiPermission,
+  } = useNotificationPermission({
     onSettingsOpened: () => {
-      waitingForSettingsRef.current = true;
+      // onSettingsOpened는 알림 권한 모달에서만 호출되므로
+      // 이미 handleNotificationModal에서 설정한 isExistingUser 정보를 사용
+      waitingForSettingsRef.current.isWaiting = true;
+      console.log(
+        '[LoginScreen] ✅ 설정 화면으로 이동 - 기존 사용자 여부:',
+        waitingForSettingsRef.current.isExistingUser,
+      );
+    },
+    onCancel: () => {
+      // Alert 모달의 "취소" 버튼을 누른 경우
+      console.log('[LoginScreen] 알림 권한 Alert 취소');
+      waitingForSettingsRef.current.isWaiting = false;
     },
   });
 
-  // 설정에서 돌아왔을 때 관심분야 화면으로 이동 (권한 설정 여부와 관계없이)
+  const {
+    checkPermission: checkTrackingPermission,
+    requestPermission: requestTrackingPermission,
+  } = useTrackingPermission();
+
+  // 1. 설정 화면에서 돌아왔을 때 처리 (알림 권한 관련)
   useEffect(() => {
     const subscription = AppState.addEventListener(
       'change',
       async nextAppState => {
-        if (nextAppState === 'active' && waitingForSettingsRef.current) {
-          // 설정에서 돌아왔을 때 무조건 관심분야 화면으로 이동
-          waitingForSettingsRef.current = false;
-          await setOnboardingStep('interests');
-          navigation.navigate(RouteNames.INTERESTS, {});
+        if (
+          nextAppState === 'active' &&
+          waitingForSettingsRef.current.isWaiting
+        ) {
+          const { isExistingUser } = waitingForSettingsRef.current;
+          waitingForSettingsRef.current = { isWaiting: false };
+
+          console.log(
+            '[LoginScreen] 설정에서 돌아옴 - 기존 사용자 여부:',
+            isExistingUser,
+          );
+
+          // 기존 사용자인 경우: 온보딩 완료 후 메인 화면으로 이동
+          if (isExistingUser) {
+            await completeOnboarding();
+            // RootNavigator가 isOnboardingCompleted 변경을 감지하여 자동으로 메인 화면으로 이동
+          } else {
+            // 신규 사용자인 경우: 관심분야 화면으로 이동
+
+            await setOnboardingStep('interests');
+            navigation.navigate(RouteNames.INTERESTS, {});
+          }
         }
       },
     );
+    return () => subscription.remove();
+  }, [setOnboardingStep, navigation, completeOnboarding]);
 
-    return () => {
-      subscription.remove();
-    };
-  }, [setOnboardingStep, navigation]);
-
+  // 2. 초기화 로직 (SDK Init & 최근 로그인 정보 로드)
   useEffect(() => {
     const initSocialLogin = async () => {
       try {
@@ -102,6 +136,7 @@ const LoginScreen = () => {
       setRecentLogin(recent);
     };
 
+    // UI 렌더링 우선을 위해 지연 실행
     const timer = setTimeout(() => {
       initSocialLogin();
       loadRecentLogin();
@@ -110,106 +145,185 @@ const LoginScreen = () => {
     return () => clearTimeout(timer);
   }, []);
 
-  // 약관 화면에서 agreedProvider를 넘겨서 돌아오면,
-  // 기존 handleSocialLogin 로직을 그대로 실행
-  useEffect(() => {
-    const agreedProvider = route.params?.agreedProvider;
-    if (!agreedProvider) {
+  const handleTrackingModal = useCallback(async () => {
+    if (Platform.OS !== 'ios') return;
+
+    // 중복 호출 방지: 이미 모달이 표시된 경우 스킵
+    if (trackingModalShownRef.current) {
+      console.log(
+        '[handleTrackingModal] 이미 모달이 표시되었습니다. 중복 호출 방지',
+      );
       return;
     }
 
-    handleSocialLogin(agreedProvider);
-
-    // 재진입/리렌더 시 중복 실행 방지용으로 params를 비움
-    navigation.setParams({ agreedProvider: undefined });
-  }, [route.params?.agreedProvider]); // eslint-disable-line react-hooks/exhaustive-deps
-
-  const handleNotificationModal = async () => {
-    const shouldShowModal = await checkPermission();
-
-    if (shouldShowModal) {
-      showModal({
-        image: <></>,
-        title: '알림을 받으시겠어요?',
-        description:
-          '알림을 켜두면, 하루 두 번 문해력 루틴을 \n잊지 않고 챙길 수 있어요!',
-        descriptionColor: COLORS.gray600,
-        primaryButton: {
-          title: '알림 받을래요',
-          textStyle: { ...Heading_16B, color: COLORS.white },
-          onPress: async () => {
-            const granted = await requestPermission();
-            if (granted) {
-              console.log('알림 권한이 허용되었습니다.');
-              await setOnboardingStep('interests');
-              navigation.navigate(RouteNames.INTERESTS, {});
-            } else {
-              // 권한이 거부되었거나 설정으로 이동한 경우
-              waitingForSettingsRef.current = true;
-            }
-          },
-        },
-        secondaryButton: {
-          title: '괜찮아요',
-          variant: 'outline',
-          textStyle: { color: COLORS.gray700, ...Heading_16B },
-          style: {
-            borderColor: COLORS.gray300,
-            height: scaleWidth(48),
-          },
-          onPress: async () => {
-            await setOnboardingStep('interests');
-            navigation.navigate(RouteNames.INTERESTS, {});
-          },
-        },
-      });
-    } else {
-      await setOnboardingStep('interests');
-      navigation.navigate(RouteNames.INTERESTS, {});
-    }
-  };
-
-  const handleSocialLogin = async (provider: SocialLoginProvider) => {
+    console.log('[handleTrackingModal] iOS 추적 권한 체크 시작');
     try {
-      setLoading(provider);
-      const result = await signInWithSocial(provider);
+      const hasPermission = await checkTrackingPermission();
 
-      if (result.success && result.userInfo) {
-        // newUser가 false이면 온보딩 건너뛰고 바로 메인 화면으로 이동
-        if (result.newUser === false) {
-          // 온보딩 완료 처리
-          await completeOnboarding();
-          // 메인 화면으로 이동
-          navigation.dispatch(
-            CommonActions.reset({
-              index: 0,
-              routes: [{ name: RouteNames.MAIN_TAB }],
-            }),
-          );
-        } else {
-          // 신규 사용자이면 온보딩 진행
-          await handleNotificationModal();
-        }
+      if (!hasPermission) {
+        console.log(
+          '[handleTrackingModal] 권한 요청 시도 - 네이티브 ATT 모달 표시',
+        );
+        trackingModalShownRef.current = true; // 모달 표시 플래그 설정
+        await requestTrackingPermission();
+        console.log('[handleTrackingModal] ATT 모달 닫힘');
       } else {
-        Alert.alert('로그인 실패', result.error || '로그인에 실패했습니다.');
+        console.log('[handleTrackingModal] 이미 권한이 허용되어 있습니다.');
+        trackingModalShownRef.current = true; // 이미 권한이 있으면 플래그 설정
       }
-    } catch (error: any) {
-      Alert.alert('오류', error.message || '로그인 중 오류가 발생했습니다.');
-    } finally {
-      setLoading(null);
+    } catch (error) {
+      console.warn('추적 권한 처리 중 오류 (무시하고 진행):', error);
+      trackingModalShownRef.current = false; // 에러 발생 시 플래그 리셋
     }
-  };
+  }, [checkTrackingPermission, requestTrackingPermission]);
 
-  // 로그인 버튼을 누르면 바로 로그인하지 않고 약관 화면으로 먼저 이동
-  // 약관에서 동의 완료 시 agreedProvider로 다시 돌아오고, 위 useEffect에서 handleSocialLogin이 실행
+  const handleNotificationModal = useCallback(
+    async (isExistingUser = false) => {
+      // 기존 사용자 여부를 ref에 저장 (설정 화면에서 돌아왔을 때 사용)
+      waitingForSettingsRef.current.isExistingUser = isExistingUser;
+
+      const proceedNext = async () => {
+        if (isExistingUser) {
+          await completeOnboarding();
+        } else {
+          await setOnboardingStep('interests');
+          navigation.navigate(RouteNames.INTERESTS, {});
+        }
+      };
+
+      try {
+        const shouldShowModal = await checkNotiPermission();
+
+        if (shouldShowModal) {
+          showModal({
+            title: '알림을 받으시겠어요?',
+            description:
+              '알림을 켜두면, 하루 두 번 문해력 루틴을 \n잊지 않고 챙길 수 있어요!',
+            descriptionColor: COLORS.gray600,
+            primaryButton: {
+              title: '알림 받을래요',
+              textStyle: { ...Heading_16B, color: COLORS.white },
+              onPress: async () => {
+                // 설정 화면 이동 여부를 추적하기 위해 초기화
+                waitingForSettingsRef.current.isWaiting = false;
+
+                const granted = await requestNotiPermission();
+
+                // 설정 화면으로 이동한 경우 (granted가 false이고 isWaiting이 true로 변경됨)
+                // Alert의 "설정으로 이동" 버튼이 눌려서 onSettingsOpened가 호출된 경우
+                if (!granted && waitingForSettingsRef.current.isWaiting) {
+                  // 설정에서 돌아왔을 때 AppState에서 처리하므로 여기서는 proceedNext 호출하지 않음
+                  return;
+                }
+
+                // 권한이 허용된 경우 또는 Alert의 "취소" 버튼을 누른 경우
+                console.log(
+                  '[LoginScreen] 권한 허용 또는 취소 - proceedNext 호출',
+                );
+                await proceedNext();
+              },
+            },
+            secondaryButton: {
+              title: '괜찮아요',
+              variant: 'outline',
+              textStyle: { color: COLORS.gray700, ...Heading_16B },
+              style: { borderColor: COLORS.gray300, height: scaleWidth(48) },
+              onPress: async () => {
+                await proceedNext();
+              },
+            },
+          });
+        } else {
+          await proceedNext();
+        }
+      } catch (error) {
+        console.error('알림 권한 로직 오류:', error);
+        await proceedNext();
+      }
+    },
+    [
+      checkNotiPermission,
+      requestNotiPermission,
+      showModal,
+      completeOnboarding,
+      setOnboardingStep,
+      navigation,
+    ],
+  );
+
+  const handleSocialLogin = useCallback(
+    async (provider: SocialLoginProvider) => {
+      console.log(`[LoginScreen] handleSocialLogin 진입: ${provider}`);
+
+      // STEP 1: iOS 추적 권한 (로그인 창 띄우기 전)
+      if (Platform.OS === 'ios') {
+        await handleTrackingModal();
+        // ✨ [중요] 시스템 모달 닫힘 대기 (0.5초)
+        await new Promise(resolve => setTimeout(resolve, 500));
+      }
+
+      // STEP 2: 소셜 로그인 시도
+      try {
+        setLoading(provider);
+
+        const result = await signInWithSocial(provider);
+
+        // result가 undefined인 경우 처리
+        if (!result) {
+          console.error('[LoginScreen] 로그인 결과가 undefined입니다.');
+          // Alert.alert('오류', '로그인 중 오류가 발생했습니다.');
+          return;
+        }
+
+        console.log('[LoginScreen] 로그인 결과:', {
+          success: result.success,
+          newUser: result.newUser,
+          hasError: !!result.error,
+        });
+
+        if (result.success && result.userInfo) {
+          if (result.newUser === false) {
+            // [기존 유저]
+            await handleNotificationModal(true);
+          } else {
+            // [신규 유저]
+            await handleNotificationModal(false);
+          }
+        } else {
+          // 실패 또는 취소
+          if (result.error) {
+            if (!result.error.includes('취소')) {
+              Alert.alert('로그인 실패', result.error);
+            } else {
+              console.log('로그인이 취소되었습니다.');
+            }
+          }
+        }
+      } catch (error: any) {
+        console.error('[LoginScreen] 로그인 치명적 에러:', error);
+        Alert.alert('오류', '로그인 중 알 수 없는 오류가 발생했습니다.');
+      } finally {
+        setLoading(null);
+      }
+    },
+    [handleTrackingModal, handleNotificationModal],
+  );
+
+  // 3. 약관 동의 화면에서 돌아왔을 때 로그인 트리거
+  useEffect(() => {
+    const agreedProvider = route.params?.agreedProvider;
+    console.log('[LoginScreen] useEffect - agreedProvider:', agreedProvider);
+
+    if (agreedProvider) {
+      handleSocialLogin(agreedProvider);
+      navigation.setParams({ agreedProvider: undefined });
+    }
+  }, [route.params?.agreedProvider, handleSocialLogin, navigation]);
+
+  // --- 버튼 핸들러 (약관 화면으로 이동) ---
   const goTermsAgreement = (provider: SocialLoginProvider) => {
     navigation.navigate(RouteNames.TERMS_AGREEMENT, { provider });
   };
-
-  const handleGoogleLogin = () => goTermsAgreement('GOOGLE');
-  const handleKakaoLogin = () => goTermsAgreement('KAKAO');
-  const handleNaverLogin = () => goTermsAgreement('NAVER');
-  const handleAppleLogin = () => goTermsAgreement('APPLE');
 
   return (
     <SafeAreaView style={styles.container}>
@@ -223,29 +337,26 @@ const LoginScreen = () => {
         <View style={styles.buttonContainer}>
           <SocialLoginButton
             provider="KAKAO"
-            onPress={handleKakaoLogin}
+            onPress={() => goTermsAgreement('KAKAO')}
             loading={loading}
             recentLogin={recentLogin}
           />
-
           <SocialLoginButton
             provider="GOOGLE"
-            onPress={handleGoogleLogin}
+            onPress={() => goTermsAgreement('GOOGLE')}
             loading={loading}
             recentLogin={recentLogin}
           />
-
           <SocialLoginButton
             provider="NAVER"
-            onPress={handleNaverLogin}
+            onPress={() => goTermsAgreement('NAVER')}
             loading={loading}
             recentLogin={recentLogin}
           />
-
           {Platform.OS === 'ios' && (
             <SocialLoginButton
               provider="APPLE"
-              onPress={handleAppleLogin}
+              onPress={() => goTermsAgreement('APPLE')}
               loading={loading}
               recentLogin={recentLogin}
             />
@@ -280,14 +391,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: scaleWidth(20),
     zIndex: 1,
   },
-  logoContainer: {
-    width: scaleWidth(140),
-    height: scaleWidth(140),
-    borderWidth: 1,
-    backgroundColor: COLORS.gray300,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
   logoText: {
     ...Body_16SB,
     color: COLORS.puple.main,
@@ -297,9 +400,6 @@ const styles = StyleSheet.create({
     gap: scaleWidth(12),
     flex: 1,
     justifyContent: 'flex-end',
-  },
-  clearLoginButton: {
-    marginBottom: scaleWidth(12),
   },
 });
 

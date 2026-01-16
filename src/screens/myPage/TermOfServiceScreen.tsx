@@ -1,18 +1,16 @@
-/* eslint-disable prettier/prettier */
 import React, { useCallback } from 'react';
 import { View, Text, StyleSheet, ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 
 import Header from '../../components/Header';
+import { scaleWidth, COLORS } from '../../styles/global';
 import {
-  scaleWidth,
-  COLORS,
   Heading_24EB_Round,
   Heading_18B,
   Heading_16B,
   Body_16R,
-} from '../../styles/global';
+} from '../../styles/typography';
 
 /**
  * 이용약관 화면
@@ -45,15 +43,14 @@ const TermsOfServiceScreen = () => {
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
-
         {/* 메인 타이틀 & 제1조 (목적) */}
         <View style={styles.section}>
           <Text style={styles.mainTitle}>뉴로스 이용약관</Text>
           <Text style={styles.title}>제1조 (목적)</Text>
           <Text style={styles.text}>
-            본 약관은 혹성탈출(이하 ‘팀’)이 제공하는 콘텐츠 열람, 퀴즈, 캐릭터 성장
-            시스템 및 이에 부수되는 제반 서비스의 이용과 관련하여 팀과 이용자의 권리,
-            의무 및 책임 사항을 규정함을 목적으로 합니다.
+            본 약관은 혹성탈출(이하 ‘팀’)이 제공하는 콘텐츠 열람, 퀴즈, 캐릭터
+            성장 시스템 및 이에 부수되는 제반 서비스의 이용과 관련하여 팀과
+            이용자의 권리, 의무 및 책임 사항을 규정함을 목적으로 합니다.
           </Text>
         </View>
 
@@ -92,7 +89,7 @@ const TermsOfServiceScreen = () => {
             )}
             {renderItem(
               '3.',
-              '열람 판단 기준: 각 콘텐츠별 설정된 최소 체류 시간(초급 50초, 중급 90초, 고급 190초 등)을 충족해야 \'읽음\'으로 간주하며, 이에 따른 보상이 지급됩니다.',
+              "열람 판단 기준: 각 콘텐츠별 설정된 최소 체류 시간(초급 50초, 중급 90초, 고급 190초 등)을 충족해야 '읽음'으로 간주하며, 이에 따른 보상이 지급됩니다.",
             )}
             {renderItem(
               '4.',

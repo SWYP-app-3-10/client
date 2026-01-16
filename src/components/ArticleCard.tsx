@@ -1,12 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Image } from 'react-native';
-import {
-  COLORS,
-  scaleWidth,
-  BORDER_RADIUS,
-  Heading_18EB_Round,
-  Caption_14R,
-} from '../styles/global';
+import { COLORS, scaleWidth, BORDER_RADIUS } from '../styles/global';
+import { Heading_18EB_Round, Caption_14R } from '../styles/typography';
 import Spacer from './Spacer';
 
 interface Article {

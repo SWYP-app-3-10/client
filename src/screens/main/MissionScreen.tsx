@@ -19,14 +19,12 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { COLORS, scaleWidth, BORDER_RADIUS } from '../../styles/global';
 import {
-  COLORS,
-  scaleWidth,
   Heading_24EB_Round,
-  BORDER_RADIUS,
   Body_16M,
   Heading_20EB_Round,
-} from '../../styles/global';
+} from '../../styles/typography';
 import Spacer from '../../components/Spacer';
 import { useMissions } from '../../hooks/useMissions';
 import { MissionCard, ArticleCard } from '../../components';
@@ -346,6 +344,7 @@ const MissionScreen = () => {
                       style={{
                         width: isEdge ? WIDTH_EDGE : WIDTH_MID,
                         marginRight: index === missions.length - 1 ? 0 : GAP,
+                        height: scaleWidth(105),
                       }}
                     >
                       <MissionCard mission={mission} />

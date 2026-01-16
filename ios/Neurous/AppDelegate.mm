@@ -1,39 +1,35 @@
 #import "AppDelegate.h"
 
 #import <React/RCTBundleURLProvider.h>
-#import <KakaoSDKCommon/KakaoSDKCommon.h>
+#import <ReactAppDependencyProvider/RCTAppDependencyProvider.h>
+#import <React/RCTLinkingManager.h> 
+#import <RNKakaoLogins.h>           
 
 @implementation AppDelegate
 
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions
 {
-  // 카카오 SDK 초기화
-  NSString *kakaoAppKey = [[NSBundle mainBundle] objectForInfoDictionaryKey:@"KAKAO_APP_KEY"];
-  if (kakaoAppKey) {
-    [KakaoSDKCommon initSDKWithAppKey:kakaoAppKey];
-  }
-
   self.moduleName = @"Neurous";
-  // You can add your custom initial props in the dictionary below.
-  // They will be passed down to the ViewController used by React Native.
+  self.dependencyProvider = [RCTAppDependencyProvider new];
   self.initialProps = @{};
 
   return [super application:application didFinishLaunchingWithOptions:launchOptions];
 }
 
-- (BOOL)application:(UIApplication *)app openURL:(NSURL *)url options:(NSDictionary<UIApplicationOpenURLOptionsKey,id> *)options {
-  if ([KakaoSDKCommon isKakaoTalkLoginUrl:url]) {
-    return [KakaoSDKCommon handleOpenUrl:url];
-  }
-  return [super application:app openURL:url options:options];
-}
-
-- (NSURL *)sourceURLForBridge:(RCTBridge *)bridge
+- (BOOL)application:(UIApplication *)application
+   openURL:(NSURL *)url
+   options:(NSDictionary<UIApplicationOpenURLOptionsKey,id> *)options
 {
-  return [self getBundleURL];
+  // 1. 카카오 로그인 URL인지 먼저 확인
+  if ([RNKakaoLogins isKakaoTalkLoginUrl:url]) {
+    return [RNKakaoLogins handleOpenUrl:url];
+  }
+
+  // 2. 카카오가 아니라면, React Native LinkingManager가 처리 (네이버, 구글, 딥링크 등)
+  return [RCTLinkingManager application:application openURL:url options:options];
 }
 
-- (NSURL *)getBundleURL
+- (NSURL *)bundleURL
 {
 #if DEBUG
   return [[RCTBundleURLProvider sharedSettings] jsBundleURLForBundleRoot:@"index"];
