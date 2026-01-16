@@ -17,9 +17,6 @@ const screenNameMap: Record<string, string> = {
   [RouteNames.SOCIAL_LOGIN]: 'Onboarding_SocialLogin',
   [RouteNames.TERMS_AGREEMENT]: 'AgreeToTerms',
 
-  // 메인 탭
-  [RouteNames.MY_PAGE_TAB]: '마이페이지',
-
   // 미션
   [RouteNames.MISSION]: 'Home',
   [RouteNames.ARTICLE_DETAIL]: 'Reading',
