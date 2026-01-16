@@ -1,9 +1,13 @@
 import analytics from '@react-native-firebase/analytics';
 import { RouteNames } from '../../routes';
+import { IS_PRODUCTION } from '../config/adConfig';
 
 /**
  * Firebase Analytics 서비스
  * 앱 내 이벤트 추적 및 사용자 행동 분석
+ *
+ * IS_PRODUCTION 설정에 따라 로그가 기록됩니다.
+ * adConfig.ts에서 IS_PRODUCTION 값을 변경하세요.
  */
 
 /**
@@ -69,6 +73,11 @@ export const logScreenView = async (
   forceLog: boolean = false,
 ): Promise<void> => {
   try {
+    // 프로덕션 모드가 아니면 로그를 찍지 않음
+    if (!IS_PRODUCTION) {
+      return;
+    }
+
     // RouteNames인 경우 매핑 확인
     const mappedName = getScreenName(screenName);
 
@@ -98,6 +107,11 @@ export const logEvent = async (
   params?: Record<string, any>,
 ): Promise<void> => {
   try {
+    // 프로덕션 모드가 아니면 로그를 찍지 않음
+    if (!IS_PRODUCTION) {
+      return;
+    }
+
     await analytics().logEvent(eventName, params);
   } catch (error) {
     console.error('Analytics logEvent 오류:', error);
