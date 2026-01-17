@@ -10,7 +10,7 @@ import { TestIds } from 'react-native-google-mobile-ads';
  *
  * 개발/테스트 중에는 false로 설정하세요.
  */
-export const IS_PRODUCTION = true; // true로 변경하면 프로덕션 모드로 동작합니다
+export const IS_PRODUCTION = false; // true로 변경하면 프로덕션 모드로 동작합니다
 
 // 리워드 광고 단위 ID
 export const REWARDED_AD_UNIT_ID = IS_PRODUCTION
