@@ -397,7 +397,10 @@ const ArticleDetailScreen = () => {
 
   return (
     <SafeAreaView style={styles.container}>
-      <Header iconColor={COLORS.gray800} />
+      <Header
+        iconColor={COLORS.gray800}
+        backEventName="Back_ConfirmStandard_Reading"
+      />
       <ScrollView
         bounces={false}
         style={styles.scrollView}

@@ -30,7 +30,14 @@ const CriteriaCheckScreen = () => {
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
       {/* 공통 헤더 */}
-      <Header title="기준 확인하기" />
+      <Header
+        title="기준 확인하기"
+        backEventName={
+          tab === 'LEVEL'
+            ? 'Back_ConfirmStandard_Level'
+            : 'Back_ConfirmStandard_Xp/P'
+        }
+      />
 
       {/* 세그먼트 탭 */}
       <View style={styles.segmentWrap}>

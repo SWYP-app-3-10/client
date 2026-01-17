@@ -335,7 +335,10 @@ const QuizScreen: React.FC = () => {
 
   return (
     <SafeAreaView style={styles.container}>
-      <Header iconColor={COLORS.gray800} />
+      <Header
+        iconColor={COLORS.gray800}
+        backEventName="Back_ConfirmStandard_Quiz"
+      />
       <Spacer num={32} />
       <ScrollView
         bounces={false}

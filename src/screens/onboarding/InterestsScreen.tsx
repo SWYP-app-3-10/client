@@ -277,6 +277,7 @@ const InterestsScreen = () => {
       <Header
         iconColor={COLORS.gray800}
         title={editMode ? '관심분야 설정하기' : ''}
+        backEventName={editMode ? 'Back_EditInterest' : undefined}
       />
       <Spacer num={2} />
       {!editMode && (

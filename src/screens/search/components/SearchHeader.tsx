@@ -55,6 +55,7 @@ export default function SearchHeader({
   const navigation = useNavigation();
 
   const handleBack = () => {
+    logEvent('Back_Search');
     if (goBackAction) return goBackAction();
     navigation.goBack();
   };

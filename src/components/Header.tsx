@@ -15,12 +15,14 @@ const Header = ({
   goBackAction,
   iconColor,
   rightIcon, // ✅ (선택) 우측 액션 아이콘이 필요하면 사용
+  backEventName,
 }: {
   title?: React.ReactNode;
   leftIcon?: React.ReactNode;
   goBackAction?: () => void;
   iconColor?: string;
   rightIcon?: React.ReactNode;
+  backEventName?: string; // 커스텀 백버튼 이벤트 이름
 }) => {
   const navigation = useNavigation();
 
@@ -30,7 +32,10 @@ const Header = ({
     }
 
     const handleGoBack = () => {
-      logEvent('Back_Header');
+      // 커스텀 이벤트 이름이 있으면 사용, 없으면 기본 이벤트
+      if (backEventName) {
+        logEvent(backEventName);
+      }
       if (goBackAction) {
         goBackAction();
         return;

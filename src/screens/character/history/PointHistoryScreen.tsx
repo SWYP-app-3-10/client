@@ -242,7 +242,10 @@ const PointHistoryScreen = () => {
 
   return (
     <SafeAreaView style={styles.container} edges={['top', 'left', 'right']}>
-      <Header title="받은 내역 확인하기" />
+      <Header
+        title="받은 내역 확인하기"
+        backEventName="Back_ConfirmEarnedHistory"
+      />
 
       <FlatList
         data={earnedList}
