@@ -34,7 +34,7 @@ import {
   Caption_12SB,
   Body_16M,
 } from '../../../../styles/typography';
-import { logScreenView } from '../../../../services/analyticsService';
+import { logEvent, logScreenView } from '../../../../services/analyticsService';
 
 // CharacterScreen과 동일한 데이터 소스 사용
 import { useCharacterMe } from '../../../../hooks/useCharacter';
@@ -158,6 +158,7 @@ function XpSummaryCard({
           onPress={() => {
             if (isLoading) return;
             tooltip.toggle(cardRef, iconRef);
+            logEvent('XpTooltip_ConfirmStandard_Level');
           }}
           style={styles.xpValueRow}
         >

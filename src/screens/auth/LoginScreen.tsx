@@ -341,7 +341,7 @@ const LoginScreen = () => {
             provider="KAKAO"
             onPress={() => {
               goTermsAgreement('KAKAO');
-              logEvent('kakao_login_Onboarding_SocialLogin');
+              logEvent('Kakao_Login_Onboarding_SocialLogin');
             }}
             loading={loading}
             recentLogin={recentLogin}
@@ -350,7 +350,7 @@ const LoginScreen = () => {
             provider="GOOGLE"
             onPress={() => {
               goTermsAgreement('GOOGLE');
-              logEvent('Google_login_Onboarding_SocialLogin');
+              logEvent('Google_Login_Onboarding_SocialLogin');
             }}
             loading={loading}
             recentLogin={recentLogin}
@@ -359,7 +359,7 @@ const LoginScreen = () => {
             provider="NAVER"
             onPress={() => {
               goTermsAgreement('NAVER');
-              logEvent('NAVER_login_Onboarding_SocialLogin_TEST');
+              logEvent('NAVER_Login_Onboarding_SocialLogin');
             }}
             loading={loading}
             recentLogin={recentLogin}
@@ -369,7 +369,7 @@ const LoginScreen = () => {
               provider="APPLE"
               onPress={() => {
                 goTermsAgreement('APPLE');
-                logEvent('apple_login_Onboarding_SocialLogin');
+                logEvent('apple_Login_Onboarding_SocialLogin');
               }}
               loading={loading}
               recentLogin={recentLogin}

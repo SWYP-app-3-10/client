@@ -4,6 +4,7 @@ import { COLORS, scaleWidth } from '../styles/global';
 import { Body_16M, Body_18M, Heading_18B } from '../styles/typography';
 import { BottomModalCheckIcon, ClockIcon, NoteIcon } from '../icons';
 import { LevelCategory } from '../types/interests';
+import { logEvent } from '../services/analyticsService';
 
 interface LevelOption {
   value: LevelCategory;
@@ -54,7 +55,16 @@ const LevelSelectionContent: React.FC<LevelSelectionContentProps> = ({
           <React.Fragment key={option.value}>
             <TouchableOpacity
               style={[styles.option, isSelected && styles.optionSelected]}
-              onPress={() => handleSelect(option.value)}
+              onPress={() => {
+                handleSelect(option.value);
+                if (option.label === '초급') {
+                  logEvent('Difficulty_Beginner_EditLevelModal');
+                } else if (option.label === '중급') {
+                  logEvent('Difficulty_Intermediate_EditLevelModal');
+                } else if (option.label === '고급') {
+                  logEvent('Difficulty_Hard_EditLevelModal');
+                }
+              }}
             >
               <View style={styles.optionContent}>
                 <View style={styles.optionDetails}>

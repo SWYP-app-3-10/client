@@ -201,7 +201,10 @@ export default function SearchScreen() {
             renderItem={({ item }) => (
               <SearchResultItem
                 item={item}
-                onPress={() => handleArticlePress(Number(item.id))}
+                onPress={() => {
+                  handleArticlePress(Number(item.id));
+                  logEvent('ContectsList_Explore');
+                }}
               />
             )}
             contentContainerStyle={styles.listContent}
@@ -342,6 +345,7 @@ function useTooltip(autoHideMs: number) {
 
   // visible 토글 + 자동 숨김 예약
   const toggle = useCallback(() => {
+    logEvent('Timer_Explore');
     setVisible(prev => {
       const next = !prev;
       clearTimer();

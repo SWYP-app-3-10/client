@@ -11,6 +11,7 @@ import Button from './Button';
 import Spacer from './Spacer';
 import { RightArrowIcon } from '../icons';
 import { MyPageContent } from '../api/userApi';
+import { logEvent } from '../services/analyticsService';
 
 export interface TimelineGroupProps {
   dateGroup: {
@@ -95,7 +96,17 @@ export const TimelineGroup: React.FC<TimelineGroupProps> = ({
                     articleIndex === displayedArticles.length - 1 &&
                       styles.articleCardLast,
                   ]}
-                  onPress={() => onArticlePress(article.contentId)}
+                  onPress={() => {
+                    onArticlePress(article.contentId);
+                    if (
+                      article.isQuizCorrect &&
+                      article.isQuizCorrect === true
+                    ) {
+                      logEvent('ReadingHistoryList_Correct_My');
+                    } else {
+                      logEvent('ReadingHistoryList_InCorrect_My');
+                    }
+                  }}
                 >
                   <View style={styles.articleContent}>
                     <Text style={styles.articleTitle} numberOfLines={2}>

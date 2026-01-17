@@ -5,7 +5,7 @@ import {
   requestNotifications,
   RESULTS,
 } from 'react-native-permissions';
-import { logScreenView } from '../services/analyticsService';
+import { logEvent, logScreenView } from '../services/analyticsService';
 
 interface UseNotificationPermissionOptions {
   onSettingsOpened?: (isExistingUser?: boolean) => void;
@@ -57,6 +57,7 @@ export const useNotificationPermission = (
                   onPress: () => {
                     onCancel?.();
                     resolve(false);
+                    logEvent('Dismiss_Popup_Local_Notification_Local');
                   },
                 },
                 {
@@ -64,6 +65,9 @@ export const useNotificationPermission = (
                   onPress: async () => {
                     try {
                       onSettingsOpened?.();
+                      logEvent(
+                        'EnableNotifications_Popup_Local_Notification_Local',
+                      );
                       await Linking.openSettings();
                       // 설정 화면으로 이동했으므로 false 반환 (AppState에서 처리)
                       resolve(false);

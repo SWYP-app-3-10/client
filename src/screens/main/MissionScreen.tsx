@@ -47,7 +47,7 @@ import {
 import { useExperienceStore } from '../../store/experienceStore';
 import IconButton from '../../components/IconButton';
 import { AlarmIcon, Modal_IMG } from '../../icons';
-import { logScreenView } from '../../services/analyticsService';
+import { logEvent, logScreenView } from '../../services/analyticsService';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 const WIDTH_EDGE = scaleWidth(353); // 처음과 마지막 카드 너비
@@ -396,7 +396,12 @@ const MissionScreen = () => {
                 <ArticleCard
                   key={article.id}
                   article={article}
-                  onPress={() => handleArticlePress(article.contentId)}
+                  onPress={() => {
+                    handleArticlePress(article.contentId);
+                    if (index < 9) {
+                      logEvent(`Card0${index + 1}_Home`);
+                    }
+                  }}
                 />
               );
             })

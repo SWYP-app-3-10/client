@@ -284,7 +284,7 @@ const QuizScreen: React.FC = () => {
     return optionId === quiz.correctAnswerId;
   };
 
-  const renderOption = (option: QuizOption) => {
+  const renderOption = (option: QuizOption, index: number) => {
     if (quizState === 'question') {
       // 문제 화면: 선택 여부에 따라 스타일 변경
       const isSelected = selectedOptionId === option.id;
@@ -292,7 +292,16 @@ const QuizScreen: React.FC = () => {
         <Pressable
           key={option.id}
           style={[styles.optionCard, isSelected && styles.optionCardSelected]}
-          onPress={() => handleOptionSelect(option.id)}
+          onPress={() => {
+            if (index === 0) {
+              logEvent('Choice1_Quiz');
+            } else if (index === 1) {
+              logEvent('Choice2_Quiz');
+            } else if (index === 2) {
+              logEvent('Choice3_Quiz');
+            }
+            handleOptionSelect(option.id);
+          }}
         >
           <Text style={styles.optionText}>{option.text}</Text>
           <View style={[styles.checkIcon]}>
@@ -343,7 +352,7 @@ const QuizScreen: React.FC = () => {
         {quiz.options.map((option, index) => {
           return (
             <View key={option.id}>
-              {renderOption(option)}
+              {renderOption(option, index)}
               {index !== quiz.options.length - 1 && <Spacer num={16} />}
             </View>
           );

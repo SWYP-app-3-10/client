@@ -5,6 +5,7 @@ import { useNavigation } from '@react-navigation/native';
 import IconButton from './IconButton';
 import { scaleWidth, COLORS } from '../styles/global';
 import { Heading_16B } from '../styles/typography';
+import { logEvent } from '../services/analyticsService';
 
 const SIDE_WIDTH = scaleWidth(40); // 좌/우 동일 폭(중요)
 
@@ -29,6 +30,7 @@ const Header = ({
     }
 
     const handleGoBack = () => {
+      logEvent('Back_Header');
       if (goBackAction) {
         goBackAction();
         return;

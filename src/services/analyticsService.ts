@@ -21,7 +21,7 @@ const screenNameMap: Record<string, string> = {
   [RouteNames.INTRO_CARDLIST]: 'Onboarding_Function01_CardList',
   [RouteNames.INTRO_FUNCTION]: 'Onboarding_Function02_Character',
   [RouteNames.INTRO_SEARCH]: 'Onboarding_Function03_Explore',
-  [RouteNames.SOCIAL_LOGIN]: 'Onboarding_SocialLogin_TEST',
+  [RouteNames.SOCIAL_LOGIN]: 'Onboarding_SocialLogin',
   [RouteNames.TERMS_AGREEMENT]: 'AgreeToTerms',
 
   // 미션

@@ -7,6 +7,7 @@ import Spacer from './Spacer';
 
 import XSearchIcon from '../assets/svg/X_Search.svg';
 import { scaleWidth, BORDER_RADIUS, COLORS } from '../styles/global';
+import { logEvent } from '../services/analyticsService';
 
 type Props = {
   index: number;
@@ -63,6 +64,7 @@ const RecentSearches = ({
       onPress={() => {
         setSearch(item.searchName);
         recordSearch(item.searchName);
+        logEvent(`RecentSearchChip`);
       }}
       style={{
         borderRadius: BORDER_RADIUS[30],

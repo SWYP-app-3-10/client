@@ -9,7 +9,6 @@ import {
   Body_15M,
   Body_18M,
   Heading_18SB,
-  Body_16M,
 } from '../../styles/typography';
 import {
   MainTabNavigationProp,
@@ -35,12 +34,33 @@ import { logEvent, logScreenView } from '../../services/analyticsService';
 const FIRST_ROW_INTERESTS = INTERESTS.slice(0, 3);
 const SECOND_ROW_INTERESTS = INTERESTS.slice(3, 6);
 
+// Analytics 이벤트 이름 매핑
+const INTEREST_EVENT_MAP: Record<string, { onboarding: string; edit: string }> =
+  {
+    정치: {
+      onboarding: 'InterestTag_Politics_Onboarding',
+      edit: 'InterestTag_Politics_EditInterest',
+    },
+    경제: {
+      onboarding: 'InterestTag_Economy_Onboarding',
+      edit: 'InterestTag_Economy_EditInterest',
+    },
+    사회: {
+      onboarding: 'InterestTag_Society_Onboarding',
+      edit: 'InterestTag_Society_EditInterest',
+    },
+    세계: {
+      onboarding: 'InterestTag_World_Onboarding',
+      edit: 'EditInterest_World_EditInterest',
+    },
+  };
+
 interface InterestTagProps {
   interest: Interest;
   priority: number | null;
   isSelected: boolean;
   onPress: (id: InterestCategory) => void;
-  isFirstRow?: boolean;
+  editMode?: boolean;
 }
 
 const InterestTag: React.FC<InterestTagProps> = ({
@@ -48,25 +68,46 @@ const InterestTag: React.FC<InterestTagProps> = ({
   priority,
   isSelected,
   onPress,
-  isFirstRow = false,
+  editMode = false,
 }) => {
-  const renderPriorityIcon = () => {
-    if (priority === null) {
-      return null;
+  const handlePress = useCallback(() => {
+    onPress(interest.id);
+
+    // Analytics 이벤트 로깅
+    const eventMap = INTEREST_EVENT_MAP[interest.name];
+    if (eventMap) {
+      const eventName = editMode ? eventMap.edit : eventMap.onboarding;
+      logEvent(eventName);
+    } else if (interest.name.includes('생활')) {
+      logEvent(
+        editMode
+          ? 'InterestTag_Lifestyle/Culture_EditInterest'
+          : 'InterestTag_LifeCulture_Onboarding',
+      );
+    } else if (interest.name.includes('IT')) {
+      logEvent(
+        editMode
+          ? 'InterestTag_It/Science_EditInterest'
+          : 'InterestTag_It/Science_Onboarding',
+      );
     }
-    if (priority === 1) {
-      return <FirstIcon />;
+  }, [interest.id, interest.name, onPress, editMode]);
+
+  const renderPriorityIcon = useCallback(() => {
+    switch (priority) {
+      case 1:
+        return <FirstIcon />;
+      case 2:
+        return <SecondIcon />;
+      case 3:
+        return <ThirdIcon />;
+      default:
+        return null;
     }
-    if (priority === 2) {
-      return <SecondIcon />;
-    }
-    return <ThirdIcon />;
-  };
+  }, [priority]);
 
   return (
-    <View
-      style={isFirstRow ? styles.tagContainerFirstRow : styles.tagContainer}
-    >
+    <View style={styles.tagContainer}>
       {isSelected && <View style={styles.tagSpacer} />}
       {priority !== null && (
         <View style={styles.priorityBadge}>{renderPriorityIcon()}</View>
@@ -75,22 +116,7 @@ const InterestTag: React.FC<InterestTagProps> = ({
         variant="ghost"
         textStyle={styles.tagText}
         style={[styles.tag, isSelected && styles.tagSelected]}
-        onPress={() => {
-          onPress(interest.id);
-          if (interest.name === '정치') {
-            logEvent('InterestTag_Politics_Onboarding');
-          } else if (interest.name === '경제') {
-            logEvent('InterestTag_Economy_Onboarding');
-          } else if (interest.name === '사회') {
-            logEvent('InterestTag_Society_Onboarding');
-          } else if (interest.name.includes('생활')) {
-            logEvent('InterestTag_LifeCulture_Onboarding');
-          } else if (interest.name.includes('IT')) {
-            logEvent('InterestTag_It/Science_Onboarding');
-          } else if (interest.name === '세계') {
-            logEvent('InterestTag_World_Onboarding');
-          }
-        }}
+        onPress={handlePress}
       >
         <Text style={[styles.tagText, isSelected && styles.tagTextSelected]}>
           {interest.name}
@@ -134,15 +160,14 @@ const InterestsScreen = () => {
         }
       });
       setSelectedInterests(interestsMap);
-    } else {
     }
   }, [savedInterests]);
 
+  // Analytics 화면 조회 로깅
   useEffect(() => {
     if (editMode) {
       logScreenView('EditInterest', undefined, true);
     } else {
-      // 온보딩 모드일 때만 선택 상태에 따른 로그 기록
       const screenName =
         selectedInterests.size > 0
           ? 'Onboarding_Interest02'
@@ -152,25 +177,11 @@ const InterestsScreen = () => {
   }, [selectedInterests.size, editMode]);
   const toggleInterest = useCallback(
     (id: InterestCategory) => {
-      // 먼저 현재 상태를 확인하여 3개 제한 체크
       setSelectedInterests(prev => {
-        if (!prev.has(id) && prev.size >= 3) {
-          setTimeout(() => {
-            showToastModal({
-              message: '최대 3순위까지 선택할 수 있어요',
-              position: 'center',
-              backgroundColor: COLORS.gray800Opacity80,
-              height: scaleWidth(39),
-              width: scaleWidth(212),
-              borderRadius: BORDER_RADIUS[8],
-            });
-          }, 0);
-          return prev; // 변경 없이 이전 상태 반환
-        }
-
         const newSelected = new Map(prev);
+
+        // 이미 선택된 경우 제거하고 순서 재정렬
         if (newSelected.has(id)) {
-          // 이미 선택된 경우 제거하고 순서 재정렬
           const removedOrder = newSelected.get(id)!;
           newSelected.delete(id);
           // 제거된 순서보다 큰 순서들을 1씩 감소
@@ -180,17 +191,26 @@ const InterestsScreen = () => {
             }
           });
         } else {
-          // 최대 3개까지 선택 가능
-          // 현재 Map에 있는 최대 순서를 찾아서 +1
-          let maxOrder = 0;
-          newSelected.forEach(order => {
-            if (order > maxOrder) {
-              maxOrder = order;
-            }
-          });
-          const nextOrder = maxOrder + 1;
-          newSelected.set(id, nextOrder);
+          // 최대 3개 제한 체크
+          if (newSelected.size >= 3) {
+            setTimeout(() => {
+              showToastModal({
+                message: '최대 3순위까지 선택할 수 있어요',
+                position: 'center',
+                backgroundColor: COLORS.gray800Opacity80,
+                height: scaleWidth(39),
+                width: scaleWidth(212),
+                borderRadius: BORDER_RADIUS[8],
+              });
+            }, 0);
+            return prev;
+          }
+
+          // 최대 순서를 찾아서 +1
+          const maxOrder = Math.max(0, ...Array.from(newSelected.values()));
+          newSelected.set(id, maxOrder + 1);
         }
+
         // 변경된 관심분야를 AsyncStorage에 저장
         const interestsData: Record<string, number> = {};
         newSelected.forEach((order, key) => {
@@ -213,18 +233,18 @@ const InterestsScreen = () => {
   const handleNext = useCallback(async () => {
     // 선택된 관심분야를 순서대로 배열로 변환
     const interestsArray = Array.from(selectedInterests.entries())
-      .sort((a, b) => a[1] - b[1]) // 순서대로 정렬
-      .map(([category]) => category); // InterestCategory만 추출
+      .sort((a, b) => a[1] - b[1])
+      .map(([category]) => category);
+
     // 서버 API 호출
     try {
-      // userId 가져오기 (사용자 정보에서)
       const userInfo = await getUserInfo();
-      if (!userInfo || !userInfo.userId) {
+      if (!userInfo?.userId) {
         Alert.alert(
           '오류',
           '사용자 정보를 찾을 수 없습니다. 다시 로그인해주세요.',
         );
-        return; // 로컬 저장 중단
+        return;
       }
 
       await updateUserInterests(userInfo.userId, interestsArray);
@@ -234,15 +254,13 @@ const InterestsScreen = () => {
         '업데이트 실패',
         '관심분야 업데이트에 실패했습니다. 네트워크를 확인하고 다시 시도해주세요.',
       );
-      return; // 서버 업데이트 실패 시 로컬 저장 중단
+      return;
     }
 
     if (editMode) {
-      // 편집 모드: 뒤로가기만
       navigation.goBack();
       logEvent('Complete_EditInterest');
     } else {
-      // 온보딩 모드: 다음 단계로
       await setOnboardingStep('difficulty');
       logEvent('Next_Onboarding_Interest02');
       navigation.navigate(RouteNames.DIFFICULTY_SETTING);
@@ -277,30 +295,34 @@ const InterestsScreen = () => {
         <Spacer num={52} />
         {/* 모든 관심분야 */}
         <View style={styles.tagsWrapper}>
-          {/* 첫 번째 줄: 정치, 경제, 사회 */}
           <View style={styles.tagsRow}>
-            {FIRST_ROW_INTERESTS.map(interest => (
-              <InterestTag
-                key={interest.id}
-                interest={interest}
-                priority={getPriority(interest.id)}
-                isSelected={getPriority(interest.id) !== null}
-                onPress={toggleInterest}
-                isFirstRow
-              />
-            ))}
+            {FIRST_ROW_INTERESTS.map(interest => {
+              const priority = getPriority(interest.id);
+              return (
+                <InterestTag
+                  key={interest.id}
+                  interest={interest}
+                  priority={priority}
+                  isSelected={priority !== null}
+                  onPress={toggleInterest}
+                />
+              );
+            })}
           </View>
-          {/* 두 번째 줄: 생활/문화, IT/과학, 세계 */}
           <View style={styles.tagsRow}>
-            {SECOND_ROW_INTERESTS.map(interest => (
-              <InterestTag
-                key={interest.id}
-                interest={interest}
-                priority={getPriority(interest.id)}
-                isSelected={getPriority(interest.id) !== null}
-                onPress={toggleInterest}
-              />
-            ))}
+            {SECOND_ROW_INTERESTS.map(interest => {
+              const priority = getPriority(interest.id);
+              return (
+                <InterestTag
+                  key={interest.id}
+                  interest={interest}
+                  priority={priority}
+                  isSelected={priority !== null}
+                  onPress={toggleInterest}
+                  editMode={editMode}
+                />
+              );
+            })}
           </View>
         </View>
       </ScrollView>
@@ -335,10 +357,6 @@ const styles = StyleSheet.create({
     ...Heading_24EB_Round,
     color: COLORS.black,
   },
-  subtitle: {
-    ...Body_16M,
-    color: COLORS.gray600,
-  },
   tagsWrapper: {
     gap: scaleWidth(8),
   },
@@ -347,10 +365,6 @@ const styles = StyleSheet.create({
     gap: scaleWidth(12),
   },
   tagContainer: {
-    justifyContent: 'flex-end',
-    position: 'relative',
-  },
-  tagContainerFirstRow: {
     justifyContent: 'flex-end',
     position: 'relative',
   },

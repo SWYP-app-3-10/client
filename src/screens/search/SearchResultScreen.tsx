@@ -24,6 +24,7 @@ import { useArticleNavigation } from '../../hooks/useArticleNavigation';
 import { useExploreContents } from '../../hooks/useExploreContents';
 
 import { COLORS, scaleWidth } from '../../styles/global';
+import { logEvent } from '../../services/analyticsService';
 
 /**
  * SearchResultScreen
@@ -135,13 +136,15 @@ export default function SearchResultScreen() {
             style={styles.list}
             data={filteredData}
             keyExtractor={item => item.id}
-            renderItem={({ item }) => (
+            renderItem={({ item, index }) => (
               <SearchResultItem
                 item={item}
                 onPress={() => {
                   const parsed = Number(item.id);
                   if (Number.isNaN(parsed)) return;
+
                   handleArticlePress(parsed);
+                  logEvent(`ContectsList${index + 1}_Search`);
                 }}
               />
             )}

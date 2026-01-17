@@ -43,7 +43,7 @@ const MainTabNavigator = () => {
         }}
         listeners={{
           tabPress: () => {
-            logEvent('home_nav');
+            logEvent('Nav_Home');
           },
         }}
       />
@@ -55,7 +55,7 @@ const MainTabNavigator = () => {
         }}
         listeners={{
           tabPress: () => {
-            logEvent('character_nav');
+            logEvent('Nav_Character');
           },
         }}
       />
@@ -67,7 +67,7 @@ const MainTabNavigator = () => {
         }}
         listeners={{
           tabPress: () => {
-            logEvent('explore_nav');
+            logEvent('Nav_Explore');
           },
         }}
       />
@@ -79,7 +79,7 @@ const MainTabNavigator = () => {
         }}
         listeners={{
           tabPress: () => {
-            logEvent('my_nav');
+            logEvent('Nav_My');
           },
         }}
       />

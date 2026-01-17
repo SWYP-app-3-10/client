@@ -245,7 +245,12 @@ const MyPageScreen = () => {
 
           {/* 날짜 선택기 */}
           <View style={styles.dateSelector}>
-            <IconButton onPress={() => setSelectedWeek(prev => prev - 1)}>
+            <IconButton
+              onPress={() => {
+                setSelectedWeek(prev => prev - 1);
+                logEvent('Back_DateRead_My');
+              }}
+            >
               <TriangleIcon color={COLORS.gray600} />
             </IconButton>
 
@@ -256,6 +261,7 @@ const MyPageScreen = () => {
                 // canGoNext가 true일 때만 이동
                 if (canGoNext) {
                   setSelectedWeek(prev => prev + 1);
+                  logEvent('Next_DateRead_My');
                 }
               }}
               disabled={!canGoNext}
