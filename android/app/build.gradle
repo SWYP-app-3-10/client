@@ -84,8 +84,8 @@ android {
         applicationId "io.neurous.app"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 10
-        versionName "1.0.0"
+        versionCode 12
+        versionName "1.0.1"
         ndk {
             abiFilters "arm64-v8a", "x86_64"
         }
