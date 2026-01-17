@@ -55,7 +55,6 @@ import {
   categoryNameMap,
   formatArticleDate,
   calculateWeekRange,
-  hasNextWeekData,
   convertToYYYYMMDD,
   convertMyPageContentsToReadArticles,
 } from '../../utils/myPageUtils';
@@ -133,11 +132,10 @@ const MyPageScreen = () => {
   // 난이도
   const currentDifficulty = myPageData?.level || null;
 
-  // 다음 주에 데이터가 있는지 확인
-  const hasNextWeek = useMemo(
-    () => hasNextWeekData(selectedWeek, readArticles),
-    [selectedWeek, readArticles],
-  );
+  // '>' 버튼 활성화 여부
+  const canGoNext = useMemo(() => {
+    return selectedWeek < 0;
+  }, [selectedWeek]);
 
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
@@ -254,11 +252,16 @@ const MyPageScreen = () => {
             <Text style={styles.dateRange}>{currentWeekRange}</Text>
 
             <IconButton
-              onPress={() => setSelectedWeek(prev => prev + 1)}
-              disabled={!hasNextWeek}
+              onPress={() => {
+                // canGoNext가 true일 때만 이동
+                if (canGoNext) {
+                  setSelectedWeek(prev => prev + 1);
+                }
+              }}
+              disabled={!canGoNext}
             >
               <TriangleIcon
-                color={hasNextWeek ? COLORS.gray600 : COLORS.gray200}
+                color={canGoNext ? COLORS.gray600 : COLORS.gray200}
                 style={{ transform: [{ rotate: '180deg' }] }}
               />
             </IconButton>
