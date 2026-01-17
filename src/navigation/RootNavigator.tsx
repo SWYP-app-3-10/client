@@ -1,5 +1,9 @@
 import React, { useEffect, useRef } from 'react';
-import { NavigationContainer, CommonActions } from '@react-navigation/native';
+import {
+  NavigationContainer,
+  CommonActions,
+  NavigationState,
+} from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 
 import { RouteNames } from '../../routes';
@@ -30,6 +34,8 @@ import { COLORS, scaleWidth } from '../styles/global';
 import { Modal_IMG } from '../icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { LevelUpInfo } from '../api/missionApi';
+import { logScreenView } from '../services/analyticsService';
+import { isScreenMapped } from '../services/analyticsService';
 
 const Stack = createNativeStackNavigator();
 
@@ -296,18 +302,63 @@ const RootNavigatorContent: React.FC<{
 };
 
 /**
+ * 네비게이션 상태에서 현재 화면 이름 추출
+ */
+const getActiveRouteName = (
+  state: NavigationState | undefined,
+): string | null => {
+  if (!state || typeof state.index !== 'number') {
+    return null;
+  }
+
+  const route = state.routes[state.index];
+
+  if (route.state) {
+    return getActiveRouteName(route.state as NavigationState);
+  }
+
+  return route.name;
+};
+
+/**
  * RootNavigator
  * - NavigationContainer + navigationRef 연결
+ * - 화면 전환 시 자동으로 Analytics 로그 기록
  */
 const RootNavigator: React.FC = () => {
   const navigationRef = React.useRef<any>(null);
   const [isReady, setIsReady] = React.useState(false);
+  const routeNameRef = React.useRef<string | null>(null);
 
   return (
     <NavigationContainer
       ref={navigationRef}
       onReady={() => {
         setIsReady(true);
+        // 초기 화면 로깅 (매핑된 화면만)
+        const currentRouteName = getActiveRouteName(
+          navigationRef.current?.getRootState(),
+        );
+        if (currentRouteName && isScreenMapped(currentRouteName)) {
+          routeNameRef.current = currentRouteName;
+          logScreenView(currentRouteName);
+        }
+      }}
+      onStateChange={() => {
+        const previousRouteName = routeNameRef.current;
+        const currentRouteName = getActiveRouteName(
+          navigationRef.current?.getRootState(),
+        );
+
+        // 화면이 변경되었고, 매핑된 화면인 경우에만 로깅
+        if (
+          previousRouteName !== currentRouteName &&
+          currentRouteName &&
+          isScreenMapped(currentRouteName)
+        ) {
+          routeNameRef.current = currentRouteName;
+          logScreenView(currentRouteName);
+        }
       }}
     >
       <RootNavigatorContent navigationRef={navigationRef} isReady={isReady} />

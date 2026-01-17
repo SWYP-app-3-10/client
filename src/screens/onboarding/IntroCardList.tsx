@@ -14,6 +14,7 @@ import {
   Heading_24EB_Round,
 } from '../../styles/typography';
 import { Intro_CardList } from '../../icons/commonIcons/simpleImages';
+import { logEvent } from '../../services/analyticsService';
 
 type NavigationProp = NativeStackNavigationProp<OnboardingStackParamList>;
 
@@ -56,7 +57,10 @@ const IntroCardList = () => {
           backgroundColor: COLORS.puple.main,
           marginHorizontal: scaleWidth(20),
         }}
-        onPress={() => navigation.navigate(RouteNames.INTRO_FUNCTION)}
+        onPress={() => {
+          navigation.navigate(RouteNames.INTRO_FUNCTION);
+          logEvent('Next_Onboarding_Function01_CardList');
+        }}
       >
         <Text style={[Heading_18EB_Round, { color: COLORS.white }]}>다음</Text>
       </TouchableOpacity>

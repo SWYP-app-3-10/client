@@ -55,10 +55,10 @@ import {
   categoryNameMap,
   formatArticleDate,
   calculateWeekRange,
-  hasNextWeekData,
   convertToYYYYMMDD,
   convertMyPageContentsToReadArticles,
 } from '../../utils/myPageUtils';
+import { logEvent, logScreenView } from '../../services/analyticsService';
 
 // MyPageStack + RootStack 합친 네비게이션 타입
 type MyPageNavigationProp = CompositeNavigationProp<
@@ -132,11 +132,10 @@ const MyPageScreen = () => {
   // 난이도
   const currentDifficulty = myPageData?.level || null;
 
-  // 다음 주에 데이터가 있는지 확인
-  const hasNextWeek = useMemo(
-    () => hasNextWeekData(selectedWeek, readArticles),
-    [selectedWeek, readArticles],
-  );
+  // '>' 버튼 활성화 여부
+  const canGoNext = useMemo(() => {
+    return selectedWeek < 0;
+  }, [selectedWeek]);
 
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
@@ -158,6 +157,7 @@ const MyPageScreen = () => {
               navigation.getParent()?.navigate(RouteNames.FULL_SCREEN_STACK, {
                 screen: RouteNames.SETTINGS,
               });
+              logEvent('Setting_My');
             }}
           >
             <SettingIcon />
@@ -187,6 +187,7 @@ const MyPageScreen = () => {
                   screen: RouteNames.INTERESTS,
                   params: { editMode: true },
                 });
+                logEvent('EditInterest_My');
               }}
             >
               <Text style={styles.editButton}>편집</Text>
@@ -216,6 +217,7 @@ const MyPageScreen = () => {
           <TouchableOpacity
             style={styles.levelButton}
             onPress={() => {
+              logScreenView('EditLevelModal', undefined, true);
               showBottomSheetModal({
                 children: React.createElement(LevelSelectionContent, {
                   selectedLevel: currentDifficulty,
@@ -223,6 +225,7 @@ const MyPageScreen = () => {
                 }),
                 paddingHorizontal: 0,
               });
+              logEvent('EditLevel_My');
             }}
           >
             <Text style={styles.levelText}>
@@ -242,18 +245,29 @@ const MyPageScreen = () => {
 
           {/* 날짜 선택기 */}
           <View style={styles.dateSelector}>
-            <IconButton onPress={() => setSelectedWeek(prev => prev - 1)}>
+            <IconButton
+              onPress={() => {
+                setSelectedWeek(prev => prev - 1);
+                logEvent('Back_DateRead_My');
+              }}
+            >
               <TriangleIcon color={COLORS.gray600} />
             </IconButton>
 
             <Text style={styles.dateRange}>{currentWeekRange}</Text>
 
             <IconButton
-              onPress={() => setSelectedWeek(prev => prev + 1)}
-              disabled={!hasNextWeek}
+              onPress={() => {
+                // canGoNext가 true일 때만 이동
+                if (canGoNext) {
+                  setSelectedWeek(prev => prev + 1);
+                  logEvent('Next_DateRead_My');
+                }
+              }}
+              disabled={!canGoNext}
             >
               <TriangleIcon
-                color={hasNextWeek ? COLORS.gray600 : COLORS.gray200}
+                color={canGoNext ? COLORS.gray600 : COLORS.gray200}
                 style={{ transform: [{ rotate: '180deg' }] }}
               />
             </IconButton>

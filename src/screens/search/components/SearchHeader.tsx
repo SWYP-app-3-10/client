@@ -15,6 +15,7 @@ import { Ic_backIcon } from '../../../icons';
 import X_SearchInput from '../../../assets/svg/X_SearchInput.svg';
 import { BORDER_RADIUS, COLORS, scaleWidth } from '../../../styles/global';
 import { Body_16M } from '../../../styles/typography';
+import { logEvent } from '../../../services/analyticsService';
 
 type Props = {
   value: string;
@@ -54,12 +55,14 @@ export default function SearchHeader({
   const navigation = useNavigation();
 
   const handleBack = () => {
+    logEvent('Back_Search');
     if (goBackAction) return goBackAction();
     navigation.goBack();
   };
 
   const handleClear = () => {
     onChangeText?.('');
+    logEvent('ClearText_Search');
   };
 
   return (

@@ -5,7 +5,6 @@ import { Caption_14R } from '../styles/typography';
 import Spacer from './Spacer';
 import QuizOptionCard from './QuizOptionCard';
 import QuizQuestion from './QuizQuestion';
-
 interface QuizOption {
   id: number;
   text: string;
@@ -30,7 +29,6 @@ const QuizFeedback: React.FC<QuizFeedbackProps> = ({
 }) => {
   const isCorrect =
     selectedAnswerId !== null && selectedAnswerId === correctAnswerId;
-
   return (
     <View style={styles.quizSection} ref={containerRef}>
       <QuizQuestion question={question} Q_color={COLORS.gray800} />

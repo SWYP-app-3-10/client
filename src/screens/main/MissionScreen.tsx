@@ -47,6 +47,7 @@ import {
 import { useExperienceStore } from '../../store/experienceStore';
 import IconButton from '../../components/IconButton';
 import { AlarmIcon, Modal_IMG } from '../../icons';
+import { logEvent, logScreenView } from '../../services/analyticsService';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 const WIDTH_EDGE = scaleWidth(353); // 처음과 마지막 카드 너비
@@ -209,12 +210,13 @@ const MissionScreen = () => {
         // 첫 번째 백키: 토스트 표시
         showToastModal({
           message: "'뒤로' 버튼을 한번 더 누르시면 종료됩니다.",
-          position: 'center',
+          position: 'bottom',
           backgroundColor: COLORS.blackOpacity60,
           height: scaleWidth(67),
           width: scaleWidth(353),
           borderRadius: BORDER_RADIUS[16],
         });
+        logScreenView('Popup_Out_App', undefined, true);
 
         // 2초 후 타이머 초기화
         backPressTimerRef.current = setTimeout(() => {
@@ -394,7 +396,12 @@ const MissionScreen = () => {
                 <ArticleCard
                   key={article.id}
                   article={article}
-                  onPress={() => handleArticlePress(article.contentId)}
+                  onPress={() => {
+                    handleArticlePress(article.contentId);
+                    if (index < 9) {
+                      logEvent(`Card0${index + 1}_Home`);
+                    }
+                  }}
                 />
               );
             })

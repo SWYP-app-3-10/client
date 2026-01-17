@@ -30,6 +30,7 @@ import { createQuizCompleteNavigation } from '../../utils/quizNavigation';
 import { fetchQuiz, QuizResponse, submitQuiz } from '../../api/missionApi';
 import { getUserInfo } from '../../services/authService';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { logEvent, logScreenView } from '../../services/analyticsService';
 
 type QuizState = 'question' | 'feedback';
 
@@ -58,6 +59,14 @@ const QuizScreen: React.FC = () => {
   const navigation = useNavigation();
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const { submitDifficultyToServer } = useDifficultySubmit();
+
+  // quizState가 'feedback'으로 변경될 때만 로그 기록
+  // 'question' 상태는 RootNavigator에서 이미 '퀴즈'로 자동 로그가 기록됨
+  useEffect(() => {
+    if (quizState === 'feedback') {
+      logScreenView('Quiz_Answer', undefined, true);
+    }
+  }, [quizState]);
 
   // 퀴즈 데이터 로드
   useEffect(() => {
@@ -129,10 +138,7 @@ const QuizScreen: React.FC = () => {
         selectedNo: selectedChoice.choiceNo,
         readContentId: articleId,
       };
-      console.log('[퀴즈 제출 API] 요청:', {
-        userId: userInfo.userId,
-        request: submitRequest,
-      });
+      logEvent('Next_Quiz');
 
       const response = await submitQuiz(userInfo.userId, submitRequest);
       console.log('[퀴즈 제출 API] 응답:', JSON.stringify(response, null, 2));
@@ -206,6 +212,7 @@ const QuizScreen: React.FC = () => {
       navigation.dispatch(createQuizCompleteNavigation(returnTo));
       return;
     }
+    logEvent('Complete_Quiz_Answer');
 
     // 난이도 선택 모달 표시
     showModal({
@@ -230,7 +237,7 @@ const QuizScreen: React.FC = () => {
             setTimeout(() => {
               hideModal();
               navigation.dispatch(createQuizCompleteNavigation(returnTo));
-            }, 2000);
+            }, 200);
           }}
         />
       ),
@@ -277,7 +284,7 @@ const QuizScreen: React.FC = () => {
     return optionId === quiz.correctAnswerId;
   };
 
-  const renderOption = (option: QuizOption) => {
+  const renderOption = (option: QuizOption, index: number) => {
     if (quizState === 'question') {
       // 문제 화면: 선택 여부에 따라 스타일 변경
       const isSelected = selectedOptionId === option.id;
@@ -285,7 +292,16 @@ const QuizScreen: React.FC = () => {
         <Pressable
           key={option.id}
           style={[styles.optionCard, isSelected && styles.optionCardSelected]}
-          onPress={() => handleOptionSelect(option.id)}
+          onPress={() => {
+            if (index === 0) {
+              logEvent('Choice1_Quiz');
+            } else if (index === 1) {
+              logEvent('Choice2_Quiz');
+            } else if (index === 2) {
+              logEvent('Choice3_Quiz');
+            }
+            handleOptionSelect(option.id);
+          }}
         >
           <Text style={styles.optionText}>{option.text}</Text>
           <View style={[styles.checkIcon]}>
@@ -319,7 +335,10 @@ const QuizScreen: React.FC = () => {
 
   return (
     <SafeAreaView style={styles.container}>
-      <Header iconColor={COLORS.gray800} />
+      <Header
+        iconColor={COLORS.gray800}
+        backEventName="Back_ConfirmStandard_Quiz"
+      />
       <Spacer num={32} />
       <ScrollView
         bounces={false}
@@ -336,7 +355,7 @@ const QuizScreen: React.FC = () => {
         {quiz.options.map((option, index) => {
           return (
             <View key={option.id}>
-              {renderOption(option)}
+              {renderOption(option, index)}
               {index !== quiz.options.length - 1 && <Spacer num={16} />}
             </View>
           );

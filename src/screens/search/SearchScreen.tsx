@@ -39,6 +39,7 @@ import ExploreTooltipTail from '../../assets/svg/ExploreTooltipTail.svg';
 
 // 탐색 컨텐츠 조회(infinite query)
 import { useExploreContents } from '../../hooks/useExploreContents';
+import { logEvent } from '../../services/analyticsService';
 
 // 버튼 터치 영역 확대
 const HIT_SLOP = { top: 10, bottom: 10, left: 10, right: 10 };
@@ -122,6 +123,7 @@ export default function SearchScreen() {
 
   // 오른쪽 검색 아이콘 클릭 시 검색 입력 화면으로 이동
   const goToSearchInput = () => {
+    logEvent('Search_Explore');
     navigation.navigate(RouteNames.FULL_SCREEN_STACK, {
       screen: RouteNames.SEARCH_INPUT,
     });
@@ -154,6 +156,21 @@ export default function SearchScreen() {
                 refetch();
                 return;
               }
+              if (cat === '전체') {
+                logEvent('CategoryChip_All_Explore');
+              } else if (cat === '정치') {
+                logEvent('CategoryChip_Politics_Explore');
+              } else if (cat === '경제') {
+                logEvent('CategoryChip_Economy_Explore');
+              } else if (cat === '사회') {
+                logEvent('CategoryChip_Society_Explore');
+              } else if (cat === '생활/문화') {
+                logEvent('CategoryChip_Lifestyle/Culture_Explore');
+              } else if (cat === 'IT/과학') {
+                logEvent('CategoryChip_It/Science_Explore');
+              } else if (cat === '세계') {
+                logEvent('CategoryChip_World_Explore');
+              }
               setSelectedCategory(cat);
             }}
           />
@@ -177,7 +194,10 @@ export default function SearchScreen() {
             renderItem={({ item }) => (
               <SearchResultItem
                 item={item}
-                onPress={() => handleArticlePress(Number(item.id))}
+                onPress={() => {
+                  handleArticlePress(Number(item.id));
+                  logEvent('ContectsList_Explore');
+                }}
               />
             )}
             contentContainerStyle={styles.listContent}
@@ -308,6 +328,7 @@ function useTooltip(autoHideMs: number) {
   }, []);
 
   const toggle = useCallback(() => {
+    logEvent('Timer_Explore');
     setVisible(prev => {
       const next = !prev;
       clearTimer();
