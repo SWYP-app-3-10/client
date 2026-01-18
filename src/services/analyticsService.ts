@@ -1,4 +1,8 @@
-import analytics from '@react-native-firebase/analytics';
+import {
+  getAnalytics,
+  logEvent as firebaseLogEvent,
+} from '@react-native-firebase/analytics';
+import { getApp } from '@react-native-firebase/app';
 import { RouteNames } from '../../routes';
 import { IS_PRODUCTION } from '../config/adConfig';
 
@@ -93,7 +97,8 @@ export const logScreenView = async (
     const finalScreenName = mappedName || screenName;
 
     // 화면 이름을 직접 이벤트 이름으로 사용 (Firebase 자동 screen_view 대신)
-    await analytics().logEvent(finalScreenName);
+    const analyticsInstance = getAnalytics(getApp());
+    await firebaseLogEvent(analyticsInstance, finalScreenName);
   } catch (error) {
     console.error('Analytics logScreenView 오류:', error);
   }
@@ -114,7 +119,8 @@ export const logEvent = async (
       return;
     }
 
-    await analytics().logEvent(eventName, params);
+    const analyticsInstance = getAnalytics(getApp());
+    await firebaseLogEvent(analyticsInstance, eventName, params);
   } catch (error) {
     console.error('Analytics logEvent 오류:', error);
   }
