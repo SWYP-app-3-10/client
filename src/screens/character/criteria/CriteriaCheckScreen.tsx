@@ -10,6 +10,7 @@ import Header from '../../../components/Header';
 // 공통 디자인 시스템
 import { COLORS, BORDER_RADIUS, scaleWidth } from '../../../styles/global';
 import { Body_16SB, Heading_16B } from '../../../styles/typography';
+import { logEvent } from '../../../services/analyticsService';
 
 /** 상단 세그먼트 탭 키 */
 type TabKey = 'LEVEL' | 'POINT';
@@ -29,13 +30,23 @@ const CriteriaCheckScreen = () => {
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
       {/* 공통 헤더 */}
-      <Header title="기준 확인하기" />
+      <Header
+        title="기준 확인하기"
+        backEventName={
+          tab === 'LEVEL'
+            ? 'Back_ConfirmStandard_Level'
+            : 'Back_ConfirmStandard_Xp/P'
+        }
+      />
 
       {/* 세그먼트 탭 */}
       <View style={styles.segmentWrap}>
         {/* 레벨 탭 */}
         <Pressable
-          onPress={() => setTab('LEVEL')}
+          onPress={() => {
+            setTab('LEVEL');
+            logEvent('Level_ConfirmLevelStandard');
+          }}
           style={[
             styles.segmentBtn,
             tab === 'LEVEL' && styles.segmentBtnActive,
@@ -53,7 +64,10 @@ const CriteriaCheckScreen = () => {
 
         {/* 경험치 / 포인트 탭 */}
         <Pressable
-          onPress={() => setTab('POINT')}
+          onPress={() => {
+            setTab('POINT');
+            logEvent('Xp/p_ConfirmLevelStandard');
+          }}
           style={[
             styles.segmentBtn,
             tab === 'POINT' && styles.segmentBtnActive,

@@ -17,6 +17,7 @@ import {
 import Header from '../../components/Header';
 import { CheckIcon } from '../../icons';
 import RightArrow from '../../assets/svg/RightArrow.svg';
+import { logEvent } from '../../services/analyticsService';
 
 type NavigationProp = NativeStackNavigationProp<OnboardingStackParamList>;
 type RouteP = RouteProp<
@@ -50,6 +51,7 @@ const TermsAgreementScreen = () => {
 
   // "모두 동의하기" 토글
   const toggleAll = () => {
+    logEvent('AgreeAll_AgreeToTerms');
     const next = !(age14 && tos && privacy);
     setAge14(next);
     setTos(next);
@@ -90,14 +92,23 @@ const TermsAgreementScreen = () => {
 
         {/* 필수 항목 리스트 */}
         <View style={styles.list}>
-          <Pressable style={styles.row} onPress={() => setAge14(v => !v)}>
+          <Pressable
+            style={styles.row}
+            onPress={() => {
+              setAge14(v => !v);
+              logEvent('Chk_Required_Age14Plus_AgreeToTerms');
+            }}
+          >
             <Check checked={age14} />
             <Text style={styles.rowText}>[필수] 만 14세 이상</Text>
           </Pressable>
 
           <View style={styles.row}>
             <Pressable
-              onPress={() => setTos(v => !v)}
+              onPress={() => {
+                setTos(v => !v);
+                logEvent('Chk_Required_TermsOfService_AgreeToTerms');
+              }}
               hitSlop={8}
               style={styles.checkHit}
             >
@@ -117,7 +128,10 @@ const TermsAgreementScreen = () => {
 
           <View style={styles.row}>
             <Pressable
-              onPress={() => setPrivacy(v => !v)}
+              onPress={() => {
+                setPrivacy(v => !v);
+                logEvent('Chk_Required_PrivacyPolicy_AgreeToTerms');
+              }}
               hitSlop={8}
               style={styles.checkHit}
             >

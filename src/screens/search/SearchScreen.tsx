@@ -1,10 +1,4 @@
-import React, {
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   View,
   Text,
@@ -14,7 +8,6 @@ import {
   Pressable,
   RefreshControl,
   ActivityIndicator,
-  Image,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
@@ -36,25 +29,25 @@ import { NewsCategory, NewsItems } from '../../data/mock/searchData';
 import { useArticleNavigation } from '../../hooks/useArticleNavigation';
 
 // 공통 스타일 토큰
-import { COLORS, scaleWidth } from '../../styles/global';
-import { Caption_12M } from '../../styles/typography';
+import { BORDER_RADIUS, COLORS, scaleWidth } from '../../styles/global';
+import { Caption_12M, Caption_14R } from '../../styles/typography';
 
 // SVG 아이콘
 import InfoIcon from '../../assets/svg/Info_Search.svg';
 import SearchIcon from '../../assets/svg/ExploreSearch.svg';
-
-// PNG 툴팁 에셋
-import TooltipSearch from '../../assets/png/Tooltip_Search.png';
+import ExploreTooltipTail from '../../assets/svg/ExploreTooltipTail.svg';
 
 // 탐색 컨텐츠 조회(infinite query)
 import { useExploreContents } from '../../hooks/useExploreContents';
+import { logEvent } from '../../services/analyticsService';
 
 // 버튼 터치 영역 확대
 const HIT_SLOP = { top: 10, bottom: 10, left: 10, right: 10 };
 
-// PNG 툴팁 고정 사이즈 (에셋 원본 270x55 기준)
-const TOOLTIP_W = scaleWidth(270);
-const TOOLTIP_H = scaleWidth(55);
+// 툴팁 상수
+const TOOLTIP_TAIL_H = scaleWidth(13);
+const TOOLTIP_TAIL_W = scaleWidth(15);
+const TOOLTIP_BG = 'rgba(118, 124, 145, 0.95)';
 
 // UI 카테고리(한글) -> 서버 enum 매핑
 const SERVER_CATEGORY_MAP: Record<string, string | undefined> = {
@@ -121,6 +114,7 @@ export default function SearchScreen() {
       readTime: `${c.readingTime ?? 0}분 소요`,
       imageUrl: c.imgUrl || '',
       content: '',
+      hits: c.hits ?? 0,
     }));
   }, [data]);
 
@@ -129,6 +123,7 @@ export default function SearchScreen() {
 
   // 오른쪽 검색 아이콘 클릭 시 검색 입력 화면으로 이동
   const goToSearchInput = () => {
+    logEvent('Search_Explore');
     navigation.navigate(RouteNames.FULL_SCREEN_STACK, {
       screen: RouteNames.SEARCH_INPUT,
     });
@@ -161,6 +156,21 @@ export default function SearchScreen() {
                 refetch();
                 return;
               }
+              if (cat === '전체') {
+                logEvent('CategoryChip_All_Explore');
+              } else if (cat === '정치') {
+                logEvent('CategoryChip_Politics_Explore');
+              } else if (cat === '경제') {
+                logEvent('CategoryChip_Economy_Explore');
+              } else if (cat === '사회') {
+                logEvent('CategoryChip_Society_Explore');
+              } else if (cat === '생활/문화') {
+                logEvent('CategoryChip_Lifestyle/Culture_Explore');
+              } else if (cat === 'IT/과학') {
+                logEvent('CategoryChip_It/Science_Explore');
+              } else if (cat === '세계') {
+                logEvent('CategoryChip_World_Explore');
+              }
               setSelectedCategory(cat);
             }}
           />
@@ -184,7 +194,10 @@ export default function SearchScreen() {
             renderItem={({ item }) => (
               <SearchResultItem
                 item={item}
-                onPress={() => handleArticlePress(Number(item.id))}
+                onPress={() => {
+                  handleArticlePress(Number(item.id));
+                  logEvent('ContectsList_Explore');
+                }}
               />
             )}
             contentContainerStyle={styles.listContent}
@@ -303,57 +316,36 @@ const ExploreHeaderWithTimer = React.memo(function ExploreHeaderWithTimer({
  * useTooltip
  * - visible 토글
  * - autoHideMs 후 자동 숨김
- * - PNG 툴팁은 고정 너비(TOOLTIP_W)이므로 "측정값" 없이 타겟 중심 기준으로 위치 계산
- *
- * 중요
- * - centerWrap(가운데 영역) 폭이 TOOLTIP_W보다 좁으면 clamp 기반 계산이 0으로 붙는 문제가 생김
- * - 그래서 타겟 중심 기준으로만 left를 잡아 "정중앙"을 유지
+ * - 타이머 pill이 항상 화면 정중앙이므로 tooltipLeft(가로 위치 계산)는 제거
  */
 function useTooltip(autoHideMs: number) {
   const [visible, setVisible] = useState(false);
-
-  // 자동 숨김 타이머 ref
   const hideTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // 타겟(타이머 pill)의 중심 X (centerWrap 기준 좌표)
-  const [targetCenterX, setTargetCenterX] = useState(0);
-
-  // 타이머 정리
   const clearTimer = useCallback(() => {
     if (hideTimerRef.current) clearTimeout(hideTimerRef.current);
+    hideTimerRef.current = null;
   }, []);
 
-  // visible 토글 + 자동 숨김 예약
   const toggle = useCallback(() => {
+    logEvent('Timer_Explore');
     setVisible(prev => {
       const next = !prev;
       clearTimer();
-      if (next)
+
+      if (next) {
         hideTimerRef.current = setTimeout(() => setVisible(false), autoHideMs);
+      }
+
       return next;
     });
   }, [autoHideMs, clearTimer]);
 
-  // 타겟 중심 기준으로 툴팁 left 계산
-  // PNG 고정폭이라 별도 측정이 필요 없음
-  const tooltipLeft = useMemo(
-    () => targetCenterX - TOOLTIP_W / 2,
-    [targetCenterX],
-  );
+  useEffect(() => {
+    return () => clearTimer();
+  }, [clearTimer]);
 
-  // 기존 구조 유지용 (필요 시 외부에서 호출해도 동작하도록 둠)
-  const onLayoutArea = useCallback((_e: any) => {}, []);
-
-  return {
-    visible,
-    toggle,
-    tooltipLeft,
-    onLayoutArea,
-    onLayoutTarget: (e: any) => {
-      const { x, width } = e.nativeEvent.layout;
-      setTargetCenterX(x + width / 2);
-    },
-  };
+  return { visible, toggle };
 }
 
 // 업데이트는 하루 8번(3,6,9,12,15,18,21,24시)
@@ -407,40 +399,29 @@ const HeaderArea = ({
     <View style={styles.leftSpacer} />
 
     {/* 타이머 & 툴팁 영역 (정중앙 고정) */}
-    <View style={styles.centerWrap} onLayout={tooltip.onLayoutArea}>
-      <Pressable
-        onPress={tooltip.toggle}
-        style={styles.timerPill}
-        hitSlop={HIT_SLOP}
-        onLayout={tooltip.onLayoutTarget}
-      >
+    <View style={styles.centerWrap}>
+      <Pressable onPress={tooltip.toggle} style={styles.timerPill} hitSlop={HIT_SLOP}>
         <Text style={styles.timerPillText}>{timerText}</Text>
         <View style={styles.timerPillIconBox}>
           <InfoIcon />
         </View>
       </Pressable>
 
-      {/* 툴팁 (PNG) */}
       {tooltip.visible && (
-        <View
-          style={[
-            styles.tooltipWrap,
-            { left: tooltip.tooltipLeft, width: TOOLTIP_W, height: TOOLTIP_H },
-          ]}
-          pointerEvents="none"
-        >
-          <Image
-            source={TooltipSearch}
-            style={styles.tooltipImage}
-            resizeMode="contain"
-          />
+        <View style={styles.tooltipWrap} pointerEvents="none">
+          {/* 꼬리 (SVG) */}
+          <View style={styles.tooltipTailWrap}>
+            <ExploreTooltipTail width={TOOLTIP_TAIL_W} height={TOOLTIP_TAIL_H} color={'rgba(118, 124, 145, 0.95)'} />
+          </View>
 
-          {/* PNG 위에 텍스트를 absolute로 얹음 */}
-          <Text style={styles.tooltipTextOverlay}>
-            {isNow
-              ? '지금 새로운 글을 확인할 수 있어요!'
-              : `${tooltipMinutes} 뒤에 새로운 글을 확인할 수 있어요!`}
-          </Text>
+          {/* 몸통(패딩 기반) */}
+          <View style={styles.tooltipBody}>
+            <Text style={styles.tooltipText}>
+              {isNow
+                ? '지금 새로운 글을 확인할 수 있어요!'
+                : `${tooltipMinutes} 뒤에 새로운 글을 확인할 수 있어요!`}
+            </Text>
+          </View>
         </View>
       )}
     </View>
@@ -463,7 +444,6 @@ const styles = StyleSheet.create({
   container: { flex: 1 },
 
   // 헤더 한 줄 레이아웃
-  // paddingHorizontal로 양쪽 기본 여백 확보
   exploreHeaderRow: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -493,7 +473,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     height: scaleWidth(34),
-    borderRadius: scaleWidth(999),
+    borderRadius: BORDER_RADIUS[30],
     borderWidth: 1,
     borderColor: COLORS.gray300,
     backgroundColor: COLORS.white,
@@ -506,31 +486,32 @@ const styles = StyleSheet.create({
   },
   timerPillIconBox: { width: scaleWidth(18), height: scaleWidth(18) },
 
-  // 툴팁 UI (PNG)
+  // 툴팁 (꼬리 SVG + 몸통 View)
   tooltipWrap: {
     position: 'absolute',
     top: scaleWidth(42),
     zIndex: 999,
     elevation: 999,
+    alignItems: 'center',
   },
-  tooltipImage: {
-    width: TOOLTIP_W,
-    height: TOOLTIP_H,
+  tooltipTailWrap: {
+    height: TOOLTIP_TAIL_H,
+    justifyContent: 'flex-end',
+    alignItems: 'center',
   },
-
-  // PNG(270x55)에서 텍스트 영역(rect y=13, height=42)에 맞춰 정렬
-  tooltipTextOverlay: {
-    position: 'absolute',
-    left: scaleWidth(12),
-    right: scaleWidth(12),
-    top: scaleWidth(13),
-    height: scaleWidth(42),
-
-    ...Caption_12M,
+  tooltipBody: {
+    backgroundColor: TOOLTIP_BG,
+    borderRadius: BORDER_RADIUS[12],
+    paddingHorizontal: scaleWidth(18),
+    paddingVertical: scaleWidth(12),
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: -2,
+  },
+  tooltipText: {
+    ...Caption_14R,
     color: COLORS.white,
-
     textAlign: 'center',
-    textAlignVertical: 'center',
   },
 
   // 오른쪽 검색 버튼 영역

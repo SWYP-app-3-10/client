@@ -57,6 +57,7 @@ import {
   convertCharacterMissionToMission,
 } from '../../hooks/useCharacter';
 import { ActivityIndicator } from 'react-native';
+import { logEvent } from '../../services/analyticsService';
 
 /**
  * 로티는 require() 번들 방식으로 고정한다.
@@ -266,7 +267,7 @@ const CharacterScreen = () => {
     if (tooltipTimerRef.current) {
       clearTimeout(tooltipTimerRef.current);
     }
-
+    logEvent('Tooltip_Character');
     // 툴팁 표시
     setShowTooltip(true);
 
@@ -287,12 +288,14 @@ const CharacterScreen = () => {
   }, []);
 
   const handleNavigateToCriteria = useCallback(() => {
+    logEvent('Confirm_LevelStandard_Character');
     rootNavigation.navigate(RouteNames.FULL_SCREEN_STACK, {
       screen: RouteNames.CHARACTER_CRITERIA,
     });
   }, [rootNavigation]);
 
   const handleNavigateToPointHistory = useCallback(() => {
+    logEvent('Confirm_P/xp_Character');
     rootNavigation.navigate(RouteNames.FULL_SCREEN_STACK, {
       screen: RouteNames.CHARACTER_POINT_HISTORY,
     });

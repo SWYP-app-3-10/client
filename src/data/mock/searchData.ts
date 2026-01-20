@@ -15,4 +15,5 @@ export interface NewsItems {
   subtitle: string;
   readTime: string; // ex: "5분 소요"
   content: string;
+  hits: number;
 }

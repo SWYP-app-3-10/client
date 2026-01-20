@@ -1,5 +1,9 @@
 import React, { useEffect, useRef } from 'react';
-import { NavigationContainer, CommonActions } from '@react-navigation/native';
+import {
+  NavigationContainer,
+  CommonActions,
+  NavigationState,
+} from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 
 import { RouteNames } from '../../routes';
@@ -22,6 +26,7 @@ import ToastModal from '../components/ToastModal';
 
 import { useExperienceStore } from '../store/experienceStore';
 import { characterKeys } from '../hooks/useCharacter';
+import { missionKeys } from '../hooks/useMissions';
 import { LevelUpModalContent } from '../components/ArticlePointModalContent';
 import { useQueryClient } from '@tanstack/react-query';
 import { Heading_24EB_Round } from '../styles/typography';
@@ -29,6 +34,8 @@ import { COLORS, scaleWidth } from '../styles/global';
 import { Modal_IMG } from '../icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { LevelUpInfo } from '../api/missionApi';
+import { logScreenView } from '../services/analyticsService';
+import { isScreenMapped } from '../services/analyticsService';
 
 const Stack = createNativeStackNavigator();
 
@@ -76,6 +83,8 @@ const RootNavigatorContent: React.FC<{
             routes: [{ name: RouteNames.MAIN_TAB }],
           }),
         );
+        // 온보딩 완료 후 미션 쿼리 무효화하여 자동으로 refetch되도록 함
+        queryClient.invalidateQueries({ queryKey: missionKeys.lists() });
       } else if (!isOnboardingCompleted && prevOnboardingCompletedRef.current) {
         // 온보딩 미완료로 변경됨 (401 에러 등) → 로그인 화면으로 이동
         navigationRef.current.dispatch(
@@ -91,7 +100,7 @@ const RootNavigatorContent: React.FC<{
     }
 
     prevOnboardingCompletedRef.current = isOnboardingCompleted;
-  }, [isOnboardingCompleted, navigationRef, isReady]);
+  }, [isOnboardingCompleted, navigationRef, isReady, queryClient]);
 
   // 경험치 변경 시 characterData refetch
   useEffect(() => {
@@ -293,18 +302,63 @@ const RootNavigatorContent: React.FC<{
 };
 
 /**
+ * 네비게이션 상태에서 현재 화면 이름 추출
+ */
+const getActiveRouteName = (
+  state: NavigationState | undefined,
+): string | null => {
+  if (!state || typeof state.index !== 'number') {
+    return null;
+  }
+
+  const route = state.routes[state.index];
+
+  if (route.state) {
+    return getActiveRouteName(route.state as NavigationState);
+  }
+
+  return route.name;
+};
+
+/**
  * RootNavigator
  * - NavigationContainer + navigationRef 연결
+ * - 화면 전환 시 자동으로 Analytics 로그 기록
  */
 const RootNavigator: React.FC = () => {
   const navigationRef = React.useRef<any>(null);
   const [isReady, setIsReady] = React.useState(false);
+  const routeNameRef = React.useRef<string | null>(null);
 
   return (
     <NavigationContainer
       ref={navigationRef}
       onReady={() => {
         setIsReady(true);
+        // 초기 화면 로깅 (매핑된 화면만)
+        const currentRouteName = getActiveRouteName(
+          navigationRef.current?.getRootState(),
+        );
+        if (currentRouteName && isScreenMapped(currentRouteName)) {
+          routeNameRef.current = currentRouteName;
+          logScreenView(currentRouteName);
+        }
+      }}
+      onStateChange={() => {
+        const previousRouteName = routeNameRef.current;
+        const currentRouteName = getActiveRouteName(
+          navigationRef.current?.getRootState(),
+        );
+
+        // 화면이 변경되었고, 매핑된 화면인 경우에만 로깅
+        if (
+          previousRouteName !== currentRouteName &&
+          currentRouteName &&
+          isScreenMapped(currentRouteName)
+        ) {
+          routeNameRef.current = currentRouteName;
+          logScreenView(currentRouteName);
+        }
       }}
     >
       <RootNavigatorContent navigationRef={navigationRef} isReady={isReady} />

@@ -3,7 +3,7 @@ import { View, StyleSheet, ActivityIndicator, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRoute, useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { useRewardedAd, TestIds } from 'react-native-google-mobile-ads';
+import { useRewardedAd } from 'react-native-google-mobile-ads';
 import { COLORS } from '../../styles/global';
 import { FullScreenStackParamList } from '../../navigation/types';
 import { RouteNames } from '../../../routes';
@@ -11,7 +11,7 @@ import { usePointStore } from '../../store/pointStore';
 import { AD_REWARD_POINTS } from '../../config/rewards';
 import { purchaseContentWithAd } from '../../api/missionApi';
 import { getUserInfo } from '../../services/authService';
-// import { REWARDED_AD_UNIT_ID } from '../../config/adConfig';
+import { REWARDED_AD_UNIT_ID } from '../../config/adConfig';
 
 type NavigationProp = NativeStackNavigationProp<FullScreenStackParamList>;
 
@@ -25,8 +25,7 @@ const AdLoadingScreen = () => {
   const returnTo = (route.params as FullScreenStackParamList['ad-loading'])
     ?.returnTo;
   const { isLoaded, isClosed, load, show, reward } = useRewardedAd(
-    // REWARDED_AD_UNIT_ID,
-    TestIds.REWARDED,
+    REWARDED_AD_UNIT_ID,
     {
       requestNonPersonalizedAdsOnly: true,
     },

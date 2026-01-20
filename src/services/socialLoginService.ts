@@ -14,6 +14,7 @@ import {
   signInWithCredential,
   signOut,
 } from '@react-native-firebase/auth';
+import { getApp } from '@react-native-firebase/app';
 import { loginWithProvider } from '../api/authApi';
 import { saveAuthToken, saveRefreshToken, saveUserInfo } from './authService';
 // 소셜 로그인 타입
@@ -57,7 +58,7 @@ export const signInWithGoogle = async (): Promise<SocialLoginResult> => {
       throw new Error('Google ID Token이 없습니다.');
     }
 
-    const authInstance = getAuth();
+    const authInstance = getAuth(getApp());
     const googleCredential = GoogleAuthProvider.credential(idToken);
     const userCredential = await signInWithCredential(
       authInstance,
@@ -151,7 +152,7 @@ export const signOutGoogle = async (): Promise<void> => {
     }
 
     await GoogleSignin.signOut();
-    const authInstance = getAuth();
+    const authInstance = getAuth(getApp());
     await signOut(authInstance);
   } catch (error) {
     console.error('구글 로그아웃 실패:', error);
@@ -466,7 +467,7 @@ export const signInWithApple = async (): Promise<SocialLoginResult> => {
       throw new Error('Apple User ID가 없습니다.');
     }
 
-    const authInstance = getAuth();
+    const authInstance = getAuth(getApp());
     const appleCredential = AppleAuthProvider.credential(
       identityToken,
       appleAuthRequestResponse.nonce || undefined,

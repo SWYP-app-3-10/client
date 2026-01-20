@@ -27,12 +27,11 @@ export default function SearchResultItem({ item, onPress }: Props) {
     return match ? `${match[1]}분` : raw;
   }, [item.readTime]);
 
-  // 조회수는 임시값(추후 hits로 교체 예정)
+  // 조회수: 서버 hits → SearchResultScreen에서 매핑한 hits 사용
   const viewText = useMemo(() => {
-    // @ts-ignore
-    const views = item.views;
-    return views === undefined || views === null ? '200' : String(views);
-  }, [item]);
+    const count = Number(item.hits ?? 0);
+    return Number.isFinite(count) ? count.toLocaleString() : '0';
+  }, [item.hits]);
 
   return (
     <TouchableOpacity style={styles.card} onPress={onPress}>

@@ -44,6 +44,8 @@ export const useMissions = () => {
     },
     staleTime: 1000 * 60 * 5,
     gcTime: 1000 * 60 * 10,
+    enabled: true, // 항상 활성화
+    refetchOnMount: true, // 마운트 시 항상 refetch
   });
 };
 

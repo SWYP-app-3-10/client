@@ -15,6 +15,7 @@ import RewardIcon from '../../../assets/svg/RewardIcon.svg';
 
 // 백엔드 연동 훅
 import { usePointHistory } from '../../../hooks/usePointHistory';
+import { logEvent, logScreenView } from '../../../services/analyticsService';
 
 /**
  * PointHistoryScreen
@@ -154,7 +155,10 @@ const PointHistoryScreen = () => {
     return (
       <Pressable
         style={styles.rowPressable}
-        onPress={() => openSheet(item.transactionId)}
+        onPress={() => {
+          openSheet(item.transactionId);
+          logEvent('list_ConfirmEarnedHistory');
+        }}
       >
         <View style={styles.row}>
           {/* 1줄: 아이콘 + XP/P 합산  |  우측 날짜(대표 createdAt) */}
@@ -223,8 +227,7 @@ const PointHistoryScreen = () => {
 
   /** 바텀시트 콘텐츠(선택된 트랜잭션의 상세 레코드 리스트) */
   const SheetContent = () => {
-    if (!selectedTxId) return null;
-
+    logScreenView('ConfirmEarnedHistoryModal', undefined, true);
     return (
       <View style={styles.sheetContainer}>
         <FlatList
@@ -239,7 +242,10 @@ const PointHistoryScreen = () => {
 
   return (
     <SafeAreaView style={styles.container} edges={['top', 'left', 'right']}>
-      <Header title="받은 내역 확인하기" />
+      <Header
+        title="받은 내역 확인하기"
+        backEventName="Back_ConfirmEarnedHistory"
+      />
 
       <FlatList
         data={earnedList}

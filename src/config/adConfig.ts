@@ -2,18 +2,20 @@ import { Platform } from 'react-native';
 import { TestIds } from 'react-native-google-mobile-ads';
 
 /**
- * 광고 설정
- * - 광고 단위 ID는 여기서 관리
+ * 앱 프로덕션 설정
+ *
+ * IS_PRODUCTION을 true로 설정하면:
+ * - Analytics 로그가 활성화됩니다
+ * - 실제 광고가 표시됩니다
+ *
+ * 개발/테스트 중에는 false로 설정하세요.
  */
+export const IS_PRODUCTION = true; // true로 변경하면 프로덕션 모드로 동작합니다
 
 // 리워드 광고 단위 ID
-export const REWARDED_AD_UNIT_ID = __DEV__
-  ? TestIds.REWARDED
-  : Platform.select({
-      android: 'ca-app-pub-2195740935444660/8657864344',
-      ios: 'ca-app-pub-2195740935444660/8267622737',
-    }) || TestIds.REWARDED;
-
-// TODO: 다른 광고 타입도 필요하면 추가
-// export const BANNER_AD_UNIT_ID = ...
-// export const INTERSTITIAL_AD_UNIT_ID = ...
+export const REWARDED_AD_UNIT_ID = IS_PRODUCTION
+  ? Platform.select({
+      android: 'ca-app-pub-5312046759396775/6312225428',
+      ios: 'ca-app-pub-5312046759396775/2738784252',
+    }) || TestIds.REWARDED
+  : TestIds.REWARDED;

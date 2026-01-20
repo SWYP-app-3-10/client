@@ -63,7 +63,11 @@ const NotificationScreen = () => {
 
   return (
     <SafeAreaView style={styles.container} edges={['top', 'left', 'right']}>
-      <Header title="알림" goBackAction={onPressBack} />
+      <Header
+        title="알림"
+        goBackAction={onPressBack}
+        backEventName="Back_Alarm"
+      />
 
       <FlatList
         data={list}

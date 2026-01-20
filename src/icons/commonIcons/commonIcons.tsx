@@ -33,6 +33,8 @@ import Search_tab from '../../assets/svg/search_tab.svg';
 import View from '../../assets/svg/View.svg';
 import P_Icon from '../../assets/svg/P_Icon.svg';
 import XP_Icon from '../../assets/svg/XP_Icon.svg';
+import X_icon from '../../assets/svg/X_icon.svg';
+
 export const Ic_backIcon = createIconComponent(Icon_back, ICON_SIZES.XL);
 export const CircleIcon = createIconComponent(Circle, scaleWidth(14));
 export const InfoIcon = createIconComponent(Info, ICON_SIZES.L);
@@ -55,6 +57,7 @@ export const NoteIcon = createIconComponent(Note, scaleWidth(26));
 export const ClockIcon = createIconComponent(Clock, scaleWidth(26));
 export const PIcon = createIconComponent(P_Icon, scaleWidth(26));
 export const XPIcon = createIconComponent(XP_Icon, scaleWidth(26));
+export const XIcon = createIconComponent(X_icon, ICON_SIZES.S);
 //  가로, 세로 크기 다름
 export const CheckIcon = createRectangleIconComponent(
   Check,

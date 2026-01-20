@@ -4,6 +4,7 @@ import { COLORS, scaleWidth, BORDER_RADIUS } from '../styles/global';
 import { Body_16SB } from '../styles/typography';
 import { CheckIcon } from '../icons/commonIcons/commonIcons';
 import Spacer from './Spacer';
+import { logEvent, logScreenView } from '../services/analyticsService';
 
 export type Difficulty = 'easy' | 'normal' | 'hard';
 
@@ -18,13 +19,24 @@ const DifficultySelectionModal: React.FC<DifficultySelectionModalProps> = ({
 }) => {
   const [selectedDifficulty, setSelectedDifficulty] =
     useState<Difficulty | null>(initialDifficulty);
-
+  useEffect(() => {
+    logScreenView('Popup_Difficulty', undefined, true);
+  }, []);
   useEffect(() => {
     setSelectedDifficulty(initialDifficulty);
   }, [initialDifficulty]);
 
   const handleSelect = (difficulty: Difficulty) => {
     setSelectedDifficulty(difficulty);
+    // 난이도 선택 시 애널리틱스 로그
+    logScreenView('Popup_Difficulty_Select', undefined, true);
+    if (difficulty === 'easy') {
+      logEvent('Choice_Difficulty_Easy_Popup_Difficulty');
+    } else if (difficulty === 'normal') {
+      logEvent('Choice_Difficulty_Medium_Popup_Difficulty');
+    } else if (difficulty === 'hard') {
+      logEvent('Choice_Difficulty_Hard_Popup_Difficulty');
+    }
     onSelect(difficulty);
   };
   const difficultyOptions: { value: Difficulty; label: string }[] = [
