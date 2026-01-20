@@ -4,6 +4,7 @@
 
 import client from './client';
 import { getUserInfo } from '../services/authService';
+import { getImageUrl } from '../utils/imageUtils';
 
 /**
  * 오늘의 미션 화면 컨텐츠
@@ -121,7 +122,7 @@ export const convertMissionContentToArticle = (
     category: categoryMap[content.contentCategory] || content.contentCategory,
     readTime: '5분', // 기본값 (실제 읽기 시간이 있다면 사용)
     date: content.contentDate,
-    imageUrl: content.contentImg,
+    imageUrl: getImageUrl(content.contentImg),
     contentId: content.contentId,
   };
 };
@@ -235,6 +236,12 @@ export const fetchContentDetail = async (
     const response = await client.get<ContentDetailResponse>(
       `/api/content/${contentId}?userId=${userId}`,
     );
+    
+    // 이미지 URL 변환
+    if (response.data.data?.imageUrl) {
+      response.data.data.imageUrl = getImageUrl(response.data.data.imageUrl);
+    }
+    
     return response.data;
   } catch (error: any) {
     console.error('[글 상세 API] 에러:', error);
