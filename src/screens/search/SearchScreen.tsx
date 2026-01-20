@@ -165,9 +165,9 @@ export default function SearchScreen() {
               } else if (cat === '사회') {
                 logEvent('CategoryChip_Society_Explore');
               } else if (cat === '생활/문화') {
-                logEvent('CategoryChip_Lifestyle/Culture_Explore');
+                logEvent('CategoryChip_Lifestyle_Culture_Explore');
               } else if (cat === 'IT/과학') {
-                logEvent('CategoryChip_It/Science_Explore');
+                logEvent('CategoryChip_It_Science_Explore');
               } else if (cat === '세계') {
                 logEvent('CategoryChip_World_Explore');
               }

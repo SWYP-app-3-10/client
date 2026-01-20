@@ -81,14 +81,14 @@ const InterestTag: React.FC<InterestTagProps> = ({
     } else if (interest.name.includes('생활')) {
       logEvent(
         editMode
-          ? 'InterestTag_Lifestyle/Culture_EditInterest'
+          ? 'InterestTag_Lifestyle_Culture_EditInterest'
           : 'InterestTag_LifeCulture_Onboarding',
       );
     } else if (interest.name.includes('IT')) {
       logEvent(
         editMode
-          ? 'InterestTag_It/Science_EditInterest'
-          : 'InterestTag_It/Science_Onboarding',
+          ? 'InterestTag_It_Science_EditInterest'
+          : 'InterestTag_It_Science_Onboarding',
       );
     }
   }, [interest.id, interest.name, onPress, editMode]);
