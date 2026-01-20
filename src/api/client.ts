@@ -11,7 +11,7 @@ import { useOnboardingStore } from '../store/onboardingStore';
 import { IS_PRODUCTION } from '../config/adConfig';
 
 const PROD_URL = 'https://storage.googleapis.com/neurous-bucket';
-const DEV_URL = 'http://34.64.75.53:8080/';
+const DEV_URL = 'http://34.64.75.53:8080';
 
 const client = axios.create({
   // IS_PRODUCTION 설정에 따라 서버 선택
@@ -23,7 +23,8 @@ const client = axios.create({
     'Content-Type': 'application/json',
   },
 });
-
+console.log('baseURL:', client.defaults.baseURL);
+console.log('IS_PRODUCTION:', IS_PRODUCTION);
 // 토큰 재발급 중인지 확인하는 플래그 (무한 루프 방지)
 let isRefreshing = false;
 
