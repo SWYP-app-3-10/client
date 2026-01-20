@@ -8,14 +8,16 @@ import {
 import { refreshToken } from './authApi';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useOnboardingStore } from '../store/onboardingStore';
+import { IS_PRODUCTION } from '../config/adConfig';
 
-const PROD_URL = 'http://175.45.193.98:8080';
-// const PROD_URL = 'https://api.your-backend.com';
-const DEV_URL = 'http://175.45.193.98:8080';
+const PROD_URL = 'https://storage.googleapis.com/neurous-bucket';
+const DEV_URL = 'http://34.64.75.53:8080/';
 
 const client = axios.create({
-  // 배포 빌드에서도 개발 서버를 사용할 수 있도록 설정
-  baseURL: __DEV__ ? DEV_URL : PROD_URL,
+  // IS_PRODUCTION 설정에 따라 서버 선택
+  // false: 개발/테스트/내부테스트 → 개발 서버
+  // true: 실제 배포 → 프로덕션 서버
+  baseURL: IS_PRODUCTION ? PROD_URL : DEV_URL,
   timeout: 10000, // 10초 타임아웃 (네트워크가 느릴 때 무한 대기 방지)
   headers: {
     'Content-Type': 'application/json',

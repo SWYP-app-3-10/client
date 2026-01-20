@@ -24,7 +24,7 @@ export async function subscribeNotificationsSSE(
 
   const baseURL =
     (client.defaults.baseURL as string | undefined) ??
-    'http://175.45.193.98:8080';
+    'http://34.64.75.53:8080';
 
   es = new EventSource(`${baseURL}/api/notifications/subscribe`, {
     headers: {
