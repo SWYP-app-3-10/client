@@ -29,7 +29,7 @@ interface OnboardingStore {
   setOnboardingStep: (step: OnboardingStep) => Promise<void>;
   setInterests: (interests: InterestsData) => Promise<void>;
   setDifficulty: (difficulty: LevelCategory) => Promise<void>;
-  resetOnboarding: () => Promise<void>;
+  resetOnboarding: (initialStep?: OnboardingStep) => Promise<void>;
   loadOnboardingStatus: () => Promise<void>;
 }
 
@@ -71,12 +71,17 @@ export const useOnboardingStore = create<OnboardingStore>(set => ({
       console.error('난이도 저장 실패:', error);
     }
   },
-  resetOnboarding: async () => {
+  resetOnboarding: async (initialStep: OnboardingStep = 'login') => {
     try {
       await resetOnboardingService();
+      // initialStep이 제공되면 해당 단계로 설정, 없으면 기본값 'login'
+      const stepToSet = initialStep;
+      if (stepToSet !== 'login') {
+        await saveOnboardingStepService(stepToSet);
+      }
       set({
         isOnboardingCompleted: false,
-        currentStep: 'login',
+        currentStep: stepToSet,
         interests: null,
         difficulty: null,
       });

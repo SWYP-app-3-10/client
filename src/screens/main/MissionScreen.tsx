@@ -39,6 +39,7 @@ import { RouteNames } from '../../../routes';
 import { useShowModal, useShowToastModal } from '../../store/modalStore';
 import { usePointStore } from '../../store/pointStore';
 import { ExperienceModalContent } from '../../components/ArticlePointModalContent';
+import { useOnboardingStore } from '../../store/onboardingStore';
 
 import {
   DAILY_ATTENDANCE_EXPERIENCE,
@@ -87,6 +88,42 @@ const MissionScreen = () => {
     isLoading: missionsLoading,
     refetch: refetchMissions,
   } = useMissions();
+
+  // 온보딩 상태 관리
+  const { resetOnboarding, isOnboardingCompleted, setOnboardingStep } =
+    useOnboardingStore();
+  const hasCheckedEmptyContentsRef = useRef(false);
+
+  // 컨텐츠가 빈 배열이면 온보딩 화면으로 리다이렉트
+  useEffect(() => {
+    if (!missionsLoading && missionData) {
+      const contents = missionData.contents || [];
+      // 컨텐츠가 빈 배열이고 온보딩이 완료된 상태일 때만 리셋
+      // (온보딩이 이미 진행 중이면 리셋하지 않음)
+      if (
+        contents.length === 0 &&
+        isOnboardingCompleted &&
+        !hasCheckedEmptyContentsRef.current
+      ) {
+        console.log(
+          '[MissionScreen] 컨텐츠가 빈 배열입니다. 온보딩 상태를 리셋합니다.',
+        );
+        hasCheckedEmptyContentsRef.current = true;
+        // 온보딩 리셋 시 관심분야 선택 단계로 설정
+        resetOnboarding('interests');
+      } else if (contents.length > 0) {
+        // 컨텐츠가 있으면 플래그 리셋 (다시 빈 배열이 될 수 있으므로)
+        hasCheckedEmptyContentsRef.current = false;
+      }
+    }
+  }, [
+    missionData,
+    missionsLoading,
+    resetOnboarding,
+    isOnboardingCompleted,
+    setOnboardingStep,
+  ]);
+
   // 화면 포커스 시 API 요청 및 스크롤 맨 위로 이동
   useFocusEffect(
     useCallback(() => {

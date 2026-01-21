@@ -13,10 +13,10 @@ import { IS_PRODUCTION } from '../config/adConfig';
 // TODO: 본서버 준비되면 실제 프로덕션 API 서버 URL로 변경 필요
 const PROD_URL = 'http://34.64.75.53:8080'; // 임시 URL (실제 URL로 변경 필요)
 // 개발 API 서버 URL
-const DEV_URL = 'http://34.64.75.53:8080';
+// const DEV_URL = 'http://34.64.75.53:8080';
+const DEV_URL = 'http://175.45.193.98:8080';
 
 const client = axios.create({
-
   baseURL: IS_PRODUCTION ? PROD_URL : DEV_URL,
   timeout: 10000, // 10초 타임아웃 (네트워크가 느릴 때 무한 대기 방지)
   headers: {
