@@ -79,6 +79,16 @@ export const loginWithProvider = async (
     return response.data;
   } catch (error: any) {
     console.error('로그인 API 에러:', error);
+
+    // 탈퇴 후 재가입용 로그 추가
+    console.error('[로그인 API] 서버 응답:', {
+      status: error?.response?.status,
+      statusText: error?.response?.statusText,
+      data: error?.response?.data,
+      message: error?.message,
+    });
+
+
     throw error;
   }
 };

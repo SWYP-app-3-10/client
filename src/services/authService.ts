@@ -9,6 +9,10 @@ import { signOutSocial, SocialLoginProvider } from './socialLoginService';
 import { logoutFromServer } from '../api/authApi';
 import { withdrawUser } from '../api/withdrawApi';
 
+import { GoogleSignin } from '@react-native-google-signin/google-signin';
+import { getAccessToken as getKakaoAccessToken } from '@react-native-seoul/kakao-login';
+
+
 export interface AuthStatus {
   isAuthenticated: boolean;
   userInfo?: RecentLoginInfo;
@@ -234,8 +238,51 @@ export const withdraw = async (): Promise<void> => {
     }
 
     const isApple = provider === 'APPLE';
-    const providerAccessToken = userInfo?.providerAccessToken;
-    const appleAuthorizationCode = userInfo?.appleAuthorizationCode;
+
+    // unlink용 값: 저장값은 backup, 탈퇴 시점에 최신값을 우선 재획득
+    let providerAccessToken = userInfo?.providerAccessToken;
+    let appleAuthorizationCode = userInfo?.appleAuthorizationCode;
+
+    try {
+      if (provider === 'GOOGLE') {
+        // 토큰 갱신 안정화
+        try {
+          await GoogleSignin.signInSilently();
+        } catch (e) {
+          console.warn('[withdraw][GOOGLE] signInSilently 실패:', e);
+        }
+
+        const tokens = await GoogleSignin.getTokens();
+        providerAccessToken = tokens?.accessToken ?? providerAccessToken;
+
+        console.log('[withdraw][GOOGLE] accessToken 존재?', !!providerAccessToken);
+      }
+
+      if (provider === 'KAKAO') {
+        const tokenInfo: any = await getKakaoAccessToken();
+
+        // 반환 타입 방어 (string / object 모두 대응)
+        if (typeof tokenInfo === 'string') {
+          providerAccessToken = tokenInfo || providerAccessToken;
+        } else {
+          providerAccessToken =
+            tokenInfo?.accessToken ||
+            tokenInfo?.token?.accessToken ||
+            tokenInfo?.access_token ||
+            providerAccessToken;
+        }
+
+        console.log('[withdraw][KAKAO] accessToken 존재?', !!providerAccessToken);
+      }
+
+      // NAVER: 로그인 때 저장한 accessToken 사용
+      // APPLE: 로그인 때 저장한 authorizationCode 사용
+    } catch (e) {
+      console.warn(
+        '[withdraw] unlink 토큰 재획득 실패 - 저장된 값으로 시도합니다.',
+        e,
+      );
+    }
 
     // unlink 위해 필요한 값이 없으면 에러
     if (!isApple && !providerAccessToken) {
@@ -244,6 +291,14 @@ export const withdraw = async (): Promise<void> => {
     if (isApple && !appleAuthorizationCode) {
       throw new Error('Apple 연결 끊기에 필요한 appleAuthorizationCode가 없습니다.');
     }
+
+    console.log('[withdraw] 최종 요청 준비:', {
+      userId,
+      provider,
+      unlinkSocial: true,
+      hasProviderAccessToken: !!providerAccessToken,
+      hasAppleAuthorizationCode: !!appleAuthorizationCode,
+    });
 
     // 1) 서버 탈퇴 + 소셜 unlink
     await withdrawUser(userId, {
@@ -267,10 +322,15 @@ export const withdraw = async (): Promise<void> => {
     ]);
 
     console.log('회원 탈퇴 완료');
-  } catch (error) {
-    console.error('회원 탈퇴 중 오류:', error);
+  } catch (error: any) {
+    console.error('[withdraw] 실패:', {
+      message: error?.message,
+      status: error?.response?.status,
+      data: error?.response?.data,
+    });
     throw error;
   }
 };
+
 
 

@@ -27,9 +27,16 @@ export const withdrawUser = async (
   body: WithdrawRequestBody,
 ): Promise<WithdrawResponse> => {
   try {
+    console.log('[회원탈퇴 API] 요청:', {
+      userId,
+      unlinkSocial: body.unlinkSocial,
+      hasProviderAccessToken: !!body.providerAccessToken,
+      hasAppleAuthorizationCode: !!body.appleAuthorizationCode,
+    });
+
     const response = await client.delete<WithdrawResponse>(
       `/api/user/withdraw?userId=${userId}`,
-      { data: body }, // DELETE body는 data로
+      { data: body },
     );
 
     console.log(
@@ -39,13 +46,12 @@ export const withdrawUser = async (
 
     return response.data;
   } catch (error: any) {
-    console.error('[회원탈퇴 API] 에러:', error);
-    if (error.response) {
-      console.error('[회원탈퇴 API] 서버 응답:', {
-        status: error.response.status,
-        data: error.response.data,
-      });
-    }
+    console.error('[회원탈퇴 API] 에러:', {
+      status: error?.response?.status,
+      data: error?.response?.data,
+      message: error?.message,
+    });
     throw error;
   }
 };
+
