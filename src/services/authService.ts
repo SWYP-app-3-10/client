@@ -7,6 +7,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { getRecentLogin, RecentLoginInfo } from './authStorageService';
 import { signOutSocial, SocialLoginProvider } from './socialLoginService';
 import { logoutFromServer } from '../api/authApi';
+import { withdrawUser } from '../api/withdrawApi';
 
 export interface AuthStatus {
   isAuthenticated: boolean;
@@ -92,6 +93,8 @@ export const saveUserInfo = async (userInfo: {
   profileImage?: string;
   provider?: string;
   loginTime?: number;
+  providerAccessToken?: string;
+  appleAuthorizationCode?: string;
 }): Promise<void> => {
   try {
     await AsyncStorage.setItem(USER_INFO_KEY, JSON.stringify(userInfo));
@@ -111,6 +114,8 @@ export const getUserInfo = async (): Promise<{
   profileImage?: string;
   provider?: SocialLoginProvider;
   loginTime?: number;
+  providerAccessToken?: string;
+  appleAuthorizationCode?: string;
 } | null> => {
   try {
     const data = await AsyncStorage.getItem(USER_INFO_KEY);
@@ -207,3 +212,65 @@ export const clearAllAuthData = async (): Promise<void> => {
     console.error('인증 정보 초기화 중 오류:', error);
   }
 };
+
+/**
+ * 회원 탈퇴 (소셜 unlink 포함)
+ * - 서버 탈퇴 + unlinkSocial=true 요청
+ * - 소셜 SDK 로그아웃 시도
+ * - 로컬 토큰/유저정보 삭제 (자동로그인 방지)
+ */
+export const withdraw = async (): Promise<void> => {
+  try {
+    const userInfo = await getUserInfo();
+
+    const userId = userInfo?.userId;
+    const provider = userInfo?.provider;
+
+    if (!userId) {
+      throw new Error('유저 정보를 찾을 수 없습니다. 다시 로그인 후 시도해주세요.');
+    }
+    if (!provider) {
+      throw new Error('로그인 제공자(provider) 정보를 찾을 수 없습니다.');
+    }
+
+    const isApple = provider === 'APPLE';
+    const providerAccessToken = userInfo?.providerAccessToken;
+    const appleAuthorizationCode = userInfo?.appleAuthorizationCode;
+
+    // unlink 위해 필요한 값이 없으면 에러
+    if (!isApple && !providerAccessToken) {
+      throw new Error('소셜 연결 끊기에 필요한 providerAccessToken이 없습니다.');
+    }
+    if (isApple && !appleAuthorizationCode) {
+      throw new Error('Apple 연결 끊기에 필요한 appleAuthorizationCode가 없습니다.');
+    }
+
+    // 1) 서버 탈퇴 + 소셜 unlink
+    await withdrawUser(userId, {
+      unlinkSocial: true,
+      providerAccessToken: !isApple ? providerAccessToken : undefined,
+      appleAuthorizationCode: isApple ? appleAuthorizationCode : undefined,
+    });
+
+    // 2) 소셜 SDK 로그아웃 (실패해도 로컬 정리는 진행)
+    try {
+      await signOutSocial(provider);
+    } catch (e) {
+      console.warn('[withdraw] 소셜 로그아웃 실패 - 로컬 정리는 계속 진행합니다.');
+    }
+
+    // 3) 로컬 저장값 삭제 (탈퇴 후 자동로그인 방지)
+    await AsyncStorage.multiRemove([
+      AUTH_TOKEN_KEY,
+      REFRESH_TOKEN_KEY,
+      USER_INFO_KEY,
+    ]);
+
+    console.log('회원 탈퇴 완료');
+  } catch (error) {
+    console.error('회원 탈퇴 중 오류:', error);
+    throw error;
+  }
+};
+
+
