@@ -4,13 +4,13 @@ import {
 } from '@react-native-firebase/analytics';
 import { getApp } from '@react-native-firebase/app';
 import { RouteNames } from '../../routes';
-import { IS_PRODUCTION } from '../config/adConfig';
+
 
 /**
  * Firebase Analytics 서비스
  * 앱 내 이벤트 추적 및 사용자 행동 분석
  *
- * IS_PRODUCTION 설정에 따라 로그가 기록됩니다.
+ * __DEV__ 설정에 따라 로그가 기록됩니다.
  * adConfig.ts에서 IS_PRODUCTION 값을 변경하세요.
  *
  * 화면 이름을 직접 이벤트 이름으로 사용합니다.
@@ -81,7 +81,7 @@ export const logScreenView = async (
 ): Promise<void> => {
   try {
     // 프로덕션 모드가 아니면 로그를 찍지 않음
-    if (!IS_PRODUCTION) {
+    if (!__DEV__) {
       return;
     }
 
@@ -115,7 +115,7 @@ export const logEvent = async (
 ): Promise<void> => {
   try {
     // 프로덕션 모드가 아니면 로그를 찍지 않음
-    if (!IS_PRODUCTION) {
+    if (!__DEV__) {
       return;
     }
 

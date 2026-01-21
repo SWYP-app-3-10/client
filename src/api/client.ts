@@ -8,20 +8,23 @@ import {
 import { refreshToken } from './authApi';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useOnboardingStore } from '../store/onboardingStore';
+import { IS_PRODUCTION } from '../config/adConfig';
 
-const PROD_URL = 'http://175.45.193.98:8080';
-// const PROD_URL = 'https://api.your-backend.com';
-const DEV_URL = 'http://175.45.193.98:8080';
+// TODO: 본서버 준비되면 실제 프로덕션 API 서버 URL로 변경 필요
+const PROD_URL = 'http://34.64.75.53:8080'; // 임시 URL (실제 URL로 변경 필요)
+// 개발 API 서버 URL
+const DEV_URL = 'http://34.64.75.53:8080';
 
 const client = axios.create({
-  // 배포 빌드에서도 개발 서버를 사용할 수 있도록 설정
-  baseURL: __DEV__ ? DEV_URL : PROD_URL,
+
+  baseURL: IS_PRODUCTION ? PROD_URL : DEV_URL,
   timeout: 10000, // 10초 타임아웃 (네트워크가 느릴 때 무한 대기 방지)
   headers: {
     'Content-Type': 'application/json',
   },
 });
-
+console.log('baseURL:', client.defaults.baseURL);
+console.log('IS_PRODUCTION:', IS_PRODUCTION);
 // 토큰 재발급 중인지 확인하는 플래그 (무한 루프 방지)
 let isRefreshing = false;
 

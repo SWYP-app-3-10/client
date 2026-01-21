@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Image } from 'react-native';
 import { COLORS, scaleWidth, BORDER_RADIUS } from '../styles/global';
 import { Heading_18EB_Round, Caption_14R } from '../styles/typography';
@@ -26,16 +26,25 @@ const formatDate = (dateString: string): string => {
 };
 
 const ArticleCard = React.memo<ArticleCardProps>(({ article, onPress }) => {
+  const [imageError, setImageError] = useState(false);
   return (
     <TouchableOpacity style={styles.articleCardWrapper} onPress={onPress}>
       <View style={styles.articleCard}>
         {/* 이미지 */}
         <View style={styles.articleImageContainer}>
-          {article.imageUrl ? (
+          {article.imageUrl && !imageError ? (
             <Image
               source={{ uri: article.imageUrl }}
               style={styles.articleImage}
               resizeMode="cover"
+              onError={(error) => {
+                console.error('[ArticleCard] 이미지 로딩 실패:', {
+                  url: article.imageUrl,
+                  error: error.nativeEvent?.error || error,
+                  nativeEvent: error.nativeEvent,
+                });
+                setImageError(true);
+              }}
             />
           ) : (
             <View style={styles.articleImagePlaceholder} />

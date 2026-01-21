@@ -25,6 +25,7 @@ import { useExploreContents } from '../../hooks/useExploreContents';
 
 import { COLORS, scaleWidth } from '../../styles/global';
 import { logEvent } from '../../services/analyticsService';
+import { getImageUrl } from '../../utils/imageUtils';
 
 /**
  * SearchResultScreen
@@ -69,7 +70,7 @@ export default function SearchResultScreen() {
       title: c.title || '',
       subtitle: '',
       readTime: `${c.readingTime ?? 0}분 소요`,
-      imageUrl: c.imgUrl || '',
+      imageUrl: getImageUrl(c.imgUrl),
       content: '',
       hits: (c as any).hits ?? 0,
     }));

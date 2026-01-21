@@ -11,6 +11,7 @@ import {
 import SearchResultItem from './components/SearchResultItem';
 import type { NewsItems } from '../../data/mock/searchData';
 import { COLORS, scaleWidth } from '../../styles/global';
+import { getImageUrl } from '../../utils/imageUtils';
 
 import { useExploreContents } from '../../hooks/useExploreContents';
 import { useArticleNavigation } from '../../hooks/useArticleNavigation';
@@ -58,7 +59,7 @@ export default function SearchLiveResultOverlay({
       title: c.title || '',
       subtitle: '',
       readTime: `${c.readingTime ?? 0}분 소요`,
-      imageUrl: c.imgUrl || '',
+      imageUrl: getImageUrl(c.imgUrl),
       content: '',
       hits: (c as any).hits ?? (c as any).hits ?? 0,
     }));

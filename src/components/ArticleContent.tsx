@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { View, Text, StyleSheet, Image } from 'react-native';
 import { COLORS, scaleWidth, BORDER_RADIUS } from '../styles/global';
 import {
@@ -22,14 +22,24 @@ const formatDate = (dateString: string | undefined): string => {
 };
 
 const ArticleContent: React.FC<ArticleContentProps> = ({ content }) => {
+  const [imageError, setImageError] = useState(false);
+
   return (
     <>
       {/* 이미지 */}
-      {content?.imageUrl && (
+      {content?.imageUrl && !imageError && (
         <Image
           source={{ uri: content?.imageUrl }}
           style={styles.articleImage}
           resizeMode="cover"
+          onError={(error) => {
+            console.error('[ArticleContent] 이미지 로딩 실패:', {
+              url: content?.imageUrl,
+              error: error.nativeEvent?.error || error,
+              nativeEvent: error.nativeEvent,
+            });
+            setImageError(true);
+          }}
         />
       )}
       <View style={styles.infoContainer}>

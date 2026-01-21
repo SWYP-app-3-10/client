@@ -40,6 +40,7 @@ import ExploreTooltipTail from '../../assets/svg/ExploreTooltipTail.svg';
 // 탐색 컨텐츠 조회(infinite query)
 import { useExploreContents } from '../../hooks/useExploreContents';
 import { logEvent } from '../../services/analyticsService';
+import { getImageUrl } from '../../utils/imageUtils';
 
 // 버튼 터치 영역 확대
 const HIT_SLOP = { top: 10, bottom: 10, left: 10, right: 10 };
@@ -112,7 +113,7 @@ export default function SearchScreen() {
       title: c.title || '',
       subtitle: '',
       readTime: `${c.readingTime ?? 0}분 소요`,
-      imageUrl: c.imgUrl || '',
+      imageUrl: getImageUrl(c.imgUrl),
       content: '',
       hits: c.hits ?? 0,
     }));
@@ -165,9 +166,9 @@ export default function SearchScreen() {
               } else if (cat === '사회') {
                 logEvent('CategoryChip_Society_Explore');
               } else if (cat === '생활/문화') {
-                logEvent('CategoryChip_Lifestyle/Culture_Explore');
+                logEvent('CategoryChip_Lifestyle_Culture_Explore');
               } else if (cat === 'IT/과학') {
-                logEvent('CategoryChip_It/Science_Explore');
+                logEvent('CategoryChip_It_Science_Explore');
               } else if (cat === '세계') {
                 logEvent('CategoryChip_World_Explore');
               }
