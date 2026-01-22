@@ -90,29 +90,36 @@ const MissionScreen = () => {
   } = useMissions();
 
   // 온보딩 상태 관리
-  const { resetOnboarding, isOnboardingCompleted, setOnboardingStep } =
+  const { resetOnboarding, isOnboardingCompleted, interests } =
     useOnboardingStore();
   const hasCheckedEmptyContentsRef = useRef(false);
 
-  // 컨텐츠가 빈 배열이면 온보딩 화면으로 리다이렉트
+  // 컨텐츠가 빈 배열이고 관심분야가 선택되지 않았을 때만 온보딩 화면으로 리다이렉트
   useEffect(() => {
     if (!missionsLoading && missionData) {
       const contents = missionData.contents || [];
-      // 컨텐츠가 빈 배열이고 온보딩이 완료된 상태일 때만 리셋
+      // 관심분야가 선택되었는지 확인 (null이거나 빈 객체가 아니면 선택됨)
+      const hasInterests =
+        interests !== null &&
+        typeof interests === 'object' &&
+        Object.keys(interests).length > 0;
+
+      // 컨텐츠가 빈 배열이고, 온보딩이 완료된 상태이며, 관심분야가 선택되지 않았을 때만 리셋
       // (온보딩이 이미 진행 중이면 리셋하지 않음)
       if (
         contents.length === 0 &&
         isOnboardingCompleted &&
+        !hasInterests &&
         !hasCheckedEmptyContentsRef.current
       ) {
         console.log(
-          '[MissionScreen] 컨텐츠가 빈 배열입니다. 온보딩 상태를 리셋합니다.',
+          '[MissionScreen] 컨텐츠가 빈 배열이고 관심분야가 선택되지 않았습니다. 온보딩 상태를 리셋합니다.',
         );
         hasCheckedEmptyContentsRef.current = true;
         // 온보딩 리셋 시 관심분야 선택 단계로 설정
         resetOnboarding('interests');
-      } else if (contents.length > 0) {
-        // 컨텐츠가 있으면 플래그 리셋 (다시 빈 배열이 될 수 있으므로)
+      } else if (contents.length > 0 || hasInterests) {
+        // 컨텐츠가 있거나 관심분야가 있으면 플래그 리셋 (다시 빈 배열이 될 수 있으므로)
         hasCheckedEmptyContentsRef.current = false;
       }
     }
@@ -121,7 +128,7 @@ const MissionScreen = () => {
     missionsLoading,
     resetOnboarding,
     isOnboardingCompleted,
-    setOnboardingStep,
+    interests,
   ]);
 
   // 화면 포커스 시 API 요청 및 스크롤 맨 위로 이동
