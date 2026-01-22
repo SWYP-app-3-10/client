@@ -1,5 +1,6 @@
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import { useNavigation } from '@react-navigation/native';
 import { RouteNames } from '../../routes';
 import LoginScreen from '../screens/auth/LoginScreen';
 import InterestsScreen from '../screens/onboarding/InterestsScreen';
@@ -16,6 +17,8 @@ const Stack = createNativeStackNavigator();
 
 const OnboardingNavigator = () => {
   const currentStep = useOnboardingStore(state => state.currentStep);
+  const navigation = useNavigation();
+  const prevStepRef = useRef<typeof currentStep>(currentStep);
 
   // 현재 단계에 따라 초기 화면 결정
   // difficulty 단계에서도 관심분야 화면으로 돌아가서 선택한 관심분야를 확인할 수 있도록 함
@@ -31,6 +34,22 @@ const OnboardingNavigator = () => {
         return RouteNames.SOCIAL_LOGIN;
     }
   };
+
+  // currentStep 변경 시 네비게이션 업데이트
+  useEffect(() => {
+    if (prevStepRef.current !== currentStep) {
+      const targetRoute = getInitialRouteName();
+      // 현재 화면이 targetRoute와 다르면 네비게이션
+      const currentRoute = navigation.getState()?.routes?.[navigation.getState()?.index || 0]?.name;
+      if (currentRoute !== targetRoute) {
+        navigation.reset({
+          index: 0,
+          routes: [{ name: targetRoute }],
+        });
+      }
+      prevStepRef.current = currentStep;
+    }
+  }, [currentStep, navigation]);
 
   return (
     <Stack.Navigator

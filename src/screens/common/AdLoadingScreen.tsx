@@ -24,7 +24,7 @@ const AdLoadingScreen = () => {
     ?.articleId as number;
   const returnTo = (route.params as FullScreenStackParamList['ad-loading'])
     ?.returnTo;
-  const { isLoaded, isClosed, load, show, reward } = useRewardedAd(
+  const { isLoaded, isClosed, load, show, reward, error } = useRewardedAd(
     REWARDED_AD_UNIT_ID,
     {
       requestNonPersonalizedAdsOnly: true,
@@ -35,6 +35,8 @@ const AdLoadingScreen = () => {
   const [hasEarnedReward, setHasEarnedReward] = useState(false);
   const hasAddedPointsRef = useRef(false);
   const hasPurchasedRef = useRef(false);
+  const loadTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const hasShownErrorRef = useRef(false);
 
   // 보상 감지
   useEffect(() => {
@@ -43,28 +45,80 @@ const AdLoadingScreen = () => {
     }
   }, [reward]);
 
+  // 광고 로드 에러 처리
+  useEffect(() => {
+    if (error && !hasShownErrorRef.current) {
+      hasShownErrorRef.current = true;
+      console.error('[AdLoadingScreen] 광고 로드 에러:', error);
+      if (loadTimeoutRef.current) {
+        clearTimeout(loadTimeoutRef.current);
+      }
+      Alert.alert(
+        '오류',
+        '광고를 불러올 수 없습니다. 네트워크 연결을 확인해주세요.',
+        [
+          {
+            text: '확인',
+            onPress: () => {
+              navigation.goBack();
+            },
+          },
+        ],
+      );
+    }
+  }, [error, navigation]);
+
   // 화면 진입 시 광고 로드
   useEffect(() => {
-    if (!isLoaded) {
+    if (!isLoaded && !error) {
       load();
+
+      // 10초 타임아웃 설정
+      loadTimeoutRef.current = setTimeout(() => {
+        if (!isLoaded && !hasShownErrorRef.current) {
+          hasShownErrorRef.current = true;
+          console.error('[AdLoadingScreen] 광고 로드 타임아웃');
+          Alert.alert(
+            '오류',
+            '광고를 불러오는 데 시간이 오래 걸립니다. 다시 시도해주세요.',
+            [
+              {
+                text: '확인',
+                onPress: () => {
+                  navigation.goBack();
+                },
+              },
+            ],
+          );
+        }
+      }, 10000); // 10초
     }
-  }, [isLoaded, load]);
+
+    return () => {
+      if (loadTimeoutRef.current) {
+        clearTimeout(loadTimeoutRef.current);
+      }
+    };
+  }, [isLoaded, load, error, navigation]);
 
   // 광고 로드 완료 후 자동 표시
   useEffect(() => {
-    if (isLoaded && !isAdShowing) {
+    if (isLoaded && !isAdShowing && !error) {
+      if (loadTimeoutRef.current) {
+        clearTimeout(loadTimeoutRef.current);
+      }
       setIsAdShowing(true);
       setHasEarnedReward(false);
       hasAddedPointsRef.current = false; // 새 광고 시청 시 리셋
       try {
         show();
-      } catch (error) {
-        console.error('광고 표시 실패:', error);
+      } catch (showError) {
+        console.error('광고 표시 실패:', showError);
         Alert.alert('오류', '광고를 표시할 수 없습니다.');
         navigation.goBack();
       }
     }
-  }, [isLoaded, isAdShowing, show, navigation]);
+  }, [isLoaded, isAdShowing, show, navigation, error]);
 
   // 광고 시청 완료 시 포인트 추가
   useEffect(() => {
@@ -108,11 +162,12 @@ const AdLoadingScreen = () => {
             returnTo,
             fromAd: true,
           });
-        } catch (error: any) {
-          console.error('[AdLoadingScreen] 광고 구매 에러:', error);
+        } catch (purchaseError: any) {
+          console.error('[AdLoadingScreen] 광고 구매 에러:', purchaseError);
           Alert.alert(
             '오류',
-            error.response?.data?.message || '컨텐츠 구매에 실패했습니다.',
+            purchaseError.response?.data?.message ||
+              '컨텐츠 구매에 실패했습니다.',
           );
           navigation.goBack();
         }

@@ -446,6 +446,8 @@ export const signOutSocial = async (
     case 'NAVER':
       await signOutNaver();
       break;
+    case 'APPLE':
+      break;
   }
 };
 // 애플 로그인

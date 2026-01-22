@@ -73,13 +73,23 @@
 	<true/>
 	<key>NSAppTransportSecurity</key>
 	<dict>
+		<!-- 개발 환경: HTTP 연결 허용 (프로덕션에서는 false로 변경 필요) -->
 		<key>NSAllowsArbitraryLoads</key>
-		<false/>
+		<true/>
 		<key>NSAllowsLocalNetworking</key>
 		<true/>
+		<!-- 프로덕션 환경에서는 특정 도메인만 예외 처리 -->
 		<key>NSExceptionDomains</key>
 		<dict>
+			<!-- 개발 서버 IP 주소들 (명시적으로 추가, NSAllowsArbitraryLoads가 true이면 이미 허용됨) -->
 			<key>34.64.75.53</key>
+			<dict>
+				<key>NSExceptionAllowsInsecureHTTPLoads</key>
+				<true/>
+				<key>NSIncludesSubdomains</key>
+				<true/>
+			</dict>
+			<key>175.45.193.98</key>
 			<dict>
 				<key>NSExceptionAllowsInsecureHTTPLoads</key>
 				<true/>

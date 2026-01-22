@@ -27,16 +27,27 @@ export const withdrawUser = async (
   body: WithdrawRequestBody,
 ): Promise<WithdrawResponse> => {
   try {
+    // undefined 값을 null로 변환하여 요청에 포함
+    const requestBody = {
+      unlinkSocial: body.unlinkSocial,
+      providerAccessToken:
+        body.providerAccessToken !== undefined
+          ? body.providerAccessToken
+          : null,
+      appleAuthorizationCode:
+        body.appleAuthorizationCode !== undefined
+          ? body.appleAuthorizationCode
+          : null,
+    };
+
     console.log('[회원탈퇴 API] 요청:', {
       userId,
-      unlinkSocial: body.unlinkSocial,
-      hasProviderAccessToken: !!body.providerAccessToken,
-      hasAppleAuthorizationCode: !!body.appleAuthorizationCode,
+      body: requestBody,
     });
 
     const response = await client.delete<WithdrawResponse>(
       `/api/user/withdraw?userId=${userId}`,
-      { data: body },
+      { data: requestBody },
     );
 
     console.log(
@@ -54,4 +65,3 @@ export const withdrawUser = async (
     throw error;
   }
 };
-

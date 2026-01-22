@@ -16,7 +16,6 @@ const PROD_URL = 'http://34.64.75.53:8080'; // 임시 URL (실제 URL로 변경 
 const DEV_URL = 'http://34.64.75.53:8080';
 
 const client = axios.create({
-
   baseURL: IS_PRODUCTION ? PROD_URL : DEV_URL,
   timeout: 10000, // 10초 타임아웃 (네트워크가 느릴 때 무한 대기 방지)
   headers: {

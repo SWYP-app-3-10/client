@@ -12,7 +12,6 @@ import { withdrawUser } from '../api/withdrawApi';
 import { GoogleSignin } from '@react-native-google-signin/google-signin';
 import { getAccessToken as getKakaoAccessToken } from '@react-native-seoul/kakao-login';
 
-
 export interface AuthStatus {
   isAuthenticated: boolean;
   userInfo?: RecentLoginInfo;
@@ -174,7 +173,7 @@ export const logout = async (provider?: SocialLoginProvider): Promise<void> => {
     if (userId) {
       try {
         await logoutFromServer(userId);
-      } catch (e) {
+      } catch {
         console.warn(
           '[logout] 서버 로그아웃 실패 - 로컬 로그아웃은 계속 진행합니다.',
         );
@@ -231,7 +230,9 @@ export const withdraw = async (): Promise<void> => {
     const provider = userInfo?.provider;
 
     if (!userId) {
-      throw new Error('유저 정보를 찾을 수 없습니다. 다시 로그인 후 시도해주세요.');
+      throw new Error(
+        '유저 정보를 찾을 수 없습니다. 다시 로그인 후 시도해주세요.',
+      );
     }
     if (!provider) {
       throw new Error('로그인 제공자(provider) 정보를 찾을 수 없습니다.');
@@ -241,7 +242,7 @@ export const withdraw = async (): Promise<void> => {
 
     // unlink용 값: 저장값은 backup, 탈퇴 시점에 최신값을 우선 재획득
     let providerAccessToken = userInfo?.providerAccessToken;
-    let appleAuthorizationCode = userInfo?.appleAuthorizationCode;
+    const appleAuthorizationCode = userInfo?.appleAuthorizationCode;
 
     try {
       if (provider === 'GOOGLE') {
@@ -254,8 +255,6 @@ export const withdraw = async (): Promise<void> => {
 
         const tokens = await GoogleSignin.getTokens();
         providerAccessToken = tokens?.accessToken ?? providerAccessToken;
-
-        console.log('[withdraw][GOOGLE] accessToken 존재?', !!providerAccessToken);
       }
 
       if (provider === 'KAKAO') {
@@ -271,8 +270,6 @@ export const withdraw = async (): Promise<void> => {
             tokenInfo?.access_token ||
             providerAccessToken;
         }
-
-        console.log('[withdraw][KAKAO] accessToken 존재?', !!providerAccessToken);
       }
 
       // NAVER: 로그인 때 저장한 accessToken 사용
@@ -286,10 +283,9 @@ export const withdraw = async (): Promise<void> => {
 
     // unlink 위해 필요한 값이 없으면 에러
     if (!isApple && !providerAccessToken) {
-      throw new Error('소셜 연결 끊기에 필요한 providerAccessToken이 없습니다.');
-    }
-    if (isApple && !appleAuthorizationCode) {
-      throw new Error('Apple 연결 끊기에 필요한 appleAuthorizationCode가 없습니다.');
+      throw new Error(
+        '소셜 연결 끊기에 필요한 providerAccessToken이 없습니다.',
+      );
     }
 
     console.log('[withdraw] 최종 요청 준비:', {
@@ -301,17 +297,36 @@ export const withdraw = async (): Promise<void> => {
     });
 
     // 1) 서버 탈퇴 + 소셜 unlink
-    await withdrawUser(userId, {
+    // undefined 값도 명시적으로 포함하기 위해 null로 변환
+    const requestBody: {
+      unlinkSocial: boolean;
+      providerAccessToken?: string | null;
+      appleAuthorizationCode?: string | null;
+    } = {
       unlinkSocial: true,
-      providerAccessToken: !isApple ? providerAccessToken : undefined,
-      appleAuthorizationCode: isApple ? appleAuthorizationCode : undefined,
-    });
+    };
+
+    if (!isApple) {
+      requestBody.providerAccessToken = providerAccessToken || null;
+    } else {
+      requestBody.providerAccessToken = null;
+    }
+
+    if (isApple) {
+      requestBody.appleAuthorizationCode = appleAuthorizationCode || null;
+    } else {
+      requestBody.appleAuthorizationCode = null;
+    }
+
+    await withdrawUser(userId, requestBody);
 
     // 2) 소셜 SDK 로그아웃 (실패해도 로컬 정리는 진행)
     try {
       await signOutSocial(provider);
-    } catch (e) {
-      console.warn('[withdraw] 소셜 로그아웃 실패 - 로컬 정리는 계속 진행합니다.');
+    } catch {
+      console.warn(
+        '[withdraw] 소셜 로그아웃 실패 - 로컬 정리는 계속 진행합니다.',
+      );
     }
 
     // 3) 로컬 저장값 삭제 (탈퇴 후 자동로그인 방지)
@@ -331,6 +346,3 @@ export const withdraw = async (): Promise<void> => {
     throw error;
   }
 };
-
-
-
