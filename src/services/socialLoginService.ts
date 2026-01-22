@@ -93,6 +93,7 @@ export const signInWithGoogle = async (): Promise<SocialLoginResult> => {
             ...loginResponse.data.userInfo,
             provider: 'GOOGLE',
             loginTime: Date.now(),
+            providerAccessToken: tokens.accessToken,
           });
         }
       } else if (loginResponse.token) {
@@ -205,6 +206,7 @@ export const signInWithKakao = async (): Promise<SocialLoginResult> => {
             ...loginResponse.data.userInfo,
             provider: 'KAKAO',
             loginTime: Date.now(),
+            providerAccessToken: token.accessToken,
           });
         }
       } else if (loginResponse.token) {
@@ -354,6 +356,7 @@ export const signInWithNaver = async (): Promise<SocialLoginResult> => {
             ...loginResponse.data.userInfo,
             provider: 'NAVER',
             loginTime: Date.now(),
+            providerAccessToken: accessToken,
           });
         }
 
@@ -456,6 +459,7 @@ export const signInWithApple = async (): Promise<SocialLoginResult> => {
       requestedScopes: [appleAuth.Scope.EMAIL, appleAuth.Scope.FULL_NAME],
     });
 
+    const authorizationCode = appleAuthRequestResponse.authorizationCode;
     identityToken = appleAuthRequestResponse.identityToken;
     const { user } = appleAuthRequestResponse;
 
@@ -521,6 +525,7 @@ export const signInWithApple = async (): Promise<SocialLoginResult> => {
             ...loginResponse.data.userInfo,
             provider: 'APPLE',
             loginTime: Date.now(),
+            appleAuthorizationCode: authorizationCode || undefined,
           });
         }
       } else if (loginResponse.token) {

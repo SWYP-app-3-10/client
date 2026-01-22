@@ -16,6 +16,7 @@ import {
   clearAllAuthData,
   getUserInfo,
   logout,
+  withdraw,
 } from '../../services/authService';
 import { useOnboardingStore } from '../../store/onboardingStore';
 
@@ -88,8 +89,8 @@ const LoginInfoScreen = () => {
     setWithdrawModalVisible(false);
 
     try {
-      // TODO: 서버 탈퇴 API 연동
-      // await withdrawUser();
+      // 0) 서버 탈퇴 + 소셜 unlink + 소셜 로그아웃 + 로컬 정리
+      await withdraw();
 
       // 1) 로컬 인증/유저 데이터 초기화
       await clearAllAuthData();

@@ -7,6 +7,11 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { getRecentLogin, RecentLoginInfo } from './authStorageService';
 import { signOutSocial, SocialLoginProvider } from './socialLoginService';
 import { logoutFromServer } from '../api/authApi';
+import { withdrawUser } from '../api/withdrawApi';
+
+import { GoogleSignin } from '@react-native-google-signin/google-signin';
+import { getAccessToken as getKakaoAccessToken } from '@react-native-seoul/kakao-login';
+
 
 export interface AuthStatus {
   isAuthenticated: boolean;
@@ -92,6 +97,8 @@ export const saveUserInfo = async (userInfo: {
   profileImage?: string;
   provider?: string;
   loginTime?: number;
+  providerAccessToken?: string;
+  appleAuthorizationCode?: string;
 }): Promise<void> => {
   try {
     await AsyncStorage.setItem(USER_INFO_KEY, JSON.stringify(userInfo));
@@ -111,6 +118,8 @@ export const getUserInfo = async (): Promise<{
   profileImage?: string;
   provider?: SocialLoginProvider;
   loginTime?: number;
+  providerAccessToken?: string;
+  appleAuthorizationCode?: string;
 } | null> => {
   try {
     const data = await AsyncStorage.getItem(USER_INFO_KEY);
@@ -207,3 +216,121 @@ export const clearAllAuthData = async (): Promise<void> => {
     console.error('인증 정보 초기화 중 오류:', error);
   }
 };
+
+/**
+ * 회원 탈퇴 (소셜 unlink 포함)
+ * - 서버 탈퇴 + unlinkSocial=true 요청
+ * - 소셜 SDK 로그아웃 시도
+ * - 로컬 토큰/유저정보 삭제 (자동로그인 방지)
+ */
+export const withdraw = async (): Promise<void> => {
+  try {
+    const userInfo = await getUserInfo();
+
+    const userId = userInfo?.userId;
+    const provider = userInfo?.provider;
+
+    if (!userId) {
+      throw new Error('유저 정보를 찾을 수 없습니다. 다시 로그인 후 시도해주세요.');
+    }
+    if (!provider) {
+      throw new Error('로그인 제공자(provider) 정보를 찾을 수 없습니다.');
+    }
+
+    const isApple = provider === 'APPLE';
+
+    // unlink용 값: 저장값은 backup, 탈퇴 시점에 최신값을 우선 재획득
+    let providerAccessToken = userInfo?.providerAccessToken;
+    let appleAuthorizationCode = userInfo?.appleAuthorizationCode;
+
+    try {
+      if (provider === 'GOOGLE') {
+        // 토큰 갱신 안정화
+        try {
+          await GoogleSignin.signInSilently();
+        } catch (e) {
+          console.warn('[withdraw][GOOGLE] signInSilently 실패:', e);
+        }
+
+        const tokens = await GoogleSignin.getTokens();
+        providerAccessToken = tokens?.accessToken ?? providerAccessToken;
+
+        console.log('[withdraw][GOOGLE] accessToken 존재?', !!providerAccessToken);
+      }
+
+      if (provider === 'KAKAO') {
+        const tokenInfo: any = await getKakaoAccessToken();
+
+        // 반환 타입 방어 (string / object 모두 대응)
+        if (typeof tokenInfo === 'string') {
+          providerAccessToken = tokenInfo || providerAccessToken;
+        } else {
+          providerAccessToken =
+            tokenInfo?.accessToken ||
+            tokenInfo?.token?.accessToken ||
+            tokenInfo?.access_token ||
+            providerAccessToken;
+        }
+
+        console.log('[withdraw][KAKAO] accessToken 존재?', !!providerAccessToken);
+      }
+
+      // NAVER: 로그인 때 저장한 accessToken 사용
+      // APPLE: 로그인 때 저장한 authorizationCode 사용
+    } catch (e) {
+      console.warn(
+        '[withdraw] unlink 토큰 재획득 실패 - 저장된 값으로 시도합니다.',
+        e,
+      );
+    }
+
+    // unlink 위해 필요한 값이 없으면 에러
+    if (!isApple && !providerAccessToken) {
+      throw new Error('소셜 연결 끊기에 필요한 providerAccessToken이 없습니다.');
+    }
+    if (isApple && !appleAuthorizationCode) {
+      throw new Error('Apple 연결 끊기에 필요한 appleAuthorizationCode가 없습니다.');
+    }
+
+    console.log('[withdraw] 최종 요청 준비:', {
+      userId,
+      provider,
+      unlinkSocial: true,
+      hasProviderAccessToken: !!providerAccessToken,
+      hasAppleAuthorizationCode: !!appleAuthorizationCode,
+    });
+
+    // 1) 서버 탈퇴 + 소셜 unlink
+    await withdrawUser(userId, {
+      unlinkSocial: true,
+      providerAccessToken: !isApple ? providerAccessToken : undefined,
+      appleAuthorizationCode: isApple ? appleAuthorizationCode : undefined,
+    });
+
+    // 2) 소셜 SDK 로그아웃 (실패해도 로컬 정리는 진행)
+    try {
+      await signOutSocial(provider);
+    } catch (e) {
+      console.warn('[withdraw] 소셜 로그아웃 실패 - 로컬 정리는 계속 진행합니다.');
+    }
+
+    // 3) 로컬 저장값 삭제 (탈퇴 후 자동로그인 방지)
+    await AsyncStorage.multiRemove([
+      AUTH_TOKEN_KEY,
+      REFRESH_TOKEN_KEY,
+      USER_INFO_KEY,
+    ]);
+
+    console.log('회원 탈퇴 완료');
+  } catch (error: any) {
+    console.error('[withdraw] 실패:', {
+      message: error?.message,
+      status: error?.response?.status,
+      data: error?.response?.data,
+    });
+    throw error;
+  }
+};
+
+
+
