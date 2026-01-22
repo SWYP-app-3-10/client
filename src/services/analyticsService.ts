@@ -4,7 +4,7 @@ import {
 } from '@react-native-firebase/analytics';
 import { getApp } from '@react-native-firebase/app';
 import { RouteNames } from '../../routes';
-
+import { IS_PRODUCTION } from '../config/adConfig';
 
 /**
  * Firebase Analytics 서비스
@@ -81,7 +81,7 @@ export const logScreenView = async (
 ): Promise<void> => {
   try {
     // 프로덕션 모드가 아니면 로그를 찍지 않음
-    if (!__DEV__) {
+    if (!IS_PRODUCTION) {
       return;
     }
 
@@ -115,7 +115,7 @@ export const logEvent = async (
 ): Promise<void> => {
   try {
     // 프로덕션 모드가 아니면 로그를 찍지 않음
-    if (!__DEV__) {
+    if (!IS_PRODUCTION) {
       return;
     }
 
