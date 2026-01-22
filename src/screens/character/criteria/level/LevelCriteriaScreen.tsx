@@ -1,11 +1,5 @@
 // LevelCriteriaScreen.tsx
-import React, {
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   View,
   Text,
@@ -15,7 +9,6 @@ import {
   LayoutChangeEvent,
   ListRenderItem,
   Image,
-  findNodeHandle,
   ActivityIndicator,
 } from 'react-native';
 import { levelList, LevelCriteria } from './levelData';
@@ -42,27 +35,33 @@ import { useCharacterMe } from '../../../../hooks/useCharacter';
 const clamp = (value: number, min: number, max: number) =>
   Math.min(Math.max(value, min), max);
 
-/**
- * TooltipXP.png 기준 (그대로)
- */
+// Tooltip 이미지(원본) 기준 값
 const TOOLTIP_ASSET_W = 490;
 const TOOLTIP_ASSET_H = 146;
+// 원본 이미지에서 꼬리(tip)가 위치한 X (px)
 const TOOLTIP_TIP_X = 147;
 
+// 앱에서 사용할 Tooltip 크기(원본 비율 유지)
 const TOOLTIP_W = scaleWidth(260);
 const TOOLTIP_H = scaleWidth((260 * TOOLTIP_ASSET_H) / TOOLTIP_ASSET_W);
 
 /**
  * useTooltip
- * - iconCenterX를 card 기준으로 실측 후, PNG tipOffsetX로 left 역산
- * - clamp는 카드 폭 기준
+ * - measureLayout 대신 onLayout 값으로 아이콘 중심점을 계산해 툴팁 left를 산출
+ * - card 기준 iconCenterX = rowX(Pressable) + iconXInRow + iconW/2
+ * - TIP_FINE_TUNE: 이미지 꼬리 위치가 미세하게 어긋날 때 보정(+면 오른쪽)
  */
 function useTooltip(autoHideMs: number) {
   const [visible, setVisible] = useState(false);
   const hideTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
+  // 카드 폭(툴팁 clamp 기준)
   const [cardWidth, setCardWidth] = useState(0);
-  const [iconCenterX, setIconCenterX] = useState(0);
+
+  // onLayout 좌표계 보정용 값들
+  const [rowX, setRowX] = useState(0); // 카드 기준 Pressable 시작 x
+  const [iconXInRow, setIconXInRow] = useState(0); // row 기준 아이콘 x
+  const [iconW, setIconW] = useState(0); // 아이콘 wrapper 폭
 
   const clearTimer = useCallback(() => {
     if (hideTimerRef.current) {
@@ -86,52 +85,58 @@ function useTooltip(autoHideMs: number) {
     setVisible(false);
   }, [clearTimer]);
 
-  const toggle = useCallback(
-    (cardRef: React.RefObject<View>, iconRef: React.RefObject<View>) => {
-      if (visible) {
-        close();
-        return;
-      }
+  // 툴팁 토글(열면 자동 닫힘)
+  const toggle = useCallback(() => {
+    if (visible) {
+      close();
+      return;
+    }
+    openWithAutoHide();
+  }, [visible, close, openWithAutoHide]);
 
-      const cardNode = cardRef.current ? findNodeHandle(cardRef.current) : null;
-      if (!cardNode || !iconRef.current?.measureLayout) {
-        setIconCenterX(0);
-        openWithAutoHide();
-        return;
-      }
+  // 카드 폭 측정(툴팁 left clamp용)
+  const onLayoutCard = useCallback((e: LayoutChangeEvent) => {
+    setCardWidth(e.nativeEvent.layout.width);
+  }, []);
 
-      iconRef.current.measureLayout(
-        cardNode,
-        (x, _y, w) => {
-          setIconCenterX(x + w / 2);
-          openWithAutoHide();
-        },
-        () => {
-          setIconCenterX(0);
-          openWithAutoHide();
-        },
-      );
-    },
-    [visible, close, openWithAutoHide],
+  // Pressable 시작 x (카드 기준)
+  const onLayoutRow = useCallback((e: LayoutChangeEvent) => {
+    setRowX(e.nativeEvent.layout.x);
+  }, []);
+
+  // 아이콘 wrapper의 x/width (row 기준)
+  const onLayoutIcon = useCallback((e: LayoutChangeEvent) => {
+    const { x, width } = e.nativeEvent.layout;
+    setIconXInRow(x);
+    setIconW(width);
+  }, []);
+
+  // 카드 기준 아이콘 중앙 x
+  const iconCenterX = useMemo(
+    () => rowX + iconXInRow + iconW / 2,
+    [rowX, iconXInRow, iconW],
   );
 
+  // 툴팁 left 계산(꼬리를 아이콘 중앙에 맞추고 카드 폭 안에서 clamp)
   const tooltipLeft = useMemo(() => {
     if (!cardWidth) return 0;
 
     const tipOffsetX = (TOOLTIP_W * TOOLTIP_TIP_X) / TOOLTIP_ASSET_W;
-    const raw = iconCenterX - tipOffsetX;
 
+    // 꼬리 위치 미세 보정(+면 오른쪽 / -면 왼쪽)
+    const TIP_FINE_TUNE = scaleWidth(21);
+
+    const raw = iconCenterX - tipOffsetX + TIP_FINE_TUNE;
     return clamp(raw, 0, cardWidth - TOOLTIP_W);
   }, [cardWidth, iconCenterX]);
-
-  const onLayoutCard = (e: LayoutChangeEvent) =>
-    setCardWidth(e.nativeEvent.layout.width);
 
   return {
     visible,
     toggle,
     tooltipLeft,
     onLayoutCard,
+    onLayoutRow,
+    onLayoutIcon,
   };
 }
 
@@ -146,18 +151,17 @@ function XpSummaryCard({
 }) {
   const tooltip = useTooltip(1500);
 
-  const cardRef = useRef<View>(null);
-  const iconRef = useRef<View>(null);
-
   return (
-    <View ref={cardRef} style={styles.xpCard} onLayout={tooltip.onLayoutCard}>
+    <View style={styles.xpCard} onLayout={tooltip.onLayoutCard}>
       <View style={styles.xpLeft}>
         <Text style={styles.xpQ}>현재 나의 경험치는?</Text>
 
         <Pressable
+          // rowX 확보(카드 기준)
+          onLayout={tooltip.onLayoutRow}
           onPress={() => {
             if (isLoading) return;
-            tooltip.toggle(cardRef, iconRef);
+            tooltip.toggle();
             logEvent('XpTooltip_ConfirmStandard_Level');
           }}
           style={styles.xpValueRow}
@@ -171,7 +175,11 @@ function XpSummaryCard({
             </>
           )}
 
-          <View ref={iconRef} style={styles.xpInfoIcon}>
+          <View
+            style={styles.xpInfoIcon}
+            // iconXInRow/iconW 확보(row 기준)
+            onLayout={tooltip.onLayoutIcon}
+          >
             <InfoIcon
               width={scaleWidth(22)}
               height={scaleWidth(22)}
@@ -196,6 +204,7 @@ function XpSummaryCard({
         <Image source={XpIcon} style={styles.xpImgIcon} resizeMode="contain" />
       </View>
 
+      {/* 툴팁(absolute). 아이콘 중심에 꼬리가 오도록 left 계산 */}
       {tooltip.visible && !isLoading && (
         <View
           style={[
@@ -256,14 +265,17 @@ function LevelRow({ item, isMine }: { item: LevelCriteria; isMine: boolean }) {
 const ItemSeparator = () => <View style={styles.separator} />;
 
 const LevelCriteriaScreen = () => {
-  // CharacterScreen과 동일하게 내 성장 정보(userGrowthInfo)로 현재 레벨/경험치 표시
+  // 성장 정보(현재 레벨/경험치) 조회
   const { data: characterMeResponse, isLoading: meLoading } = useCharacterMe();
   const userGrowthInfo = characterMeResponse?.data?.userGrowthInfo;
 
   const currentXp = userGrowthInfo?.currentExp ?? 0;
+
   useEffect(() => {
     logScreenView('ConfirmStandard_Level', undefined, true);
   }, []);
+
+  // LEVEL_1 형태를 숫자 레벨로 변환
   const currentLevelId = useMemo(() => {
     const raw = userGrowthInfo?.levelEnum;
     if (!raw) return 1;
@@ -271,6 +283,7 @@ const LevelCriteriaScreen = () => {
     return match ? parseInt(match[1], 10) : 1;
   }, [userGrowthInfo?.levelEnum]);
 
+  // 다음 레벨까지 필요한 경험치
   const needXp = useMemo(() => {
     const next = levelList.find(l => l.id === currentLevelId + 1);
     if (!next) return 0; // 마지막 레벨이면 0
@@ -282,6 +295,7 @@ const LevelCriteriaScreen = () => {
     [currentLevelId],
   );
 
+  // FlatList Header(현재 경험치 카드)
   const Header = useMemo(
     () => (
       <>
