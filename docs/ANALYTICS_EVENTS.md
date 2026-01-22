@@ -58,7 +58,7 @@
 | `Quiz_Answer`                  | 퀴즈 답변 화면          | `src/screens/common/QuizScreen.tsx`                                  | 퀴즈 상태가 'feedback'일 때 |
 | `ReadingDetails_Quiz`          | 읽은 글 상세에서 퀴즈   | `src/hooks/useQuizButton.ts`                                         | 퀴즈 버튼 클릭 시           |
 | `ConfirmStandard_Level`        | 레벨 기준 확인          | `src/screens/character/criteria/level/LevelCriteriaScreen.tsx`       | 화면 마운트 시              |
-| `ConfirmStandard_Xp/P`         | XP/P 기준 확인          | `src/screens/character/criteria/expAndPoint/PointCriteriaScreen.tsx` | 화면 마운트 시              |
+| `ConfirmStandard_Xp_P`         | XP/P 기준 확인          | `src/screens/character/criteria/expAndPoint/PointCriteriaScreen.tsx` | 화면 마운트 시              |
 | `Onboarding_Difficulty_Easy`   | 난이도 선택 (초급)      | `src/screens/onboarding/DifficultySettingScreen.tsx`                 | 초급 선택 시                |
 | `Onboarding_Difficulty_Medium` | 난이도 선택 (중급)      | `src/screens/onboarding/DifficultySettingScreen.tsx`                 | 중급 선택 시                |
 | `Onboarding_Difficulty_Hard`   | 난이도 선택 (고급)      | `src/screens/onboarding/DifficultySettingScreen.tsx`                 | 고급 선택 시                |
@@ -92,7 +92,7 @@ Header 컴포넌트의 뒤로가기 아이콘 클릭 시 기록되는 이벤트�
 | `Back_Alarm`                   | 알림 화면                   | `src/screens/common/NotificationScreen.tsx`              |
 | `Back_ConfirmEarnedHistory`    | 포인트 내역                 | `src/screens/character/history/PointHistoryScreen.tsx`   |
 | `Back_ConfirmStandard_Level`   | 레벨 기준 확인              | `src/screens/character/criteria/CriteriaCheckScreen.tsx` |
-| `Back_ConfirmStandard_Xp/P`    | XP/P 기준 확인              | `src/screens/character/criteria/CriteriaCheckScreen.tsx` |
+| `Back_ConfirmStandard_Xp_P`    | XP/P 기준 확인              | `src/screens/character/criteria/CriteriaCheckScreen.tsx` |
 | `Back_Search`                  | 검색 화면                   | `src/screens/search/components/SearchHeader.tsx`         |
 | `Back_DateRead_My`             | 마이페이지 날짜 선택 (이전) | `src/screens/main/MyPageScreen.tsx`                      |
 | `Next_DateRead_My`             | 마이페이지 날짜 선택 (다음) | `src/screens/main/MyPageScreen.tsx`                      |
@@ -146,9 +146,9 @@ Header 컴포넌트의 뒤로가기 아이콘 클릭 시 기록되는 이벤트�
 | `InterestTag_Society_Onboarding`             | 사회 태그 클릭 (온보딩)      | `src/screens/onboarding/InterestsScreen.tsx` |
 | `InterestTag_Society_EditInterest`           | 사회 태그 클릭 (편집)        | `src/screens/onboarding/InterestsScreen.tsx` |
 | `InterestTag_LifeCulture_Onboarding`         | 생활/문화 태그 클릭 (온보딩) | `src/screens/onboarding/InterestsScreen.tsx` |
-| `InterestTag_Lifestyle/Culture_EditInterest` | 생활/문화 태그 클릭 (편집)   | `src/screens/onboarding/InterestsScreen.tsx` |
-| `InterestTag_It/Science_Onboarding`          | IT/과학 태그 클릭 (온보딩)   | `src/screens/onboarding/InterestsScreen.tsx` |
-| `InterestTag_It/Science_EditInterest`        | IT/과학 태그 클릭 (편집)     | `src/screens/onboarding/InterestsScreen.tsx` |
+| `InterestTag_Lifestyle_Culture_EditInterest` | 생활/문화 태그 클릭 (편집)   | `src/screens/onboarding/InterestsScreen.tsx` |
+| `InterestTag_It_Science_Onboarding`          | IT/과학 태그 클릭 (온보딩)   | `src/screens/onboarding/InterestsScreen.tsx` |
+| `InterestTag_It_Science_EditInterest`        | IT/과학 태그 클릭 (편집)     | `src/screens/onboarding/InterestsScreen.tsx` |
 | `InterestTag_World_Onboarding`               | 세계 태그 클릭 (온보딩)      | `src/screens/onboarding/InterestsScreen.tsx` |
 | `EditInterest_World_EditInterest`            | 세계 태그 클릭 (편집)        | `src/screens/onboarding/InterestsScreen.tsx` |
 
@@ -184,8 +184,8 @@ Header 컴포넌트의 뒤로가기 아이콘 클릭 시 기록되는 이벤트�
 | `CategoryChip_Politics_Explore`               | 정치 카테고리 클릭        | `src/screens/search/SearchScreen.tsx`            |
 | `CategoryChip_Economy_Explore`                | 경제 카테고리 클릭        | `src/screens/search/SearchScreen.tsx`            |
 | `CategoryChip_Society_Explore`                | 사회 카테고리 클릭        | `src/screens/search/SearchScreen.tsx`            |
-| `CategoryChip_Lifestyle/Culture_Explore`      | 생활/문화 카테고리 클릭   | `src/screens/search/SearchScreen.tsx`            |
-| `CategoryChip_It/Science_Explore`             | IT/과학 카테고리 클릭     | `src/screens/search/SearchScreen.tsx`            |
+| `CategoryChip_Lifestyle_Culture_Explore`      | 생활/문화 카테고리 클릭   | `src/screens/search/SearchScreen.tsx`            |
+| `CategoryChip_It_Science_Explore`             | IT/과학 카테고리 클릭     | `src/screens/search/SearchScreen.tsx`            |
 | `CategoryChip_World_Explore`                  | 세계 카테고리 클릭        | `src/screens/search/SearchScreen.tsx`            |
 | `ContectsList_Explore`                        | 검색 결과 리스트 클릭     | `src/screens/search/SearchScreen.tsx`            |
 | `ContectsList1_Search`                        | 검색 결과 1번 클릭        | `src/screens/search/SearchResultScreen.tsx`      |
@@ -219,9 +219,9 @@ Header 컴포넌트의 뒤로가기 아이콘 클릭 시 기록되는 이벤트�
 | --------------------------------- | --------------------------------- | -------------------------------------------------------------- |
 | `Tooltip_Character`               | 툴팁 클릭                         | `src/screens/main/CharacterScreen.tsx`                         |
 | `Confirm_LevelStandard_Character` | 레벨 기준 확인 클릭               | `src/screens/main/CharacterScreen.tsx`                         |
-| `Confirm_P/xp_Character`          | XP/P 기준 확인 클릭               | `src/screens/main/CharacterScreen.tsx`                         |
+| `Confirm_PXp_Character`           | XP/P 기준 확인 클릭               | `src/screens/main/CharacterScreen.tsx`                         |
 | `Level_ConfirmLevelStandard`      | 레벨 기준 확인 화면에서 레벨 확인 | `src/screens/character/criteria/CriteriaCheckScreen.tsx`       |
-| `Xp/p_ConfirmLevelStandard`       | XP/P 기준 확인 화면에서 XP/P 확인 | `src/screens/character/criteria/CriteriaCheckScreen.tsx`       |
+| `XpP_ConfirmLevelStandard`        | XP/P 기준 확인 화면에서 XP/P 확인 | `src/screens/character/criteria/CriteriaCheckScreen.tsx`       |
 | `XpTooltip_ConfirmStandard_Level` | 레벨 기준 확인 화면에서 XP 툴팁   | `src/screens/character/criteria/level/LevelCriteriaScreen.tsx` |
 | `list_ConfirmEarnedHistory`       | 포인트 내역 리스트 클릭           | `src/screens/character/history/PointHistoryScreen.tsx`         |
 

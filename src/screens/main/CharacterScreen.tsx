@@ -295,7 +295,7 @@ const CharacterScreen = () => {
   }, [rootNavigation]);
 
   const handleNavigateToPointHistory = useCallback(() => {
-    logEvent('Confirm_P/xp_Character');
+    logEvent('Confirm_PXp_Character');
     rootNavigation.navigate(RouteNames.FULL_SCREEN_STACK, {
       screen: RouteNames.CHARACTER_POINT_HISTORY,
     });

@@ -110,7 +110,7 @@ InfoItem.displayName = 'InfoItem';
 
 const PointCriteriaScreen = () => {
   useEffect(() => {
-    logScreenView('ConfirmStandard_Xp/P', undefined, true);
+    logScreenView('ConfirmStandard_Xp_P', undefined, true);
   }, []);
   return (
     <ScrollView

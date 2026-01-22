@@ -35,7 +35,7 @@ const CriteriaCheckScreen = () => {
         backEventName={
           tab === 'LEVEL'
             ? 'Back_ConfirmStandard_Level'
-            : 'Back_ConfirmStandard_Xp/P'
+            : 'Back_ConfirmStandard_Xp_P'
         }
       />
 
@@ -66,7 +66,7 @@ const CriteriaCheckScreen = () => {
         <Pressable
           onPress={() => {
             setTab('POINT');
-            logEvent('Xp/p_ConfirmLevelStandard');
+            logEvent('XpP_ConfirmLevelStandard');
           }}
           style={[
             styles.segmentBtn,
