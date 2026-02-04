@@ -9,11 +9,7 @@ import { refreshToken } from './authApi';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useOnboardingStore } from '../store/onboardingStore';
 import { IS_PRODUCTION } from '../config/adConfig';
-
-// TODO: 본서버 준비되면 실제 프로덕션 API 서버 URL로 변경 필요
-const PROD_URL = 'http://34.64.75.53:8080'; // 임시 URL (실제 URL로 변경 필요)
-// 개발 API 서버 URL
-const DEV_URL = 'http://34.64.75.53:8080';
+import { DEV_URL, PROD_URL } from '../config/api';
 
 const client = axios.create({
   baseURL: IS_PRODUCTION ? PROD_URL : DEV_URL,

@@ -76,3 +76,6 @@ yarn-error.log
 
 # Android 키스토어 비밀번호 (보안)
 android/gradle.properties
+
+# do not commit real server url
+/src/config/api.ts
