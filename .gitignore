@@ -1,10 +1,54 @@
-# OSX
-#
+# =========================
+# OS / Editor
+# =========================
 .DS_Store
+Thumbs.db
+*.swp
+*.swo
 
-# Xcode
-#
-build/
+# VSCode / JetBrains
+.vscode/
+.idea/
+*.iml
+
+# =========================
+# React Native / Metro / Node
+# =========================
+node_modules/
+npm-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+.metro-health-check*
+/coverage
+
+# =========================
+# Android / Gradle
+# =========================
+android/.gradle/
+android/local.properties
+android/**/build/
+android/.cxx/
+android/**/*.hprof
+
+# Keystores / signing / secrets (NEVER COMMIT)
+*.keystore
+*.jks
+*.p12
+*.pem
+*.mobileprovision
+
+android/app/debug.keystore
+
+# Android signing props (NEVER COMMIT)
+android/gradle.properties
+
+# =========================
+# iOS / Xcode
+# =========================
+ios/Pods/
+ios/**/build/
+ios/DerivedData/
+ios/xcuserdata/
 *.pbxuser
 !default.pbxuser
 *.mode1v3
@@ -13,69 +57,34 @@ build/
 !default.mode2v3
 *.perspectivev3
 !default.perspectivev3
-xcuserdata
 *.xccheckout
 *.moved-aside
-DerivedData
-*.hmap
-*.ipa
 *.xcuserstate
 **/.xcode.env.local
 
-# Android/IntelliJ
-#
-build/
-.idea
-.gradle
-local.properties
-*.iml
-*.hprof
-.cxx/
-*.keystore
-!debug.keystore
-.kotlin/
+# (옵션) 보통 커밋 안 하는 편
+ios/.xcode.env
 
-# node.js
-#
-node_modules/
-npm-debug.log
-yarn-error.log
+# =========================
+# Firebase (NEVER COMMIT real configs)
+# =========================
+android/app/google-services.json
+ios/GoogleService-Info.plist
+ios/**/GoogleService-Info.plist
 
-# fastlane
-#
-# It is recommended to not store the screenshots in the git repo. Instead, use fastlane to re-generate the
-# screenshots whenever they are needed.
-# For more information about the recommended setup visit:
-# https://docs.fastlane.tools/best-practices/source-control/
+# (추천) 템플릿은 커밋 허용
+!android/app/google-services.json.example
+!ios/GoogleService-Info.plist.example
+!ios/**/GoogleService-Info.plist.example
 
-**/fastlane/report.xml
-**/fastlane/Preview.html
-**/fastlane/screenshots
-**/fastlane/test_output
-
-# Bundle artifact
-*.jsbundle
-
-# Ruby / CocoaPods
-**/Pods/
-/vendor/bundle/
-
-# Temporary files created by Metro to check the health of the file watcher
-.metro-health-check*
-
-# testing
-/coverage
-
-# Yarn
-.yarn/*
-!.yarn/patches
-!.yarn/plugins
-!.yarn/releases
-!.yarn/sdks
-!.yarn/versions
-
-# Android 키스토어 비밀번호 (보안)
-android/gradle.properties
-
+# =========================
+# App local config
+# =========================
 # do not commit real server url
-/src/config/api.ts
+src/config/api.ts
+
+# env files (if you use later)
+.env
+*.env
+
+android/**/.cxx/
