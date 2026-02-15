@@ -2,6 +2,9 @@
 
 뉴로스 모바일 애플리케이션 클라이언트 레포지토리입니다.
 
+<img src="src/assets/png/thumnail_최종.png" alt="썸네일" width="500" />
+
+
 ## 기술 스택
 
 - **React Native** 0.73.6
